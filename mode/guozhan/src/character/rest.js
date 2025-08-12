@@ -1018,6 +1018,14 @@ export default {
 		skills: ["olshuangxiong"],
 		names: "颜|良-文|丑",
 	}),
+	gz_caochong: new Character({
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		maxHp: 3,
+		hujia: 0,
+		skills: ["chengxiang", "renxin"],
+	}),
 };
 
 export const sort = "";
