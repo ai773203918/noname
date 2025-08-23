@@ -4151,7 +4151,7 @@ player.removeVirtualEquip(card);
 				return info.frequent(trigger, player, event.triggername, event.indexedData);
 			}
 			if (info.frequent == "check" && typeof info.check == "function") {
-				return info.check(trigger, player);
+				return info.check(trigger, player, event.triggername, event.indexedData);
 			}
 			return false;
 		};
