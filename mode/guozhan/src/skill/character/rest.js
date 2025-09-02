@@ -18094,10 +18094,13 @@ export default {
 					250
 				);
 				game.playBackgroundMusic();
+				lib.init.sheet(`
+                    .card[data-card-name = "tao"]>.image {
+                    	background-image: url(${lib.assetURL}image/card/gz_ic_card_aozhantao.png) !important;
+                    }
+                `);
 			});
-			game.countPlayer(function (current) {
-				current.addSkill("aozhan");
-			});
+			game.addGlobalSkill("aozhan");
 		},
 	},
 	_guozhan_marks: {
