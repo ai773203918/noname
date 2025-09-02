@@ -6934,7 +6934,7 @@ const skills = {
 			},
 		},
 		hiddenCard(player, name) {
-			return get.type(name) == "basic" && player.countMark("sbrende") > 1 && player.hasSkill("sbrende_used");
+			return get.type(name) == "basic" && player.countMark("sbrende") > 1 && !player.hasSkill("sbrende_used");
 		},
 		marktext: "仁",
 		intro: {
