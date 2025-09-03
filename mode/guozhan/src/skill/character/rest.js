@@ -18096,7 +18096,7 @@ export default {
 				game.playBackgroundMusic();
 				lib.init.sheet(`
                     .card[data-card-name = "tao"]>.image {
-                    	background-image: url(${lib.assetURL}image/card/gz_ic_card_aozhantao.png) !important;
+                    	background-image: url(${lib.assetURL}image/card/gz_aozhantao.png) !important;
                     }
                 `);
 			});
