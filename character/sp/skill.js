@@ -5933,7 +5933,7 @@ const skills = {
 		},
 	},
 	olleiluan: {
-		audio: 2,
+		audio: "leiluan",
 		onChooseToUse(event) {
 			if (!game.online && !event.olleiluan) {
 				const player = event.player;
@@ -5998,7 +5998,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					audio: "olleiluan",
+					audio: "leiluan",
 					filterCard: true,
 					selectCard: () => get.event().olleiluan[1],
 					check(card) {
@@ -6126,7 +6126,7 @@ const skills = {
 		},
 	},
 	olfuchao: {
-		audio: 2,
+		audio: "fuchao",
 		trigger: { player: ["useCard", "respond"] },
 		filter(event, player) {
 			return Array.isArray(event.respondTo) && event.respondTo[0] != player;

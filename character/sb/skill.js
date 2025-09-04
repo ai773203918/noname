@@ -6426,13 +6426,16 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "sbtiaoxin",
 					control: links[0],
 					filterTarget: lib.filter.notMe,
-					log: false,
+					logAudio: (event, player) => {
+						const control = get.info("sbtiaoxin_backup")?.control;
+						return control == "all" ? ["sbtiaoxin3.mp3", "sbtiaoxin4.mp3"] : 2;
+					},
 					async content(event, trigger, player) {
 						const { control } = get.info(event.name),
 							{ target } = event;
-						player.logSkill("sbtiaoxin", null, null, null, [control === "all" ? get.rand(3, 4) : null]);
 						if (control == "all") {
 							player.popup("背水", "fire");
 							player.addTempSkill("sbtiaoxin_damage");
