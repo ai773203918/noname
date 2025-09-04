@@ -18487,7 +18487,7 @@ const skills = {
 					"choice",
 					(function () {
 						let targets = game.filterPlayer(i => i.getSeatNum() == 1 || get.nameList(i).some(name => get.rawName(name) == "刘备"));
-						if (targets?.length && targets.some(i => get.attitude(player, i) > 0 && i.hp <= player.hp)) {
+						if (targets?.length && targets.some(i => get.attitude(player, i) > 0 && i.hp <= player.hp && i.isDamaged())) {
 							return "选项一";
 						}
 						if (game.hasPlayer(i => get.attitude(player, i) > 0 && player.countCards("h") > Math.min(2, player.hp))) {
