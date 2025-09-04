@@ -1024,6 +1024,9 @@ function setBackground() {
 			document.documentElement.style.backgroundImage = 'url("' + lib.assetURL + "image/background/" + htmlbg + '.jpg")';
 			document.documentElement.style.backgroundSize = "cover";
 			document.documentElement.style.backgroundPosition = "50% 50%";
+			// 由于html没设高度或最小高度导致了图片重复问题
+			document.documentElement.style.minHeight = "100%";
+			debugger
 		}
 	}
 }
