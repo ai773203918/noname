@@ -976,7 +976,9 @@ const skills = {
 	mbfutu: {
 		audio: 8,
 		logAudio: (event, player, name, target, costResult) => {
-			if (costResult.cost_data.length > 1) return ["mbfutu5.mp3", "mbfutu6.mp3"];
+			if (costResult.cost_data.length > 1) {
+				return ["mbfutu5.mp3", "mbfutu6.mp3"];
+			}
 			return (costResult.cost_data.includes("black") ? [1, 2] : [3, 4]).map(i => `mbfutu${i}.mp3`);
 		},
 		trigger: {
