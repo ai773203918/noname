@@ -1206,7 +1206,7 @@ export default {
 			if (player == target) {
 				return false;
 			}
-			return !player.getStorage("rerende_targeted").includes(target);
+			return !player.getStorage("gz_rende_targeted").includes(target);
 		},
 		filterCard: true,
 		selectCard: [1, Infinity],
