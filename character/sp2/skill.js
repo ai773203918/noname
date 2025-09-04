@@ -2,6 +2,193 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//星蒋琬
+	starzhenting: {
+		audio: 2,
+		trigger: {
+			global: "phaseEnd",
+		},
+		filter(event, player) {
+			return game.countPlayer2(current => {
+				return current.hasHistory("damage");
+			}, true) > 1;
+		},
+		async cost(event, trigger, player) {
+			const filter = (current, type) => {
+				return current.hasHistory(type);
+			},
+				choiceList = [
+					["damage", "令一名受到过伤害的角色回复1点体力并摸一张牌"],
+					["sourceDamage", "令一名造成过伤害的角色获得本回合进入弃牌堆的两张牌"],
+				],
+				target = game.players.maxBy(current => {
+					let eff = get.effect(current, { name: "draw" }, player, player),
+						eff1 = 0,
+						eff2 = 0;
+					if (filter(current, "damage")) {
+						eff1 = eff + get.recoverEffect(current, player, player);
+					}
+					if (filter(current, "sourceDamage")) {
+						eff2 = 3 * eff;
+					}
+					return Math.max(eff1, eff2);
+				});
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: [get.prompt(event.skill), [choiceList, "textbutton"]],
+					filterButton(button) {
+						const { filter } = get.event();
+						return game.hasPlayer(current => filter(current, button.link));
+					},
+					filterTarget(card, player, target) {
+						const type = ui.selected.buttons?.[0]?.link,
+							{ filter } = get.event();
+						if (!type) {
+							return false;
+						}
+						return filter(target, type);
+					},
+					ai1(button) {
+						const { filter, targetx } = get.event();
+						if (!targetx) {
+							return 0;
+						}
+						if (filter(targetx, button.link)) {
+							return 1;
+						}
+						return 0;
+					},
+					ai2(target) {
+						const { targetx } = get.event();
+						if (target == targetx) {
+							return 1;
+						}
+						return 0;
+					},
+				})
+				.set("complexTarget", true)
+				.set("filter", filter)
+				.set("targetx", target)
+				.forResult();
+			if (result.bool) {
+				event.result = {
+					bool: true,
+					targets: result.targets,
+					cost_data: result.links[0],
+				}
+			}
+		},
+		async content(event, trigger, player) {
+			const { targets: [target], cost_data: type } = event;
+			if (type == "damage") {
+				await target.recover();
+				await target.draw();
+			} else {
+				const cards = get.discarded().filterInD("d");
+				const { result } = await player
+					.chooseButton([`镇庭：选择令${get.translation(target)}获得的牌`, cards], true, Math.min(cards.length, 2))
+					.set("ai", button => {
+						const { player, target } = get.event();
+						return get.sgnAttitude(player, target) * get.value(button.link, target);
+					})
+					.set("target", target);
+				if (result?.bool && result?.links?.length) {
+					await target.gain(result.links, "gain2");
+				}
+			}
+		},
+	},
+	starchiguo: {
+		audio: 2,
+		trigger: {
+			player: "phaseUseBegin",
+		},
+		async content(event, trigger, player) {
+			const cards = get.bottomCards(3, true);
+			await player
+				.chooseControl("ok")
+				.set("dialog", ["持国：牌堆底三张牌", cards]);
+			player.addTempSkill("starchiguo_effect", "phaseChange");
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					player: "useCard1",
+				},
+				charlotte: true,
+				async cost(event) {
+					event.result = {
+						bool: true,
+					};
+				},
+				async content(event, trigger, player) {
+					const { cards: [card] } = await game.cardsGotoOrdering(get.bottomCards());
+					await player.showCards(card, `${get.translation(player)}发动了【持国】`, true);
+					if (get.suit(card) == get.suit(trigger.card)) {
+						if (trigger.targets?.length) {
+							const targets = game.filterPlayer(current => {
+								if (trigger.targets?.includes(current)) {
+									return trigger.targets.length > 1;
+								}
+								return lib.filter.targetEnabled2(trigger.card, player, current);
+							});
+							if (targets.length) {
+								const result = targets.length > 1 ? await player
+									.chooseTarget(`为${get.translation(trigger.card)}增加或减少一个目标`, (card, player, target) => {
+										return get.event("targetx").includes(target);
+									}, true)
+									.set("ai", target => {
+										const player = get.player(),
+											trigger = get.event().getTrigger(),
+											eff = get.effect(target, trigger.card, trigger.player, player);
+										if (trigger.targets?.includes(target)) {
+											return -eff;
+										}
+										return eff;
+									})
+									.set("targetx", targets)
+									.forResult() : {
+										bool: true,
+										targets: targets,
+									};
+								if (result.bool) {
+									player.line(result.targets);
+									if (trigger.targets.containsSome(...result.targets)) {
+										trigger.targets.removeArray(result.targets);
+									} else {
+										trigger.targets.addArray(result.targets);
+									}
+								}
+							}
+						}
+						await game.cardsDiscard(card);
+					} else {
+						if (trigger.targets?.length) {
+							const result = trigger.targets.length > 1 ? await player
+								.chooseTarget(`持国：将${get.translation(card)}交给一名目标角色`, (card, player, target) => {
+									const trigger = get.event().getTrigger();
+									return trigger.targets?.includes(target);
+								}, true)
+								.set("ai", target => {
+									const { player, cardx } = get.event();
+									return target.getUseValue(cardx) * get.attitude(player, target);
+								})
+								.set("cardx", card)
+								.forResult() : {
+									bool: true,
+									targets: trigger.targets,
+								};
+							if (result.bool) {
+								const target = result.targets[0];
+								player.line(target);
+								await target.gain(card, "gain2");
+							}
+						}
+					}
+				},
+			},
+		},
+	},
 	//星太史慈
 	starchongwei: {
 		audio: 2,
