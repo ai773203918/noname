@@ -1273,7 +1273,7 @@ const skills = {
 						[
 							[
 								["damage", `对${get.translation(loser)}造成1点伤害`],
-								["recover", `令${get.translation(loser)}恢复1点体力并摸一张牌，然后获得其两张牌`],
+								["recover", `令${get.translation(loser)}恢复1点体力并摸一张牌，然后获得其至多两张牌`],
 							],
 							"textbutton",
 						],
@@ -1293,7 +1293,7 @@ const skills = {
 				} else {
 					await loser.recover(winner);
 					await loser.draw();
-					await winner.gainPlayerCard(loser, "he", 2, true);
+					await winner.gainPlayerCard(loser, "he", [1, 2], true);
 				}
 			}
 		},
@@ -6588,7 +6588,14 @@ const skills = {
 						player.gain(gain, "gain2");
 					}
 					trigger.baseDamage++;
-					player.removeSkill(event.name);
+					player
+						.when({
+							player: "useCardAfter",
+						})
+						.filter(evt => evt === trigger)
+						.then(() => {
+							player.removeSkill("potfuji_sha");
+						});
 				},
 			},
 			shan: {
@@ -6613,8 +6620,10 @@ const skills = {
 					player
 						.when("useCardAfter")
 						.filter(evt => evt === trigger)
-						.then(() => player.draw());
-					player.removeSkill(event.name);
+						.then(() => {
+							player.removeSkill("potfuji_shan");
+							player.draw();
+						});
 				},
 			},
 		},
@@ -9208,7 +9217,7 @@ const skills = {
 				})
 				.set("color", get.color(trigger.card))
 				.forResult();
-			if (result.bool && get.color(result.links[0]) == get.color(trigger.card)) {
+			if (result?.bool && get.color(result.links[0]) == get.color(trigger.card)) {
 				await target.damage();
 			}
 		},
@@ -9470,7 +9479,7 @@ const skills = {
 					global: "useCardToTarget",
 				},
 				filter(event, player) {
-					if (get.type(event.card) == "equip") {
+					if (event.player == player || get.type(event.card) == "equip") {
 						return false;
 					}
 					if (!event.targets || event.targets.length != 1) {
