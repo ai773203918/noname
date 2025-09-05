@@ -1,4 +1,16 @@
 const characters = {
+	star_jiangwan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["starzhenting", "starchiguo"],
+	},
+	star_taishici: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["starchongwei", "starchongzu"],
+	},
 	star_zhangrang: {
 		sex: "male",
 		group: "qun",
@@ -392,6 +404,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["hfjieying", "weipo"],
+		clans: ["颍川韩氏"],
 	},
 	re_quyi: {
 		sex: "male",
