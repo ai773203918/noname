@@ -1002,6 +1002,9 @@ export default {
 	/** @type {Skill} */
 	gz_fangzhu: {
 		audio: "fangzhu",
+		audioname2: {
+			new_simayi: "refangzhu_new_simayi",
+		},
 		trigger: {
 			player: "damageEnd",
 		},
@@ -1203,7 +1206,7 @@ export default {
 			if (player == target) {
 				return false;
 			}
-			return !player.getStorage("rerende_targeted").includes(target);
+			return !player.getStorage("gz_rende_targeted").includes(target);
 		},
 		filterCard: true,
 		selectCard: [1, Infinity],
@@ -1813,6 +1816,27 @@ export default {
 		},
 	},
 
+	/** @type {Skill} */
+	gz_mashu: {
+		mod: {
+			globalFrom(from, to, distance) {
+				return distance - 1;
+			},
+		},
+	},
+	/** @type {Skill} */
+	gz_md_mashu: {
+		inherit: "gz_mashu",
+	},
+	/** @type {Skill} */
+	gz_mt_mashu: {
+		inherit: "gz_mashu",
+	},
+	/** @type {Skill} */
+	gz_pd_mashu: {
+		inherit: "gz_mashu",
+	},
+
 	// gz_huangzhong
 	/** @type {Skill} */
 	gz_liegong: {
@@ -2157,6 +2181,9 @@ export default {
 	gz_zhiheng: {
 		inherit: "zhiheng",
 		audio: "zhiheng",
+		audioname2: {
+			new_simayi: "rezhiheng_new_simayi",
+		},
 		selectCard() {
 			const player = get.player();
 			const range1 = [1, player.maxHp];
