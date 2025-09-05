@@ -379,14 +379,14 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog(`###众讨###出牌阶段限一次，你可以选择至多${Math.min(4, player.getDamagedHp() + 1)}种花色，然后随机获得弃牌堆中你选择花色的各一张牌。`, [lib.suit.map(suit => "lukai_" + suit), "vcard"]);
+				return ui.create.dialog(`###众讨###出牌阶段限一次，你可以选择至多${Math.min(4, player.getDamagedHp() + 2)}种花色，然后随机获得弃牌堆中你选择花色的各一张牌。`, [lib.suit.map(suit => "lukai_" + suit), "vcard"]);
 			},
 			check(button) {
 				return Math.random();
 			},
 			select() {
 				const player = get.player();
-				return [1, 1 + player.getDamagedHp()];
+				return [1, 2 + player.getDamagedHp()];
 			},
 			backup(links) {
 				return {
@@ -424,7 +424,7 @@ const skills = {
 				},
 				trigger: { player: "useCardAfter" },
 				async content(event, trigger, player) {
-					player.markAuto(event.name, get.type(trigger.card));
+					player.markAuto(event.name, get.type2(trigger.card));
 					if (player.getStorage(event.name).length >= 3) {
 						player.removeSkill(event.name);
 						if (player.getStat().skill.dczhongtao > 0) {
@@ -450,7 +450,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (typeof card == "object") {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && ["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(evt.card)) && !evt.dcjizhan && get.color(card, player) == "black") {
+					if (evt?.card && get.type(evt.card) == "equip" && !evt.dcjizhan && get.color(card, player) == "black") {
 						return num + 10;
 					}
 				}
@@ -467,7 +467,7 @@ const skills = {
 			if (!evt || !evt.card || evt.dcjizhan) {
 				return false;
 			}
-			return ["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(evt.card));
+			return get.type(evt.card) == "equip";
 		},
 		locked: false,
 		async cost(event, trigger, player) {
@@ -636,7 +636,7 @@ const skills = {
 			mark: {
 				init(player, skill) {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && ["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(evt.card)) && !evt[skill]) {
+					if (evt?.card && get.type(evt.card) == "equip" && !evt[skill]) {
 						player.addTip(skill, "极斩 可连击");
 					}
 				},
@@ -652,7 +652,7 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					if (event.triggername == "useCard1") {
-						if (["equip2", "equip3", "equip4", "equip3_4"].includes(get.subtype(trigger.card))) {
+						if (get.type(trigger.card) == "equip") {
 							player.addTip("dcjiazhan", "极斩 可连击");
 						} else {
 							player.removeTip("dcjiazhan");

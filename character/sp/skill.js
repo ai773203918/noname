@@ -7,19 +7,19 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return !get.tag(event.card, "damage") && !event.card.storage?.olzhuoyue && game.hasPlayer(target => target.hasUseTarget({ name: "jiu", isCard: true }, false, false));
+			return !get.tag(event.card, "damage") && !event.card.storage?.olzhuoyue && game.hasPlayer(target => target.hasUseTarget({ name: "jiu", isCard: true }));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target.hasUseTarget({ name: "jiu", isCard: true }, false, false);
+					return target.hasUseTarget({ name: "jiu", isCard: true });
 				})
 				.set("ai", target => get.effect(target, { name: "jiu", isCard: true }, target, get.player()))
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			await target.chooseUseTarget(get.autoViewAs({ name: "jiu", isCard: true, storage: { olzhuoyue: true } }), true, false);
+			await target.chooseUseTarget(get.autoViewAs({ name: "jiu", isCard: true, storage: { olzhuoyue: true } }), true);
 		},
 		group: ["olzhuoyue_tao"],
 		subSkill: {
@@ -39,7 +39,7 @@ const skills = {
 						player.removeSkill("jiu");
 					}, target);
 					game.addVideo("jiuNode", target, false);
-					await target.chooseUseTarget({ name: "tao", isCard: true }, true, false);
+					await target.chooseUseTarget({ name: "tao", isCard: true, storage: { olzhuoyue: true }  }, true, false);
 				},
 			},
 		},

@@ -760,11 +760,7 @@ const skills = {
 				forced: true,
 				priority: 9,
 				filter(event, player) {
-					if (player !== _status.currentPhase) {
-						return false;
-					}
-					const index = get.info("olsbwujing_draw").getEvents().indexOf(event);
-					return index >= 0 && index < 2;
+					return get.info("olsbwujing_draw").getEvents().indexOf(event) == 0;
 				},
 				getEvents() {
 					return game.getGlobalHistory("cardMove", event => {
@@ -2423,47 +2419,14 @@ const skills = {
 					if (event.card?.name) {
 						return !storage.card.includes(event.card.name);
 					}
-					const skill = lib.skill.olguifu_record.findSkill(event);
+					const skill = game.findSkill(event);
 					return skill && !storage.skill.includes(skill);
-				},
-				findSkill(event) {
-					let skill = "",
-						count = 0;
-					do {
-						count++;
-						let name = event.getParent(count)?.name;
-						if (!name) {
-							break;
-						}
-						if (name.startsWith("pre_")) {
-							name = name.slice(4);
-						}
-						if (name.endsWith("_backup")) {
-							name = name.slice(0, name.lastIndexOf("_backup"));
-						}
-						if (name.endsWith("ContentBefore")) {
-							name = name.slice(0, name.lastIndexOf("ContentBefore"));
-						}
-						if (name.endsWith("ContentAfter")) {
-							name = name.slice(0, name.lastIndexOf("ContentAfter"));
-						}
-						if (name.endsWith("_cost")) {
-							name = name.slice(0, name.lastIndexOf("_cost"));
-						}
-						skill = get.sourceSkillFor(name);
-						const info = get.info(skill);
-						if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) {
-							continue;
-						}
-						return skill;
-					} while (count < 10);
-					return null;
 				},
 				forced: true,
 				locked: false,
 				content() {
 					let storage = player.storage[event.name];
-					const skill = lib.skill[event.name].findSkill(trigger);
+					const skill = game.findSkill(trigger);
 					if (trigger.card) {
 						storage["card"].add(trigger.card.name);
 					} else if (skill) {

@@ -11486,6 +11486,7 @@ const skills = {
 				group: "twxiongzheng_effect",
 			},
 			threaten: {
+				charlotte: true,
 				mark: true,
 				intro: { content: "本轮〖雄争〗目标" },
 				ai: { threaten: 10 },
