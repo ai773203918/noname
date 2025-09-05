@@ -3318,6 +3318,7 @@ const skills = {
 		},
 		derivation: "rexingshang",
 		subSkill: {
+			viewAs_backup: {},
 			viewAs: {
 				enable: "phaseUse",
 				filter(event, player) {
