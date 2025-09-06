@@ -1152,6 +1152,7 @@ const skills = {
 		},
 		subSkill: {
 			defend: {
+				audio: "dcsbshijin",
 				charlotte: true,
 				mark: true,
 				intro: {
@@ -2290,6 +2291,8 @@ const skills = {
 		},
 	},
 	dcsbfuzhan: {
+		audio: 2,
+		audioname: ["dc_sb_jiangwei_shadow"],
 		derivation: ["dcsbjuemou_rewrite"],
 		limited: true,
 		skillAnimation: true,
@@ -2313,6 +2316,7 @@ const skills = {
 	},
 	//谋胡烈
 	dcsbchuanyu: {
+		audio: 2,
 		trigger: { global: ["roundStart", "roundEnd"] },
 		filter(event, player, name) {
 			if (name == "roundStart") {
@@ -2407,6 +2411,7 @@ const skills = {
 		group: ["dcsbchuanyu_give"],
 		subSkill: {
 			give: {
+				audio: "dcsbchuanyu",
 				trigger: { global: ["cardsDiscardAfter"] },
 				filter(event, player) {
 					return lib.skill.dcsbchuanyu_give.getCards(event, player).length > 0 && game.hasPlayer(target => !player.getStorage("dcsbchuanyu").includes(target));
@@ -2457,6 +2462,7 @@ const skills = {
 		},
 	},
 	dcsbyitou: {
+		audio: 2,
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			return event.player != player && event.player.isMaxHandcard() && player.countCards("h");
@@ -2476,6 +2482,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dcsbyitou",
 				onremove: true,
 				charlotte: true,
 				forced: true,
