@@ -58,6 +58,9 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_anyDamage",
 			filter(event, player) {
+				if (game.roundNumber < 2) {
+					return false;
+				}
 				return !player.getRoundHistory("sourceDamage", evt => evt.num > 0, 1).length;
 			},
 		},
@@ -73,6 +76,9 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_anyDamage",
 			filter(event, player) {
+				if (game.roundNumber < 2) {
+					return false;
+				}
 				return player.getRoundHistory("sourceDamage", evt => evt.num > 0, 1).reduce((sum, evt) => sum + evt.num, 0) < 3;
 			},
 		},
