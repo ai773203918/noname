@@ -4416,7 +4416,7 @@ const skills = {
 	},
 	olsbjueya: {
 		audio: 2,
-		enable: ["chooseToUse", "chooseToRespond"],
+		enable: "chooseToUse", // "chooseToRespond", // 没有打出喵
 		hiddenCard(player, name) {
 			return get.type(name) == "basic" && !player.countCards("h") && !player.getStorage("olsbjueya").includes(name);
 		},
