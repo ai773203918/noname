@@ -949,6 +949,51 @@ export default () => {
 						zhu: _status.characterlist.randomRemove(6),
 						fan: _status.characterlist.randomRemove(6),
 					};
+					// 创建自由选将功能
+					const createCharacterDialog = function () {
+						if (get.config("free_choose")) {
+							event.dialogxx = ui.create.characterDialog("heightset");
+						} else {
+							event.dialogxx = ui.create.characterDialog("heightset");
+						}
+					};
+					if (lib.onfree) {
+						lib.onfree.push(createCharacterDialog);
+					} else {
+						createCharacterDialog();
+					}
+					ui.create.cheat2 = function () {
+						ui.cheat2 = ui.create.control("自由选将", function () {
+							if (this.dialog == _status.event.dialog) {
+								if (game.changeCoin) {
+									game.changeCoin(10);
+								}
+								this.dialog.close();
+								_status.event.dialog = this.backup;
+								this.backup.open();
+								delete this.backup;
+								game.uncheck();
+								game.check();
+							} else {
+								if (game.changeCoin) {
+									game.changeCoin(-10);
+								}
+								this.backup = _status.event.dialog;
+								_status.event.dialog.close();
+								_status.event.dialog = _status.event.parent.dialogxx;
+								this.dialog = _status.event.dialog;
+								this.dialog.open();
+								game.uncheck();
+								game.check();
+							}
+						});
+						if (lib.onfree) {
+							ui.cheat2.classList.add("disabled");
+						}
+					};
+					if (!ui.cheat2 && get.config("free_choose")) {
+						ui.create.cheat2();
+					}
 					const dialog = ["请选择出场武将", '<div class="text center">本局游戏Buff</div>'];
 					game.globalBuff.forEach((buff, ind) => {
 						dialog.add(`<div class="text">「${ind === 0 ? "固定" : "随机"}」 ${get.translation(buff)}：${get.skillInfoTranslation(buff)}</div>`);
@@ -956,6 +1001,10 @@ export default () => {
 					dialog.add([_status.characterChoice[game.me.identity], "character"]);
 					game.me.chooseButton(true, dialog);
 					"step 2";
+					if (ui.cheat2) {
+						ui.cheat2.close();
+						delete ui.cheat2;
+					}
 					game.me.init(result.links[0]);
 					_status.characterChoice[game.me.identity].removeArray(result.links);
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(1);
@@ -1412,6 +1461,51 @@ export default () => {
 						zhu: _status.characterlist.randomRemove(6),
 						fan: _status.characterlist.randomRemove(6),
 					};
+					// 创建自由选将功能
+					const createCharacterDialog = function () {
+						if (get.config("free_choose")) {
+							event.dialogxx = ui.create.characterDialog("heightset");
+						} else {
+							event.dialogxx = ui.create.characterDialog("heightset");
+						}
+					};
+					if (lib.onfree) {
+						lib.onfree.push(createCharacterDialog);
+					} else {
+						createCharacterDialog();
+					}
+					ui.create.cheat2 = function () {
+						ui.cheat2 = ui.create.control("自由选将", function () {
+							if (this.dialog == _status.event.dialog) {
+								if (game.changeCoin) {
+									game.changeCoin(10);
+								}
+								this.dialog.close();
+								_status.event.dialog = this.backup;
+								this.backup.open();
+								delete this.backup;
+								game.uncheck();
+								game.check();
+							} else {
+								if (game.changeCoin) {
+									game.changeCoin(-10);
+								}
+								this.backup = _status.event.dialog;
+								_status.event.dialog.close();
+								_status.event.dialog = _status.event.parent.dialogxx;
+								this.dialog = _status.event.dialog;
+								this.dialog.open();
+								game.uncheck();
+								game.check();
+							}
+						});
+						if (lib.onfree) {
+							ui.cheat2.classList.add("disabled");
+						}
+					};
+					if (!ui.cheat2 && get.config("free_choose")) {
+						ui.create.cheat2();
+					}
 					const list = ["zhu", "fan"].map(identity => {
 						const dialog = ["请选择出场武将", '<div class="text center">本局游戏Buff</div>'];
 						game.globalBuff.forEach((buff, ind) => {
@@ -1430,6 +1524,10 @@ export default () => {
 						}
 					});
 					"step 2";
+					if (ui.cheat2) {
+						ui.cheat2.close();
+						delete ui.cheat2;
+					}
 					for (var i in result) {
 						var current = lib.playerOL[i];
 						if (result[i] == "ai") {
