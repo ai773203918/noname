@@ -2028,38 +2028,50 @@ export class Library {
 							return;
 						}
 						node.created = true;
-						ui.create.filediv(".menubutton", "添加背景", node, function (file) {
-							if (file) {
-								var name = file.name;
-								if (name.includes(".")) {
-									name = name.slice(0, name.indexOf("."));
-								}
-								var link = (game.writeFile ? "cdv_" : "custom_") + name;
-								if (item[link]) {
-									for (var i = 1; i < 1000; i++) {
-										if (!item[link + "_" + i]) {
-											link = link + "_" + i;
-											break;
+						var fileInput = ui.create.filediv(".menubutton", "添加背景", node, function (file) {
+							var files = this.files;
+							if (files && files.length > 0) {
+								// 支持多文件导入
+								var fileList = Array.from(files);
+								var totalFiles = fileList.length;
+								var processedFiles = 0;
+								fileList.forEach(function(file, index) {
+									if (file) {
+										var name = file.name;
+										if (name.includes(".")) {
+											name = name.slice(0, name.indexOf("."));
+										}
+										var link = (game.writeFile ? "cdv_" : "custom_") + name;
+										if (item[link]) {
+											for (var i = 1; i < 1000; i++) {
+												if (!item[link + "_" + i]) {
+													link = link + "_" + i;
+													break;
+												}
+											}
+										}
+										item[link] = name;
+										var callback = function () {
+											create(link, node.parentNode.defaultNode);
+											node.parentNode.updateBr();
+											lib.config.customBackgroundPack.add(link);
+											game.saveConfig("customBackgroundPack", lib.config.customBackgroundPack);
+											processedFiles++;
+											if (processedFiles === totalFiles && node.lastChild.classList.contains("active")) {
+												editbg.call(node.lastChild);
+											}
+										};
+										if (game.writeFile) {
+											game.writeFile(file, "image/background", link + ".jpg", callback);
+										} else {
+											game.putDB("image", link, file, callback);
 										}
 									}
-								}
-								item[link] = name;
-								var callback = function () {
-									create(link, node.parentNode.defaultNode);
-									node.parentNode.updateBr();
-									lib.config.customBackgroundPack.add(link);
-									game.saveConfig("customBackgroundPack", lib.config.customBackgroundPack);
-								};
-								if (game.writeFile) {
-									game.writeFile(file, "image/background", link + ".jpg", callback);
-								} else {
-									game.putDB("image", link, file, callback);
-								}
-								if (node.lastChild.classList.contains("active")) {
-									editbg.call(node.lastChild);
-								}
+								});
 							}
-						}).inputNode.accept = "image/*";
+						});
+						fileInput.inputNode.accept = "image/*";
+						fileInput.inputNode.multiple = true;
 						var editbg = function () {
 							this.classList.toggle("active");
 							var page = this.parentNode.parentNode;
