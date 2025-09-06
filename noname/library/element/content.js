@@ -2563,13 +2563,12 @@ player.removeVirtualEquip(card);
 
 		event.result = result;
 	},
-	showCharacter: function () {
-		"step 0";
-		event.trigger("showCharacterEnd");
-		"step 1";
-		event.trigger("showCharacterAfter");
+	async showCharacter(event, trigger, player) {
+		await event.trigger("showCharacterBegin");
+		await event.trigger("showCharacterEnd");
+		await event.trigger("showCharacterAfter");
 		if (get.mode() == "identity" && player.isZhu) {
-			event.trigger("zhuUpdate");
+			await event.trigger("zhuUpdate");
 		}
 	},
 	removeCharacter: function () {
@@ -4160,7 +4159,7 @@ player.removeVirtualEquip(card);
 				return info.frequent(trigger, player, event.triggername, event.indexedData);
 			}
 			if (info.frequent == "check" && typeof info.check == "function") {
-				return info.check(trigger, player);
+				return info.check(trigger, player, event.triggername, event.indexedData);
 			}
 			return false;
 		};
@@ -4870,12 +4869,26 @@ player.removeVirtualEquip(card);
 		}
 		"step 9";
 		if (player.isIn() && num < event.phaseList.length) {
-			var phase = event.phaseList[num].split("|");
-			event.currentPhase = phase[0];
+			var list = event.phaseList[num].split("|");
+			var phase = list[0].split("-"),
+				skip = false;
+			if (phase[0].startsWith("skip")) {
+				event.currentPhase = `phase${phase[0].slice(4)}`;
+				skip = true;
+			} else {
+				event.currentPhase = phase[0];
+			}
 			var next = player[event.currentPhase]();
 			next.phaseIndex = num;
-			if (phase.length > 1) {
-				next._extraPhaseReason = phase[1];
+			if (list.length > 1) {
+				next._extraPhaseReason = list[1];
+			}
+			if (skip) {
+				next.isSkipped = true;
+				if (phase.length > 1) {
+					next._skipPhaseReason = phase[1];
+				}
+				game.log(player, "跳过了", event.currentPhase);
 			}
 			if (event.currentPhase == "phaseDraw" || event.currentPhase == "phaseDiscard") {
 				if (!player.noPhaseDelay) {
@@ -4954,69 +4967,75 @@ player.removeVirtualEquip(card);
 		event.trigger(event.name);
 		game.log(player, "进入了准备阶段");
 	},
-	phaseJudge: function () {
-		"step 0";
-		game.log(player, "进入了判定阶段");
-		event.cards = player.getCards("j");
-		if (!event.cards.length) {
-			event.finish();
-		}
-		"step 1";
-		if (cards.length) {
-			event.card = cards.shift();
-			var cardName = event.card.name,
-				cardInfo = lib.card[cardName];
-			var VJudge = event.card[event.card.cardSymbol];
-			if (cardInfo.noEffect) {
+	phaseJudge: [
+		async (event, trigger, player) => {
+			game.log(player, "进入了判定阶段");
+			event.cards = player.getCards("j");
+		},
+		async (event, trigger, player) => {
+			if (!event.cards.length) {
+				event.finish();
+				return;
+			}
+			event.card = event.cards.shift();
+			const cardName = event.card.name,
+				cardInfo = lib.card[cardName],
+				VJudge = event.card[event.card.cardSymbol];
+			if (cardInfo.noEffect || !player.getCards("j").includes(event.card)) {
 				event.redo();
 			} else {
 				if (event.card) {
-					player.lose(event.card, "visible", ui.ordering);
+					await player.lose(event.card, "visible", ui.ordering);
 				}
 				player.$phaseJudge(event.card);
 				event.cancelled = false;
-				event.trigger("phaseJudge");
+				await event.trigger("phaseJudge");
 				player.popup(cardName, "thunder");
 				if (!cardInfo.effect) {
-					game.delay();
+					await game.delay();
 					event.redo();
 				} else if (!cardInfo.judge) {
-					game.delay();
+					await game.delay();
 					event.nojudge = true;
 				} else {
 					event.nojudge = false;
 				}
 			}
-		} else {
-			event.finish();
-		}
-		"step 2";
-		if (!event.cancelled && !event.nojudge) {
-			player.judge(event.card).set("type", "phase");
-		}
-		"step 3";
-		var name = event.card.name;
-		if (event.excluded) {
-			delete event.excluded;
-		} else if (event.cancelled && !event.direct) {
-			if (lib.card[name].cancel) {
-				var next = game.createEvent(name + "Cancel");
-				next.setContent(lib.card[name].cancel);
+		},
+		async (event, trigger, player) => {
+			if (!event.cancelled && !event.nojudge) {
+				event.result = await player
+					.judge(event.card)
+					.set("type", "phase")
+					.forResult();
+			}
+		},
+		async (event, trigger, player) => {
+			const name = event.card.name;
+			if (event.excluded) {
+				delete event.excluded;
+			} else if (event.cancelled && !event.direct) {
+				if (lib.card[name].cancel) {
+					const next = game.createEvent(name + "Cancel");
+					next.setContent(lib.card[name].cancel);
+					next.card = event.card;
+					next.cards = event.card.cards ?? [];
+					next.player = player;
+					await next;
+				}
+			} else {
+				const next = game.createEvent(name);
+				next.setContent(lib.card[name].effect);
+				next._result = event.result;
 				next.card = event.card;
 				next.cards = event.card.cards ?? [];
 				next.player = player;
+				await next;
 			}
-		} else {
-			var next = game.createEvent(name);
-			next.setContent(lib.card[name].effect);
-			next._result = result;
-			next.card = event.card;
-			next.cards = event.card.cards ?? [];
-			next.player = player;
-		}
-		ui.clear();
-		event.goto(1);
-	},
+			ui.clear();
+			event.goto(1);
+		},
+	],
 	/**
 	 * @deprecated
 	 */

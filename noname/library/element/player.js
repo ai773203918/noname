@@ -2182,11 +2182,13 @@ export class Player extends HTMLDivElement {
 		next._args = Array.from(arguments);
 		next.setContent("showCharacter");
 		var evt = _status.event;
-		evt.next.remove(next);
-		if (evt.logSkill) {
-			evt = evt.getParent();
+		if (!["useSkill", "trigger"].includes(evt.name)) {
+			evt.next.remove(next);
+			if (evt.logSkill) {
+				evt = evt.getParent();
+			}
+			evt.after.push(next);
 		}
-		evt.after.push(next);
 		return next;
 	}
 	/**
@@ -4443,7 +4445,7 @@ export class Player extends HTMLDivElement {
 	 * 获取蓄力点上限
 	 */
 	getMaxCharge() {
-		let skills = game.expandSkills(this.getSkills().concat(lib.skill.global));
+		let skills = game.expandSkills(this.getSkills(null, null, false).concat(lib.skill.global));
 		let max = 0;
 		for (let skill of skills) {
 			let info = get.info(skill);
