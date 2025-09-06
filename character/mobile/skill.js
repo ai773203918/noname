@@ -1905,7 +1905,6 @@ const skills = {
 			trigger.set("usedZhuangshi", true);
 			const { cards, cost_data: numbers } = event;
 			if (cards) {
-				await player.modedDiscard(cards);
 				const number = cards.length;
 				player.addTempSkill("potzhuangshi_directHit", "phaseChange");
 				player.addMark("potzhuangshi_directHit", number, false);
@@ -1913,11 +1912,21 @@ const skills = {
 			}
 			if (numbers) {
 				const number = numbers[0];
-				await player.loseHp(number);
 				player.addTempSkill("potzhuangshi_limit", "phaseChange");
 				player.addMark("potzhuangshi_limit", number, false);
 				player.addTip("potzhuangshi_limit", `不计次数 ${number}`);
 			}
+			if (cards) {
+				await player.modedDiscard(cards);
+			}
+			if (numbers) {
+				const number = numbers[0];
+				await player.loseHp(number);
+			}
+		},
+		onremove(player) {
+            player.removeSkill("potzhuangshi_directHit");
+            player.removeSkill("potzhuangshi_limit");
 		},
 		subSkill: {
 			limit: {
@@ -2028,14 +2037,15 @@ const skills = {
 					.when("useCardAfter")
 					.filter(evt => evt == trigger.getParent(2))
 					.step(async (event, trigger, player) => {
+						let result;
 						if (target.isIn() && target.countDiscardableCards(player, "he")) {
-							const result = await player.discardPlayerCard(target, "he", true).forResult();
-							if (bool1 && result?.cards?.length) {
-								await player.gain(result.cards.filterInD("od"), "gain2");
-							}
+							result = await player.discardPlayerCard(target, "he", true).forResult();
 						}
 						if (bool1) {
 							await player.recover();
+							if (result?.cards?.length) {
+								await player.gain(result.cards.filterInD("od"), "gain2");
+							}
 						}
 					});
 			}

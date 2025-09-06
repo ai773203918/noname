@@ -13052,80 +13052,60 @@ export class Library {
 		},
 		aozhan: {
 			charlotte: true,
-			mod: {
-				targetEnabled: function (card) {
-					if (card.name == "tao" && ((card.isCard && card.cardid) || get.itemtype(card) == "card")) {
-						return false;
-					}
-				},
-				cardSavable: function (card) {
-					if (card.name == "tao" && ((card.isCard && card.cardid) || get.itemtype(card) == "card")) {
-						return false;
-					}
-				},
-			},
-			group: ["aozhan_sha", "aozhan_shan"],
-			subSkill: {
-				sha: {
-					enable: ["chooseToUse", "chooseToRespond"],
-					filterCard: {
-						name: "tao",
-					},
-					viewAs: {
-						name: "sha",
-					},
-					viewAsFilter: function (player) {
-						if (!player.countCards("hs", "tao")) {
-							return false;
-						}
-					},
-					position: "hs",
-					prompt: "将一张桃当杀使用或打出",
-					check: function () {
-						return 1;
-					},
-					ai: {
-						respondSha: true,
-						skillTagFilter: function (player) {
-							if (!player.countCards("hs", "tao")) {
-								return false;
-							}
-						},
-						order: function () {
-							return get.order({ name: "sha" }) - 0.1;
-						},
-					},
-					sub: true,
-				},
-				shan: {
-					enable: ["chooseToRespond", "chooseToUse"],
-					filterCard: {
-						name: "tao",
-					},
-					viewAs: {
-						name: "shan",
-					},
-					prompt: "将一张桃当闪打出",
-					check: function () {
-						return 1;
-					},
-					viewAsFilter: function (player) {
-						if (!player.countCards("hs", "tao")) {
-							return false;
-						}
-					},
-					position: "hs",
-					ai: {
-						respondShan: true,
-						skillTagFilter: function (player) {
-							if (!player.countCards("hs", "tao")) {
-								return false;
-							}
-						},
-					},
-					sub: true,
-				},
-			},
+    		ruleSkill: true,
+    		mod: {
+    			cardname(card, player) {
+    				if (card.name == "tao") {
+    					const evt = get.event();
+    					if (typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && !evt.filterCard({ name: "sha" }, player, evt)) {
+        					return "shan";
+    					}
+    					return "sha";
+    				}
+    			},
+    		},
+    		trigger: {
+    			player: ["useCardBefore", "respondBefore"],
+    		},
+    		silent: true,
+    		direct: true,
+    		firstDo: true,
+    		priority: Infinity,
+    		filter(event, player) {
+    			if (!event.card || !event.cards || !["sha", "shan"].includes(event.card.name) || event.card === event.cards[0] || event.cards.length != 1 || event.cards[0].name != "tao") {
+    				return false;
+    			}
+    			const evt = event.getParent();
+    			return typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt);
+    		},
+    		async content(event, trigger, player) {
+    		    const control = await player.
+    			    chooseControl(["sha", "shan"])
+    			    .set("prompt", `鏖战：请选择${get.translation(trigger.cards[0])}视为${(trigger.name == "respond" ? "打出" : "使用")}的牌名`)
+    			    .set("ai", () => {
+    				    const choice = _status.event.getParent(5).choice;
+    				    if (choice && ["sha", "shan"].includes(choice)) {
+        				    return choice;
+    				    }
+    				    return ["sha", "shan"].randomGet();
+    			    })
+    			    .forResultControl();
+    		    const card = get.autoViewAs({ name: control }, trigger.cards);
+    		    trigger.card = card;
+    		    trigger.getParent().result.card = card;
+    		},
+    		hiddenCard(player, name) {
+    			return ["sha", "shan"].includes(name) && player.countCards("hs", card => card.name == "tao");
+    		},
+    		ai: {
+    			respondSha: true,
+    			respondShan: true,
+    			skillTagFilter(player, tag, arg) {
+    				if (!player.countCards("hs", card => card.name == "tao")) {
+    					return false;
+    				};
+    			},
+    		},
 		},
 		global: [],
 		globalmap: {},
