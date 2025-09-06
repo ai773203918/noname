@@ -7474,6 +7474,8 @@ export class Library {
 						disabled: "禁用",
 						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
+						shiqiang: "获得〖恃强〗",
+						qiangyi: "获得削弱〖强易〗",
 					},
 				},
 				connect_feiyang_version: {
@@ -7719,6 +7721,8 @@ export class Library {
 						disabled: "禁用",
 						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
+						shiqiang: "获得〖恃强〗",
+						qiangyi: "获得削弱〖强易〗",
 					},
 				},
 				feiyang_version: {

@@ -10474,7 +10474,7 @@ export default {
 			}
 			if (!cards?.length || target.countCards("he") < cards.length) {
 				choice.remove(0);
-			}W
+			}
 			if (!choice.length) {
 				return;
 			}
