@@ -1006,6 +1006,7 @@ export default () => {
 						delete ui.cheat2;
 					}
 					game.me.init(result.links[0]);
+					game.addRecentCharacter(result.links[0]);
 					_status.characterChoice[game.me.identity].removeArray(result.links);
 					var list = _status.characterChoice[game.me.enemy.identity].randomRemove(1);
 					game.me.enemy.init(list[0]);
@@ -1517,6 +1518,9 @@ export default () => {
 					game.me.chooseButtonOL(list, function (player, result) {
 						if (game.online || player == game.me) {
 							player.init(result.links[0]);
+							if (player == game.me) {
+								game.addRecentCharacter(result.links[0]);
+							}
 							player.hp = 10;
 							player.maxHp = 10;
 							player.hujia = 0;
