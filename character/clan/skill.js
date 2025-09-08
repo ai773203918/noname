@@ -24,6 +24,9 @@ const skills = {
 					if (!player.isLinked() || ["equip", "delay"].includes(get.type(event.card))) {
 						return false;
 					}
+					if (get.info(event.card)?.multitarget) {
+						return false;
+					}
 					const targets = player.getHistory("useCard", evt => {
 						return evt?.targets?.length && evt != event;
 					}, event).map(evt => evt.targets ?? []).flat().toUniqued();
@@ -31,7 +34,7 @@ const skills = {
 						if (event.targets?.includes(target)) {
 							return true;
 						}
-						return lib.filter.targetEnabled(event.card, player, target);
+						return lib.filter.targetEnabled2(event.card, player, target);
 					});
 				},
 				charlotte: true,
@@ -51,7 +54,7 @@ const skills = {
 									return false;
 								}
 							}
-							return targety.includes(target) || lib.filter.targetEnabled(cardx, player, target);
+							return targety.includes(target) || lib.filter.targetEnabled2(cardx, player, target);
 						}, [1, Infinity])
 						.set("targetx", targets)
 						.set("targety", trigger.targets)
@@ -344,14 +347,15 @@ const skills = {
 				const current = targets[i],
 					cards2 = result[i].cards;
 				cards.addArray(cards2);
-				lose_list.push([current, cards2]);
+				//lose_list.push([current, cards2]);
+				await current.modedDiscard(cards2);
 			}
-			await game
+			/*await game
 				.loseAsync({
 					lose_list: lose_list,
 					discarder: player,
 				})
-				.setContent("discardMultiple");
+				.setContent("discardMultiple");*/
 			const next = player.addToExpansion(cards, "gain2");
 			next.gaintag.add("clanfennu");
 			await next;

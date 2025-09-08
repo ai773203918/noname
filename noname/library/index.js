@@ -13989,6 +13989,9 @@ export class Library {
 				if (map?.type == "round" && event.player != player) {
 					return false;
 				}
+				if (map?.type == "round" && event.skill) {
+					return false;
+				}
 				if (player.isIn()) {
 					delete _status._rest_return?.[player.playerid];
 				}

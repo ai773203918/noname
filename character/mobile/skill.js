@@ -628,57 +628,38 @@ const skills = {
 					game.getGlobalHistory("changeHp", evt => {
 						if (evt.player === player) {
 							const evt3 = evt.getParent();
-							if (evt3.name === "recover" && evt3.getParent("dying") === trigger && evt3.source?.isIn() && skills.some(i => !evt3.source.hasSkill(i, null, false, false))) {
+							if (evt3.name === "recover" && evt3.getParent("dying") === trigger && evt3.source?.isIn()) {
 								targets.add(evt3.source);
 							}
 						}
 					});
 					targets.sortBySeat();
 					while (skills.length) {
+						const skill = skills.shift();
 						const result = await player
-							.chooseButtonTarget({
-								createDialog: [`###许身###<div class="text center">将${skills.map(i => `【${get.translation(i)}】`).join("、")}分配给令你回复过体力的角色</div>`, [skills, "skill"]],
-								filterButton(button) {
-									const skill = button.link;
-									return get.event().targets.some(i => !i.hasSkill(skill, null, false, false));
-								},
-								filterTarget(card, player, target) {
-									const [skill] = ui.selected.buttons.map(i => i.link);
-									return skill && get.event().targets.includes(target) && !target.hasSkill(skill, null, false, false);
-								},
-								ai1(button) {
-									const { player, targets } = get.event(),
-										skill = button.link;
-									return Math.max(
-										...targets
-											.filter(i => !i.hasSkill(skill, null, false, false))
-											.map(target => {
-												_status.event.skillRankPlayer = target;
-												const num = get.skillRank(skill, "inout") * Math.sign(Math.sign(get.attitude(player, target)) - 0.5);
-												delete _status.event.skillRankPlayer;
-												return num;
-											})
-									);
-								},
-								ai2(target) {
-									const player = get.player(),
-										[skill] = ui.selected.buttons.map(i => i.link);
-									_status.event.skillRankPlayer = target;
-									const num = get.skillRank(skill, "inout") * Math.sign(Math.sign(get.attitude(player, target)) - 0.5);
-									delete _status.event.skillRankPlayer;
-									return num;
-								},
+							.chooseTarget()
+							.set("createDialog", [`###许身###令一名令你回复过体力的角色获得【${get.translation(skill)}】`, [[skill], "skill"]])
+							.set("filterTarget", (card, player, target) => {
+								const { targetx } = get.event();
+								return targetx.includes(target);
 							})
-							.set("targets", targets)
+							.set("ai", target => {
+								const { gainSkill: skill, player } = get.event();
+								_status.event.skillRankPlayer = target;
+								const num = get.skillRank(skill, "inout") * Math.sign(Math.sign(get.attitude(player, target)) - 0.5);
+								delete _status.event.skillRankPlayer;
+								return num;
+							})
+							.set("targetx", targets)
+							.set("gainSkill", skill)
 							.forResult();
-						if (result?.bool && result.links?.length && result.targets?.length) {
-							const [skill] = result.links,
-								[target] = result.targets;
+						if (result?.bool && result.targets?.length) {
+							const [target] = result.targets;
 							player.line(target);
-							skills.remove(skill);
-							await target.addSkills(skill);
-							if (lib.skill.mbxushen.derivation.every(skill => target.hasSkill(skill, null, false, false))) {
-								targets.remove(target);
+							if (target.hasSkill(skill, null, false, false)) {
+								await target.draw(3);
+							} else {
+								await target.addSkills(skill);
 							}
 						}
 					}
@@ -1021,11 +1002,15 @@ const skills = {
 					recover: "red",
 				};
 			list = list.map(i => map[i]);
-			event.result = await player
+			event.result = {
+				bool: true,
+				cost_data: list,
+			}
+			/*event.result = await player
 				.chooseBool(get.prompt(event.skill))
 				.set("prompt2", `将牌堆顶首张${list.map(i => get.translation(i)).join("和")}牌置于武将牌上，称为“业”`)
 				.forResult();
-			event.result.cost_data = list;
+			event.result.cost_data = list;*/
 		},
 		async content(event, trigger, player) {
 			const colors = event.cost_data,
@@ -1151,7 +1136,7 @@ const skills = {
 							red = count("red");
 						if (choice != "black" && black > 0) {
 							const result = await player
-								.chooseTarget(`净土：对一名角色造成${black}点伤害`)
+								.chooseTarget(`净土：对一名角色造成${black}点伤害`, true)
 								.set("ai", target => {
 									const player = get.player();
 									return get.damageEffect(target, player, player);
@@ -1165,7 +1150,7 @@ const skills = {
 						}
 						if (choice != "red" && red > 0) {
 							const result = await player
-								.chooseTarget(`净土：令一名角色增加${red}点体力上限并恢复${red}点体力`)
+								.chooseTarget(`净土：令一名角色增加${red}点体力上限并恢复${red}点体力`, true)
 								.set("ai", target => {
 									const player = get.player();
 									return get.recoverEffect(target, player, player);
@@ -9075,7 +9060,7 @@ const skills = {
 				.set("choiceList", ["令此【杀】伤害+1", "若此【杀】被【闪】抵消，你可以获得与你距离为1以内的一名其他角色区域里的一张牌", "背水！弃置你与其装备区的武器牌并执行所有选项"])
 				.set("prompt", get.prompt(event.skill))
 				.set(
-					"result",
+					"resultx",
 					(function () {
 						let eff = 0;
 						for (const targetx of trigger.targets) {
@@ -9095,7 +9080,7 @@ const skills = {
 					})()
 				)
 				.set("ai", function () {
-					return _status.event.result;
+					return _status.event.resultx;
 				})
 				.forResult();
 			event.result = {
