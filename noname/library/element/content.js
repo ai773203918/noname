@@ -6286,17 +6286,17 @@ player.removeVirtualEquip(card);
 				event.finish();
 				return;
 			}
-			const targets = event.targets || event.targetsx || event.target?.length ? event.target : event.targets;
-			if (targets?.some(t => t.countCards("h") == 0 && (!event.fixedResult || !event.fixedResult[t.playerid]))) {
-				event.result = { cancelled: true, bool: false };
-				event.finish();
-				return;
+			for (var i = 0; i < event.targets.length; i++) {
+				if (event.targets[i].countCards("h") == 0 && (!event.fixedResult || !event.fixedResult[event.targets[i].playerid])) {
+					event.result = { cancelled: true, bool: false };
+					event.finish();
+					return;
+				}
 			}
-			if (!event.multitarget && Array.isArray(targets)) {
-				targets.sort(lib.sort.seat);
+			if (!event.multitarget) {
+				event.targets.sort(lib.sort.seat);
 			}
-			event._targets = Array.isArray(targets) ? targets.slice() : [];
-			game.log(player, "对", event._targets, "发起了共同拼点");
+			game.log(player, "对", event.targets, "发起了共同拼点");
 			event.compareMeanwhile = true;
 			if (!event.filterCard) {
 				event.filterCard = lib.filter.all;
@@ -6304,7 +6304,9 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			event._result = [];
-			event.list = event._targets.filter(current => !event.fixedResult || !event.fixedResult[current.playerid]);
+			event.list = event.targets.filter(function (current) {
+				return !event.fixedResult || !event.fixedResult[current.playerid];
+			});
 			if (event.list.length || !event.fixedResult || !event.fixedResult[player.playerid]) {
 				if (!event.fixedResult || !event.fixedResult[player.playerid]) {
 					event.list.unshift(player);
@@ -6326,9 +6328,8 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player, result) => {
-			const targets = event._targets;
-			const cards = [];
-			const lose_list = [];
+			var cards = [];
+			var lose_list = [];
 			if (event.fixedResult && event.fixedResult[player.playerid]) {
 				event.list.unshift(player);
 				result.unshift({ bool: true, cards: [event.fixedResult[player.playerid]] });
@@ -6341,23 +6342,25 @@ player.removeVirtualEquip(card);
 					lose_list.push([player, result[0].cards]);
 				}
 			}
-			targets.forEach(target => {
-				if (event.list.includes(target)) {
-					const idx = event.list.indexOf(target);
-					if (result[idx].skill && lib.skill[result[idx].skill] && lib.skill[result[idx].skill].onCompare) {
-						event.list[idx].logSkill(result[idx].skill);
-						result[idx].cards = lib.skill[result[idx].skill].onCompare(event.list[idx]);
+			for (var j = 0; j < event.targets.length; j++) {
+				if (event.list.includes(event.targets[j])) {
+					var i = event.list.indexOf(event.targets[j]);
+					if (result[i].skill && lib.skill[result[i].skill] && lib.skill[result[i].skill].onCompare) {
+						event.list[i].logSkill(result[i].skill);
+						result[i].cards = lib.skill[result[i].skill].onCompare(event.list[i]);
 					} else {
-						lose_list.push([target, result[idx].cards]);
+						lose_list.push([event.targets[j], result[i].cards]);
 					}
-					cards.push(result[idx].cards[0]);
-				} else if (event.fixedResult && event.fixedResult[target.playerid]) {
-					cards.push(event.fixedResult[target.playerid]);
-					lose_list.push([target, [event.fixedResult[target.playerid]]]);
+					cards.push(result[i].cards[0]);
+				} else if (event.fixedResult && event.fixedResult[event.targets[j].playerid]) {
+					cards.push(event.fixedResult[event.targets[j].playerid]);
+					lose_list.push([event.targets[j], [event.fixedResult[event.targets[j].playerid]]]);
 				}
-			});
+			}
 			if (lose_list.length) {
-				game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
+				game.loseAsync({
+					lose_list: lose_list,
+				}).setContent("chooseToCompareLose");
 			}
 			event.lose_list = lose_list;
 			event.getNum = function (card) {
@@ -6372,13 +6375,14 @@ player.removeVirtualEquip(card);
 			event.cards = cards;
 			event.card1 = result[0].cards[0];
 			event.num1 = event.getNum(event.card1);
+			event.iwhile = 0;
 			event.winner = null;
 			event.maxNum = -1;
 			event.tempplayer = event.player;
-			event.result2 = {
+			event.result = {
 				winner: null,
 				player: event.card1,
-				targets: cards.slice(0),
+				targets: event.cardlist.slice(0),
 				num1: [],
 				num2: [],
 			};
@@ -6387,64 +6391,89 @@ player.removeVirtualEquip(card);
 			event.trigger("compareCardShowBefore");
 		},
 		async (event, trigger, player) => {
-			const targets = event._targets;
-			player.$compareMultiple(event.card1, targets, event.cardlist);
+			player.$compareMultiple(event.card1, event.targets, event.cards);
 			game.log(player, "的拼点牌为", event.card1);
 			event.cardlist.forEach((card, index) => {
-				game.log(targets[index], "的拼点牌为", card);
+				game.log(event.targets[index], "的拼点牌为", card);
 			});
 			player.addTempClass("target");
+			//共同拼点延时修改
 			game.delay(0, lib.config.game_speed == "vvfast" ? 4000 : 1000);
 		},
 		async (event) => {
-			// 逐个目标触发比较，记录点数与胜者
-			const targets = event._targets;
-			targets.forEach((t, idx) => {
-				event.target = t;
-				event.card2 = event.cardlist[idx];
+			event.target = null;
+			event.trigger("compare");
+		},
+		async (event) => {
+			if (event.iwhile < event.targets.length) {
+				event.target = event.targets[event.iwhile];
+				event.target.addTempClass("target");
+				event.card2 = event.cardlist[event.iwhile];
 				event.num2 = event.getNum(event.card2);
 				delete event.player;
 				event.trigger("compare");
-				event.result2.num1[idx] = event.num1;
-				event.result2.num2[idx] = event.num2;
-				[
-					[event.tempplayer, event.num1],
-					[event.target, event.num2],
-				].forEach(pair => {
-					if (pair[1] > event.maxNum) {
-						event.maxNum = pair[1];
-						event.winner = pair[0];
-					} else if (event.winner && pair[1] == event.maxNum && pair[0] != event.winner) {
-						event.winner = null;
-					}
-				});
-			});
+			} else {
+				event.iwhile = 0;
+				game.delay(0, 1000);
+				event.goto(9);
+			}
 		},
 		async (event) => {
-			// compareFixing 阶段
+			event.result.num1[event.iwhile] = event.num1;
+			event.result.num2[event.iwhile] = event.num2;
+			var list = [
+				[event.tempplayer, event.num1],
+				[event.target, event.num2],
+			];
+			for (var i of list) {
+				if (i[1] > event.maxNum) {
+					event.maxNum = i[1];
+					event.winner = i[0];
+				} else if (event.winner && i[1] == event.maxNum && i[0] != event.winner) {
+					event.winner = null;
+				}
+			}
+		},
+		async (event) => {
+			event.iwhile++;
+			event.goto(6);
+		},
+		async (event) => {
 			event.player = event.tempplayer;
 			event.trigger("compareFixing");
-			delete event.player;
-			event._targets.forEach((t, idx) => {
-				event.target = t;
-				event.card2 = event.cardlist[idx];
-				event.num2 = event.result2.num2[idx];
-				event.trigger("compareFixing");
-			});
 		},
-		async (event, trigger, player) => {
-			const targets = event._targets;
+		async (event) => {
+			if (event.player) {
+				delete event.player;
+			}
+			if (event.iwhile < event.targets.length) {
+				event.target = event.targets[event.iwhile];
+				event.card2 = event.cardlist[event.iwhile];
+				event.num2 = event.result.num2[event.iwhile];
+				event.trigger("compareFixing");
+			} else {
+				event.goto(12);
+			}
+		},
+		async (event) => {
+			event.iwhile++;
+			event.goto(10);
+		},
+		async (event) => {
+			var player = event.tempplayer;
+			event.player = player;
+			delete event.tempplayer;
+			var str = "无人拼点成功";
 			const winner = event.forceWinner || event.winner;
-			let str = "无人拼点成功";
 			if (winner) {
-				event.result2.winner = winner;
+				event.result.winner = winner;
 				str = get.translation(winner) + "拼点成功";
 				game.log(winner, "拼点成功");
 				winner.popup("胜");
 			} else {
 				game.log("#b无人", "拼点成功");
 			}
-			const list = [player, ...targets];
+			var list = [player].addArray(event.targets);
 			list.remove(winner);
 			for (var i of list) {
 				i.popup("负");
