@@ -3840,7 +3840,7 @@ player.removeVirtualEquip(card);
 			} else {
 				game.me.directgain(cards);
 			}
-
+			game.me._start_cards = game.me.getCards("h");
 			event.goto(2);
 		} else {
 			if (event.dialog) {

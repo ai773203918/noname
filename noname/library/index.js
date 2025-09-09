@@ -16488,6 +16488,17 @@ export class Library {
 			},
 		],
 		[
+			"爻",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "☯";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
 			"忍",
 			{
 				color: "#180a29",
