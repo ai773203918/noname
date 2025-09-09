@@ -6446,9 +6446,7 @@ player.removeVirtualEquip(card);
 			}
 			const list = [player, ...targets];
 			list.remove(winner);
-			for (var i of list) {
-				i.popup("负");
-			}
+			for (var i of list) i.popup("负");
 			if (str) {
 				game.broadcastAll(function (str) {
 					var dialog = ui.create.dialog(str);
@@ -6469,36 +6467,29 @@ player.removeVirtualEquip(card);
 	],
 	chooseToCompareMultiple: [
 		async (event, trigger, player) => {
-			let targetsList = event._targets;
-			if (!targetsList) {
-				if (typeof targets !== "undefined") targetsList = targets;
-			}
-			if (!Array.isArray(targetsList)) targetsList = [];
 			if ((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards("h") == 0) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
-			for (var i = 0; i < targetsList.length; i++) {
-				if ((!event.fixedResult || !event.fixedResult[targetsList[i].playerid]) && targetsList[i].countCards("h") == 0) {
+			for (var i = 0; i < event.targets.length; i++) {
+				if ((!event.fixedResult || !event.fixedResult[event.targets[i].playerid]) && event.targets[i].countCards("h") == 0) {
 					event.result = { cancelled: true, bool: false };
 					event.finish();
 					return;
 				}
 			}
 			if (!event.multitarget) {
-				targetsList.sort(lib.sort.seat);
+				event.targets.sort(lib.sort.seat);
 			}
-			event._targets = targetsList;
-			game.log(player, "对", targetsList, "发起拼点");
+			game.log(player, "对", event.targets, "发起拼点");
 			if (!event.filterCard) {
 				event.filterCard = lib.filter.all;
 			}
 		},
 		async (event, trigger, player) => {
-			const targets = event._targets || [];
 			event._result = [];
-			event.list = targets.filter(function (current) {
+			event.list = event.targets.filter(function (current) {
 				return !event.fixedResult || !event.fixedResult[current.playerid];
 			});
 			if (event.list.length || !event.fixedResult || !event.fixedResult[player.playerid]) {
@@ -6518,7 +6509,6 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player, result) => {
-			const targets = event._targets || [];
 			var cards = [];
 			var lose_list = [];
 			if (event.fixedResult && event.fixedResult[player.playerid]) {
@@ -6533,19 +6523,19 @@ player.removeVirtualEquip(card);
 					lose_list.push([player, result[0].cards]);
 				}
 			}
-			for (var j = 0; j < targets.length; j++) {
-				if (event.list.includes(targets[j])) {
-					var i = event.list.indexOf(targets[j]);
+			for (var j = 0; j < event.targets.length; j++) {
+				if (event.list.includes(event.targets[j])) {
+					var i = event.list.indexOf(event.targets[j]);
 					if (result[i].skill && lib.skill[result[i].skill] && lib.skill[result[i].skill].onCompare) {
 						event.list[i].logSkill(result[i].skill);
 						result[i].cards = lib.skill[result[i].skill].onCompare(event.list[i]);
 					} else {
-						lose_list.push([targets[j], result[i].cards]);
+						lose_list.push([event.targets[j], result[i].cards]);
 					}
 					cards.push(result[i].cards[0]);
-				} else if (event.fixedResult && event.fixedResult[targets[j].playerid]) {
-					cards.push(event.fixedResult[targets[j].playerid]);
-					lose_list.push([targets[j], [event.fixedResult[targets[j].playerid]]]);
+				} else if (event.fixedResult && event.fixedResult[event.targets[j].playerid]) {
+					cards.push(event.fixedResult[event.targets[j].playerid]);
+					lose_list.push([event.targets[j], [event.fixedResult[event.targets[j].playerid]]]);
 				}
 			}
 			if (lose_list.length) {
@@ -6581,9 +6571,8 @@ player.removeVirtualEquip(card);
 			game.log(player, "的拼点牌为", event.card1);
 		},
 		async (event, trigger, player) => {
-			const targets = event._targets || [];
-			if (event.iwhile < targets.length) {
-				event.target = targets[event.iwhile];
+			if (event.iwhile < event.targets.length) {
+				event.target = event.targets[event.iwhile];
 				event.target.addTempClass("target");
 				player.addTempClass("target");
 				event.card2 = event.cardlist[event.iwhile];
@@ -6604,24 +6593,23 @@ player.removeVirtualEquip(card);
 			event.trigger("compareFixing");
 		},
 		async (event, trigger, player) => {
-			const target = event.target;
 			event.result.num1[event.iiwhile] = event.num1;
 			event.result.num2[event.iiwhile] = event.num2;
 			var str;
-			if (event.forceWinner === player || (event.forceWinner !== target && event.num1 > event.num2)) {
+			if (event.forceWinner === player || (event.forceWinner !== event.target && event.num1 > event.num2)) {
 				event.winner = player;
 				str = get.translation(player) + "拼点成功";
 				player.popup("胜");
-				target.popup("负");
+				event.target.popup("负");
 			} else {
 				str = get.translation(player) + "拼点失败";
-				if (event.forceWinner !== target && event.num1 == event.num2) {
+				if (event.forceWinner !== event.target && event.num1 == event.num2) {
 					player.popup("平");
-					target.popup("平");
+					event.target.popup("平");
 				} else {
-					event.winner = target;
+					event.winner = event.target;
 					player.popup("负");
-					target.popup("胜");
+					event.target.popup("胜");
 				}
 			}
 			game.broadcastAll(function (str) {
