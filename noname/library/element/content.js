@@ -7351,10 +7351,7 @@ player.removeVirtualEquip(card);
 					ui.click.cancel();
 					return;
 				}
-				// 检查是否允许全选按钮喵
-				if (lib.config.choose_all_button && event.allowChooseAll !== false) {
-					ui.create.cardChooseAll();
-				}
+				ui.create.cardChooseAll();
 				if (event.prompt != false) {
 					var str;
 					if (typeof event.prompt == "string") {
