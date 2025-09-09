@@ -2331,6 +2331,7 @@ const skills = {
 						prompt: get.prompt(event.skill),
 						prompt2: "将一张牌交给一名角色",
 						filterCard: true,
+						position: "he",
 						filterTarget: true,
 						ai1(card) {
 							return 1 / Math.max(0.1, get.value(card));
