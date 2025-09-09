@@ -12818,9 +12818,6 @@ player.removeVirtualEquip(card);
 		);
 		game.addVideo("link", player, player.isLinked());
 	},
-	/**
-	 * @deprecated
-	 */
 	chooseToGuanxing: function () {
 		"step 0";
 		var cards = get.cards(num);
