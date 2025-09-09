@@ -15637,6 +15637,9 @@ export default {
 			}, "h");
 		},
 		filterCard(card) {
+			if (get.itemtype(card) != "card") {
+				return false;
+			}
 			return card.hasTag("lianheng") || card.hasGaintag("_lianheng");
 		},
 		filterTarget(card, player, target) {
