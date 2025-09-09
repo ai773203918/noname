@@ -219,8 +219,9 @@ const skills = {
 					}
 					return Object.values(evt.gaintag_map).flat().includes("yao_yaoyi_tag");
 				})
-			)
+			) {
 				return false;
+			}
 			if (!player.storage.yao_chenwei) {
 				return player.countCards("h") > 0;
 			}
