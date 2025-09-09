@@ -6446,7 +6446,9 @@ player.removeVirtualEquip(card);
 			}
 			const list = [player, ...targets];
 			list.remove(winner);
-			for (var i of list) i.popup("负");
+			for (var i of list) {
+				i.popup("负");
+			}
 			if (str) {
 				game.broadcastAll(function (str) {
 					var dialog = ui.create.dialog(str);
