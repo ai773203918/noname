@@ -40,7 +40,9 @@ const skills = {
 					player.node.handcards1.cardMod ??= {};
 					player.node.handcards2.cardMod ??= {};
 					const cardMod = card => {
-						if (card.classList.contains(skill)) return ["爻疑", "此牌对你不可见"];
+						if (card.classList.contains(skill)) {
+							return ["爻疑", "此牌对你不可见"];
+						}
 					};
 					player.node.handcards1.cardMod[skill] = cardMod;
 					player.node.handcards2.cardMod[skill] = cardMod;
@@ -54,11 +56,15 @@ const skills = {
 					ui.create.buttonPresets = {
 						...others,
 						card(item, ...args) {
-							if (item.classList.contains(skill) && args[args.length - 1] !== skill) return blank(item, ...args, skill);
+							if (item.classList.contains(skill) && args[args.length - 1] !== skill) {
+								return blank(item, ...args, skill);
+							}
 							return card(item, ...args);
 						},
 						blank(item, ...args) {
-							if (item.classList.contains(skill) && args[args.length - 1] !== skill) return card(item, ...args, skill);
+							if (item.classList.contains(skill) && args[args.length - 1] !== skill) {
+								return card(item, ...args, skill);
+							}
 							return blank(item, ...args);
 						},
 					};
@@ -108,7 +114,9 @@ const skills = {
 			},
 			check(button) {
 				const event = get.event().getParent();
-				if (event.type !== "phase") return 1;
+				if (event.type !== "phase") {
+					return 1;
+				}
 				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
 			},
 			prompt(links) {
@@ -135,7 +143,9 @@ const skills = {
 			},
 		},
 		hiddenCard(player, name) {
-			if (!lib.inpile.includes(name) || player.getStorage("yao_yaoyi_used").includes(name)) return false;
+			if (!lib.inpile.includes(name) || player.getStorage("yao_yaoyi_used").includes(name)) {
+				return false;
+			}
 			return ["basic", "trick"].includes(get.type(name)) && player.hasCard(card => _status.connectMode || card.classList.contains("yao_yaoyi"), "h");
 		},
 		locked: false,
@@ -159,7 +169,9 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player) {
-				if (!player.hasCard(card => _status.connectMode || card.classList.contains("yao_yaoyi"), "h")) return false;
+				if (!player.hasCard(card => _status.connectMode || card.classList.contains("yao_yaoyi"), "h")) {
+					return false;
+				}
 			},
 			order(item, player) {
 				if (player && _status.event.type == "phase") {
@@ -169,10 +181,14 @@ const skills = {
 						const card = { name: info[2], nature: info[3] };
 						if (player.getUseValue(card) > 0) {
 							const temp = get.order(card);
-							if (temp > max) max = temp;
+							if (temp > max) {
+								max = temp;
+							}
 						}
 					});
-					if (max > 0) max += 1;
+					if (max > 0) {
+						max += 1;
+					}
 					return max;
 				}
 				return 1;
@@ -198,12 +214,16 @@ const skills = {
 		filter(event, player) {
 			if (
 				!player.hasHistory("lose", evt => {
-					if (evt.getParent() !== event) return false;
+					if (evt.getParent() !== event) {
+						return false;
+					}
 					return Object.values(evt.gaintag_map).flat().includes("yao_yaoyi_tag");
 				})
 			)
 				return false;
-			if (!player.storage.yao_chenwei) return player.countCards("h") > 0;
+			if (!player.storage.yao_chenwei) {
+				return player.countCards("h") > 0;
+			}
 			return game.hasPlayer(target => target !== player && target.countGainableCards(player, "he"));
 		},
 		async cost(event, trigger, player) {
