@@ -25,12 +25,6 @@ const characters = {
 		skills: ["mbshuyong", "mbxushen", "mbzhennan"],
 		dieAudios: ["baosanniang"],
 	},
-	fx_baosanniang: {
-		sex: "female",
-		group: "shu",
-		hp: 3,
-		skills: ["mbfangxu", "mbzhuguan", "mblisuo"],
-	},
 	mb_zerong: {
 		sex: "male",
 		hp: 4,
@@ -1097,14 +1091,6 @@ const characters = {
 		skills: ["relianji", "remoucheng"],
 		clans: ["太原王氏"],
 		dieAudios: ["wangyun"],
-	},
-
-	re_baosanniang: {
-		sex: "female",
-		group: "shu",
-		hp: 3,
-		skills: ["meiyong", "rexushen", "rezhennan"],
-		dieAudios: ["baosanniang"],
 	},
 
 	hujinding: {
