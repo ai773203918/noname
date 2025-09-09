@@ -124,19 +124,27 @@ export const checkEnd = {
 		if (!lib.config.choose_all_button) {
 			return;
 		}
-		// 仅在chooseToUse里面生效喵
-		if (event.name === "chooseToUse" && event.isMine() && !(event.cardChooseAll instanceof lib.element.Control)) {
+		// 在chooseToUse和chooseCard事件中生效喵
+		if ((event.name === "chooseToUse" || event.name === "chooseCard") && event.isMine() && !(event.cardChooseAll instanceof lib.element.Control)) {
 			// 判断技能是否可以使用全选按钮喵
 			const skill = event.skill;
 			if (!skill || !get.info(skill)) {
 				return;
 			}
 			const info = get.info(skill);
-			if (!info.filterCard || !info.selectCard) {
-				return;
-			}
-			if (info.complexSelect || info.complexCard || !info.allowChooseAll) {
-				return;
+			// 对于chooseCard事件，检查技能是否有allowChooseAll属性喵
+			if (event.name === "chooseCard") {
+				if (!info.allowChooseAll) {
+					return;
+				}
+			} else {
+				// 对于chooseToUse事件，保持原有检查逻辑喵
+				if (!info.filterCard || !info.selectCard) {
+					return;
+				}
+				if (info.complexSelect || info.complexCard || !info.allowChooseAll) {
+					return;
+				}
 			}
 			// 调用函数创建全选按钮喵
 			ui.create.cardChooseAll();
