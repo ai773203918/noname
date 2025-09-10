@@ -1155,7 +1155,6 @@ const skills = {
 			},
 			tag: {},
 			limit: {
-				mark: true,
 				charlotte: true,
 				mod: {
 					cardEnabled(card, player) {
