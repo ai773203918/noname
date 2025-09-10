@@ -156,6 +156,11 @@ const translates = {
 	yao_yaoyi_info: "锁定技。①你的起始手牌背置。②每回合每种牌名限一次，你可以将一张背置的牌当作任意基本牌或普通锦囊牌使用或打出。",
 	yao_chenwei: "谶纬",
 	yao_chenwei_info: "转换技。当你使用背置牌时，你可以，阳：令一名角色将你的一张手牌翻面；阴：获得一名其他角色的一张牌并将此牌背置。",
+	sy_baosanniang: "手杀牢鲍三娘",
+	sy_baosanniang_prefix: "手杀|牢",
+	fx_baosanniang: "芳许鲍三娘",
+	fx_baosanniang_ab: "手杀牢鲍三娘",
+	fx_baosanniang_prefix: "手杀|牢",
 };
 
 export default translates;

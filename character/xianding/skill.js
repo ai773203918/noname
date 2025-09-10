@@ -14530,7 +14530,7 @@ const skills = {
 			} else if (cards.length == 1) {
 				event._result = { bool: true, cards: cards };
 			} else {
-				player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true).set("ai", card => {
+				player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
 					return 6 - get.value(card);
 				});
 			}

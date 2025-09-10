@@ -1155,13 +1155,7 @@ const skills = {
 			},
 			tag: {},
 			limit: {
-				mark: true,
 				charlotte: true,
-				marktext: "炁",
-				intro: {
-					markcount: () => 0,
-					content: "执行一个仅有出牌阶段的额外回合",
-				},
 				mod: {
 					cardEnabled(card, player) {
 						if (get.type(card) == "delay") {
@@ -4419,7 +4413,7 @@ const skills = {
 	},
 	olsbjueya: {
 		audio: 2,
-		enable: ["chooseToUse", "chooseToRespond"],
+		enable: "chooseToUse", // "chooseToRespond", // 没有打出喵
 		hiddenCard(player, name) {
 			return get.type(name) == "basic" && !player.countCards("h") && !player.getStorage("olsbjueya").includes(name);
 		},
