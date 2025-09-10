@@ -301,7 +301,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const next = await player.chooseToCompare(target).set("isDelay", true);
+			const next = player.chooseToCompare(target).set("isDelay", true);
+			await next;
+			await game.delay();
 			player
 				.when({
 					player: "useCardAfter",
