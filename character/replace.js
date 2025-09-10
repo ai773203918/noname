@@ -298,7 +298,7 @@ window.noname_character_replace = {
 	yanxiang: ["yanxiang", "tw_yanxiang"],
 	yuanhuan: ["ol_yuanhuan", "yuanhuan"],
 	yuanji: ["ol_yuanji", "yuanji"],
-	yuanshu: ["yuanshu", "re_yuanshu", "ol_sb_yuanshu", "star_yuanshu", "yl_yuanshu", "old_yuanshu", "ol_yuanshu"],
+	yuanshu: ["yuanshu", "re_yuanshu", "ol_sb_yuanshu", "star_yuanshu", "yl_yuanshu", "old_yuanshu", "ol_yuanshu", "yao_yuanshu", "x_yao_yuanshu"],
 	yuantanyuanshang: ["yuantanyuanshang", "yuantanyuanxiyuanshang"],
 	yuejin: ["yuejin", "std_yuejin", "eu_yuejin"],
 	yuejiu: ["dc_yuejiu", "yuejiu"],

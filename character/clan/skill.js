@@ -553,9 +553,6 @@ const skills = {
 							await target.useCard(sha, player, false);
 						}
 					}
-				})
-				.vars({
-					target: target,
 				});
 		},
 		selectCard: -1,

@@ -1,4 +1,12 @@
 const characters = {
+	x_yao_yuanshu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["yao_yaoyi", "yao_chenwei"],
+		dieAudios: ["yao_yuanshu"],
+		img: "image/character/yao_yuanshu.jpg",
+  },
 	fx_baosanniang: {
 		sex: "female",
 		group: "shu",

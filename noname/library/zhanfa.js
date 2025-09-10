@@ -1910,7 +1910,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return event.player.hujia > 0;
 			},
-			num: (event, trigger, player) => trigger.player.hujia,
+			num: (event, trigger, player) => Math.floor(trigger.player.hujia / 2),
 		},
 	},
 	//体魄
