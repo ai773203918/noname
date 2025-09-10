@@ -14516,7 +14516,6 @@ const skills = {
 		audio: 2,
 		trigger: { global: "roundStart" },
 		group: "dcxiongmu_minus",
-		allowChooseAll: true,
 		prompt2(event, player) {
 			return (player.countCards("h") < player.maxHp ? "将手牌摸至" + get.cnNumber(player.maxHp) + "张，然后" : "") + "将任意张牌随机置入牌堆并从牌堆或弃牌堆中获得等量点数为8的牌。";
 		},

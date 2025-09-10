@@ -149,6 +149,11 @@ const translates = {
 	junk_sunquan_prefix: "牢|神",
 	ol_baosanniang: "牢鲍三娘",
 	ol_baosanniang_prefix: "牢",
+	sy_baosanniang: "手杀牢鲍三娘",
+	sy_baosanniang_prefix: "手杀|牢",
+	fx_baosanniang: "芳许鲍三娘",
+	fx_baosanniang_ab: "手杀牢鲍三娘",
+	fx_baosanniang_prefix: "手杀|牢",
 };
 
 export default translates;

@@ -18,7 +18,7 @@ const characters = {
 		hp: 3,
 		skills: ["mbquanchong", "mbrenxing"],
 	},
-	sy_baosanniang: {
+	re_baosanniang: {
 		sex: "female",
 		group: "shu",
 		hp: 3,
