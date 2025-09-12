@@ -9134,10 +9134,10 @@ const skills = {
 		audio: 4,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.hasZhuSkill("jsrgjulian") && lib.skill.jsrgjulian.logTarget(null, player).length;
+			return lib.skill.jsrgjulian.logTarget(null, player).length;
 		},
 		prompt: "是否发动【聚敛】？",
-		prompt2: "你可以获得其他所有群势力角色的各一张牌",
+		prompt2: "获得其他所有群势力角色的各一张牌",
 		logAudio: () => ["jsrgjulian3.mp3", "jsrgjulian4.mp3"],
 		logTarget(event, player) {
 			return game
