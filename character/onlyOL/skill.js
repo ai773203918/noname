@@ -2973,7 +2973,7 @@ const skills = {
 				if (ops) {
 					await player.draw(
 						Math.min(
-							3,
+							2,
 							ops.reduce((sum, op) => sum + result[op].map(i => i[0]).unique().length, 0)
 						)
 					);
@@ -3023,17 +3023,28 @@ const skills = {
 				audio: "jsrgshenchong",
 				trigger: { player: "die" },
 				filter(event, player) {
-					return player.getStorage("olshenchong_die").length;
+					return (event.source?.isIn() && event.source.countCards("h")) || player.getStorage("olshenchong_die").some(current => current.isIn());
 				},
 				forced: true,
 				forceDie: true,
-				content() {
-					const targets = player.getStorage("olshenchong_die");
-					player.line(targets);
-					targets.sortBySeat().forEach(current => {
-						current.clearSkills();
-						current.chooseToDiscard(current.countCards("h"), "h", true);
-					});
+				async content(event, trigger, player) {
+					const source = trigger.source;
+					if (source?.isIn() && source.countCards("h")) {
+						player.line(source);
+						await source.chooseToDiscard(source.countCards("h"), "h", true);
+						await game.delayx();
+					}
+					const targets = player
+						.getStorage("olshenchong_die")
+						.filter(current => current.isIn())
+						.sortBySeat();
+					if (targets.length > 0) {
+						player.line(targets);
+						for (const current of targets) {
+							await current.removeSkills(current.getSkills(null, false, false));
+						}
+						await game.delayx();
+					}
 				},
 			},
 		},
