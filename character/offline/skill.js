@@ -332,7 +332,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const next = player.useCard({ name: "sha", isCard: true }, trigger.player, false);
 			await next;
-			if (trigger.player.getHistory("damage", evt => evt.card == next.card)) {
+			if (!trigger.player.hasHistory("damage", evt => evt.card == next.card)) {
 				player.recover();
 			}
 		},
