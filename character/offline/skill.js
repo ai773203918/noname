@@ -232,26 +232,26 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.source;
 			do {
-				const choices = ["选项一", "选项二"];
+				let result;
 				const choiceList = ["弃置所有手牌", "失去一点体力"];
-				if (target.getCards("h").length == 0) {
-					choices.remove("选项一");
-					choiceList[0] = "<span style='opacity:0.5'>失去一点体力并结束<span>";
-				}
-				const result = await target
-					.chooseControl(choices)
-					.set("choiceList", choiceList)
-					.set("ai", () => {
-						const choices = _status.event.choices.slice(0);
-						return choices[1];
-					})
-					.forResult();
-				if (result.control == "选项一") {
-					await target.discard(target.getCards("h"));
+				if (!target.countDiscardableCards(target, "h")) {
+					result = { index: 1 };
 				} else {
+					result = await target
+						.chooseControl()
+						.set("choiceList", choiceList)
+						.set("ai", () => {
+							const choices = _status.event.choices.slice(0);
+							return choices[1];
+						})
+						.forResult();
+				}
+				if (result?.index == 0) {
+					await target.modedDiscard(target.getCards("h"));
+				} else if (result?.index == 1) {
 					await target.loseHp();
 				}
-			} while (target.countCards("h") != target.getHp() && target.isIn() && game.hasGlobalHistory("everything", evt => evt.name == "dying" && evt.player == target && evt.reason.getParent == event));
+			} while (target.countCards("h") != target.getHp() && target.isIn() && !game.hasGlobalHistory("everything", evt => evt.name == "dying" && evt.player == target && evt.reason.getParent() == event));
 		},
 		ai: {
 			effect: {
