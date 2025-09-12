@@ -16541,6 +16541,13 @@ export class Library {
 				nature: "firemm",
 			},
 		],
+		[
+			"徐兖",
+			{
+				color: "#ff0000",
+				nature: "firemm",
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",

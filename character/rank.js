@@ -1003,6 +1003,7 @@ window.noname_character_rank = {
 		"dc_sb_dengai",
 	],
 	b: [
+		"xy_xunyu",
 		"yao_yuanshu",
 		"sunyuan",
 		"clan_hanfu",
@@ -1827,6 +1828,10 @@ window.noname_character_rank = {
 		"jsrg_hejin",
 	],
 	c: [
+		"xy_caocao",
+		"xy_chengyu",
+		"xy_chengong",
+		"xy_zhangkai",
 		"ps_zhangrang",
 		"ps_zhaozhong",
 		"ps_sunzhang",
@@ -2423,6 +2428,7 @@ window.noname_character_rank = {
 			"eu_yuejin",
 		],
 		epic: [
+			"xy_xunyu",
 			"bigsb_dengai",
 			"eu_Macrinus",
 			"eu_Ardashir",
@@ -2897,6 +2903,10 @@ window.noname_character_rank = {
 			"ren_dengai",
 		],
 		rare: [
+			"xy_caocao",
+			"xy_chengyu",
+			"xy_chengong",
+			"xy_zhangkai",
 			"std_simahui",
 			"std_zhengxuan",
 			"std_miheng",
