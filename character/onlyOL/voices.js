@@ -1,4 +1,11 @@
 export default {
+	"#olsbqianfu1": "今从孟德，定能助其成霸业。",
+	"#olsbqianfu2": "良臣，当为明主筹谋。",
+	"#olsbyushi1": "势者，非由天定，乃凭人谋。",
+	"#olsbyushi2": "袁曹相争，乱中取利。",
+	"#olsbfenchao1": "袁本初，你一生的心血就此付之一炬吧！",
+	"#olsbfenchao2": "这一把火起，定叫他军心大乱！",
+	"#ol_sb_xuyou:die": "孟德小儿，你…你过河拆桥！",
 	"#olmiluo1": "曲终人不见，菱花镜里，看灯忽明灭。",
 	"#olmiluo2": "一曲相酬，纵离别未肯衔忧。",
 	"#oljueyan1": "引弦铮铮作兵戈，阿姊，莫回头。",
