@@ -3104,36 +3104,8 @@ const skills = {
 	oljulian: {
 		audio: "jsrgjulian",
 		inherit: "jsrgjulian",
-		group: "oljulian_draw",
-		subSkill: {
-			draw: {
-				audio: ["jsrgjulian1.mp3", "jsrgjulian2.mp3"],
-				trigger: { global: "gainAfter" },
-				filter(event, player) {
-					const { player: source } = event;
-					if (source == player || source.group != "qun" || source.countMark("oljulian_count") > 0) {
-						return false;
-					}
-					const evt = event.getParent("phaseDraw");
-					return (!evt || evt.player != source) && event.getParent().name == "draw" && event.getParent(2).name != "oljulian_draw" && player.hasZhuSkill("oljulian", event.player);
-				},
-				async cost(event, trigger, player) {
-					event.result = await trigger.player.chooseBool(`是否响应${get.translation(player)}的【聚敛】摸一张牌？`).forResult();
-				},
-				popup: false,
-				async content(event, trigger, player) {
-					const { player: source } = trigger;
-					source.logSkill(event.name, player);
-					source.addTempSkill("oljulian_count");
-					source.addMark("oljulian_count", 1, false);
-					await source.draw();
-				},
-			},
-			count: {
-				charlotte: true,
-				onremove: true,
-			},
-		},
+		maxNum: 1,
+		group: "oljulian_gain",
 	},
 	//闪赵云
 	ollonglin: {
