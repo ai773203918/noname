@@ -1772,6 +1772,14 @@ const characters = {
 		hp: 4,
 		skills: ["yjshuangren"],
 	},
+	jun_lvbu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["wushuang", "stdqingjiao"],
+		isZhugong: true,
+		dieAudios: ["lvbu"],
+	},
 };
 
 export default characters;

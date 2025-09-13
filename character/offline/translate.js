@@ -9,6 +9,8 @@ const translates = {
 	pejixin_info: "当你于本局游戏首次使用一种牌名的牌后，你可以摸X张牌并展示之，令这些牌无距离和任何次数且不计入手牌上限（X为本轮发动〖技新〗的次数）。",
 	pejiwei: "继魏",
 	pejiwei_info: "觉醒技，每回合结束时，若本轮〖技新〗发动次数不小于一号位的体力值，则你增加1点体力上限并回复所有体力，然后你可以从武将牌堆中选择获得五个魏势力主公技。",
+	jun_lvbu: "君吕布",
+	jun_lvbu_prefix: "君",
 	eu_yujin: "欧陆于禁",
 	eu_yujin_prefix: "欧陆",
 	eu_zhangliao: "欧陆张辽",
