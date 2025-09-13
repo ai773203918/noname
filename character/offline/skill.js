@@ -132,7 +132,7 @@ const skills = {
 		},
 		prompt: "是否弃置所有手牌并且直到你的下回合开始，其他角色不能对你使用单目标伤害牌",
 		async content(event, trigger, player) {
-			player.discard(player.getDiscardableCards("h"));
+			player.discard(player.getDiscardableCards(player, "h"));
 			player.loseHp();
 			player.addTempSkill("xy_jinshou_effect", { player: "phaseBegin" });
 		},
@@ -166,18 +166,22 @@ const skills = {
 			const result = await player.chooseToCompare(event.targets[0]).forResult();
 			if (!result.tie) {
 				const win = result.bool ? player : event.targets[0];
-				const targets = await win
-					.chooseTarget("请选择一名攻击范围内的角色对其造成1点伤害", true, 1)
-					.set("filterTarget", (card, player, target) => {
-						return player.inRange(target);
-					})
-					.set("ai", (card, player, target) => {
-						if (get.effect(target, { name: "damage" }, player, player) > 0) {
-							return -get.attitude(player, target);
-						}
-					})
-					.forResultTargets();
-				targets[0].damage(win);
+				if (!game.hasPlayer(curr => win.inRange(curr))) {
+					win.say("手短是会呼吸的痛");
+				} else {
+					const targets = await win
+						.chooseTarget("请选择一名攻击范围内的角色对其造成1点伤害", true, 1)
+						.set("filterTarget", (card, player, target) => {
+							return player.inRange(target);
+						})
+						.set("ai", (card, player, target) => {
+							if (get.effect(target, { name: "damage" }, player, player) > 0) {
+								return -get.attitude(player, target);
+							}
+						})
+						.forResultTargets();
+					targets[0].damage(win);
+				}
 			}
 		},
 		ai: {
@@ -217,12 +221,10 @@ const skills = {
 		},
 	},
 	xy_dishou: {
-		audio: 2,
 		trigger: { player: "damageBegin" },
 		filter(event, player) {
 			return event.source.countCards("h") != event.source.getHp();
 		},
-		prompt: "是否令伤害来源选择一项：1.弃置所有手牌,2.失去一点体力，然后重复此过程直到手牌数等于体力值或进入濒死状态。",
 		check(event, player) {
 			if (get.attitude(player, event.source) > 0 && player.getHp() > 1) {
 				return false;
@@ -273,7 +275,6 @@ const skills = {
 	xy_jizheng: {
 		trigger: { player: "drawBegin" },
 		usable: 1,
-		prompt: "是否将你的摸牌效果改为令一名角色使用一张杀",
 		check(event, player) {
 			const targets = game.filterPlayer(curr => get.attitude(player, curr) > 0);
 			const list = game.filterPlayer(curr => {
@@ -281,12 +282,12 @@ const skills = {
 					return false;
 				}
 				return targets.some(target => {
-					get.effect(target, { name: "sha" }, curr, curr) > event.num;
+					get.effect(target, { name: "sha", isCard: true }, curr, curr) > event.num;
 				});
 			});
 		},
 		filter(event, player) {
-			return game.hasPlayer(curr => curr.hasUseTarget({ name: "sha" }, true));
+			return game.hasPlayer(curr => curr.hasUseTarget({ name: "sha", isCard: true }, true));
 		},
 		async content(event, trigger, player) {
 			trigger.cancel();
@@ -297,25 +298,22 @@ const skills = {
 					const numList = [];
 					const list = game.filterPlayer(curr => {
 						targets.forEach(target => {
-							if (get.effect(target, { name: "sha" }, curr, curr) > event.num) {
-								numList.add(get.effect(target, { name: "sha" }, curr, curr));
+							if (get.effect(target, { name: "sha", isCard: true }, curr, curr) > event.num) {
+								numList.add(get.effect(target, { name: "sha", isCard: true }, curr, curr));
 							}
 						});
 						return Math.max(...numList);
 					});
 				})
 				.forResult();
-			result.targets[0].chooseUseTarget({ name: "sha" }, true).set("ai2", target => {
+			result.targets[0].chooseUseTarget({ name: "sha", isCard: true }, true).set("ai2", target => {
 				const player = get.player();
 				const evvent = get.event().getTrigger();
-				if (get.effect(target, { name: "sha" }, plsyer, player) > event.num) {
+				if (get.effect(target, { name: "sha", isCard: true }, plsyer, player) > event.num) {
 					return get.effect(target, { name: "sha", isCrad: true }, player, player);
 				}
 				return 0;
 			});
-		},
-		ai: {
-			threaten: 1,
 		},
 	},
 	//张闿
@@ -324,15 +322,14 @@ const skills = {
 			global: "phaseDrawEnd",
 		},
 		check(event, player) {
-			return get.effect(event.player, { name: "sha" }, player, player) > 0;
+			return get.effect(event.player, { name: "sha", isCard: true }, player, player) > 0;
 		},
 		filter(event, player) {
 			return event.num > 2;
 		},
 		async content(event, trigger, player) {
-			const next = player.useCard({ name: "sha", isCard: true }, trigger.player, false);
-			await next;
-			if (!trigger.player.hasHistory("damage", evt => evt.card == next.card)) {
+			await player.useCard({ name: "sha", isCard: true }, trigger.player, false);
+			if (!trigger.player.hasHistory("damage", evt => evt.getParent() == event)) {
 				player.recover();
 			}
 		},
