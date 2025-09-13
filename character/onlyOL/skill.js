@@ -57,6 +57,7 @@ const skills = {
 		},
 		subSkill: {
 			put: {
+				audio: "olsbqianfu",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					return event.skill == "olsbqianfu" && get.info("olsbqianfu_put").getCards(event).length;
