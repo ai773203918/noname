@@ -9442,6 +9442,7 @@ const skills = {
 	},
 	//皇甫嵩
 	jsrgguanhuo: {
+		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (
@@ -9515,12 +9516,12 @@ const skills = {
 			ex: {
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
-					return event.card && event.card.name == "huogong" && event.getParent().type == "card";
+					return event.card?.name == "huogong" && event.getParent().type == "card";
 				},
 				forced: true,
 				charlotte: true,
 				onremove: true,
-				intro: { content: "当你造成渠道为【火攻】的伤害时，此伤害+#" },
+				intro: { content: "使用【火攻】造成的伤害+#" },
 				content() {
 					trigger.num += player.countMark("jsrgguanhuo_ex");
 				},
@@ -9528,6 +9529,7 @@ const skills = {
 		},
 	},
 	jsrgjuxia: {
+		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		usable: 1,
 		countSkill(player) {
