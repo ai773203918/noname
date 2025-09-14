@@ -3008,10 +3008,34 @@ const skills = {
 		},
 	},
 	olshenchong: {
+		limited: true,
 		audio: "jsrgshenchong",
-		inherit: "jsrgshenchong",
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return game.hasPlayer(target => {
+				return target !== player && lib.skill.olshenchong.derivation.some(i => !target.hasSkill(i, null, false, false));
+			});
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target !== player && lib.skill.olshenchong.derivation.some(i => !target.hasSkill(i, null, false, false));
+				})
+				.set("ai", target => {
+					if (player.hasUnknown()) {
+						return 0;
+					}
+					return get.effect(target, "jsrgshenchong", player, player);
+				})
+				.forResult();
+		},
+		skillAnimation: true,
+		animationColor: "soil",
 		async content(event, trigger, player) {
-			const { target, name: skillName } = event;
+			const {
+				targets: [target],
+				name: skillName,
+			} = event;
 			player.awakenSkill(skillName);
 			await target.addSkills(get.info(skillName).derivation);
 			player.addSkill(skillName + "_die");
