@@ -22816,7 +22816,7 @@ const skills = {
 					player.logSkill(event.name, owner);
 					await owner.discard(card, "notBySelf");
 					break;
-				case "获得卡牌":
+				case "获得卡牌": {
 					const next = player.chooseToDiscard("h", true);
 					next.logSkill = [event.name, owner];
 					const result = await next.forResult();
@@ -22824,6 +22824,7 @@ const skills = {
 						await player.gain([card], owner, "give", "bySelf");
 					}
 					break;
+				}
 				case "造成伤害":
 					player.logSkill(event.name, trigger.player);
 					await trigger.player.damage();
