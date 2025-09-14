@@ -9443,48 +9443,37 @@ const skills = {
 	//皇甫嵩
 	jsrgguanhuo: {
 		audio: 2,
-		trigger: { player: "useCardAfter" },
-		filter(event, player) {
-			return (
-				event.card.storage &&
-				event.card.storage.jsrgguanhuo &&
-				!game.hasPlayer2(current => {
-					return current.hasHistory("damage", evt => evt.card == event.card);
-				})
-			);
+		enable: "phaseUse",
+		viewAs: {
+			name: "huogong",
+			isCard: true,
+			storage: { jsrgguanhuo: true },
 		},
-		forced: true,
-		locked: false,
-		group: "jsrgguanhuo_viewas",
-		content() {
-			"step 0";
-			var count = player.getHistory("useSkill", evt => {
-				return evt.skill == "jsrgguanhuo_viewas" && evt.event.getParent("phaseUse") === trigger.getParent("phaseUse");
-			}).length;
-			if (count == 1) {
-				player.addTempSkill("jsrgguanhuo_ex", "phaseUseAfter");
-				player.addMark("jsrgguanhuo_ex", 1, false);
-				trigger.targets.forEach(i => i.removeSkill("huogong2"));
-			} else {
-				player.removeSkills("jsrgguanhuo");
-			}
+		precontent() {
+			player.addTempSkill("jsrgguanhuo_effect");
 		},
+		filterCard: () => false,
+		selectCard: -1,
+		prompt: "视为使用一张【火攻】",
 		ai: {
+			order(item, player) {
+				return get.order({ name: "huogong" }) + 0.01;
+			},
 			effect: {
 				player(card, player) {
 					if (
-						_status.event.getParent().skill == "jsrgguanhuo_viewas" &&
+						_status.event.getParent().skill == "jsrgguanhuo" &&
 						player.getHistory("useSkill", evt => {
-							return evt.skill == "jsrgguanhuo_viewas" && evt.event.getParent("phaseUse") === _status.event.getParent("phaseUse");
+							return evt.skill == "jsrgguanhuo" && evt.event.getParent("phaseUse") === _status.event.getParent("phaseUse");
 						}).length == 1
 					) {
 						return "zeroplayertarget";
 					}
 					if (
 						_status.event.type == "phase" &&
-						_status.event.skill == "jsrgguanhuo_viewas" &&
+						_status.event.skill == "jsrgguanhuo" &&
 						player.getHistory("useSkill", evt => {
-							return evt.skill == "jsrgguanhuo_viewas" && evt.event.getParent("phaseUse") === _status.event.getParent("phaseUse");
+							return evt.skill == "jsrgguanhuo" && evt.event.getParent("phaseUse") === _status.event.getParent("phaseUse");
 						}).length > 1 &&
 						player.countCards("h") <= 3
 					) {
@@ -9494,34 +9483,37 @@ const skills = {
 			},
 		},
 		subSkill: {
-			viewas: {
-				audio: "jsrgguanhuo",
-				enable: "phaseUse",
-				viewAs: {
-					name: "huogong",
-					isCard: true,
-					storage: {
-						jsrgguanhuo: true,
-					},
+			effect: {
+				charlotte: true,
+				trigger: { player: "useCardAfter" },
+				filter(event, player) {
+					return event.card?.storage?.jsrgguanhuo && !game.hasPlayer2(current => current.hasHistory("damage", evt => evt.card == event.card));
 				},
-				filterCard: () => false,
-				selectCard: -1,
-				prompt: "视为使用一张【火攻】",
-				ai: {
-					order(item, player) {
-						return get.order({ name: "huogong" }) + 0.01;
-					},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const count = player.getHistory("useSkill", evt => {
+						return evt.skill == "jsrgguanhuo" && evt.event.getParent("phaseUse") === trigger.getParent("phaseUse");
+					}).length;
+					if (count == 1) {
+						player.addTempSkill("jsrgguanhuo_ex", "phaseUseAfter");
+						player.addMark("jsrgguanhuo_ex", 1, false);
+						trigger.targets.forEach(i => i.removeSkill("huogong2"));
+					} else {
+						await player.removeSkills("jsrgguanhuo");
+					}
 				},
 			},
 			ex: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "你使用【火攻】造成的伤害+#" },
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
 					return event.card?.name == "huogong" && event.getParent().type == "card";
 				},
 				forced: true,
-				charlotte: true,
-				onremove: true,
-				intro: { content: "使用【火攻】造成的伤害+#" },
+				popup: false,
 				content() {
 					trigger.num += player.countMark("jsrgguanhuo_ex");
 				},

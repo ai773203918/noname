@@ -4,7 +4,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		names: "皇甫|嵩",
-		skills: ["twguanhuo", "twjuxia"],
+		skills: ["jsrgguanhuo", "twjuxia"],
 		img: "image/character/jsrg_huangfusong.jpg",
 		dieAudios: ["jsrg_huangfusong"],
 	},

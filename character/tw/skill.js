@@ -103,7 +103,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name === "phaseZhunbei") {
-				return !player.hasSkill("twguanhuo", null, false, false);
+				return !player.hasSkill("jsrgguanhuo", null, false, false);
 			} else if (player.hasSkill("twjuxia_used")) {
 				return false;
 			}
@@ -124,7 +124,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name === "phaseZhunbei") {
-				await player.addSkills("twguanhuo");
+				await player.addSkills("jsrgguanhuo");
 			} else {
 				player.addTempSkill("twjuxia_used");
 				trigger.excluded.add(player);
