@@ -9247,11 +9247,14 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
+			if (!player.countCards("h")) {
+				return false;
+			}
 			const hs = player.getCards("h", "sha");
 			if (!hs.length) {
 				return false;
 			}
-			return hs.every(card => lib.filter.cardDiscardable(card, player, "jsrgzhuhuan"));
+			return hs.every(card => lib.filter.cardDiscardable(card, player, this.skill_id));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -9266,15 +9269,13 @@ const skills = {
 			const {
 				targets: [target],
 			} = event;
+			await player.showHandcards();
 			const hs = player.getCards("h", "sha");
-			if (player.countCards("h")) {
-				await player.showHandcards();
-			}
+			await player.discard(hs);
 			const num = hs.length;
 			if (!num) {
 				return;
 			}
-			await player.discard(hs);
 			const result =
 				target.countCards("he") < num
 					? { bool: false }
@@ -11118,15 +11119,16 @@ const skills = {
 				event.player.hasHistory("sourceDamage") ? 1 : 2,
 				game.countPlayer(current => !current.hasMark("jsrgzhenglve_mark"))
 			);
-			let str = "你可以摸一张牌";
+			let str = `你可以摸${get.cnNumber(lib.skill[this.skill_id].drawNum)}张牌`;
 			if (num) {
 				str += `并令${get.cnNumber(num)}名角色获得“猎”标记`;
 			}
 			return str;
 		},
+		drawNum: 1,
 		logAudio: () => 2,
 		async content(event, trigger, player) {
-			await player.draw();
+			await player.draw(lib.skill[event.name].drawNum);
 			const damaged = trigger.player.hasHistory("sourceDamage");
 			const num = damaged ? 1 : 2;
 			const targets = game.filterPlayer(current => !current.hasMark("jsrgzhenglve_mark"));
@@ -11212,7 +11214,7 @@ const skills = {
 			player.addSkills(["jsrgpingrong", "feiying"]);
 		},
 		ai: {
-			combo: "jsrgzhenglve",
+			combo: ["jsrgzhenglve", "twzhenglve"],
 		},
 	},
 	jsrgpingrong: {
