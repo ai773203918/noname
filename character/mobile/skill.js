@@ -6486,7 +6486,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				player.logSkill("potfuji", null, null, null, [3]);
 				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
-				await player.draw();
+				await player.draw(2);
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
 			player
