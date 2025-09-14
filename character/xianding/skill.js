@@ -15,19 +15,7 @@ const skills = {
 				.chooseTarget(get.prompt2(event.skill), (_, player, target) => {
 					return player.canCompare(target);
 				})
-				.set("ai", target => {
-					const player = get.player();
-					const ts = target.getCards("h").sort((a, b) => get.number(a) - get.number(b));
-					if (get.attitude(player, target) < 0) {
-						const hs = player.getCards("h").sort((a, b) => get.number(b) - get.number(a));
-						const tsx = target.getCards("h").sort((a, b) => get.number(b) - get.number(a));
-						if (get.number(hs[0]) > get.number(tsx[0])) {
-							return 1;
-						}
-						return 0;
-					}
-					return 0;
-				})
+				.set("ai", target => 10 - get.attitude(get.player(), target))
 				.forResult();
 		},
 		async content(event, trigger, player) {
@@ -43,19 +31,7 @@ const skills = {
 						.chooseTarget(`###掇月###请选择一名角色拼点（当前拼点次数为：${num - 1}）`, (_, player, target) => {
 							return player.canCompare(target);
 						})
-						.set("ai", target => {
-							const player = get.player();
-							const ts = target.getCards("h").sort((a, b) => get.number(a) - get.number(b));
-							if (get.attitude(player, target) < 0) {
-								const hs = player.getCards("h").sort((a, b) => get.number(b) - get.number(a));
-								const tsx = target.getCards("h").sort((a, b) => get.number(b) - get.number(a));
-								if (get.number(hs[0]) > get.number(tsx[0])) {
-									return 1;
-								}
-								return 0;
-							}
-							return 0;
-						})
+						.set("ai", target => get.effect(target, { name: "draw" }, get.player(), get.player()))
 						.forResult();
 					if (result?.bool && result?.targets[0]) {
 						target = result.targets[0];
