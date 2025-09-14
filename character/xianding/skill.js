@@ -155,7 +155,14 @@ const skills = {
 			if (event.preserve || event.result?.cancelled) {
 				return false;
 			}
-			let targets = [event.player].concat(event.targets ? event.targets : [event.target]);
+			let targets = [event.player];
+			if (event.targets) {
+				if (event.compareMeanwhile || event.player == player) {
+					targets.addArray(event.targets);
+				}
+			} else {
+				targets.add(event.target);
+			}
 			if (!targets.some(current => current == player)) {
 				return false;
 			}
@@ -224,7 +231,9 @@ const skills = {
 				list.add(event.card1);
 			}
 			if (event.targets) {
-				list.addArray(event.targets.filter(current => current !== player && current.group == "wei").map(current => event.cardlist[event.targets.indexOf(current)]));
+				if (event.compareMeanwhile || event.player == player) {
+					list.addArray(event.targets.filter(current => current !== player && current.group == "wei").map(current => event.cardlist[event.targets.indexOf(current)]));
+				}
 			} else {
 				if (event.target !== player && event.target.group == "wei") {
 					list.add(event.card2);
