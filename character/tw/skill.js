@@ -18,7 +18,7 @@ const skills = {
 					}
 					const eff1 = [0, get.damageEffect(target, target, target) + get.effect(target, { name: "guohe_copy2" }, target, target) * Math.min(num, target.countDiscardableCards(target, "he"))];
 					const eff2 = [1, get.recoverEffect(player, player, target) + get.effect(player, { name: "draw" }, player, target) * num];
-					return [get.damageEffect(target, target, player) + get.effect(target, { name: "guohe_copy2" }, target, player) * Math.min(num, target.countDiscardableCards(target, "he")), eff3][eff1[1] > eff2[1] ? 0 : 1];
+					return [eff3, get.recoverEffect(player, player, player) + get.effect(player, { name: "draw" }, player, player) * num][eff1[1] > eff2[1] ? 0 : 1];
 				})
 				.forResult();
 		},
