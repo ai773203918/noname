@@ -159,6 +159,8 @@ const skills = {
 			if (event.targets) {
 				if (event.compareMeanwhile || event.player == player) {
 					targets.addArray(event.targets);
+				} else if (event.targets.includes(player)) {
+					targets.add(player);
 				}
 			} else {
 				targets.add(event.target);
