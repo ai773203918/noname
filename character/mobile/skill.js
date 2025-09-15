@@ -2,6 +2,13 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//手杀SP曹操
+	mblingfa: {
+		audio: "twlingfa",
+		audioname: ["mb_caocao"],
+		inherit: "twlingfa",
+		derivation: "new_rejianxiong",
+	},
 	//手杀曹洪
 	mbyuanhu: {
 		audio: "yuanhu",
@@ -5812,7 +5819,7 @@ const skills = {
 					}
 				}
 			}
-			if (names.length && target.isIn() && !Object.values(target.storage["mbzengou_debuff"] || {}).some(num => num > 0)) {
+			if (names.length && target.isIn()) {
 				const choose =
 					names.length > 1
 						? await player
@@ -5839,8 +5846,10 @@ const skills = {
 					player.line(target);
 					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
-					target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
-					target.markSkill("mbzengou_debuff");
+					target.setStorage("mbzengou_debuff", choose, true);
+					target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`)
+					//target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
+					//target.markSkill("mbzengou_debuff");
 				}
 			}
 		},
@@ -5873,13 +5882,21 @@ const skills = {
 			},
 			debuff: {
 				charlotte: true,
-				onremove: true,
-				init(player, skill) {
-					player.storage[skill] = player.storage[skill] || {};
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
 				},
 				mark: true,
 				marktext: "诬",
 				intro: {
+					content(storage) {
+						if (!storage) {
+							return "无效果";
+						}
+						return `你每回合使用第一张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`
+					},
+				},
+				/*intro: {
 					markcount(storage = {}) {
 						return Object.keys(storage).reduce((sum, item) => sum + storage[item], 0);
 					},
@@ -5896,30 +5913,32 @@ const skills = {
 							.map(str => "<li>" + str)
 							.join("<br>");
 					},
-				},
+				},*/
 				audio: "mbzengou",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					if (player.getHistory("useCard").indexOf(event) !== 0) {
 						return false;
 					}
-					return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
+					return player.getStorage("mbzengou_debuff") == event.card.name;
+					//return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
 				},
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					player.storage[event.name][trigger.card.name]--;
+					player.removeSkill(event.name);
+					/*player.storage[event.name][trigger.card.name]--;
 					if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
 						player.removeSkill(event.name);
 						return;
 					}
 					if (player.storage[event.name][trigger.card.name] === 0) {
 						delete player.storage[event.name][trigger.card.name];
-					}
+					}*/
 				},
 				mod: {
 					aiOrder(player, card, num) {
-						if (player.getHistory("useCard").length > 0 || !player.storage["mbzengou_debuff"]?.[card.name]) {
+						if (player.getHistory("useCard").length > 0 || player.storage["mbzengou_debuff"] != card.name) {
 							return;
 						}
 						const effect = get.effect(player, { name: "losehp" }, player, player);
@@ -6467,7 +6486,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				player.logSkill("potfuji", null, null, null, [3]);
 				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
-				await player.draw();
+				await player.draw(2);
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
 			player
@@ -7601,7 +7620,7 @@ const skills = {
 							num = player.countMark("potzhanlie_lie");
 						player.addTempSkill("potzhanlie_buff");
 						player.clearMark("potzhanlie_lie");
-						event.set("potzhanlie", Math.floor(num / 3));
+						event.set("potzhanlie", Math.floor(num / 2));
 					}).logSkill = "potzhanlie";
 				},
 				marktext: "烈",
@@ -7628,7 +7647,7 @@ const skills = {
 									["目标+1", "令" + str + "可以额外指定一个目标"],
 									["伤害+1", "令" + str + "基础伤害值+1"],
 									["弃牌响应", "令" + str + "需额外弃置一张牌方可响应"],
-									["摸牌", str + "结算完毕后，你摸两张牌"],
+									["摸牌", str + "结算完毕后，你摸三张牌"],
 								],
 								"textbutton",
 							],
@@ -7668,7 +7687,7 @@ const skills = {
 										return sum + get.effect(target, card, player, player);
 									}, 0);
 								case "摸牌":
-									return get.effect(player, { name: "draw" }, player, player) * 2;
+									return get.effect(player, { name: "draw" }, player, player) * 3;
 							}
 						})
 						.forResult();
@@ -7715,7 +7734,7 @@ const skills = {
 									player
 										.when("useCardAfter")
 										.filter(evt => evt === trigger)
-										.then(() => player.draw(2));
+										.then(() => player.draw(3));
 									break;
 							}
 						}
@@ -8325,7 +8344,7 @@ const skills = {
 				})
 			) {
 				const num = player.getAllHistory("custom", evt => evt.name == "mbquchong").length;
-				const list = get.mode() == "identity" ? [0, 5, 10, 10] : [0, 2, 5, 5];
+				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */[0, 2, 5, 5];
 				return num < 4 && player.countMark("mbquchong") >= list[num];
 			}
 			return player.canMoveCard(
@@ -8378,7 +8397,7 @@ const skills = {
 					.set("logSkill", ["mbquchong", null, null, null, [4]]);
 			} else {
 				const numbers = Array.from({ length: 13 }).map((_, i) => get.strNumber(i + 1));
-				const list = get.mode() == "identity" ? [0, 5, 10, 10] : [0, 2, 5, 5];
+				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */[0, 2, 5, 5];
 				const costMark = list[player.getAllHistory("custom", evt => evt.name == "mbquchong").length];
 				const result = await player
 					.chooseButton(
@@ -9386,7 +9405,7 @@ const skills = {
 						filterTarget: lib.filter.notMe,
 						selectCard: [1, Infinity],
 						prompt: used.length ? "是否继续分配手牌？" : get.prompt(event.skill),
-						prompt2: "请选择要分配的卡牌和目标",
+						prompt2: "将任意张手牌交给一名其他角色",
 						ai1(card) {
 							if (!ui.selected.cards.length) {
 								return 8 - get.value(card);
@@ -9418,9 +9437,8 @@ const skills = {
 					map[id].addArray(result.cards);
 					player.addGaintag(result.cards, "mbjiejian_tag");
 					used.addArray(result.targets);
-				} else {
-					break;
 				}
+				break;
 			} while (player.countCards("h"));
 			if (_status.connectMode) {
 				game.broadcastAll(function () {
@@ -9814,9 +9832,12 @@ const skills = {
 				},
 				forced: true,
 				logTarget: "target",
+				/*
 				get usable() {
 					return get.mode() == "doudizhu" ? 1 : 2;
 				},
+				*/
+				usable: 2,
 				async content(event, trigger, player) {
 					const target = trigger.target,
 						list = [];
