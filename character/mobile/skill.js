@@ -2,6 +2,13 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//手杀SP曹操
+	mblingfa: {
+		audio: "twlingfa",
+		audioname: ["mb_caocao"],
+		inherit: "twlingfa",
+		derivation: "new_rejianxiong",
+	},
 	//手杀曹洪
 	mbyuanhu: {
 		audio: "yuanhu",

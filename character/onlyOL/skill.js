@@ -832,7 +832,7 @@ const skills = {
 		},
 	},
 	olsbzhijue: {
-		audio: 2,
+		audio: 5,
 		zhuanhuanji: true,
 		marktext: "☯",
 		mark: true,
@@ -3878,7 +3878,7 @@ const skills = {
 	},
 	//OL谋张让
 	olsblucun: {
-		audio: 2,
+		audio: 6,
 		enable: "chooseToUse",
 		filter(event, player) {
 			return get
@@ -4053,7 +4053,7 @@ const skills = {
 	},
 	olsbtuisheng: {
 		limited: true,
-		audio: 2,
+		audio: 6,
 		trigger: { player: ["phaseZhunbeiBegin", "dying"] },
 		filter(event, player) {
 			return player.getStorage("olsblucun_used").length > 0;
