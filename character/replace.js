@@ -2,7 +2,7 @@ window.noname_character_replace = {
 	//大致按照OL，新杀，手杀，外服，线下，DIY，怀旧的顺序排列。（同服按标，界，谋，sp）
 	key_yuri: ["key_yuri", "sp_key_yuri"],
 	sp_key_kanade: ["sp_key_kanade", "kanade"],
-	shen_caocao: ["shen_caocao", "old_caocao", "ca_shen_caocao", "v_caocao"],
+	shen_caocao: ["shen_caocao", "old_caocao", "ca_shen_caocao"],
 	shen_guanyu: ["shen_guanyu", "tw_shen_guanyu", "ty_shen_guanyu"],
 	shen_huatuo: ["dc_shen_huatuo", "shen_huatuo"],
 	shen_jiaxu: ["le_shen_jiaxu", "shen_jiaxu", "zombie_jiaxu"],
@@ -28,7 +28,7 @@ window.noname_character_replace = {
 	caizhenji: ["caizhenji", "ol_caizhenji"],
 	caoang: ["caoang", "dc_sb_caoang", "tw_caoang", "huan_caoang", "yj_caoang"],
 	caoanmin: ["caoanmin", "ns_caoanmin"],
-	caocao: ["caocao", "re_caocao", "sp_ol_caocao", "ol_jsrg_caocao", "dc_caocao", "sb_caocao", "tw_caocao", "jsrg_caocao", "jd_sb_caocao", "yj_caocao", "ns_caocao", "ns_caocaosp", "jy_caocao", "ps_caocao", "sxrm_caocao", "wn_caocao", "pe_jun_caocao", "xy_caocao"],
+	caocao: ["caocao", "re_caocao", "sp_ol_caocao", "ol_jsrg_caocao", "dc_caocao", "sb_caocao", "tw_caocao", "jsrg_caocao", "jd_sb_caocao", "yj_caocao", "ns_caocao", "ns_caocaosp", "jy_caocao", "ps_caocao", "sxrm_caocao", "wn_caocao", "pe_jun_caocao", "xy_caocao", "v_caocao"],
 	caochong: ["caochong", "ol_caochong", "re_caochong", "huan_caochong", "old_caochong", "strong_caochong"],
 	caochun: ["caochun", "dc_caochun", "old_caochun"],
 	caofang: ["caofang", "jsrg_caofang"],
