@@ -1520,6 +1520,7 @@ window.noname_character_rank = {
 		"ns_lvzhi",
 		"ns_wangyue",
 		"ns_xinnanhua",
+		"v_caocao",
 	],
 	bm: [
 		"std_simahui",
@@ -4007,6 +4008,7 @@ window.noname_character_rank = {
 			"ns_liuzhang",
 			"ns_xinnanhua",
 			"ns_caimao",
+			"v_caocao",
 		],
 		junk: [
 			"yao_yuanshu",
