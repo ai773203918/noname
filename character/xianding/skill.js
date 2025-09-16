@@ -184,7 +184,13 @@ const skills = {
 					.set("targetx", targets)
 					.set("ai", target => {
 						const player = get.player();
-						return get.attitude(player, target);
+						let att = get.attitude(player, target);
+						if (target.hasSkill("gangzhi")) {
+							return 0;
+						} else if (target.hasSkillTag("jueqing")) {
+							att = att / 2;
+						}
+						return att;
 					})
 					.forResult();
 				if (result?.bool && result?.targets) {
