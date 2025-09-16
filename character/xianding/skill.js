@@ -207,7 +207,7 @@ const skills = {
 			if (result?.bool && result?.numbers) {
 				const number = result.numbers[0];
 				player.line(target);
-				game.log(player, "将", num, "次“军合”效果交给了", target);
+				game.log(player, "将", number, "次“军合”效果交给了", target);
 				player.removeMark("dcjunhe_effect", number, false);
 				target.addMark("dcjunhe_effect", number, false);
 				target.addSkill("dcjunhe_effect");
