@@ -435,9 +435,11 @@ export class Library {
 
 	objectURL = new Map();
 	hookmap = {};
-	//共联时机的map（目前有很大的兼容问题，请不要使用）
+	//共联时机的map
 	#relatedTrigger = {
-		phaseAny: ["phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"],
+		get phaseAny() {
+			return lib.phaseName;
+		},
 		//loseAsync: ["lose", "gain", "addToExpansion", "addJudge", "eqiup"],
 	};
 	get relatedTrigger() {
