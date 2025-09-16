@@ -7795,7 +7795,6 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		frequent: true,
 		async content(event, trigger, player) {
 			let cards = [];
 			while (true) {
@@ -7854,12 +7853,7 @@ const skills = {
 					break;
 				} else {
 					cards.add(card);
-					let result;
-					if (cards.length < game.countPlayer()) {
-						result = await player.chooseBool("是否继续亮出牌堆顶的牌？").set("frequentSkill", event.name).forResult();
-					} else {
-						result = { bool: false };
-					}
+					const result = await player.chooseBool("是否继续亮出牌堆顶的牌？").forResult();
 					if (!result.bool) {
 						game.broadcastAll(() => ui.clear());
 						await player.gain(cards, "gain2");
