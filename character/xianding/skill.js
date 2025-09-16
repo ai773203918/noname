@@ -7853,7 +7853,12 @@ const skills = {
 					break;
 				} else {
 					cards.add(card);
-					const result = await player.chooseBool("是否继续亮出牌堆顶的牌？").forResult();
+					let result;
+					if (cards.length < game.countPlayer()) {
+						result = await player.chooseBool("是否继续亮出牌堆顶的牌？").forResult();
+					} else {
+						result = { bool: false };
+					}
 					if (!result.bool) {
 						game.broadcastAll(() => ui.clear());
 						await player.gain(cards, "gain2");
