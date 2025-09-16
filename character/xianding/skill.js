@@ -14772,32 +14772,48 @@ const skills = {
 		prompt2(event, player) {
 			return (player.countCards("h") < player.maxHp ? "将手牌摸至" + get.cnNumber(player.maxHp) + "张，然后" : "") + "将任意张牌随机置入牌堆并从牌堆或弃牌堆中获得等量点数为8的牌。";
 		},
-		content() {
-			"step 0";
-			player.drawTo(player.maxHp);
-			"step 1";
-			var cards = player.getCards("he");
+		async content(event, trigger, player) {
+			await lib.skill.dcxiongmu.step0(player);
+			const selectResult = await lib.skill.dcxiongmu.step1(player);
+			if (!selectResult || (selectResult.bool === false && (!selectResult.cards || !selectResult.cards.length))) {
+				return;
+			}
+			const chosenCards = await lib.skill.dcxiongmu.step2(player, selectResult);
+			if (!chosenCards || !chosenCards.length) {
+				return;
+			}
+			await lib.skill.dcxiongmu.step3(player, chosenCards);
+		},
+		async step0(player) {
+			await player.drawTo(player.maxHp);
+		},
+		async step1(player) {
+			const cards = player.getCards("he");
 			if (!cards.length) {
-				event.finish();
-			} else if (cards.length == 1) {
-				event._result = { bool: true, cards: cards };
-			} else {
-				player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
+				return null;
+			}
+			if (cards.length == 1) {
+				return { bool: true, cards };
+			}
+			const next = player
+				.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll")
+				.set("ai", card => {
 					return 6 - get.value(card);
 				});
+			return await next.forResult();
+		},
+		async step2(player, result) {
+			if (!result || !result.bool) {
+				return null;
 			}
-			"step 2";
-			if (result.bool) {
-				var cards = result.cards;
-				event.cards = cards;
-				game.log(player, `将${get.cnNumber(cards.length)}张牌置入了牌堆`);
-				player.loseToDiscardpile(cards, ui.cardPile, "blank").set("log", false).insert_index = function () {
-					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
-				};
-			} else {
-				event.finish();
-			}
-			"step 3";
+			const cards = result.cards;
+			game.log(player, `将${get.cnNumber(cards.length)}张牌置入了牌堆`);
+			player.loseToDiscardpile(cards, ui.cardPile, "blank").set("log", false).insert_index = function () {
+				return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
+			};
+			return cards;
+		},
+		async step3(player, cards) {
 			var list = [],
 				shown = [];
 			var piles = ["cardPile", "discardPile"];
