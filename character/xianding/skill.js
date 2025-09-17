@@ -53,9 +53,10 @@ const skills = {
 				return dialog;
 			},
 			check({ link: [_, __, name] }) {
-				const event = get.event().getParent(2),
-					card = get.autoViewAs({ name }, "unsure");
-				return get.player().getUseValue(card, true, name == "jiu" ? false : event);
+				if (get.event().getParent() == "chooseToRespond") {
+					return 1;
+				}
+				return get.order({ name }, get.player());
 			},
 			backup(links) {
 				const backup = get.info("dczhifeng_backup");
