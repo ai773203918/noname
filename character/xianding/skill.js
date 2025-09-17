@@ -14772,47 +14772,30 @@ const skills = {
 			return (player.countCards("h") < player.maxHp ? "将手牌摸至" + get.cnNumber(player.maxHp) + "张，然后" : "") + "将任意张牌随机置入牌堆并从牌堆或弃牌堆中获得等量点数为8的牌。";
 		},
 		async content(event, trigger, player) {
-			await lib.skill.dcxiongmu.step0(player);
-			const selectResult = await lib.skill.dcxiongmu.step1(player);
-			if (!selectResult || (selectResult.bool === false && (!selectResult.cards || !selectResult.cards.length))) {
-				return;
-			}
-			const chosenCards = await lib.skill.dcxiongmu.step2(player, selectResult);
-			if (!chosenCards || !chosenCards.length) {
-				return;
-			}
-			await lib.skill.dcxiongmu.step3(player, chosenCards);
-		},
-		async step0(player) {
 			await player.drawTo(player.maxHp);
-		},
-		async step1(player) {
-			const cards = player.getCards("he");
+			var cards = player.getCards("he");
 			if (!cards.length) {
-				return null;
+				return;
 			}
+			var result;
 			if (cards.length == 1) {
-				return { bool: true, cards };
-			}
-			const next = player
-				.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll")
-				.set("ai", card => {
+				result = { bool: true, cards: cards };
+			} else {
+				result = await player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
 					return 6 - get.value(card);
-				});
-			return await next.forResult();
-		},
-		async step2(player, result) {
-			if (!result || !result.bool) {
-				return null;
+				}).forResult();
 			}
-			const cards = result.cards;
-			game.log(player, `将${get.cnNumber(cards.length)}张牌置入了牌堆`);
-			player.loseToDiscardpile(cards, ui.cardPile, "blank").set("log", false).insert_index = function () {
-				return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
-			};
-			return cards;
-		},
-		async step3(player, cards) {
+			if (result.bool) {
+				var cards = result.cards;
+				event.cards = cards;
+				game.log(player, `将${get.cnNumber(cards.length)}张牌置入了牌堆`);
+				await player.loseToDiscardpile(cards, ui.cardPile, "blank").set("log", false);
+				event.insert_index = function () {
+					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
+				};
+			} else {
+				return;
+			}
 			var list = [],
 				shown = [];
 			var piles = ["cardPile", "discardPile"];
@@ -14853,7 +14836,8 @@ const skills = {
 					return 500;
 				});
 				next.gaintag.add("dcxiongmu_tag");
-				player.addTempSkill("dcxiongmu_tag", "roundStart");
+				await next;
+				await player.addTempSkill("dcxiongmu_tag", "roundStart");
 			}
 		},
 		ai: {
@@ -14928,7 +14912,7 @@ const skills = {
 				},
 				forced: true,
 				locked: false,
-				content() {
+				async content(event, trigger, player) {
 					trigger.num--;
 				},
 			},
