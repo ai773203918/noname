@@ -14788,11 +14788,12 @@ const skills = {
 			if (result.bool) {
 				var cards = result.cards;
 				event.cards = cards;
-				game.log(player, `将${get.cnNumber(cards.length)}张牌置入了牌堆`);
-				await player.loseToDiscardpile(cards, ui.cardPile, "blank").set("log", false);
-				event.insert_index = function () {
+				game.log(player, `将${get.cnNumber(event.cards.length)}张牌置入了牌堆`);
+				var next = player.loseToDiscardpile(event.cards, ui.cardPile, "blank").set("log", false);
+				next.insert_index = function () {
 					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
 				};
+				await next;
 			} else {
 				return;
 			}
@@ -14808,12 +14809,12 @@ const skills = {
 						if (pile == "discardPile") {
 							shown.push(card);
 						}
-						if (list.length >= cards.length) {
+						if (list.length >= event.cards.length) {
 							break;
 						}
 					}
 				}
-				if (list.length >= cards.length) {
+					if (list.length >= event.cards.length) {
 					break;
 				}
 			}
