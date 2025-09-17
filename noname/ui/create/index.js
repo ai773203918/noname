@@ -3503,7 +3503,7 @@ export class Create {
 				}
 			}
 			node.link = item;
-			var double = get.is.double(item, true);
+			var double = get.is.double(node._link, true);
 			if (double) node._changeGroup = true;
 			if (type == "characterx" && lib.characterReplace[node._link] && lib.characterReplace[node._link].length > 1) {
 				node._replaceButton = true;
