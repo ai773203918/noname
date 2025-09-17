@@ -14789,10 +14789,11 @@ const skills = {
 				var cards = result.cards;
 				event.cards = cards;
 				game.log(player, `将${get.cnNumber(event.cards.length)}张牌置入了牌堆`);
-				event.insert_index = function () {
+				var next = player.loseToDiscardpile(event.cards, ui.cardPile, "blank").set("log", false);
+				next.insert_index = function () {
 					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
 				};
-				await player.loseToDiscardpile(event.cards, ui.cardPile, "blank").set("log", false);
+				await next;
 			} else {
 				return;
 			}
