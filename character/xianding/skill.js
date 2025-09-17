@@ -8340,12 +8340,15 @@ const skills = {
 					player: "useCard1",
 				},
 				filter(event, player) {
-					return event.addCount !== false &&  player.hasHistory("lose", evt => {
-						if (evt.getParent() != event) {
-							return false;
-						}
-						return Object.values(evt.gaintag_map).flat().includes("dclianjie");
-					});
+					return (
+						event.addCount !== false &&
+						player.hasHistory("lose", evt => {
+							if (evt.getParent() != event) {
+								return false;
+							}
+							return Object.values(evt.gaintag_map).flat().includes("dclianjie");
+						})
+					);
 				},
 				async cost(event, trigger, player) {
 					trigger.addCount = false;
@@ -9900,10 +9903,10 @@ const skills = {
 				for (const skill of gainSkills) {
 					const info = get.info(skill);
 					if (info.usable !== undefined) {
-						if (target.hasSkill("counttrigger") && target.storage.counttrigger[skill] && target.storage.counttrigger[skill] >= 1) {
-							delete target.storage.counttrigger[skill];
+						if (typeof target.getStat("triggerSkill")[skill] == "number" && target.getStat("triggerSkill")[skill] >= 1) {
+							delete target.getStat("triggerSkill")[skill];
 						}
-						if (typeof get.skillCount(skill) == "number" && get.skillCount(skill) >= 1) {
+						if (typeof target.getStat("skill")[skill] == "number" && target.getStat("skill")[skill] >= 1) {
 							delete target.getStat("skill")[skill];
 						}
 					}
