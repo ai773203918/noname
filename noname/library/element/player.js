@@ -1939,8 +1939,8 @@ export class Player extends HTMLDivElement {
 		next2.player = player;
 		next2.forceDie = true;
 		next2.includeOut = true;
-		next.skill = skill;
-		next.log_event = evt;
+		next2.skill = skill;
+		next2.log_event = evt;
 		next2.setContent("emptyEvent");
 	}
 	/**
