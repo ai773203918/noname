@@ -140,7 +140,7 @@ export class Player extends HTMLDivElement {
 		player.storage = {
 			counttrigger: new Proxy({}, {
 				get(_, prop) {
-					return player.getStat("triggerSkill")?.[prop];
+					return player.getStat("triggerSkill")[prop];
 				},
 				set(_, prop, value) {
 					player.getStat("triggerSkill")[prop] = value;
@@ -3674,7 +3674,7 @@ export class Player extends HTMLDivElement {
 		this.storage = {
 			counttrigger: new Proxy({}, {
 				get(_, prop) {
-					return this.getStat("triggerSkill")?.[prop];
+					return this.getStat("triggerSkill")[prop];
 				},
 				set(_, prop, value) {
 					this.getStat("triggerSkill")[prop] = value;
