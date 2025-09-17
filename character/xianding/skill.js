@@ -14778,6 +14778,8 @@ const skills = {
 				return;
 			}
 			var result;
+			let selectedCards = null;
+			let selectedCount = 0;
 			if (cards.length == 1) {
 				result = { bool: true, cards: cards };
 			} else {
@@ -14786,10 +14788,10 @@ const skills = {
 				}).forResult();
 			}
 			if (result.bool) {
-				var cards = result.cards;
-				event.cards = cards;
-				game.log(player, `将${get.cnNumber(event.cards.length)}张牌置入了牌堆`);
-				var next = player.loseToDiscardpile(event.cards, ui.cardPile, "blank").set("log", false);
+				selectedCards = result.cards;
+				selectedCount = selectedCards.length;
+				game.log(player, `将${get.cnNumber(selectedCount)}张牌置入了牌堆`);
+				var next = player.loseToDiscardpile(selectedCards, ui.cardPile, "blank").set("log", false);
 				next.insert_index = function () {
 					return ui.cardPile.childNodes[get.rand(0, ui.cardPile.childNodes.length - 1)];
 				};
@@ -14809,12 +14811,12 @@ const skills = {
 						if (pile == "discardPile") {
 							shown.push(card);
 						}
-						if (list.length >= event.cards.length) {
+						if (list.length >= selectedCount) {
 							break;
 						}
 					}
 				}
-					if (list.length >= event.cards.length) {
+						if (list.length >= selectedCount) {
 					break;
 				}
 			}
@@ -14838,7 +14840,7 @@ const skills = {
 				});
 				next.gaintag.add("dcxiongmu_tag");
 				await next;
-				await player.addTempSkill("dcxiongmu_tag", "roundStart");
+				player.addTempSkill("dcxiongmu_tag", "roundStart");
 			}
 		},
 		ai: {
