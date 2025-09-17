@@ -3570,28 +3570,23 @@ const skills = {
 		filter(event, player) {
 			return player.countDiscardableCards(player, "h");
 		},
-		filterCard: lib.filter.cardDiscardable,
-		selectCard: [1, Infinity],
-		filterOk() {
-			const cards = ui.selected?.cards,
-				player = get.player();
-			if (!cards?.length || cards?.length < 3) {
-				return true;
+		filterCard(card, player) {
+			const cards = ui.selected?.cards.slice();
+			cards.push(card);
+			if (cards.length > 2) {
+				const nums = cards.map(card => get.number(card, player)).sort();
+				const diffs = new Set();
+				for (let i = 1; i < nums.length; i++) {
+					diffs.add(nums[i] - nums[i - 1]);
+				}
+				if (diffs.size != 1) {
+					return false;
+				}
 			}
-			let nums = cards
-				.map(card => get.number(card, player))
-				//.unique()
-				.sort((a, b) => b - a);
-			nums = nums
-				.map((num, index) => {
-					if (nums[index + 1]) {
-						return num - nums[index + 1];
-					}
-					return nums[index - 1] - num;
-				})
-				.unique();
-			return nums.length == 1;
+			return lib.filter.cardDiscardable(card, player, "dcdianlun");
 		},
+		complexCard: true,
+		selectCard: [1, Infinity],
 		check(card) {
 			return 7 - get.value(card);
 		},
@@ -3699,8 +3694,9 @@ const skills = {
 					target.popup("同意");
 					const result2 = await player
 						.chooseToDiscard(`###典论###${lib.translate["dcdianlun_infox"]}`, [1, 3], true, "chooseonly")
-						.set("filterOk", get.info("dcdianlun").filterOk)
-						.set("ai", card => 6 - get.value(card))
+						.set("filterCard", get.info("dcdianlun").filterCard)
+						.set("complexCard", true)
+						.set("ai", card => 7 - get.value(card))
 						.forResult();
 					if (result2?.bool && result2.cards?.length) {
 						await player.useSkill("dcdianlun", result2.cards);
@@ -3709,7 +3705,12 @@ const skills = {
 				ai: {
 					order: 7,
 					result: {
-						target: 1,
+						target(player, target) {
+							if (!player.countCards(card => 7 - get.value(card), "h") || player.countCards("h") < 3) {
+								return 0;
+							}
+							return 1;
+						},
 					},
 				},
 			},
