@@ -4659,6 +4659,7 @@ const skills = {
 				}
 				if (player.storage[`temp_ban_${skill}`]) {
 					delete player.storage[`temp_ban_${skill}`];
+					resetSkills.add(skill);
 				}
 				if (player.awakenedSkills.includes(skill)) {
 					player.restoreSkill(skill);
