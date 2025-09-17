@@ -14839,7 +14839,7 @@ const skills = {
 						}
 					}
 				}
-						if (list.length >= selectedCount) {
+				if (list.length >= selectedCount) {
 					break;
 				}
 			}
