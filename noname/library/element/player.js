@@ -1919,12 +1919,29 @@ export class Player extends HTMLDivElement {
 			this,
 			skill
 		);
-		const next = game.createEvent("changeZhuanhuanji", false, get.event());
-		next.player = this;
-		next.skill = skill;
+		let player = this;
+		let evt = _status.event;
+		//转换技转换后
+		let next = game.createEvent("changeZhuanhuanji", false);
+		next.player = player;
 		next.forceDie = true;
 		next.includeOut = true;
+		next.skill = skill;
+		evt.next.remove(next);
+		if (evt.logSkill || evt.name?.startsWith("pre_")) {
+			evt = evt.getParent();
+		}
+		next.log_event = evt;
+		evt.after.push(next);
 		next.setContent("emptyEvent");
+		//转换技转换时
+		let next2 = game.createEvent("changeZhuanhuanjiBegin", false, get.event());
+		next2.player = player;
+		next2.forceDie = true;
+		next2.includeOut = true;
+		next.skill = skill;
+		next.log_event = evt;
+		next2.setContent("emptyEvent");
 	}
 	/**
 	 * @param { string } skill
@@ -8978,7 +8995,7 @@ export class Player extends HTMLDivElement {
 			next.forceDie = true;
 			next.includeOut = true;
 			evt.next.remove(next);
-			if (evt.logSkill) {
+			if (evt.logSkill || evt.name?.startsWith("pre_")) {
 				evt = evt.getParent();
 			}
 			for (var i in logInfo) {
