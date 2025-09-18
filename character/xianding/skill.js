@@ -6,6 +6,14 @@ const skills = {
 	//威孙策
 	dczhifeng: {
 		audio: 2,
+		locked: false,
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.storage?.dczhifeng) {
+					return Infinity;
+				}
+			},
+		},
 		hiddenCard(player, name) {
 			const [cards, bool] = get.info("dczhifeng").getFilter(player);
 			if (_status.event.name == "chooseToRespond" && !["sha", "shan"].includes(name)) {
@@ -34,10 +42,13 @@ const skills = {
 				return false;
 			}
 			const [cards, bool] = event.dczhifeng;
-			if (event.name == "chooseToRespond" && cards.some(name => !["sha", "shan"].includes(name))) {
+			if (!bool || (event.name == "chooseToRespond" && cards.some(name => !["sha", "shan"].includes(name)))) {
 				return false;
 			}
-			return bool && cards.some(name => event.filterCard(get.autoViewAs({ name }, "unsure"), player, event));
+			return cards.some(name => {
+				let card = get.autoViewAs({ name, storage: { dczhifeng: name == "jiu" } }, "unsure");
+				return event.filterCard(card, player, event);
+			});
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -46,7 +57,8 @@ const skills = {
 					if (nature || !cards.some(namex => namex == name)) {
 						return false;
 					}
-					return event.filterCard(get.autoViewAs({ name }, "unsure"), player, event);
+					const card = get.autoViewAs({ name, storage: { dczhifeng: name == "jiu" } }, "unsure");
+					return event.filterCard(card, player, event);
 				});
 				const dialog = ui.create.dialog("猘锋", [vcards, "vcard"]);
 				dialog.direct = true;
@@ -58,7 +70,7 @@ const skills = {
 			backup(links) {
 				const backup = get.info("dczhifeng_backup");
 				backup.audio = "dczhifeng";
-				backup.viewAs = { name: links[0][2] };
+				backup.viewAs = { name: links[0][2], storage: { dczhifeng: links[0][2] == "jiu" } };
 				return backup;
 			},
 			prompt(links) {
@@ -181,7 +193,7 @@ const skills = {
 					} else if (get.event().controls.includes("选项二")) {
 						const info = get.info("dczhifeng");
 						const cards = info.getFilter(target)[0].flatMap(name => {
-							const card = get.autoViewAs({ name }, "unsure");
+							const card = get.autoViewAs({ name, storage: { dczhifeng: name == "jiu" } }, "unsure");
 							return target.hasUseTarget(card) ? [card] : [];
 						});
 						if (cards.some(card => target.getUseValue(card) * get.sgnAttitude(player, target) > 0)) {
@@ -240,7 +252,7 @@ const skills = {
 						add: {},
 						replace: { window() {} },
 					})
-					.set("addCount", false)
+					.set("addCount", choice != "jiu")
 					.backup("dczhifeng_backup");
 			}
 		},
