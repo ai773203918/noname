@@ -53,9 +53,6 @@ const skills = {
 				return dialog;
 			},
 			check({ link: [_, __, name] }) {
-				if (get.event().getParent() == "chooseToRespond") {
-					return 1;
-				}
 				return get.order({ name }, get.player());
 			},
 			backup(links) {
