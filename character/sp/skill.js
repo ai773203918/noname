@@ -40416,6 +40416,7 @@ const skills = {
 			}
 		},
 		ai: {
+			combo: "xinfu_falu",
 			maixie: true,
 			effect: {
 				target(card, player, target) {
@@ -40444,7 +40445,6 @@ const skills = {
 				},
 			},
 		},
-		ai: { combo: "xinfu_falu" },
 		group: ["zhenyi_spade", "zhenyi_club", "zhenyi_heart"],
 		subSkill: {
 			spade: {
