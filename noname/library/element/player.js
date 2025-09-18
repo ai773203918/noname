@@ -3645,72 +3645,48 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	uninit() {
-		const player = this;
-		delete player.name;
-		delete player.name1;
-		delete player.tempname;
-		delete player.skin;
-		delete player.sex;
-		delete player.group;
-		delete player.hp;
-		delete player.maxHp;
-		delete player.hujia;
+		delete this.name;
+		delete this.name1;
+		delete this.tempname;
+		delete this.skin;
+		delete this.sex;
+		delete this.group;
+		delete this.hp;
+		delete this.maxHp;
+		delete this.hujia;
 
-		if (player.name2) {
-			delete player.singleHp;
-			delete player.name2;
+		if (this.name2) {
+			delete this.singleHp;
+			delete this.name2;
 		}
 
-		player.skipList = [];
-		player.clearSkills(true);
-		player.initedSkills = [];
-		player.additionalSkills = {};
-		player.disabledSkills = {};
-		player.hiddenSkills = [];
-		player.awakenedSkills = [];
-		player.forbiddenSkills = {};
-		player.phaseNumber = 0;
-		player.stat = [{ card: {}, skill: {}, triggerSkill: {} }];
-		player.tempSkills = {};
-		player.storage = {
-			counttrigger: new Proxy({}, {
-				get(_, prop) {
-					return player.getStat("triggerSkill")[prop];
-				},
-				set(_, prop, value) {
-					player.getStat("triggerSkill")[prop] = value;
-					return true;
-				},
-				deleteProperty(_, prop) {
-					delete player.getStat("triggerSkill")[prop];
-					return true;
-				},
-				has(_, prop) {
-					return prop in player.getStat("triggerSkill");
-				},
-				ownKeys() {
-					return Reflect.ownKeys(player.getStat("triggerSkill"));
-				},
-				getOwnPropertyDescriptor(_, prop) {
-					return Object.getOwnPropertyDescriptor(player.getStat("triggerSkill"), prop);
-				}
-			}),
-		};
-		player.marks = {};
-		player.expandedSlots = {};
-		player.disabledSlots = {};
-		player.ai = { friend: [], enemy: [], neutral: [] };
+		this.skipList = [];
+		this.clearSkills(true);
+		this.initedSkills = [];
+		this.additionalSkills = {};
+		this.disabledSkills = {};
+		this.hiddenSkills = [];
+		this.awakenedSkills = [];
+		this.forbiddenSkills = {};
+		this.phaseNumber = 0;
+		this.stat = [{ card: {}, skill: {}, triggerSkill: {} }];
+		this.tempSkills = {};
+		this.storage = { counttrigger: this.storage.counttrigger };
+		this.marks = {};
+		this.expandedSlots = {};
+		this.disabledSlots = {};
+		this.ai = { friend: [], enemy: [], neutral: [] };
 		/*
-		player.vcardsMap = {
+		this.vcardsMap = {
 			handcards: [],
 			equips: [],
 			judges: [],
 		};
 		*/
 
-		player.$uninit();
+		this.$uninit();
 
-		return player;
+		return this;
 	}
 	$uninit() {
 		this.$syncExpand();
