@@ -4956,7 +4956,6 @@ const skills = {
 			}
 		},
 		ai: { threaten: 4 },
-		derivation: "olhedao_faq",
 	},
 	olshoushu: {
 		audio: 3,
