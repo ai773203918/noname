@@ -34,7 +34,7 @@ const skills = {
 				return false;
 			}
 			const [cards, bool] = event.dczhifeng;
-			if (_status.event.name == "chooseToRespond" && cards.some(name => !["sha", "shan"].includes(name))) {
+			if (event.name == "chooseToRespond" && cards.some(name => !["sha", "shan"].includes(name))) {
 				return false;
 			}
 			return bool && cards.some(name => event.filterCard(get.autoViewAs({ name }, "unsure"), player, event));
@@ -165,7 +165,7 @@ const skills = {
 			return event.player.group === "wu" && event.player.isIn();
 		},
 		async cost(event, trigger, player) {
-			const choiceList = [`对${get.translation(trigger.player)}造成一点伤害`, `令${get.translation(trigger.player)}交给你一张牌并令其发动一次【猘锋】`],
+			const choiceList = [`对${get.translation(trigger.player)}造成一点伤害`, `令${get.translation(trigger.player)}交给你一张牌然后其可发动一次【猘锋】`],
 				choice = ["选项一", "选项二"];
 			if (!trigger.player.countGainableCards(player, "he")) {
 				choiceList[1] = `<span style="opacity:0.5">${choiceList[1]}</span>`;
@@ -208,7 +208,7 @@ const skills = {
 				await target.damage();
 			} else {
 				if (player !== target) {
-					await target.chooseToGive(`威靖：交给${get.translation(player)}一张牌并发动一次【猘锋】`, player, "he", true);
+					await target.chooseToGive(`威靖：交给${get.translation(player)}一张牌然后可发动发动一次【猘锋】`, player, "he", true);
 				}
 				const info = get.info("dczhifeng");
 				const [cards, bool] = info.getFilter(target);
@@ -239,9 +239,6 @@ const skills = {
 					.set("custom", {
 						add: {},
 						replace: { window() {} },
-					})
-					.set("oncard", () => {
-						get.event().set("addSkillCount", false);
 					})
 					.set("addCount", false)
 					.backup("dczhifeng_backup");
