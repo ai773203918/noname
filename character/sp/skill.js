@@ -534,22 +534,15 @@ const skills = {
 		popup: false,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const nanman = new lib.element.VCard({ name: "nanman" }); //card = event.cards[0],
-			//const select = [1, Math.max(1, get.info(card, false).filterTarget ? get.info("jsrgchengxian").getNumber(card, player)[1] : 0)];
+			player.addTempSkill("newzhennan_dist");
+			const nanman = new lib.element.VCard({ name: "nanman", storage: { newzhennan: true } });
 			if (player.hasUseTarget(nanman, true, false)) {
 				const result = await player.chooseUseTarget(nanman, true, false, [1, Infinity]).forResult();
 				if (result?.bool && result.targets?.length) {
-					for (const target of result.targets.sortBySeat()) {
-						if (target.hasHistory("damage", evt => evt.getParent(4) === event)) {
-							const cards = target.getDiscardableCards(target, "he");
-							if (cards.length) {
-								await target.discard(cards.randomGet());
-							}
-						} else {
-							player.line(target);
-							player.addTempSkill("newzhennan_dist");
-							player.markAuto("newzhennan_dist", target);
-						}
+					const targets = result.targets.filter(target => !target.hasHistory("damage", evt => evt.getParent(4) === event)).sortBySeat();
+					if (targets.length > 0) {
+						player.line(targets);
+						player.markAuto("newzhennan_dist", targets);
 					}
 				}
 			}
@@ -565,6 +558,24 @@ const skills = {
 							return true;
 						}
 					},
+				},
+				trigger: { source: "damageSource" },
+				filter(event, player) {
+					const target = event.player;
+					if (!event.card?.storage?.newzhennan || event.getParent().type !== "card") {
+						return false;
+					}
+					return target.isIn() && event.getParent(2).targets?.includes(target) && target.countCards("he") > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					const cards = target.getDiscardableCards(target, "he");
+					if (cards.length) {
+						player.line(target);
+						await target.discard(cards.randomGet());
+					}
 				},
 			},
 		},
