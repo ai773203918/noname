@@ -2436,6 +2436,7 @@ window.noname_character_rank = {
 			"eu_yujin",
 			"eu_zhangliao",
 			"eu_yuejin",
+			"v_sunce",
 		],
 		epic: [
 			"xy_xunyu",

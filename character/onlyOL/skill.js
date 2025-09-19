@@ -250,7 +250,19 @@ const skills = {
 								list.filter(info => {
 									return isPhase(info[2]) && !player.getStorage(event.name + "_used").includes(info[2]);
 								}),
-								"vcard",
+								(item, type, position, noclick, node) => {
+									let showCard = [item[0], item[1], `lusu_${item[2]}`];
+									node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+									node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+									node.node.info.style["font-size"] = "20px";
+									node._link = node.link = item;
+									node._customintro = uiintro => {
+										uiintro.add(get.translation(node._link[2]));
+										uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+										return uiintro;
+									};
+									return node;
+								},
 							],
 						],
 						true
@@ -272,12 +284,24 @@ const skills = {
 					const choices = trigger.phaseList.reduce((list, name, index) => (index != choice[0] - 1 && isPhase(name) ? [...list, [index + 1, "", name.split("|")[0]]] : list), []);
 					const indexList = choices.map(i => i[0] - 1);
 					const result2 = await player
-						.chooseToMove("独断：交换另外两个额定阶段", true)
+						.chooseToMove("独断：交换另外两个阶段", true)
 						.set("checkMove", moved => {
 							const list = moved[0].reduce((list, i, index) => (choices[index][0] != i[0] ? [...list, i[0]] : list), []).sort();
 							return list;
 						})
-						.set("list", [["额定阶段", [choices, "vcard"]]])
+						.set("list", [["剩余阶段", [choices, (item, type, position, noclick, node) => {
+							let showCard = [item[0], item[1], `lusu_${item[2]}`];
+							node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+							node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+							node.node.info.style["font-size"] = "20px";
+							node._link = node.link = item;
+							node._customintro = uiintro => {
+								uiintro.add(get.translation(node._link[2]));
+								uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+								return uiintro;
+							};
+							return node;
+						}]]])
 						.set("filterOk", moved => {
 							return get.event().checkMove(moved).length == 2;
 						})
@@ -1525,26 +1549,40 @@ const skills = {
 				log: false,
 			},
 			debuff: {
-				forced: true,
 				charlotte: true,
-				popup: false,
 				init(player, skill) {
 					player.addMark(skill, 2, false);
 				},
 				onremove: true,
-				intro: {
-					content: "当前“幻惑”剩余次数：#",
-				},
-				firstDo: true,
-				trigger: {
-					player: ["chooseToUseBegin", "useCardAfter"],
-				},
+				intro: { content: "当前“幻惑”剩余次数：#" },
+				trigger: { player: ["chooseToUseBegin", "useCardAfter"] },
 				filter(event, player) {
 					if (event.name == "chooseToUse") {
 						return event.type == "phase";
 					}
-					return player.isPhaseUsing();
+					return event.isPhaseUsing(player);
 				},
+				mod: {
+					cardEnabled(card, player) {
+						const event = get.event();
+						if (player.isPhaseUsing() && !_status._olhuanhuo_debuff_check && (!event.skill || event.skill !== "olhuanhuo_backup")) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (player.isPhaseUsing()) {
+							return false;
+						}
+					},
+					cardRespondable(card, player) {
+						if (player.isPhaseUsing()) {
+							return false;
+						}
+					},
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
 						player.removeMark(event.name, 1, false);
@@ -1558,14 +1596,18 @@ const skills = {
 							player.removeSkill(event.name);
 						}
 					} else {
+						game.broadcastAll(() => _status._olhuanhuo_debuff_check = true);
 						const cards = player.getCards("h", card => lib.filter.cardEnabled(card, player, trigger) && lib.filter.cardUsable(card, player, trigger));
+						game.broadcastAll(() => delete _status._olhuanhuo_debuff_check);
 						if (!cards.length) {
+							trigger.getParent("phaseUse").skipped = true;
+							trigger.cancel();
 							return;
 						}
 						const card = cards.randomGet();
 						trigger.set(event.name, card);
 						const name = "olhuanhuo_backup";
-						//trigger.set("openskilldialog", "请选择" + get.translation(card) + "的目标");
+						trigger.set("openskilldialog", `受【${get.translation(event.name)}】影响，须使用${get.translation(card)}`);
 						trigger.set("norestore", true);
 						trigger.set("_backupevent", name);
 						trigger.set("custom", {
@@ -2106,7 +2148,7 @@ const skills = {
 							if (target.countCards("h", card => card.hasGaintag("olmiluo"))) {
 								return get.recoverEffect(target, player, player);
 							}
-							return get.effect(target, { name: "loseHp" }, player, player);
+							return get.effect(target, { name: "losehp" }, player, player);
 						});
 					next.set(
 						"targetprompt2",
@@ -4250,9 +4292,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				trigger: {
-					get player() {
-						return lib.phaseName.map(c => `${c}Begin`);
-					},
+					player: "phaseAnyBegin",
 				},
 				getIndex(event, player) {
 					const storage = player.storage.olsbchoulie_buff;
@@ -7400,9 +7440,7 @@ const skills = {
 	olsbhongtu: {
 		audio: 6,
 		trigger: {
-			get global() {
-				return (lib.phaseName || []).map(i => i + "End");
-			},
+			global: "phaseAnyEnd",
 		},
 		filter(event, player) {
 			let count = 0;
@@ -9292,9 +9330,7 @@ const skills = {
 	olsbzhuri: {
 		audio: 2,
 		trigger: {
-			get player() {
-				return (lib.phaseName || []).map(i => i + "End");
-			},
+			player: "phaseAnyEnd",
 		},
 		filter(event, player) {
 			if (!game.hasPlayer(target => player.canCompare(target))) {

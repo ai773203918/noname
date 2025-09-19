@@ -1746,10 +1746,26 @@ const skills = {
 						const { result } = await player
 							.chooseUseTarget(card, "nodistance", false)
 							.set("ai", target => {
-								const { preTargets, player, _get_card: card } = get.event();
+								if (get.event().name == "chooseBool") {
+									const { targets2, card, player, preTargets } = target;
+									let eff = 0;
+									targets2.forEach(target2 => {
+										eff += get.effect(target2, card, player, player);
+									});
+									if (!targets2.containsSome(...preTargets)) {
+										let losehp = get.effect(player, { name: "losehp" }, player, player);
+										if (player.hp <= 1 && losehp < 0) {
+											losehp *= 2;
+										}
+										eff += losehp;
+									}
+									return eff > 0;
+								}
+								const { player, _get_card: card } = get.event(),
+									{ preTargets } = get.event().getParent();
 								let eff = get.effect(target, card, player, player);
-								if (!preTargets?.includes(target)) {
-									eff -= get.effect(player, { name: "losehp" }, player, player);
+								if (!preTargets?.includes(target) && !ui.selected.targets?.containsSome(...preTargets)) {
+									eff += get.effect(player, { name: "losehp" }, player, player);
 								}
 								return eff;
 							})
@@ -2025,7 +2041,19 @@ const skills = {
 						let num = 0;
 						while (list?.length) {
 							const result2 = await player
-								.chooseButton([`###权威###是否跳过一个阶段？（已跳过${num}个阶段）`, [list, "vcard"]])
+								.chooseButton([`###权威###是否跳过一个阶段？（已跳过${num}个阶段）`, [list, (item, type, position, noclick, node) => {
+									let showCard = [item[0], item[1], `lusu_${item[2]}`];
+									node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+									node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+									node.node.info.style["font-size"] = "20px";
+									node._link = node.link = item;
+									node._customintro = uiintro => {
+										uiintro.add(get.translation(node._link[2]));
+										uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+										return uiintro;
+									};
+									return node;
+								}]])
 								.set("ai", button => {
 									if (["phaseDiscard", "phaseJudge"].includes(button.link[2])) {
 										return 1;
@@ -2055,7 +2083,7 @@ const skills = {
 							return;
 						}
 						const result3 =
-							targets.length > 2
+							targets.length > 1
 								? await player
 										.chooseTarget(`###权威###令至多两名角色恢复${get.cnNumber(num)}点体力`, true, [1, 2], (card, player, target) => {
 											return target.isDamaged();
@@ -7582,21 +7610,23 @@ const skills = {
 					global: ["chooseToCompareAfter", "compareMultipleAfter"],
 				},
 				frequent(event, player) {
-					const cards = event.compareMeanwhile ? event.cards : [event.card1, event.card2];
+					const bool = event.compareMeanwhile || event.compareMultiple,
+						cards = bool ? event.cards : [event.card1, event.card2];
 					return !cards.filterInD("od").some(card => card.name == "du");
 				},
 				filter(event, player) {
-					if (event.compareMeanwhile) {
-						return event.cards.someInD("od");
-					}
-					return [event.card1, event.card2].someInD("od");
+					const bool = event.compareMeanwhile || event.compareMultiple,
+						cards = bool ? event.cards : [event.card1, event.card2];
+					return cards.someInD("od");
 				},
 				prompt2(event, player) {
-					const cards = event.compareMeanwhile ? event.cards : [event.card1, event.card2];
+					const bool = event.compareMeanwhile || event.compareMultiple,
+						cards = bool ? event.cards : [event.card1, event.card2];
 					return `获得${get.translation(cards.filterInD("od"))}`;
 				},
 				async content(event, trigger, player) {
-					const cards = trigger.compareMeanwhile ? trigger.cards : [trigger.card1, trigger.card2];
+					const bool = trigger.compareMeanwhile || trigger.compareMultiple,
+						cards = bool ? trigger.cards : [trigger.card1, trigger.card2];
 					await player.gain(cards.filterInD("od"), "gain2");
 				},
 			},
@@ -8021,6 +8051,15 @@ const skills = {
 			player.addTempSkill("hssifen_viewAs", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
 			player.storage.hssifen_viewAs[target.playerid] = result.cards.length;
 		},
+		ai: {
+			order: 7,
+			result: {
+				target(player, target) {
+					const juedou = new lib.element.VCard({ name: "juedou"});
+					return target.getUseValue(juedou) * Math.sqrt(target.countCards("h"));
+				},
+			},
+		},
 		subSkill: {
 			backup: {
 				filterCard(card, player) {
@@ -8097,10 +8136,6 @@ const skills = {
 				position: "hes",
 				check(card) {
 					return 6 - get.value(card);
-				},
-				ai: {
-					order: 5,
-					result: { player: 1 },
 				},
 			},
 		},
@@ -10367,31 +10402,44 @@ const skills = {
 			},
 			gain: {
 				audio: "scspsyaozhuo",
-				getCards: (event, player) => (player == event.player ? event.card2 : event.card1),
-				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
+				getCards(event, player) {
+					if (event.compareMultiple) {
+						return [];
+					}
+					if (event.compareMeanwhile) {
+						const index = [...event.targets, event.player].indexOf(player),
+							winner = event.winner || event.result.winner;
+						if (index < 0) {
+							return [];
+						}
+						return event.cards.filter((card, i) => {
+							return i !== index;
+						}).filterInD("od");
+					}
+					if (player != event.player && player != event.target) {
+						return [];
+					}
+					const bool = player == event.player;
+					return [event[bool ? "card2" : "card1"]].filterInD("od");
+				},
+				trigger: {
+					global: ["chooseToCompareAfter", "compareMultipleAfter"],
+				},
 				filter(event, player) {
-					if (![event.player, event.target].includes(player)) {
-						return false;
-					}
-					if (event.preserve) {
-						return false;
-					}
-					const card = get.info("psyaozhuo_gain").getCards(event, player);
-					return !get.owner(card);
+					const cards = get.info("psyaozhuo_gain").getCards(event, player);
+					return cards.length;
 				},
 				check(event, player) {
-					const card = get.info("psyaozhuo_gain").getCards(event, player);
-					return card.name != "du";
+					const cards = get.info("psyaozhuo_gain").getCards(event, player);
+					return cards.every(card => card.name != "du");
 				},
 				prompt2(event, player) {
-					const card = get.info("psyaozhuo_gain").getCards(event, player);
-					return `获得${get.translation(card)}`;
+					const cards = get.info("psyaozhuo_gain").getCards(event, player);
+					return `获得${get.translation(cards)}`;
 				},
 				async content(event, trigger, player) {
-					const card = get.info(event.name).getCards(trigger, player);
-					if (!get.owner(card)) {
-						await player.gain(card, "gain2");
-					}
+					const cards = get.info(event.name).getCards(trigger, player);
+					await player.gain(cards, "gain2", "log");
 				},
 			},
 		},
@@ -20290,7 +20338,7 @@ const skills = {
 					evt.player.getStat().card.sha--;
 				}
 			} else if (trigger.player.isIn()) {
-				trigger.player.addTempSkill("tychengshi_tiaoxin", { global: lib.phaseName.map(i => `${i}End`) });
+				trigger.player.addTempSkill("tychengshi_tiaoxin", { global: "phaseAnyEnd" });
 				trigger.player.markAuto("tychengshi_tiaoxin", [player]);
 			}
 		},
