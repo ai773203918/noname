@@ -5542,7 +5542,7 @@ const skills = {
 								.set(
 									"choiceList",
 									tags.map(tag => {
-										return `${get.translation(`${tag}_tag`)}${
+										return `${get.translation(`${tag}_tag`)}：${
 											{
 												dctuoyu_fengtian: "伤害/回复值+1",
 												dctuoyu_qingqu: "无次数和距离限制",
@@ -5551,6 +5551,7 @@ const skills = {
 										}`;
 									})
 								)
+								.set("displayIndex", false)
 								.set("prompt", "险峻：选择激活一个副区域标签")
 								.forResult("control");
 				game.log(player, "激活了副区域", "#y" + get.translation(control));
