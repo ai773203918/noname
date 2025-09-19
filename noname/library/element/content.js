@@ -12973,6 +12973,9 @@ player.removeVirtualEquip(card);
 	chooseToMove_new: function () {
 		"step 0";
 		//联机时间
+		if (player.isUnderControl()) {
+			game.swapPlayerAuto(player);
+		}
 		if (event.chooseTime && _status.connectMode && !game.online) {
 			event.time = lib.configOL.choose_timeout;
 			game.broadcastAll(function (time) {

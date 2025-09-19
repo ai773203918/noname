@@ -252,7 +252,7 @@ const skills = {
 						jun = target.countMark("mark_shouli_jun"),
 						li = target.countMark("mark_shouli_li"),
 						num = game.countPlayer(current => current.hasSkill("mark_shouli"));
-					switch(name) {
+					switch (name) {
 						case "phaseDrawBegin2": {
 							if (jun > 1) {
 								trigger.num += num;
@@ -4188,11 +4188,11 @@ const skills = {
 		wuqinxi: ["虎", "鹿", "熊", "猿", "鹤"],
 		wuqinxiMap: ["虎：当你使用指定唯一目标的牌对目标角色造成伤害时，此伤害+1。", "鹿：①当你获得此效果时，你回复1点体力并弃置判定区的所有牌。②你不能成为延时锦囊牌的目标。", "熊：每回合限一次，当你受到伤害时，此伤害-1。", "猿：当你获得此效果时，你选择一名其他角色，获得其装备区里的一张牌。", "鹤：当你获得此效果时，你摸三张牌。"],
 		wuqinxiMap2: {
-    		"虎": ["wuqinxi_hu", "用牌加伤"],
-    		"鹿": ["wuqinxi_lu", "弃判定回血"],
-    		"熊": ["wuqinxi_xiong", "减伤"],
-    		"猿": ["wuqinxi_yuan", "偷装备牌"],
-    		"鹤": ["wuqinxi_he", "摸三张牌"],
+			虎: ["wuqinxi_hu", "用牌加伤"],
+			鹿: ["wuqinxi_lu", "弃判定回血"],
+			熊: ["wuqinxi_xiong", "减伤"],
+			猿: ["wuqinxi_yuan", "偷装备牌"],
+			鹤: ["wuqinxi_he", "摸三张牌"],
 		},
 		updateMark(player) {
 			var wuqinxi = player.storage.wuling_wuqinxi;
@@ -5176,69 +5176,10 @@ const skills = {
 	dctuoyu: {
 		audio: 2,
 		trigger: { player: ["phaseUseBegin", "phaseUseEnd"] },
-		forced: true,
-		init(player) {
-			var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
-			var hs = player.getCards("h");
-			for (var card of hs) {
-				for (var i = 0; i < tags.length; i++) {
-					if (card.hasGaintag(tags[i] + "_tag")) {
-						const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
-						card.classList.add(glowClass);
-					}
-				}
-			}
-			game.broadcastAll(
-				(player) => {
-					const observer = new MutationObserver(mutationsList => {
-						for (const mutation of mutationsList) {
-							if (mutation.type === "childList") {
-								for (const card of mutation.addedNodes) {
-									if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
-										for (var i = 0; i < tags.length; i++) {
-											if (card.hasGaintag && card.hasGaintag(tags[i] + "_tag")) {
-												const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
-												card.classList.add(glowClass);
-											}
-										}
-									}
-								}
-								for (const card of mutation.removedNodes) {
-									if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
-										for (var i = 0; i < tags.length; i++) {
-											const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
-											card.classList.remove(glowClass);
-										}
-									}
-								}
-							}
-						}
-					});
-					const config = { childList: true };
-					observer.observe(player.node.handcards1, config);
-					observer.observe(player.node.handcards2, config);
-					player._dctuoyu_observer = observer;
-					player.node.handcards1._dctuoyu_video = true;
-					player.node.handcards2._dctuoyu_video = true;
-				},
-				player
-			);
-		},
-		onremove(player) {
-			if (player._dctuoyu_observer) {
-				player._dctuoyu_observer.disconnect();
-				delete player._dctuoyu_observer;
-			}
-			if (player.node.handcards1) {
-				delete player.node.handcards1._dctuoyu_video;
-			}
-			if (player.node.handcards2) {
-				delete player.node.handcards2._dctuoyu_video;
-			}
-		},
 		filter(event, player) {
 			return player.countCards("h") > 0 && player.getStorage("dctuoyu").length > 0;
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			var hs = player.getCards("h"),
 				tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
@@ -5346,7 +5287,7 @@ const skills = {
 							for (var card of moved[i]) {
 								for (var j = 0; j < tags.length; j++) {
 									const tag = `${tags[j]}_tag`;
-									const glowClass = `dctuoyu-${tags[j].replace('dctuoyu_', '')}-glow`;
+									const glowClass = `dctuoyu-${tags[j].replace("dctuoyu_", "")}-glow`;
 									if (!map[tag]) {
 										map[tag] = [[], []];
 									}
@@ -5354,14 +5295,12 @@ const skills = {
 										map[tag][0].add(card);
 										if (!card.hasGaintag(tag)) {
 											card.addGaintag(tag);
+											card.classList.add(glowClass);
 										}
-										// 添加滤镜效果
-										card.classList.add(glowClass);
 									} else {
 										if (card.hasGaintag(tag)) {
 											map[tag][1].add(card);
 											card.removeGaintag(tag);
-											// 移除滤镜效果
 											card.classList.remove(glowClass);
 										}
 									}
@@ -5372,16 +5311,18 @@ const skills = {
 							if (map[tag][0].length) {
 								game.addVideo("addGaintag", player, [get.cardsInfo(map[tag][0]), tag]);
 								for (const card of map[tag][0]) {
-									const glowClass = `dctuoyu-${tag.replace('_tag', '').replace('dctuoyu_', '')}-glow`;
+									const glowClass = `dctuoyu-${tag.replace("_tag", "").replace("dctuoyu_", "")}-glow`;
 									card.classList.add(glowClass);
 								}
+								game.addVideo("skill", player, ["dctuoyu", [true, get.cardsInfo(map[tag][0]), tag]]);
 							}
 							if (map[tag][1].length) {
 								game.addVideo("removeGaintag", player, [tag, get.cardsInfo(map[tag][1])]);
 								for (const card of map[tag][1]) {
-									const glowClass = `dctuoyu-${tag.replace('_tag', '').replace('dctuoyu_', '')}-glow`;
+									const glowClass = `dctuoyu-${tag.replace("_tag", "").replace("dctuoyu_", "")}-glow`;
 									card.classList.remove(glowClass);
 								}
+								game.addVideo("skill", player, ["dctuoyu", [false, get.cardsInfo(map[tag][1]), tag]]);
 							}
 						}
 						game.addVideo("delay", null, 1);
@@ -5391,9 +5332,93 @@ const skills = {
 				);
 			}
 		},
-		intro: {
-			content: "已激活的副区域：$",
+		video(player, info) {
+			const glowClass = `dctuoyu-${info[2].replace("_tag", "").replace("dctuoyu_", "")}-glow`;
+			for (const cardid of info[1]) {
+				for (const card of player.getCards("h")) {
+					if (card.cardid === cardid[4]) {
+						card.classList[info[0] ? "add" : "remove"](glowClass);
+					}
+				}
+			}
 		},
+		init(player) {
+			game.broadcastAll(player => {
+				const observer = new MutationObserver(mutationsList => {
+					const tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
+					for (const mutation of mutationsList) {
+						if (mutation.type === "childList") {
+							for (const card of mutation.addedNodes) {
+								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+									for (let i = 0; i < tags.length; i++) {
+										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
+										if (card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
+											//添加样式+录像
+											game.broadcastAll(
+												(card, glowClass, tag) => {
+													card.classList.add(glowClass);
+													game.addVideo("skill", player, ["dctuoyu", [true, [get.cardInfo(card)], tag]]);
+												},
+												card,
+												glowClass,
+												tags[i]
+											);
+										}
+									}
+								}
+							}
+							for (const card of mutation.removedNodes) {
+								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+									for (let i = 0; i < tags.length; i++) {
+										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
+										if (card.classList.contains(glowClass)) {
+											//移除样式+录像
+											game.broadcastAll(
+												(card, glowClass, tag) => {
+													card.classList.remove(glowClass);
+													game.addVideo("skill", player, ["dctuoyu", [false, [get.cardInfo(card)], tag]]);
+												},
+												card,
+												glowClass,
+												tags[i]
+											);
+										}
+									}
+								}
+							}
+						}
+					}
+				});
+				const config = { childList: true };
+				observer.observe(player.node.handcards1, config);
+				observer.observe(player.node.handcards2, config);
+				player._dctuoyu_observer = observer;
+			}, player);
+		},
+		onremove(player) {
+			game.broadcastAll(player => {
+				if (player._dctuoyu_observer) {
+					player._dctuoyu_observer.disconnect();
+					delete player._dctuoyu_observer;
+				}
+				const tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
+				for (const card of player.getCards("h")) {
+					for (let i = 0; i < tags.length; i++) {
+						const tag = tags[i] + "_tag";
+						if (card.hasGaintag(tag)) {
+							//移除标记+录像
+							card.removeGaintag(tag);
+							game.addVideo("removeGaintag", player, [tag, [get.cardInfo(card)]]);
+							const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
+							//移除样式+录像
+							card.classList.add(glowClass);
+							game.addVideo("skill", player, ["dctuoyu", [true, [get.cardInfo(card)], tags[i]]]);
+						}
+					}
+				}
+			}, player);
+		},
+		intro: { content: "已激活的副区域：$" },
 		group: "dctuoyu_effect",
 		subSkill: {
 			effect: {
@@ -5429,27 +5454,17 @@ const skills = {
 				trigger: { player: "useCard" },
 				forced: true,
 				filter(event, player) {
-					const tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
-						card = event.card;
-					return player.hasHistory("lose", function (evt) {
+					return player.hasHistory("lose", evt => {
 						const evtx = evt.relatedEvent || evt.getParent();
-						if (evtx != event) {
+						if (evtx !== event) {
 							return false;
 						}
-						for (const i in evt.gaintag_map) {
-							for (const tag of evt.gaintag_map[i]) {
-								if (tags.includes(tag)) {
-									return true;
-								}
-							}
-						}
-						return false;
+						return Object.values(evt.gaintag_map).flat().containsSome("dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag");
 					});
 				},
 				content() {
-					const tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"],
-						card = trigger.card;
-					player.hasHistory("lose", function (evt) {
+					let tags = ["dctuoyu_fengtian_tag", "dctuoyu_qingqu_tag", "dctuoyu_junshan_tag"];
+					player.hasHistory("lose", evt => {
 						const evtx = evt.relatedEvent || evt.getParent();
 						if (evtx != trigger) {
 							return false;
@@ -5459,6 +5474,7 @@ const skills = {
 						}
 						return tags.length == 0;
 					});
+					const card = trigger.card;
 					if (!tags.includes("dctuoyu_fengtian_tag")) {
 						if (get.tag(card, "damage") > 0 || get.tag(card, "recover") > 0) {
 							trigger.baseDamage++;
@@ -5482,77 +5498,93 @@ const skills = {
 				},
 			},
 		},
-		ai: {
-			combo: "dcxianjin",
-		},
+		ai: { combo: "dcxianjin" },
 	},
 	dcxianjin: {
-		init(player) {
-			var num = game
-				.getAllGlobalHistory("changeHp", evt => {
-					return evt.getParent().name == "damage" && (evt.getParent().player == player || (evt.getParent().source && evt.getParent().source == player));
-				})
-				.concat(
-					game.getAllGlobalHistory("changeHp", evt => {
-						return evt.getParent().name == "damage" && evt.getParent().player == player && evt.getParent().source && evt.getParent().source == player;
-					})
-				).length;
-			if (num) {
-				player.addMark("dcxianjin", num, false);
-			}
-		},
-		onremove: true,
 		audio: 2,
 		trigger: {
 			player: "damageEnd",
 			source: "damageSource",
 		},
-		filter(event, player) {
-			return player.countMark("dcxianjin") % 2 == 0;
+		filter(event, player, name) {
+			let history = game.getAllGlobalHistory("everything", evt => {
+				if (evt.name !== "damage" || !evt.player.getAllHistory("damage").includes(evt)) {
+					//这里是为了筛选掉被防止和取消的伤害事件
+					return false;
+				}
+				return evt.player === player || evt.source === player;
+			});
+			history = history
+				.map(evt => {
+					let list = [];
+					if (evt.source === player) {
+						list.push([evt, "damageSource"]);
+					}
+					if (evt.player === player) {
+						list.push([evt, "damageEnd"]);
+					}
+					return list;
+				})
+				.flat();
+			let list = history.find(lit => lit[0] === event && lit[1] === name);
+			return list && history.indexOf(list) % 2 === 1;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
+			let tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 			tags.removeArray(player.getStorage("dctuoyu"));
-			if (!tags.length) {
-				player.draw(player.isMaxHandcard() ? 1 : 3);
-				return;
-			} else if (tags.length == 1) {
-				var control = tags[0];
-			} else {
-				var result = await player.chooseControl(tags).set("prompt", "险峻：选择激活一个副区域标签").forResult();
-				var control = result.control;
+			if (tags.length > 0) {
+				const control =
+					tags.length === 1
+						? tags[0]
+						: await player
+								.chooseControl(tags)
+								.set(
+									"choiceList",
+									tags.map(tag => {
+										return `${get.translation(`${tag}_tag`)}${
+											{
+												dctuoyu_fengtian: "伤害/回复值+1",
+												dctuoyu_qingqu: "无次数和距离限制",
+												dctuoyu_junshan: "不可被响应",
+											}[tag]
+										}`;
+									})
+								)
+								.set("prompt", "险峻：选择激活一个副区域标签")
+								.forResult("control");
+				game.log(player, "激活了副区域", "#y" + get.translation(control));
+				player.markAuto("dctuoyu", [control]);
+				player.popup(get.translation(control + "_tag"));
 			}
-			game.log(player, "激活了副区域", "#y" + get.translation(control));
-			player.markAuto("dctuoyu", [control]);
-			player.popup(get.translation(control + "_tag"));
-			if (player.isMaxHandcard()) {
-				player.draw();
-			} else {
-				player.draw(player.getStorage("dctuoyu").length);
-			}
-		},
-		group: "dcxianjin_mark",
-		intro: { content: "已造成或受到#次伤害" },
-		subSkill: {
-			mark: {
-				charlotte: true,
-				trigger: {
-					player: "damageEnd",
-					source: "damageSource",
-				},
-				forced: true,
-				popup: false,
-				firstDo: true,
-				content() {
-					player.addMark("dcxianjin", 1, false);
-				},
-			},
+			await player.draw(player.isMaxHandcard() ? 1 : player.getStorage("dctuoyu").length);
 		},
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (!get.tag(card, "damage") || player.countMark("dcxianjin") % 2 || player.hasSkillTag("jueqing", false, target)) {
+					if (!get.tag(card, "damage") || player.hasSkillTag("jueqing", false, target)) {
+						return;
+					}
+					let history = game.getAllGlobalHistory("everything", evt => {
+						if (evt.name !== "damage" || !evt.player.getAllHistory("damage").includes(evt)) {
+							//这里是为了筛选掉被防止和取消的伤害事件
+							return false;
+						}
+						return evt.player === player || evt.source === player;
+					});
+					if (
+						history.reduce((sum, evt) => {
+							if (evt.source === player) {
+								sum++;
+							}
+							if (evt.player === player) {
+								sum++;
+							}
+							return sum;
+						}, 0) %
+							2 ===
+						0
+					) {
 						return;
 					}
 					if (player.isMaxHandcard()) {
@@ -8469,20 +8501,22 @@ const skills = {
 						}
 					}
 					if (targets.length) {
-						await game.loseAsync({
-							map: map,
-							targets: targets,
-							cards: trigger.card.cards,
-						}).setContent(async (event, trigger, player) => {
-							const { map, targets, cards } = event;
-							for (const target of targets) {
-								const lose = map.get(target);
-								const next = target.lose(lose, ui.discardPile);
-								next.getlx = false;
-								await next;
-							}
-							game.log(cards, "进入了弃牌堆");
-						});
+						await game
+							.loseAsync({
+								map: map,
+								targets: targets,
+								cards: trigger.card.cards,
+							})
+							.setContent(async (event, trigger, player) => {
+								const { map, targets, cards } = event;
+								for (const target of targets) {
+									const lose = map.get(target);
+									const next = target.lose(lose, ui.discardPile);
+									next.getlx = false;
+									await next;
+								}
+								game.log(cards, "进入了弃牌堆");
+							});
 					}
 				}
 			} else {
