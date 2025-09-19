@@ -5188,6 +5188,53 @@ const skills = {
 					}
 				}
 			}
+			game.broadcastAll(
+				(player) => {
+					const observer = new MutationObserver(mutationsList => {
+						for (const mutation of mutationsList) {
+							if (mutation.type === "childList") {
+								for (const card of mutation.addedNodes) {
+									if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+										for (var i = 0; i < tags.length; i++) {
+											if (card.hasGaintag && card.hasGaintag(tags[i] + "_tag")) {
+												const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
+												card.classList.add(glowClass);
+											}
+										}
+									}
+								}
+								for (const card of mutation.removedNodes) {
+									if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+										for (var i = 0; i < tags.length; i++) {
+											const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
+											card.classList.remove(glowClass);
+										}
+									}
+								}
+							}
+						}
+					});
+					const config = { childList: true };
+					observer.observe(player.node.handcards1, config);
+					observer.observe(player.node.handcards2, config);
+					player._dctuoyu_observer = observer;
+					player.node.handcards1._dctuoyu_video = true;
+					player.node.handcards2._dctuoyu_video = true;
+				},
+				player
+			);
+		},
+		onremove(player) {
+			if (player._dctuoyu_observer) {
+				player._dctuoyu_observer.disconnect();
+				delete player._dctuoyu_observer;
+			}
+			if (player.node.handcards1) {
+				delete player.node.handcards1._dctuoyu_video;
+			}
+			if (player.node.handcards2) {
+				delete player.node.handcards2._dctuoyu_video;
+			}
 		},
 		filter(event, player) {
 			return player.countCards("h") > 0 && player.getStorage("dctuoyu").length > 0;
@@ -5224,6 +5271,7 @@ const skills = {
 			var next = player.chooseToMove_new("拓域：请分配你的手牌", true);
 			next.set("list", list);
 			next.set("filterMove", function (from, to, moved) {
+				var player = _status.event.player;
 				var storage = player.getStorage("dctuoyu"),
 					tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 				if (typeof to == "number") {
@@ -5235,6 +5283,7 @@ const skills = {
 				return true;
 			});
 			next.set("processAI", function () {
+				var player = _status.event.player;
 				var storage = player.getStorage("dctuoyu"),
 					tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 				var moved = [[], [], [], []];
@@ -5322,9 +5371,17 @@ const skills = {
 						for (const tag in map) {
 							if (map[tag][0].length) {
 								game.addVideo("addGaintag", player, [get.cardsInfo(map[tag][0]), tag]);
+								for (const card of map[tag][0]) {
+									const glowClass = `dctuoyu-${tag.replace('_tag', '').replace('dctuoyu_', '')}-glow`;
+									card.classList.add(glowClass);
+								}
 							}
 							if (map[tag][1].length) {
 								game.addVideo("removeGaintag", player, [tag, get.cardsInfo(map[tag][1])]);
+								for (const card of map[tag][1]) {
+									const glowClass = `dctuoyu-${tag.replace('_tag', '').replace('dctuoyu_', '')}-glow`;
+									card.classList.remove(glowClass);
+								}
 							}
 						}
 						game.addVideo("delay", null, 1);
@@ -5339,26 +5396,6 @@ const skills = {
 		},
 		group: "dctuoyu_effect",
 		subSkill: {
-			handcardFilter: {
-				trigger: { player: "gainAfter" },
-				forced: true,
-				filter(event, player) {
-					return event.cards && event.cards.some(card => card.position == "h");
-				},
-				content() {
-					var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
-					for (var card of event.cards) {
-						if (card.position == "h") {
-							for (var i = 0; i < tags.length; i++) {
-								if (card.hasGaintag(tags[i] + "_tag")) {
-									const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
-									card.classList.add(glowClass);
-								}
-							}
-						}
-					}
-				},
-			},
 			effect: {
 				mod: {
 					targetInRange(card, player, target) {
