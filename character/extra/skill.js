@@ -5177,11 +5177,22 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["phaseUseBegin", "phaseUseEnd"] },
 		forced: true,
+		init(player) {
+			var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
+			var hs = player.getCards("h");
+			for (var card of hs) {
+				for (var i = 0; i < tags.length; i++) {
+					if (card.hasGaintag(tags[i] + "_tag")) {
+						const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
+						card.classList.add(glowClass);
+					}
+				}
+			}
+		},
 		filter(event, player) {
 			return player.countCards("h") > 0 && player.getStorage("dctuoyu").length > 0;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			var hs = player.getCards("h"),
 				tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 			var storage = player.getStorage("dctuoyu");
@@ -5213,7 +5224,7 @@ const skills = {
 			var next = player.chooseToMove_new("拓域：请分配你的手牌", true);
 			next.set("list", list);
 			next.set("filterMove", function (from, to, moved) {
-				var storage = _status.event.player.getStorage("dctuoyu"),
+				var storage = player.getStorage("dctuoyu"),
 					tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 				if (typeof to == "number") {
 					if (to == 0) {
@@ -5224,7 +5235,6 @@ const skills = {
 				return true;
 			});
 			next.set("processAI", function () {
-				var player = _status.event.player;
 				var storage = player.getStorage("dctuoyu"),
 					tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 				var moved = [[], [], [], []];
@@ -5269,7 +5279,7 @@ const skills = {
 				moved[0].addArray(hs2);
 				return moved;
 			});
-			"step 1";
+			var result = await next.forResult();
 			if (result.bool) {
 				game.broadcastAll(
 					function (moved, player) {
@@ -5287,6 +5297,7 @@ const skills = {
 							for (var card of moved[i]) {
 								for (var j = 0; j < tags.length; j++) {
 									const tag = `${tags[j]}_tag`;
+									const glowClass = `dctuoyu-${tags[j].replace('dctuoyu_', '')}-glow`;
 									if (!map[tag]) {
 										map[tag] = [[], []];
 									}
@@ -5295,10 +5306,14 @@ const skills = {
 										if (!card.hasGaintag(tag)) {
 											card.addGaintag(tag);
 										}
+										// 添加滤镜效果
+										card.classList.add(glowClass);
 									} else {
 										if (card.hasGaintag(tag)) {
 											map[tag][1].add(card);
 											card.removeGaintag(tag);
+											// 移除滤镜效果
+											card.classList.remove(glowClass);
 										}
 									}
 								}
@@ -5324,6 +5339,26 @@ const skills = {
 		},
 		group: "dctuoyu_effect",
 		subSkill: {
+			handcardFilter: {
+				trigger: { player: "gainAfter" },
+				forced: true,
+				filter(event, player) {
+					return event.cards && event.cards.some(card => card.position == "h");
+				},
+				content() {
+					var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
+					for (var card of event.cards) {
+						if (card.position == "h") {
+							for (var i = 0; i < tags.length; i++) {
+								if (card.hasGaintag(tags[i] + "_tag")) {
+									const glowClass = `dctuoyu-${tags[i].replace('dctuoyu_', '')}-glow`;
+									card.classList.add(glowClass);
+								}
+							}
+						}
+					}
+				},
+			},
 			effect: {
 				mod: {
 					targetInRange(card, player, target) {
@@ -5439,20 +5474,18 @@ const skills = {
 			return player.countMark("dcxianjin") % 2 == 0;
 		},
 		forced: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			var tags = ["dctuoyu_fengtian", "dctuoyu_qingqu", "dctuoyu_junshan"];
 			tags.removeArray(player.getStorage("dctuoyu"));
 			if (!tags.length) {
 				player.draw(player.isMaxHandcard() ? 1 : 3);
-				event.finish();
+				return;
 			} else if (tags.length == 1) {
-				event._result = { control: tags[0] };
+				var control = tags[0];
 			} else {
-				player.chooseControl(tags).set("prompt", "险峻：选择激活一个副区域标签");
+				var result = await player.chooseControl(tags).set("prompt", "险峻：选择激活一个副区域标签").forResult();
+				var control = result.control;
 			}
-			"step 1";
-			var control = result.control;
 			game.log(player, "激活了副区域", "#y" + get.translation(control));
 			player.markAuto("dctuoyu", [control]);
 			player.popup(get.translation(control + "_tag"));
@@ -5505,12 +5538,10 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		seatRelated: "changeSeat",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("dccuixin");
-			"step 1";
 			if (game.countPlayer() > 2) {
 				if (player == trigger.player && !trigger.skill) {
 					var evt = trigger.getParent();
@@ -5519,7 +5550,7 @@ const skills = {
 						_status.lastPhasedPlayer = player.next;
 					}
 				}
-				player
+				var result = await player
 					.chooseTarget(
 						"请选择一名要更换座次的角色，将自己移动到该角色的上家位置",
 						function (card, player, target) {
@@ -5541,24 +5572,19 @@ const skills = {
 							current = current.next;
 						}
 						return att;
-					});
-			} else {
-				event.finish();
+					})
+					.forResult();
+				if (result.bool) {
+					var target = result.targets[0];
+					game.broadcastAll(
+						function (target1, target2) {
+							game.swapSeat(target1, target2, null, true);
+						},
+						player,
+						target
+					);
+				}
 			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				game.broadcastAll(
-					function (target1, target2) {
-						game.swapSeat(target1, target2, null, true);
-					},
-					player,
-					target
-				);
-			} else {
-				event.finish();
-			}
-			"step 3";
 			player.insertPhase();
 		},
 		ai: {
@@ -5587,8 +5613,7 @@ const skills = {
 			return false;
 		},
 		direct: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			var card = {
 				name: trigger.card.name,
 				nature: trigger.card.nature,
@@ -5602,23 +5627,25 @@ const skills = {
 					list.add(targetx);
 				}
 			});
+			var result;
 			if (list.length == 1) {
 				event.target = list[0];
-				player
+				result = await player
 					.chooseBool("摧心：是否视为对" + get.translation(list[0]) + "使用" + get.translation(card) + "？")
 					.set("goon", get.effect(list[0], card, player, player) > 0)
-					.set("ai", () => _status.event.goon);
+					.set("ai", () => _status.event.goon)
+					.forResult();
 			} else {
-				player
+				result = await player
 					.chooseTarget("摧心：是否视为对上家或下家使用" + get.translation(card) + "？", "操作提示：从上家或下家中选择一名角色作为使用目标", function (card, player, target) {
-						return (target == player.getNext() || target == player.getPrevious()) && lib.filter.targetEnabled2(_status.event.getParent().card, target, player);
+						return (target == player.getNext() || target == player.getPrevious()) && lib.filter.targetEnabled2(event.card, target, player);
 					})
 					.set("ai", function (target) {
 						var player = _status.event.player;
-						return get.effect(target, _status.event.getParent().card, player, player);
-					});
+						return get.effect(target, event.card, player, player);
+					})
+					.forResult();
 			}
-			"step 1";
 			if (result.bool) {
 				var target = event.target || result.targets[0];
 				player.useCard(card, target, false, "dccuixin");
@@ -5642,7 +5669,7 @@ const skills = {
 					}
 					return event.targets.includes(player.getNext()) || event.targets.includes(player.getPrevious());
 				},
-				content() {
+				async content(event, trigger, player) {
 					var list = [];
 					if (trigger.targets.includes(player.getNext())) {
 						list.push("getPrevious");
