@@ -252,7 +252,7 @@ const skills = {
 						jun = target.countMark("mark_shouli_jun"),
 						li = target.countMark("mark_shouli_li"),
 						num = game.countPlayer(current => current.hasSkill("mark_shouli"));
-					switch(name) {
+					switch (name) {
 						case "phaseDrawBegin2": {
 							if (jun > 1) {
 								trigger.num += num;
@@ -3056,6 +3056,9 @@ const skills = {
 					return 1;
 				});
 				next.set("skills", skills);
+				next.set("filterButton", button => {
+					return lib.skill[button.link] || !player.hasSkill("xinlianpo_mark");
+				});
 				const {
 					result: { bool, links },
 				} = await next;
@@ -4188,11 +4191,11 @@ const skills = {
 		wuqinxi: ["虎", "鹿", "熊", "猿", "鹤"],
 		wuqinxiMap: ["虎：当你使用指定唯一目标的牌对目标角色造成伤害时，此伤害+1。", "鹿：①当你获得此效果时，你回复1点体力并弃置判定区的所有牌。②你不能成为延时锦囊牌的目标。", "熊：每回合限一次，当你受到伤害时，此伤害-1。", "猿：当你获得此效果时，你选择一名其他角色，获得其装备区里的一张牌。", "鹤：当你获得此效果时，你摸三张牌。"],
 		wuqinxiMap2: {
-    		"虎": ["wuqinxi_hu", "用牌加伤"],
-    		"鹿": ["wuqinxi_lu", "弃判定回血"],
-    		"熊": ["wuqinxi_xiong", "减伤"],
-    		"猿": ["wuqinxi_yuan", "偷装备牌"],
-    		"鹤": ["wuqinxi_he", "摸三张牌"],
+			虎: ["wuqinxi_hu", "用牌加伤"],
+			鹿: ["wuqinxi_lu", "弃判定回血"],
+			熊: ["wuqinxi_xiong", "减伤"],
+			猿: ["wuqinxi_yuan", "偷装备牌"],
+			鹤: ["wuqinxi_he", "摸三张牌"],
 		},
 		updateMark(player) {
 			var wuqinxi = player.storage.wuling_wuqinxi;
@@ -8405,20 +8408,22 @@ const skills = {
 						}
 					}
 					if (targets.length) {
-						await game.loseAsync({
-							map: map,
-							targets: targets,
-							cards: trigger.card.cards,
-						}).setContent(async (event, trigger, player) => {
-							const { map, targets, cards } = event;
-							for (const target of targets) {
-								const lose = map.get(target);
-								const next = target.lose(lose, ui.discardPile);
-								next.getlx = false;
-								await next;
-							}
-							game.log(cards, "进入了弃牌堆");
-						});
+						await game
+							.loseAsync({
+								map: map,
+								targets: targets,
+								cards: trigger.card.cards,
+							})
+							.setContent(async (event, trigger, player) => {
+								const { map, targets, cards } = event;
+								for (const target of targets) {
+									const lose = map.get(target);
+									const next = target.lose(lose, ui.discardPile);
+									next.getlx = false;
+									await next;
+								}
+								game.log(cards, "进入了弃牌堆");
+							});
 					}
 				}
 			} else {
@@ -13127,7 +13132,7 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 13,
+			order: 6,
 			result: {
 				target(target, player) {
 					return -1;

@@ -1054,7 +1054,7 @@ const skills = {
 			} else {
 				const evtx = event.getParent();
 				if (evtx.name !== "orderingDiscard") {
-					return true;
+					return false;
 				}
 				const evt2 = evtx.relatedEvent || evtx.getParent();
 				if (evt2.name != "useCard") {
@@ -3654,7 +3654,6 @@ const skills = {
 			return target.countCards("h") >= player.countCards("h") || target.getHp() >= player.getHp();
 		},
 		usable: 1,
-		forced: true,
 		async content(event, trigger, player) {
 			const { target } = event,
 				juedou = new lib.element.VCard({ name: "juedou" });
@@ -3669,8 +3668,10 @@ const skills = {
 				await player.viewHandcards(target);
 				const shas = target.getGainableCards(player, "h").filter(card => get.name(card) === "sha");
 				if (shas.length) {
-					player.addTempSkill("dckuizhen_effect");
-					await player.gain(shas, "give", target).gaintag.add("dckuizhen");
+					player.addSkill("dckuizhen_effect");
+					const next = player.gain(shas, "give", target);
+					next.gaintag.add("dckuizhen");
+					await next;
 				}
 			} else {
 				await target.loseHp();

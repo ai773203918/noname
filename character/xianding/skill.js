@@ -15061,9 +15061,12 @@ const skills = {
 			if (cards.length == 1) {
 				result = { bool: true, cards: cards };
 			} else {
-				result = await player.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll").set("ai", card => {
-					return 6 - get.value(card);
-				}).forResult();
+				result = await player
+					.chooseCard("雄幕：将任意张牌置入牌堆的随机位置", "he", [1, Infinity], true, "allowChooseAll")
+					.set("ai", card => {
+						return 6 - get.value(card);
+					})
+					.forResult();
 			}
 			if (result.bool) {
 				selectedCards = result.cards;
@@ -27316,148 +27319,96 @@ const skills = {
 	},
 	//杨婉
 	youyan: {
+		getCards(event, player) {
+			const cards2 = [];
+			if (event.name == "cardsDiscard") {
+				const evtx = event.getParent();
+				if (evtx.name != "orderingDiscard") {
+					return false;
+				}
+				const evtx2 = evtx.relatedEvent || evtx.getParent();
+				if (["useCard", "respond"].includes(evtx2.name)) {
+					return false;
+				}
+				player.getHistory("lose", evtx3 => {
+					const evtx4 = evtx3.relatedEvent || evtx3.getParent();
+					if (evtx2 != evtx4) {
+						return false;
+					}
+					if (!evtx3.cards2 || !evtx3.cards2.length) {
+						return false;
+					}
+					cards2.addArray(evtx3.cards2.filterInD("d"));
+				});
+			} else if (event.name == "loseAsync") {
+				player.hasHistory("lose", evt => {
+					if (evt.getParent() != event || evt.position != ui.discardPile) {
+						return false;
+					}
+					cards2.addArray(evt.cards2.filterInD("d"));
+				});
+			} else {
+				cards2.addArray(event.getd(player).filterInD("d"));
+			}
+			return cards2;
+		},
 		audio: 2,
 		trigger: {
 			player: ["loseAfter", "equipAfter"],
 			global: ["loseAsyncAfter", "cardsDiscardAfter"],
 		},
-		prompt2(event, player) {
-			var cards2 = [];
-			if (event.name == "cardsDiscard") {
-				var evtx = event.getParent();
-				if (evtx.name != "orderingDiscard") {
-					return false;
-				}
-				var evtx2 = evtx.relatedEvent || evtx.getParent();
-				if (evtx2.name == "useCard" || evtx2.name == "respond") {
-					return false;
-				}
-				player.getHistory("lose", evtx3 => {
-					var evtx4 = evtx3.relatedEvent || evtx3.getParent();
-					if (evtx2 != evtx4) {
-						return false;
-					}
-					if (!evtx3.cards2 || !evtx3.cards2.length) {
-						return false;
-					}
-					cards2.addArray(evtx3.cards2.filterInD("d"));
-				});
-			} else if (event.name == "loseAsync") {
-				player.hasHistory("lose", evt => {
-					if (evt.getParent() != event || evt.position != ui.discardPile) {
-						return false;
-					}
-					cards2.addArray(evt.cards2.filterInD("d"));
-				});
-			} else {
-				cards2.addArray(event.getd(player).filterInD("d"));
-			}
-			return "获得与" + get.translation(cards2) + "花色" + (cards2.length > 1 ? "各" : "") + "不相同的牌各一张";
-		},
 		filter(event, player) {
 			if (player != _status.currentPhase) {
 				return false;
 			}
-			var cards2 = [];
-			if (event.name == "cardsDiscard") {
-				var evtx = event.getParent();
-				if (evtx.name != "orderingDiscard") {
-					return false;
-				}
-				var evtx2 = evtx.relatedEvent || evtx.getParent();
-				if (evtx2.name == "useCard" || evtx2.name == "respond") {
-					return false;
-				}
-				player.getHistory("lose", evtx3 => {
-					var evtx4 = evtx3.relatedEvent || evtx3.getParent();
-					if (evtx2 != evtx4) {
-						return false;
-					}
-					if (!evtx3.cards2 || !evtx3.cards2.length) {
-						return false;
-					}
-					cards2.addArray(evtx3.cards2.filterInD("d"));
-				});
-			} else if (event.name == "loseAsync") {
-				player.hasHistory("lose", evt => {
-					if (evt.getParent() != event || evt.position != ui.discardPile) {
-						return false;
-					}
-					cards2.addArray(evt.cards2.filterInD("d"));
-				});
-			} else {
-				cards2.addArray(event.getd(player).filterInD("d"));
-			}
+			const cards2 = get.info(this.skill_id).getCards(event, player);
 			if (!cards2.length) {
 				return false;
 			}
-			var list = [];
-			for (var i of cards2) {
+			const list = [];
+			for (const i of cards2) {
 				list.add(get.suit(i, player));
 				if (list.length >= lib.suit.length) {
 					return false;
 				}
 			}
-			var evt = event.getParent("phaseUse");
-			if (evt && evt.player == player && !evt.youyaned) {
+			const evt = event.getParent("phaseUse");
+			if (evt?.player == player && !player.getStorage(this.skill_id + "_used").includes(evt)) {
 				return true;
 			}
-			var evt = event.getParent("phaseDiscard");
-			if (evt && evt.player == player && !evt.youyaned) {
+			const evtx = event.getParent("phaseDiscard");
+			if (evtx?.player == player && !player.getStorage(this.skill_id + "_used").includes(evtx)) {
 				return true;
 			}
 			return false;
 		},
-		content() {
+		prompt2(event, player) {
+			const cards2 = get.info(this.skill_id).getCards(event, player);
+			return `获得与${get.translation(cards2)}花色${cards2.length > 1 ? "各" : ""}不相同的牌各一张`;
+		},
+		async content(event, trigger, player) {
 			let evt = trigger.getParent("phaseUse");
-			if (evt && evt.player == player) {
-				player.tempBanSkill("youyan", "phaseUseAfter", false);
+			if (evt?.player == player) {
+				player.addTempSkill(event.name + "_used", "phaseUseAfter");
+				player.markAuto(event.name + "_used", [evt]);
 			} else {
 				let evtx = trigger.getParent("phaseDiscard");
-				if (evtx && evtx.player == player) {
-					player.tempBanSkill("youyan", "phaseDiscardAfter", false);
+				if (evtx?.player == player) {
+					player.addTempSkill(event.name + "_used", "phaseDiscardAfter");
+					player.markAuto(event.name + "_used", [evtx]);
 				}
 			}
-			var list = [],
+			const list = [],
 				cards = [];
-			var cards2 = [];
-			if (trigger.name == "cardsDiscard") {
-				var evtx = trigger.getParent();
-				if (evtx.name != "orderingDiscard") {
-					return false;
-				}
-				var evtx2 = evtx.relatedEvent || evtx.getParent();
-				if (evtx2.name == "useCard" || evtx2.name == "respond") {
-					return false;
-				}
-				player.getHistory("lose", evtx3 => {
-					var evtx4 = evtx3.relatedEvent || evtx3.getParent();
-					if (evtx2 != evtx4) {
-						return false;
-					}
-					if (!evtx3.cards2 || !evtx3.cards2.length) {
-						return false;
-					}
-					cards2.addArray(evtx3.cards2.filterInD("d"));
-				});
-			} else if (trigger.name == "loseAsync") {
-				player.hasHistory("lose", evt => {
-					if (evt.getParent() != trigger || evt.position != ui.discardPile) {
-						return false;
-					}
-					cards2.addArray(evt.cards2.filterInD("d"));
-				});
-			} else {
-				cards2.addArray(trigger.getd(player).filterInD("d"));
-			}
-			for (var i of cards2) {
+			const cards2 = get.info(event.name).getCards(trigger, player);
+			for (const i of cards2) {
 				list.add(get.suit(i, player));
 			}
-			for (var i of lib.suit) {
+			for (const i of lib.suit) {
 				if (list.includes(i)) {
 					continue;
 				}
-				var card = get.cardPile2(function (card) {
+				const card = get.cardPile2(function (card) {
 					return get.suit(card, false) == i;
 				});
 				if (card) {
@@ -27465,7 +27416,7 @@ const skills = {
 				}
 			}
 			if (cards.length) {
-				player.gain(cards, "gain2");
+				await player.gain(cards, "gain2");
 			}
 		},
 		ai: {
@@ -27487,6 +27438,12 @@ const skills = {
 						return "zeroplayertarget";
 					}
 				},
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
 			},
 		},
 	},
