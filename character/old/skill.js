@@ -23,12 +23,17 @@ const skills = {
 												card,
 												skill
 											);
+											game.addVideo("addGaintag", player, [get.cardsInfo([card]), `${skill}_tag`]);
 										}
 									}
 								}
 								for (const card of mutation.removedNodes) {
 									if (cards.includes(card) && !player.getCards("h").includes(card)) {
 										game.broadcastAll((card, skill) => card.classList.remove(skill), card, skill);
+										if (card.hasGaintag && card.hasGaintag(`${skill}_tag`)) {
+											card.removeGaintag(`${skill}_tag`);
+											game.addVideo("removeGaintag", player, [`${skill}_tag`, [get.cardInfo(card)]]);
+										}
 									}
 								}
 							}
@@ -48,10 +53,11 @@ const skills = {
 					player.node.handcards2.cardMod[skill] = cardMod;
 					player.node.handcards1.classList.add(skill);
 					player.node.handcards2.classList.add(skill);
-					if (!ui.css[skill]) {
-						ui.css[skill] = lib.init.sheet([".handcards.yao_yaoyi>.card.yao_yaoyi {", "background-image: var(--cardback-url) !important;", "background-size: 100% 100% !important;", "background-position: center !important;", "}"].join(""));
-						lib.init.sheet([".handcards.yao_yaoyi>.card.yao_yaoyi > * {", "visibility: hidden !important;", "}"].join(""));
-					}
+					player.getCards("h").forEach(card => {
+						if (card.hasGaintag && card.hasGaintag(`${skill}_tag`)) {
+							card.classList.add(skill);
+						}
+					});
 					const { card, blank, ...others } = ui.create.buttonPresets;
 					ui.create.buttonPresets = {
 						...others,
@@ -81,7 +87,13 @@ const skills = {
 					player.node.handcards2.classList.remove(skill);
 					delete player.node.handcards1.cardMod[skill];
 					delete player.node.handcards2.cardMod[skill];
-					player.getCards("h", card => card.classList.contains(skill)).forEach(card => card.classList.remove(skill));
+							player.getCards("h", card => card.classList.contains(skill)).forEach(card => {
+						card.classList.remove(skill);
+						if (card.hasGaintag && card.hasGaintag(`${skill}_tag`)) {
+							card.removeGaintag(`${skill}_tag`);
+								game.addVideo("removeGaintag", player, [`${skill}_tag`, get.cardsInfo([card])]);
+						}
+					});
 				},
 				player,
 				skill

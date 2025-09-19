@@ -1408,6 +1408,14 @@ body > .background.land {
 	-webkit-filter: blur(3px);
 	filter: blur(3px);
 }
+.handcards.yao_yaoyi > .card.yao_yaoyi {
+	background-image: var(--cardback-url) !important;
+	background-size: 100% 100% !important;
+	background-position: center !important;
+}
+.handcards.yao_yaoyi > .card.yao_yaoyi > * {
+	visibility: hidden !important;
+}
 .card > .cardframebg {
 	width: 100%;
 	height: 100%;
