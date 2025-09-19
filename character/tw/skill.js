@@ -242,7 +242,7 @@ const skills = {
 		},
 		logTarget: "player",
 		prompt2(event, player) {
-			if (event.name === "phaseZhunbei") {
+			if (event.name !== "phaseZhunbei") {
 				return `令${get.translation(event.card)}对你无效，然后你摸两张牌`;
 			}
 			return `获得技能〖观火〗`;
@@ -8395,7 +8395,7 @@ const skills = {
 				game.addVideo("skill", player, [skillName, [skill, player.name]]);
 				player.addSkill(skillName + "_draw");
 				const next = player
-					.chooseToGive(target, `伸义：是否将任意张手牌交给${get.translation(target)}？`, [1, player.countCards("h")])
+					.chooseToGive(target, `伸义：是否将任意张手牌交给${get.translation(target)}？`, [1, player.countCards("h")], "allowChooseAll")
 					.set("ai", card => {
 						if (!_status.event.goon) {
 							return 0;
@@ -10629,6 +10629,7 @@ const skills = {
 									result: { bool, cards },
 								} = await target
 									.chooseToGive(player, `慨赠：是否交给${get.translation(player)}任意张手牌？`, `若你以此法：交给其至少两张牌，你摸一张牌；交给其的牌包含${get.translation(type)}${isbasic ? "" : "牌"}，你获得一张不为此牌名或类型的牌`, [1, Infinity])
+									.set("allowChooseAll", true)
 									.set("ai", card => {
 										const { player, target, goon, type } = get.event();
 										if (!goon) {

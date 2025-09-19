@@ -2188,7 +2188,7 @@ const skills = {
 					}).length
 				),
 				target = event.target;
-			await player.discardPlayerCard(target, "he", num, true);
+			await player.discardPlayerCard(target, "he", num, true, "allowChooseAll");
 			const { cards } = await game.cardsGotoOrdering(get.cards(num + 1));
 			if (!cards?.length) {
 				return;
@@ -3018,7 +3018,7 @@ const skills = {
 					const card = result2.links[0];
 					game.broadcastAll(card => {
 						lib.skill.olsiqi_backup.viewAs = card;
-						lib.skill.olsiqi_backup.viewAs.cards = [card];
+						lib.skill.olsiqi_backup.card = card;
 					}, card);
 					player.addTempSkill("olsiqi_target");
 					const next = player.chooseToUse();
@@ -3056,12 +3056,10 @@ const skills = {
 				selectCard: -1,
 				filterTarget: lib.filter.targetEnabled2,
 				log: false,
-				precontent() {
-					const name = event.result.card.name,
-						cards = event.result.card.cards.slice(),
-						rcard = cards[0];
-					event.result.cards = cards;
-					event.result.card = get.autoViewAs(rcard.name == name ? rcard : { name, isCard: true });
+				async precontent(event, trigger, player) {
+					const { card } = get.info("olsiqi_backup");
+					event.result.cards = [card];
+					event.result.card = get.autoViewAs(card, [card]);
 				},
 			},
 			lose: {
@@ -9849,6 +9847,7 @@ const skills = {
 					complexCard: true,
 					complexTarget: true,
 					complexSelect: true,
+					allowChooseAll: true,
 					ai1(card) {
 						const player = get.event("player");
 						if (!ui.selected.targets.length) {
@@ -22886,6 +22885,7 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseCard("h", get.prompt(event.skill), [1, 5 - player.countExpansions(event.skill)], `将至多${get.cnNumber(5 - player.countExpansions(event.skill))}张手牌置于武将牌上`)
+					.set("allowChooseAll", true)
 					.set("ai", card => {
 						const player = get.player();
 						if (ui.selected.cards.length >= player.needsToDiscard()) {
@@ -28839,6 +28839,7 @@ const skills = {
 						return target != player;
 					},
 					selectCard: [1, nh],
+					allowChooseAll: true,
 					ai1(card) {
 						var player = _status.event.player;
 						var cardname = _status.event.cardname;
@@ -30246,7 +30247,7 @@ const skills = {
 				return get.value(b, player, "raw") - get.value(a, player, "raw");
 			});
 			event.target
-				.chooseCard([1, hs.length], "展示至少一张手牌", true)
+				.chooseCard([1, hs.length], "展示至少一张手牌", true, "allowChooseAll")
 				.set("ai", function (card) {
 					var rand = _status.event.rand;
 					var list = _status.event.list;
@@ -36780,6 +36781,7 @@ const skills = {
 										return 1;
 									},
 								})
+								.set("allowChooseAll", true)
 								.setHiddenSkill("lirang")
 						: await player
 								.chooseTarget(`礼让：是否令一名角色获得${get.translation(cards)}？`, lib.filter.notMe)
@@ -42416,7 +42418,8 @@ const skills = {
 		//prepare:"throw",
 		position: "hes",
 		filterCard(card, player, event) {
-			return get.suit(card) == "diamond" && player.canAddJudge({ name: "lebu", cards: [card] });
+			const lebu = get.autoViewAs({ name: "lebu", cards: [card] }, [card]);
+			return get.suit(card) == "diamond" && lib.filter.judge(lebu, player, player);
 		},
 		selectTarget: -1,
 		filterTarget(card, player, target) {

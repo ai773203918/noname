@@ -1861,7 +1861,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { bool: bool1, cards } = await player
-				.chooseToDiscard(get.prompt(event.skill), [1, Infinity], "h")
+				.chooseToDiscard(get.prompt(event.skill), [1, Infinity], "h", "allowChooseAll")
 				.set("prompt2", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应")
 				.set("ai", card => {
 					const player = get.player();
@@ -5224,7 +5224,7 @@ const skills = {
 			const { target } = event;
 			if (target.countCards("h")) {
 				const result = await target
-					.chooseCard("将任意张手牌移出游戏直到本回合结束", [1, Infinity], "h")
+					.chooseCard("将任意张手牌移出游戏直到本回合结束", [1, Infinity], "h", "allowChooseAll")
 					.set("ai", card => {
 						const { numx, player } = get.event();
 						if (player.countCards("h", "sha") <= numx) {
@@ -5460,6 +5460,7 @@ const skills = {
 		logAudio: () => 2,
 		inherit: "dcctjiuxian",
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		position: "he",
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
@@ -9418,6 +9419,7 @@ const skills = {
 						selectCard: [1, Infinity],
 						prompt: used.length ? "是否继续分配手牌？" : get.prompt(event.skill),
 						prompt2: "将任意张手牌交给一名其他角色",
+						allowChooseAll: true,
 						ai1(card) {
 							if (!ui.selected.cards.length) {
 								return 8 - get.value(card);
@@ -12181,6 +12183,7 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					position: "h",
+					allowChooseAll: true,
 					ai1(card) {
 						if (card.name == "du") {
 							return 10;
@@ -22769,17 +22772,20 @@ const skills = {
 	xinjyzongshi: {
 		audio: 2,
 		trigger: {
-			player: ["chooseToCompareAfter", "compareMultipleAfter"],
-			target: ["chooseToCompareAfter", "compareMultipleAfter"],
+			global: ["chooseToCompareAfter", "compareMultipleAfter"],
 		},
 		filter(event, player) {
 			if (event.preserve) {
 				return false;
 			}
-			if (event.name == "compareMultiple") {
-				return true;
+			if (event.compareMultiple) {
+				return false;
 			}
-			return !event.compareMultiple;
+			if (event.compareMeanwhile) {
+				const index = [...event.targets, event.player].indexOf(player);
+				return index >= 0;
+			}
+			return [event.player, event.target].some(current => current == player);
 		},
 		frequent: true,
 		content() {
@@ -25232,7 +25238,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.prompt2(event.name.slice(0, -5)), "h", [1, player.countCards("h")])
+				.chooseCard(get.prompt2(event.name.slice(0, -5)), "h", [1, player.countCards("h")], "allowChooseAll")
 				.set("ai", card => {
 					if (!game.hasPlayer(target => player != target && get.attitude(player, target) > 0)) {
 						return 0;

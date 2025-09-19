@@ -1577,7 +1577,7 @@ const skills = {
 							await player.chooseToDiscard("h", true);
 						}
 						if (num >= 3) {
-							await player.loseHp();
+							//await player.loseHp();
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "ej"))) {
 								const [target] =
 									(await player
@@ -1600,9 +1600,10 @@ const skills = {
 							}
 						}
 						if (num >= 4) {
-							if (player.countCards("h")) {
+							await player.loseHp();
+							/*if (player.countCards("h")) {
 								await player.chooseToDiscard("he", true);
-							}
+							}*/
 							await player.addSkills("dcretanluan");
 						}
 					},
@@ -1660,7 +1661,7 @@ const skills = {
 				return get.player().getUseValue(card) * (get.tag(card, "damage") >= 1 ? 3 : 1);
 			},
 			prompt(links) {
-				return '###探乱###<div class="text center">使用' + get.translation(links) + "，若你因此造成伤害，则重置〖蛮后〗</div>";
+				return '###探乱###<div class="text center">使用' + get.translation(links) + "，若此牌被【无懈可击】抵消或你因此对其他角色造成伤害，则重置〖蛮后〗</div>";
 			},
 			backup(links, player) {
 				return {
@@ -1685,12 +1686,21 @@ const skills = {
 			effect: {
 				charlotte: true,
 				audio: "dctanluan",
-				trigger: { source: "damageSource" },
+				trigger: {
+					source: "damageSource",
+					player: "eventNeutralized",
+				},
 				filter(event, player) {
 					if (typeof player.getStat("skill")["dcremanhou"] !== "number") {
 						return false;
 					}
-					return event.card?.dcretanluan === true && event.player != player; // && !player.getStorage("dcremanhou_record").includes(event.player)
+					if (event.name == "damage") {
+						return event.card?.dcretanluan === true && event.player != player; 
+					}
+					if (event.type != "card" && event.name != "_wuxie") {
+						return false;
+					}
+					return event.card?.dcretanluan === true; // && !player.getStorage("dcremanhou_record").includes(event.player)
 				},
 				forced: true,
 				content() {
@@ -10439,6 +10449,7 @@ const skills = {
 				.chooseCardOL(event.list, "he", true, [1, Infinity], "异勇：弃置任意张牌", (card, player, target) => {
 					return lib.filter.cardDiscardable(card, player, "dcyiyong");
 				})
+				.set("allowChooseAll", true)
 				.set("ai", card => {
 					var evt = _status.event.getParent(2);
 					var source = evt.player,
@@ -16290,6 +16301,7 @@ const skills = {
 		delay: false,
 		lose: false,
 		discard: false,
+		allowChooseAll: true,
 		check(card) {
 			if (ui.selected.cards.length && ui.selected.cards[0].name == "du") {
 				return 0;
@@ -17583,6 +17595,7 @@ const skills = {
 								return false;
 							},
 							goon: game.hasPlayer(current => player != current && get.attitude(player, current) > 0),
+							allowChooseAll: true,
 							ai1(card) {
 								if (get.itemtype(card) != "card") {
 									return 0;

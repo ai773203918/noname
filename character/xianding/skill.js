@@ -4866,6 +4866,7 @@ const skills = {
 											}
 											return get.event("readyToGive").includes(card);
 										},
+										allowChooseAll: true,
 										readyToGive: cards,
 										given_map: given_map,
 										ai1(card) {
@@ -6048,7 +6049,25 @@ const skills = {
 	//徐馨
 	dcyuxian: {
 		audio: 2,
-		trigger: { player: "useCard" },
+		trigger: {
+			global: "roundStart",
+		},
+		filter(event, player) {
+			return player.countCards("h");
+		},
+		async cost(event, trigger, player) {
+			player.setStorage(event.skill, [], true);
+			event.result = await player
+				.chooseCard(get.prompt(event.skill), "依次选择至多四张手牌展示并记录花色", [1, 4])
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const cards = event.cards;
+			await player.showCards(cards, `${get.translation(player)}发动了【育贤】`);
+			player.setStorage(event.name, cards.map(card => get.suit(card, player)), true);
+			player.addTip(event.name, `育贤 ${player.getStorage(event.name).reduce((str, suit) => str + get.translation(suit), "")}`);
+		},
+		/*trigger: { player: "useCard" },
 		filter(event, player) {
 			return player.isPhaseUsing() && player.getStorage("dcyuxian").length < 4 && get.suit(event.card, player) !== "none";
 		},
@@ -6065,14 +6084,43 @@ const skills = {
 					player.unmarkSkill("dcyuxian");
 				})
 				.assign({ firstDo: true });
-		},
+		},*/
 		intro: { content: "已记录花色：$" },
 		onremove(player, skill) {
 			delete player.storage[skill];
 			player.removeTip(skill);
 		},
+		global: "dcyuxian_ai",
 		group: "dcyuxian_draw",
 		subSkill: {
+			ai: {
+				mod: {
+					aiOrder(player, card, num) {
+						const targets = game.filterPlayer(current => {
+							if (current == player || !current.hasSkill("dcyuxian")) {
+								return false;
+							}
+							return get.attitude(player, current) >= 0 && current.getStorage("dcyuxian").length;
+						});
+						if (!targets.length) {
+							return;
+						}
+						const index = player.getHistory("useCard").length;
+						if (targets.some(target => {
+							const list = target.getStorage("dcyuxian");
+							return list?.[index] == get.suit(card, player);
+						})) {
+							return num + 10;
+						}
+					},
+					aiValue(player, card, num) {
+						return get.info("dcyuxian_ai").mod.aiOrder.apply(this, arguments);
+					},
+					aiUseful(player, card, num) {
+						return get.info("dcyuxian_ai").mod.aiOrder.apply(this, arguments);
+					},
+				},
+			},
 			draw: {
 				audio: "dcyuxian",
 				trigger: { global: "useCard" },
@@ -10282,6 +10330,7 @@ const skills = {
 						position: "h",
 						filterTarget: lib.filter.notMe,
 						prompt: "豪义：请选择要分配的卡牌和目标",
+						allowChooseAll: true,
 						ai1(card) {
 							return !ui.selected.cards.length && card.name == "du" ? 1 : 0;
 						},
@@ -17720,7 +17769,7 @@ const skills = {
 				ai: {
 					effect: {
 						player_use(card, player, target) {
-							if (get.itemtype(card) === "card" && cardx.hasGaintag("dczhaowen_tag") && get.color(card, player) === "red") {
+							if (get.itemtype(card) === "card" && card.hasGaintag("dczhaowen_tag") && get.color(card, player) === "red") {
 								return [1, 1];
 							}
 						},
@@ -18540,6 +18589,7 @@ const skills = {
 			"step 0";
 			player
 				.chooseToDiscard(get.prompt("dchuizhi"), "你可以选择弃置任意张手牌并点击“确定”，将手牌摸至与全场手牌数最多的角色数相同。", [0, Infinity])
+				.set("allowChooseAll", true)
 				.set("logSkill", "dchuizhi")
 				.set("ai", card => {
 					if (_status.event.isMax) {
@@ -26225,6 +26275,7 @@ const skills = {
 			var next = player.chooseToMove();
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("prompt", "天运：点击或拖动将牌移动到牌堆顶或牌堆底");
+			next.set("allowChooseAll", true)
 			next.processAI = function (list) {
 				var cards = list[0][1];
 				return [[], cards];
@@ -29864,7 +29915,8 @@ const skills = {
 			player.$give(cards, player, false);
 		},
 		filterCard(card, player, event) {
-			return get.color(card) == "black" && get.type(card) == "basic" && player.canAddJudge({ name: "bingliang", cards: [card] });
+			const bingliang = get.autoViewAs({ name: "bingliang", cards: [card] }, [card]);
+			return get.color(card) == "black" && get.type(card) == "basic" && player.canAddJudge(bingliang);
 		},
 		selectTarget: -1,
 		filterTarget(card, player, target) {
