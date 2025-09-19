@@ -3056,6 +3056,9 @@ const skills = {
 					return 1;
 				});
 				next.set("skills", skills);
+				next.set("filterButton", button => {
+					return lib.skill[button.link] || !player.hasSkill("xinlianpo_mark");
+				});
 				const {
 					result: { bool, links },
 				} = await next;
@@ -13226,7 +13229,7 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 13,
+			order: 6,
 			result: {
 				target(target, player) {
 					return -1;
