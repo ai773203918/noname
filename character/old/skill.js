@@ -87,7 +87,7 @@ const skills = {
 					player.node.handcards2.classList.remove(skill);
 					delete player.node.handcards1.cardMod[skill];
 					delete player.node.handcards2.cardMod[skill];
-							player.getCards("h", card => card.classList.contains(skill)).forEach(card => {
+					player.getCards("h", card => card.classList.contains(skill)).forEach(card => {
 						card.classList.remove(skill);
 						if (card.hasGaintag && card.hasGaintag(`${skill}_tag`)) {
 							card.removeGaintag(`${skill}_tag`);
