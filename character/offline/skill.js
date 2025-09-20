@@ -9065,7 +9065,7 @@ const skills = {
 			if (get.is.playerNames(target, "zombie_zombie")) {
 				return false;
 			}
-			if (event.reserveOut) {
+			if (event.reserveOut || player.maxHp <= 0) {
 				return false;
 			}
 			return player.hasAllHistory("useSkill", evt => {
@@ -9101,7 +9101,7 @@ const skills = {
 								.chooseControl(names)
 								.set("ai", () => {
 									const { controls } = get.event();
-									return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true));
+									return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true))[0];
 								})
 								.set("prompt", "请选择替换的武将牌")
 								.forResult()
@@ -23024,7 +23024,7 @@ const skills = {
 				}
 			} else {
 				await target.showCards(event.cards);
-				await target.give(event.cards, player);
+				await target.give(event.cards, player, true);
 			}
 		},
 		mark: true,

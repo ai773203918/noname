@@ -6682,20 +6682,24 @@ player.removeVirtualEquip(card);
 	chooseToCompare: [
 		async (event, trigger, player) => {
 			const target = event.target;
+			if (target === "cardPile") {
+				event.compareWithCardPile = true;
+				event.compareType ??= "top";
+			}
 			if (!event.position || typeof event.position != "string") {
 				event.position = "h";
 			}
-			if ((!event.fixedResult?.[player.playerid] && player.countCards(event.position) == 0) || (!event.fixedResult?.[target.playerid] && target.countCards(event.position) == 0)) {
+			if ((!event.fixedResult?.[player.playerid] && player.countCards(event.position) == 0) || (!event.compareWithCardPile && !event.fixedResult?.[target.playerid] && target.countCards(event.position) == 0)) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
 			}
-			game.log(player, "对", target, "发起", event.isDelay ? "延时" : "", "拼点");
+			game.log(player, "对", event.compareWithCardPile ? "牌堆" : target, "发起", event.isDelay ? "延时" : "", "拼点");
 			event.filterCard ??= lib.filter.all;
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			event.list = [player, target].filter(current => !event.fixedResult?.[current.playerid]);
+			event.list = [player, target].filter(current => get.itemtype(current) == "player" && !event.fixedResult?.[current.playerid]);
 			if (event.list.length) {
 				player.chooseCardOL(event.list, "请选择拼点牌", true, event.position).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
 					var hs = target.getCards("h");
@@ -6727,15 +6731,25 @@ player.removeVirtualEquip(card);
 					result[index].cards = lib.skill[result[index].skill].onCompare(target);
 				}
 				lose_list.push([target, result[index].cards]);
-			} else if (event.fixedResult?.[target.playerid]) {
+			} else if (get.itemtype(target) == "player" && event.fixedResult?.[target.playerid]) {
 				lose_list.push([target, [event.fixedResult[target.playerid]]]);
 			}
-			event.card2 = lose_list[1][1][0];
+			let card2;
+			if (event.compareWithCardPile) {
+				if (event.compareType == "top") {
+					card2 = game.cardsGotoOrdering(get.cards()).cards[0];
+				} else if (event.compareType == "bottom") {
+					card2 = game.cardsGotoOrdering(get.bottomCards()).cards[0];
+				}
+			} else {
+				card2 = lose_list[1][1][0];
+			}
+			event.card2 = card2;
 			event.lose_list = lose_list;
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			if (event.card2.number >= 10 || event.card2.number <= 4) {
+			if (get.itemtype(target) == "player" && (event.card2.number >= 10 || event.card2.number <= 4)) {
 				if (target.countCards("h") > 2) {
 					event.addToAI = true;
 				}
@@ -6792,12 +6806,12 @@ player.removeVirtualEquip(card);
 			const target = event.target;
 			game.broadcastAll(() => ui.arena.classList.add("thrownhighlight"));
 			game.addVideo("thrownhighlight1");
-			player.$compare(event.card1, target, event.card2);
+			player.$compare(event.card1, event.compareWithCardPile ? player : target, event.card2);
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
 			game.log(player, "的拼点牌为", event.card1);
-			game.log(target, "的拼点牌为", event.card2);
+			game.log(event.compareWithCardPile ? "牌堆" : target, "的拼点牌为", event.card2);
 			var getNum = function (card) {
 				for (var i of event.lose_list) {
 					if (i[1].includes(card)) {
@@ -6829,18 +6843,26 @@ player.removeVirtualEquip(card);
 				event.result.winner = player;
 				event.str = get.translation(player) + "拼点成功";
 				player.popup("胜");
-				target.popup("负");
+				if (get.itemtype(target) == "player") {
+					target.popup("负");
+				}
 			} else {
 				event.result.bool = false;
 				event.str = get.translation(player) + "拼点失败";
 				if (event.forceWinner !== target && event.num1 == event.num2) {
 					event.result.tie = true;
 					player.popup("平");
-					target.popup("平");
+					if (get.itemtype(target) == "player") {
+						target.popup("平");
+					}
 				} else {
-					event.result.winner = target;
+					if (get.itemtype(target) == "player") {
+						event.result.winner == target;
+					}
 					player.popup("负");
-					target.popup("胜");
+					if (get.itemtype(target) == "player") {
+						target.popup("胜");
+					}
 				}
 			}
 		},
@@ -6854,7 +6876,7 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			const target = event.target;
-			if (typeof target.ai.shown == "number" && target.ai.shown <= 0.85 && event.addToAI) {
+			if (get.itemtype(target) == "player" && typeof target.ai.shown == "number" && target.ai.shown <= 0.85 && event.addToAI) {
 				target.ai.shown += 0.1;
 			}
 			game.broadcastAll(() => ui.arena.classList.remove("thrownhighlight"));
@@ -7544,6 +7566,7 @@ player.removeVirtualEquip(card);
 				ui.click.cancel();
 				return;
 			}
+			ui.create.cardChooseAll();
 			game.check();
 			game.pause();
 			if (event.prompt != false) {
@@ -7573,6 +7596,9 @@ player.removeVirtualEquip(card);
 		}
 		"step 2";
 		event.resume();
+		if (event.cardChooseAll) {
+			event.cardChooseAll.close();
+		}
 		if (event.result.bool && event.animate !== false) {
 			for (var i = 0; i < event.result.targets.length; i++) {
 				event.result.targets[i].addTempClass("target");
@@ -7667,6 +7693,7 @@ player.removeVirtualEquip(card);
 						}
 					}
 				}
+				ui.create.buttonChooseAll();
 				game.check();
 				game.pause();
 			} else if (event.isOnline()) {
@@ -9266,6 +9293,7 @@ player.removeVirtualEquip(card);
 			var link = result.links[0],
 				position = "j";
 			if (event.targets[0].getCards("e").includes(link)) {
+				position = "e";
 				if (!link.cards?.length) {
 					event.targets[0].removeVirtualEquip(link);
 				}
@@ -9281,7 +9309,7 @@ player.removeVirtualEquip(card);
 			}
 			game.log(event.targets[0], "的", link, "被移动给了", event.targets[1]);
 			event.result.card = link;
-			event.result.position = "e";
+			event.result.position = position;
 			game.delay();
 		}
 	},
@@ -12973,6 +13001,9 @@ player.removeVirtualEquip(card);
 	chooseToMove_new: function () {
 		"step 0";
 		//联机时间
+		if (player.isUnderControl()) {
+			game.swapPlayerAuto(player);
+		}
 		if (event.chooseTime && _status.connectMode && !game.online) {
 			event.time = lib.configOL.choose_timeout;
 			game.broadcastAll(function (time) {

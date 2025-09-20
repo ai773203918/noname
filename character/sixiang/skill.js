@@ -2217,8 +2217,12 @@ const skills = {
 					cards,
 					targets: [target],
 				} = ui.selected,
-				player = get.player();
-			return player.canAddJudge({ name: "lebu", cards: [cards[0]] }) && player.canUse({ name: "lebu", cards: [cards[1]] }, target);
+				player = get.player(),
+				canAdd = (current, card) => {
+					const lebu = get.autoViewAs({ name: "lebu", cards: [card]}, [card]);
+					return lib.filter.judge(lebu, player, current);
+				};
+			return canAdd(player, cards[0]) && canAdd(target, cards[1]);
 		},
 		check(card) {
 			return 8 - get.value(card);
@@ -5514,6 +5518,7 @@ const skills = {
 					complexCard: true,
 					complexTarget: true,
 					complexSelect: true,
+					allowChooseAll: true,
 					ai1(card) {
 						if (ui.selected.cards.length && card.name != "du") {
 							return 0;
@@ -5543,7 +5548,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			await player.give(event.cards, target);
-			await target.chooseToGive("he", [1, Infinity], player);
+			await target.chooseToGive("he", [1, Infinity], player, "allowChooseAll");
 		},
 	},
 	stdhehe: {

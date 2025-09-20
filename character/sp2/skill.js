@@ -734,7 +734,7 @@ const skills = {
 			return player.hasCard(card => _status.connectMode || lib.filter.cardDiscardable(card, player), "h");
 		},
 		async cost(event, trigger, player) {
-			const next = player.chooseToDiscard(get.prompt2(event.skill), [1, Infinity]).set("logSkill", "starzhiji");
+			const next = player.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "allowChooseAll").set("logSkill", "starzhiji");
 			if (_status.auto || !(player === game.me || player.isOnline())) {
 				next.complexCard = true;
 				next.ai = function (card) {
@@ -6072,36 +6072,33 @@ const skills = {
 				},
 				logTarget: "player",
 				line: "fire",
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					trigger._dunxi = true;
 					trigger.player.removeMark("dunxi", 1);
-					var target = trigger.targets[0];
-					event.target = target;
+					const target = trigger.targets[0];
 					trigger.targets.remove(target);
-					game.delayx();
-					"step 1";
-					var list;
-					if (get.type(event.card) != "delay") {
+					await game.delayx();
+					let list;
+					if (get.type(trigger.card) != "delay") {
 						list = game.filterPlayer(function (current) {
 							return lib.filter.targetEnabled2(trigger.card, trigger.player, current);
 						});
 					} else {
 						list = game.filterPlayer(function (current) {
-							return current.canAddJudge(event.card, trigger.player);
+							return lib.filter.judge(trigger.card, trigger.player, current);
 						});
 					}
 					if (list.length) {
-						target = list.randomGet();
-					}
-					trigger.targets.push(target);
-					trigger.player.line(target, "fire");
-					game.log(trigger.card, "的目标被改为", target);
-					if (target == event.target) {
-						trigger.player.loseHp();
-						var evt = trigger.getParent("phaseUse");
-						if (evt && evt.player == trigger.player) {
-							evt.skipped = true;
+						const targetx = list.randomGet();
+						trigger.targets.push(targetx);
+						trigger.player.line(targetx, "fire");
+						game.log(trigger.card, "的目标被改为", targetx);
+						if (targetx == target) {
+							await trigger.player.loseHp();
+							const evt = trigger.getParent("phaseUse");
+							if (evt && evt.player == trigger.player) {
+								evt.skipped = true;
+							}
 						}
 					}
 				},
@@ -6910,6 +6907,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		filterCard: true,
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		check(card) {
 			let player = _status.event.player,
 				num = player.hasSkill("nifu") ? 15 : 8;
@@ -7161,6 +7159,7 @@ const skills = {
 						}
 						return true;
 					},
+					allowChooseAll: true,
 					ai1(card) {
 						if (!get.event().nogive || ui.selected.cards.length) {
 							return 0 - get.value(card);
@@ -9619,6 +9618,7 @@ const skills = {
 					filterCard: true,
 					filterTarget: lib.filter.notMe,
 					position: "he",
+					allowChooseAll: true,
 					ai1(card) {
 						if (card.name == "du") {
 							return 10;

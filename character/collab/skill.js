@@ -1622,6 +1622,13 @@ const skills = {
 			},
 			select: [1, Infinity],
 			check: button => {
+				const player = get.player();
+				if (player.hasSkillTag("filterDamage") || player.hasSkillTag("nodamage")) {
+					return get.value(button.link);
+				}
+				if (ui.selected.buttons.length >= player.getHp() && get.damageEffect(player, player, player) < 0) {
+					return 0;
+				}
 				return get.value(button.link);
 			},
 			backup: links => {
@@ -3064,9 +3071,10 @@ const skills = {
 				firstDo: true,
 				charlotte: true,
 				async content(event, trigger, player) {
-					game.players.forEach(current => {
-						current.removeAdditionalSkills(`xwshoufa_${player.playerid}`);
-					});
+					const func = async current => {
+						await current.removeAdditionalSkills(`xwshoufa_${player.playerid}`);
+					};
+					await game.doAsyncInOrder(game.players, func);
 				},
 			},
 			backup: {},

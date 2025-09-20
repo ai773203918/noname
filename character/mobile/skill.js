@@ -703,7 +703,10 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { cards, targets: [target] } = event;
+			const {
+				cards,
+				targets: [target],
+			} = event;
 			await player.modedDiscard(cards);
 			await target.damage("nocard");
 		},
@@ -1024,7 +1027,7 @@ const skills = {
 			event.result = {
 				bool: true,
 				cost_data: list,
-			}
+			};
 			/*event.result = await player
 				.chooseBool(get.prompt(event.skill))
 				.set("prompt2", `将牌堆顶首张${list.map(i => get.translation(i)).join("和")}牌置于武将牌上，称为“业”`)
@@ -1149,7 +1152,7 @@ const skills = {
 							return;
 						}
 						await player.gain(cards, "gain2");
-						player.changeSkin({ characterName: "mb_zerong" }, `mb_zerong_${choice == "all" ? choice : (choice == "red" ? "black" : "red")}`);
+						player.changeSkin({ characterName: "mb_zerong" }, `mb_zerong_${choice == "all" ? choice : choice == "red" ? "black" : "red"}`);
 						const count = color => cards?.filter(card => get.color(card) == color)?.length,
 							black = count("black"),
 							red = count("red");
@@ -1858,7 +1861,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const { bool: bool1, cards } = await player
-				.chooseToDiscard(get.prompt(event.skill), [1, Infinity], "h")
+				.chooseToDiscard(get.prompt(event.skill), [1, Infinity], "h", "allowChooseAll")
 				.set("prompt2", "弃置任意张手牌，令你此阶段使用的前等量张牌无距离限制且不可被响应")
 				.set("ai", card => {
 					const player = get.player();
@@ -1929,8 +1932,8 @@ const skills = {
 			}
 		},
 		onremove(player) {
-            player.removeSkill("potzhuangshi_directHit");
-            player.removeSkill("potzhuangshi_limit");
+			player.removeSkill("potzhuangshi_directHit");
+			player.removeSkill("potzhuangshi_limit");
 		},
 		subSkill: {
 			limit: {
@@ -3414,8 +3417,7 @@ const skills = {
 						};
 						if (player == game.me) {
 							func(event.videoId, red, black);
-						}
-						else if (player.isOnline()) {
+						} else if (player.isOnline()) {
 							player.send(func, event.videoId, red, black);
 						}
 						const result = await player
@@ -5222,7 +5224,7 @@ const skills = {
 			const { target } = event;
 			if (target.countCards("h")) {
 				const result = await target
-					.chooseCard("将任意张手牌移出游戏直到本回合结束", [1, Infinity], "h")
+					.chooseCard("将任意张手牌移出游戏直到本回合结束", [1, Infinity], "h", "allowChooseAll")
 					.set("ai", card => {
 						const { numx, player } = get.event();
 						if (player.countCards("h", "sha") <= numx) {
@@ -5458,6 +5460,7 @@ const skills = {
 		logAudio: () => 2,
 		inherit: "dcctjiuxian",
 		selectCard: [1, Infinity],
+		allowChooseAll: true,
 		position: "he",
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
@@ -5857,7 +5860,7 @@ const skills = {
 					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
 					target.setStorage("mbzengou_debuff", choose, true);
-					target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`)
+					target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`);
 					//target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
 					//target.markSkill("mbzengou_debuff");
 				}
@@ -5903,7 +5906,7 @@ const skills = {
 						if (!storage) {
 							return "无效果";
 						}
-						return `你每回合使用第一张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`
+						return `你每回合使用第一张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`;
 					},
 				},
 				/*intro: {
@@ -8354,7 +8357,7 @@ const skills = {
 				})
 			) {
 				const num = player.getAllHistory("custom", evt => evt.name == "mbquchong").length;
-				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */[0, 2, 5, 5];
+				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */ [0, 2, 5, 5];
 				return num < 4 && player.countMark("mbquchong") >= list[num];
 			}
 			return player.canMoveCard(
@@ -8407,7 +8410,7 @@ const skills = {
 					.set("logSkill", ["mbquchong", null, null, null, [4]]);
 			} else {
 				const numbers = Array.from({ length: 13 }).map((_, i) => get.strNumber(i + 1));
-				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */[0, 2, 5, 5];
+				const list = /*get.mode() == "identity" ? [0, 5, 10, 10] : */ [0, 2, 5, 5];
 				const costMark = list[player.getAllHistory("custom", evt => evt.name == "mbquchong").length];
 				const result = await player
 					.chooseButton(
@@ -9416,6 +9419,7 @@ const skills = {
 						selectCard: [1, Infinity],
 						prompt: used.length ? "是否继续分配手牌？" : get.prompt(event.skill),
 						prompt2: "将任意张手牌交给一名其他角色",
+						allowChooseAll: true,
 						ai1(card) {
 							if (!ui.selected.cards.length) {
 								return 8 - get.value(card);
@@ -12179,6 +12183,7 @@ const skills = {
 						return ui.selected.cards.length == ui.selected.targets.length;
 					},
 					position: "h",
+					allowChooseAll: true,
 					ai1(card) {
 						if (card.name == "du") {
 							return 10;
@@ -14461,7 +14466,7 @@ const skills = {
 			}
 		},
 		ai: {
-			order: 13,
+			order: 6,
 			result: {
 				target: -1,
 			},
@@ -22767,17 +22772,20 @@ const skills = {
 	xinjyzongshi: {
 		audio: 2,
 		trigger: {
-			player: ["chooseToCompareAfter", "compareMultipleAfter"],
-			target: ["chooseToCompareAfter", "compareMultipleAfter"],
+			global: ["chooseToCompareAfter", "compareMultipleAfter"],
 		},
 		filter(event, player) {
 			if (event.preserve) {
 				return false;
 			}
-			if (event.name == "compareMultiple") {
-				return true;
+			if (event.compareMultiple) {
+				return false;
 			}
-			return !event.compareMultiple;
+			if (event.compareMeanwhile) {
+				const index = [...event.targets, event.player].indexOf(player);
+				return index >= 0;
+			}
+			return [event.player, event.target].some(current => current == player);
 		},
 		frequent: true,
 		content() {
@@ -25230,7 +25238,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.prompt2(event.name.slice(0, -5)), "h", [1, player.countCards("h")])
+				.chooseCard(get.prompt2(event.name.slice(0, -5)), "h", [1, player.countCards("h")], "allowChooseAll")
 				.set("ai", card => {
 					if (!game.hasPlayer(target => player != target && get.attitude(player, target) > 0)) {
 						return 0;
