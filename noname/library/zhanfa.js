@@ -630,7 +630,7 @@ const _zhanfa = {
 			value: 8.6,
 		},
 		skill: {
-			inherit: "zf_sanlianji",
+			inherit: "zf_erlianji",
 			modNum: 2,
 		},
 	},
