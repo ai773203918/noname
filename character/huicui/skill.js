@@ -86,6 +86,7 @@ const skills = {
 		},
 	},
 	dcyanxi: {
+		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return event.player != player && player.countMark("dcyanxi") > 0 && player.canUse({ name: "sha", isCard: true }, event.player, false, false);
