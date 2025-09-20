@@ -12601,7 +12601,7 @@ export class Library {
 					if (typeof select == "string" && select !== "all") {
 						targets = [trigger[select]];
 					} else {
-						targets = player.getEnemies(filter(target), false);
+						targets = player.getEnemies(filter, false);
 						if (select !== "all" && typeof select == "number") {
 							targets = targets.randomGets(select);
 						}
