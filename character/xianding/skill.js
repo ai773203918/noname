@@ -331,34 +331,6 @@ const skills = {
 							}
 						}
 					},
-					cardEnabled(card, player, event) {
-						var source = player.getStorage("dcmohua_effect");
-						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
-							return;
-						}
-						if (event === "forceEnable") {
-							var mod = game.checkMod(card, source, event, "unchanged", "cardEnabled", source);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							return true;
-						} else {
-							var filter = get.info(card).enable;
-							if (!filter) {
-								return;
-							}
-							var mod = game.checkMod(card, player, source, "unchanged", "cardEnabled", source);
-							if (mod != "unchanged") {
-								return mod;
-							}
-							if (typeof filter == "boolean") {
-								return filter;
-							}
-							if (typeof filter == "function") {
-								return filter(card, source, event);
-							}
-						}
-					},
 					cardUsable(card, player, num) {
 						var source = player.getStorage("dcmohua_effect");
 						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.getStorage("dcmohua_effect")) == "player") {
