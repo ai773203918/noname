@@ -12422,9 +12422,9 @@ export class Library {
 					const pos = info.pos;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12432,7 +12432,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12535,9 +12535,9 @@ export class Library {
 					let filter = cardFilter;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12545,7 +12545,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}
@@ -12625,9 +12625,9 @@ export class Library {
 					const pos = info.pos;
 
 					if (typeof cardFilter == "string") {
-						filter = card => getCardName(card) == cardFilter;
+						filter = card => get.name(card) == cardFilter;
 					} else if (Array.isArray(cardFilter)) {
-						filter = card => cardFilter.includes(getCardName(card));
+						filter = card => cardFilter.includes(get.name(card));
 					} else if (typeof cardFilter == "object") {
 						filter = card => {
 							for (let j in cardFilter) {
@@ -12635,7 +12635,7 @@ export class Library {
 								if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number" || j == "type2") {
 									value = get[j](card);
 								} else if (j == "name") {
-									value = getCardName(card);
+									value = get.name(card);
 								} else {
 									value = card[j];
 								}

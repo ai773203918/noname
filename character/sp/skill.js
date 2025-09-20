@@ -2389,10 +2389,11 @@ const skills = {
 				filterTarget(card, player, target) {
 					return _status.event.targets && _status.event.targets.includes(target) && lib.filter.filterTarget.apply(this, arguments);
 				},
-				prompt: "将任意张牌当决斗使用",
+				prompt: "将任意张手牌当决斗使用",
 				check(card) {
 					return 7 - get.value(card);
 				},
+				allowChooseAll: true,
 			},
 		},
 	},
@@ -3473,7 +3474,7 @@ const skills = {
 					break;
 				case 1:
 					result = await player
-						.chooseToDiscard("he", [0, Infinity], get.prompt(event.name), `你可以弃置任意张牌，若这些牌同名，则本回合结束时你可以视为使用之${storage.length ? `（本轮已弃置过的牌数：${storage}）` : ``}`, true)
+						.chooseToDiscard("he", [0, Infinity], get.prompt(event.name), `你可以弃置任意张牌，若这些牌同名，则本回合结束时你可以视为使用之${storage.length ? `（本轮已弃置过的牌数：${storage}）` : ``}`, true, "allowChooseAll")
 						.set("filterOk", () => {
 							return !get.event("storage").includes(ui.selected.cards.length);
 						})
@@ -9844,9 +9845,6 @@ const skills = {
 					selectCard: [1, Infinity],
 					filterTarget: lib.filter.notMe,
 					position: "he",
-					complexCard: true,
-					complexTarget: true,
-					complexSelect: true,
 					allowChooseAll: true,
 					ai1(card) {
 						const player = get.event("player");
@@ -10361,6 +10359,7 @@ const skills = {
 						}
 						return att;
 					},
+					allowChooseAll: true,
 				});
 			} else {
 				event.goto(3);
@@ -10372,7 +10371,7 @@ const skills = {
 			"step 3";
 			var num = player.countCards("h");
 			if (num > 0) {
-				player.chooseToDiscard("h", [1, num], "抚悼：弃置任意张手牌，然后记录手牌数");
+				player.chooseToDiscard("h", [1, num], "抚悼：弃置任意张手牌，然后记录手牌数", "allowChooseAll");
 			}
 			"step 4";
 			player.storage.olfudao = player.countCards("h");
@@ -11725,7 +11724,7 @@ const skills = {
 			"step 0";
 			var cards = get.bottomCards(3, true);
 			player
-				.chooseButton(["###藏心：请选择要弃置的牌###若以此法弃置了红桃牌，则减少弃置红桃牌数的伤害", cards], [1, cards.length], true)
+				.chooseButton(["###藏心：请选择要弃置的牌###若以此法弃置了红桃牌，则减少弃置红桃牌数的伤害", cards], [1, cards.length], true, "allowChooseAll")
 				.set("ai", function (button) {
 					if (!_status.event.bool && get.suit(button.link, false) == "heart") {
 						return 0;
@@ -15912,6 +15911,7 @@ const skills = {
 		onuse(links, player) {
 			player.addTempSkill("rekenshang_effect");
 		},
+		allowChooseAll: true,
 		ai: {
 			order(item, player) {
 				if (player.countCards("hes") >= 3) {
@@ -16067,6 +16067,7 @@ const skills = {
 		onuse(links, player) {
 			player.addTempSkill("olkenshang_effect");
 		},
+		allowChooseAll: true,
 		ai: {
 			order: 1,
 			threaten: 1.1,
@@ -17994,7 +17995,7 @@ const skills = {
 				event.finish();
 			}
 			"step 3";
-			player.chooseCard("是否重铸任意张手牌？", "操作提示：选择要重铸的牌并点击“确定”", [1, player.countCards("h")], lib.filter.cardRecastable).set("ai", function (card) {
+			player.chooseCard("是否重铸任意张手牌？", "操作提示：选择要重铸的牌并点击“确定”", [1, player.countCards("h")], lib.filter.cardRecastable, "allowChooseAll").set("ai", function (card) {
 				var player = _status.event.player,
 					cards = ui.selected.cards;
 				if (!player.hasSkill("olmingzhe")) {
@@ -21468,6 +21469,7 @@ const skills = {
 						ai2(target) {
 							return -1;
 						},
+						allowChooseAll: true,
 					});
 					"step 3";
 					if (result.bool) {
@@ -21943,7 +21945,7 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("he") > 0;
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		position: "he",
 		selectCard: [1, Infinity],
 		check(card) {
@@ -21957,6 +21959,7 @@ const skills = {
 			}
 			return 7 - ui.selected.cards.length - get.value(card);
 		},
+		allowChooseAll: true,
 		content() {
 			var num = Math.min(cards.length, 4 - player.countMark("spmanwang"));
 			if (num >= 1) {
@@ -24832,6 +24835,7 @@ const skills = {
 		selectTarget() {
 			return ui.selected.cards.length;
 		},
+		allowChooseAll: true,
 		ai: {
 			order: 2,
 		},
@@ -33271,9 +33275,15 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseToDiscard(get.prompt2("jiqiao"), [1, player.countCards("he", { type: "equip" })], "he", function (card) {
-					return get.type(card) == "equip";
-				})
+				.chooseToDiscard(
+					get.prompt2("jiqiao"),
+					[1, player.countCards("he", { type: "equip" })],
+					"he",
+					function (card) {
+						return get.type(card) == "equip";
+					},
+					"allowChooseAll"
+				)
 				.set("ai", function (card) {
 					if (card.name == "bagua") {
 						return 10;
@@ -40457,38 +40467,37 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const str = `${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，是否发动【真仪】，失去「紫薇♠」标记并修改判定结果？`;
-					const control = await player.chooseControl('黑桃5', '红桃5', 'cancel2')
-						.set('prompt', get.prompt(event.skill))
-						.set('prompt2', str)
-						.set('judging', trigger.player.judging[0])
-						.set('ai', () => {
+					const control = await player
+						.chooseControl("黑桃5", "红桃5", "cancel2")
+						.set("prompt", get.prompt(event.skill))
+						.set("prompt2", str)
+						.set("judging", trigger.player.judging[0])
+						.set("ai", () => {
 							const { player, judging } = get.event();
 							const trigger = get.event().getTrigger();
-							const results = trigger.judge({ name: judging.name, suit: 'spade', number: 5 }) - trigger.judge(judging);
-							const resulth = trigger.judge({ name: judging.name, suit: 'heart', number: 5 }) - trigger.judge(judging);
+							const results = trigger.judge({ name: judging.name, suit: "spade", number: 5 }) - trigger.judge(judging);
+							const resulth = trigger.judge({ name: judging.name, suit: "heart", number: 5 }) - trigger.judge(judging);
 							const attitude = get.attitude(player, trigger.player);
 							if (attitude == 0 || (resulth == 0 && results == 0)) {
-								return 'cancel2';
+								return "cancel2";
 							}
 							if (attitude > 0) {
 								if (results > 0) {
-									return resulth > results ? '红桃5' : '黑桃5';
+									return resulth > results ? "红桃5" : "黑桃5";
+								} else if (resulth > 0) {
+									return "红桃5";
 								}
-								else if (resulth > 0) {
-									return '红桃5';
-								}
-								return 'cancel2';
-							}
-							else {
+								return "cancel2";
+							} else {
 								if (results < 0) {
-									return resulth < results ? '红桃5' : '黑桃5';
+									return resulth < results ? "红桃5" : "黑桃5";
+								} else if (resulth < 0) {
+									return "红桃5";
 								}
-								else if (resulth < 0) {
-									return '红桃5';
-								}
-								return 'cancel2';
+								return "cancel2";
 							}
-						}).forResult("control");
+						})
+						.forResult("control");
 					event.result = {
 						bool: control && control !== "cancel2",
 						cost_data: control,
@@ -40629,6 +40638,7 @@ const skills = {
 						-get.attitude(player, target)
 					);
 				},
+				allowChooseAll: true,
 			});
 			"step 1";
 			if (result.bool) {
@@ -41498,6 +41508,7 @@ const skills = {
 		selectCard: [1, Infinity],
 		discard: false,
 		lose: false,
+		allowChooseAll: true,
 		content() {
 			player.awakenSkill(event.name);
 			target.addToExpansion(cards, player, "give").gaintag.add("xinfu_zengdao2");
@@ -41886,7 +41897,10 @@ const skills = {
 		filter(card, player) {
 			return player.storage.xinfu_duanfa < player.maxHp;
 		},
-		filterCard(card) {
+		filterCard(card, player) {
+			if (!lib.filter.cardDiscardable(card, player)) {
+				return false;
+			}
 			return get.color(card) == "black";
 		},
 		selectCard() {
@@ -41897,6 +41911,7 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		delay: false,
+		allowChooseAll: true,
 		content() {
 			player.draw(cards.length);
 			player.storage.xinfu_duanfa += cards.length;

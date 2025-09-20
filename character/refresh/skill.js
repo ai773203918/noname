@@ -317,7 +317,7 @@ const skills = {
 			const cards = event.cards;
 			await player.addToExpansion(cards, player, "give").set("gaintag", ["rejijun"]);
 			const result = await player
-				.chooseButton(["###是否移去任意张“方”，对一名其他角色造成1点雷属性伤害？###若你移去的“方”的点数和大于36，则改为造成3点雷属性伤害", player.getExpansions("rejijun")], [1, player.getExpansions("rejijun").length])
+				.chooseButton(["###是否移去任意张“方”，对一名其他角色造成1点雷属性伤害？###若你移去的“方”的点数和大于36，则改为造成3点雷属性伤害", player.getExpansions("rejijun")], [1, player.getExpansions("rejijun").length], "allowChooseAll")
 				.set("ai", button => {
 					var player = _status.event.player;
 					var cards = player.getExpansions("rejijun");
@@ -1103,7 +1103,7 @@ const skills = {
 
 			if (draw && recover && equip) {
 				const result = await player
-					.chooseCard("安国：是否重铸任意张牌？", [1, Infinity], lib.filter.cardRecastable, "he")
+					.chooseCard("安国：是否重铸任意张牌？", [1, Infinity], lib.filter.cardRecastable, "he", "allowChooseAll")
 					.set("ai", card => {
 						return 6 - get.value(card);
 					})
@@ -5497,7 +5497,7 @@ const skills = {
 					cards.push(cards2[i]);
 				}
 			}
-			var next = player.chooseToMove("纵玄：将任意张牌置于牌堆顶", true);
+			var next = player.chooseToMove("纵玄：将任意张牌置于牌堆顶", true, "allowChooseAll");
 			next.set("list", [["本次弃置的牌（请将要给出的锦囊牌留在这里）", cards], ["牌堆顶"]]);
 			next.set("filterOk", function (moved) {
 				if (moved[0].length == 1 && get.type2(moved[0][0], false) == "trick") {
@@ -9122,7 +9122,7 @@ const skills = {
 		enable: "phaseUse",
 		audio: 2,
 		usable: 1,
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		selectCard: [1, Infinity],
 		filter(event, player) {
 			return player.countCards("h") > 0;
@@ -9136,25 +9136,30 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target;
 		},
+		allowChooseAll: true,
 		content() {
 			"step 0";
-			target.chooseToDiscard(cards.length, "弃置" + get.cnNumber(cards.length) + "张牌并失去1点体力，或点取消将武将牌翻面并摸" + get.cnNumber(cards.length) + "张牌", "he").set("ai", function (card) {
-				if (cards.length > 3 || target.hasSkillTag("noturn") || target.isTurnedOver() || ((get.name(card) == "tao" || get.name(card) == "jiu") && lib.filter.cardSavable(card, target, target))) {
-					return -1;
-				}
-				if (target.hp <= 1) {
-					if (
-						cards.length < target.getEnemies().length &&
-						target.hasCard(cardx => {
-							return (get.name(cardx) == "tao" || get.name(cardx) == "jiu") && lib.filter.cardSavable(cardx, target, target);
-						}, "hs")
-					) {
-						return 7 - get.value(card);
+			target
+				.chooseToDiscard(cards.length, "弃置" + get.cnNumber(cards.length) + "张牌并失去1点体力，或点取消将武将牌翻面并摸" + get.cnNumber(cards.length) + "张牌", "he")
+				.set("ai", function (card) {
+					const player = get.event("player");
+					if (get.event("cardsx")?.length > 3 || player.hasSkillTag("noturn") || player.isTurnedOver() || ((get.name(card) == "tao" || get.name(card) == "jiu") && lib.filter.cardSavable(card, player, player))) {
+						return -1;
 					}
-					return -1;
-				}
-				return 24 - 5 * cards.length - 2 * Math.min(4, target.hp) - get.value(card);
-			});
+					if (player.hp <= 1) {
+						if (
+							cards.length < player.getEnemies().length &&
+							player.hasCard(cardx => {
+								return (get.name(cardx) == "tao" || get.name(cardx) == "jiu") && lib.filter.cardSavable(cardx, player, player);
+							}, "hs")
+						) {
+							return 7 - get.value(card);
+						}
+						return -1;
+					}
+					return 24 - 5 * cards.length - 2 * Math.min(4, player.hp) - get.value(card);
+				})
+				.set("cardsx", cards);
 			"step 1";
 			if (!result.bool) {
 				target.turnOver();

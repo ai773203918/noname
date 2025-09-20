@@ -4214,9 +4214,11 @@ const skills = {
 				if (index < 0) {
 					return [];
 				}
-				return event.cards.filter((card, i) => {
-					return (i == index) != (winner == player);
-				}).filterInD("od");
+				return event.cards
+					.filter((card, i) => {
+						return (i == index) != (winner == player);
+					})
+					.filterInD("od");
 			}
 			if (player != event.player && player != event.target) {
 				return [];
@@ -10167,7 +10169,8 @@ const skills = {
 			return 7 - get.value(card);
 		},
 		position: "he",
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
+		allowChooseAll: true,
 		content() {
 			target.damage("nocard");
 		},

@@ -289,19 +289,27 @@ const skills = {
 							const list = moved[0].reduce((list, i, index) => (choices[index][0] != i[0] ? [...list, i[0]] : list), []).sort();
 							return list;
 						})
-						.set("list", [["剩余阶段", [choices, (item, type, position, noclick, node) => {
-							let showCard = [item[0], item[1], `lusu_${item[2]}`];
-							node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
-							node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
-							node.node.info.style["font-size"] = "20px";
-							node._link = node.link = item;
-							node._customintro = uiintro => {
-								uiintro.add(get.translation(node._link[2]));
-								uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
-								return uiintro;
-							};
-							return node;
-						}]]])
+						.set("list", [
+							[
+								"剩余阶段",
+								[
+									choices,
+									(item, type, position, noclick, node) => {
+										let showCard = [item[0], item[1], `lusu_${item[2]}`];
+										node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+										node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+										node.node.info.style["font-size"] = "20px";
+										node._link = node.link = item;
+										node._customintro = uiintro => {
+											uiintro.add(get.translation(node._link[2]));
+											uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+											return uiintro;
+										};
+										return node;
+									},
+								],
+							],
+						])
 						.set("filterOk", moved => {
 							return get.event().checkMove(moved).length == 2;
 						})
@@ -1596,7 +1604,7 @@ const skills = {
 							player.removeSkill(event.name);
 						}
 					} else {
-						game.broadcastAll(() => _status._olhuanhuo_debuff_check = true);
+						game.broadcastAll(() => (_status._olhuanhuo_debuff_check = true));
 						const cards = player.getCards("h", card => lib.filter.cardEnabled(card, player, trigger) && lib.filter.cardUsable(card, player, trigger));
 						game.broadcastAll(() => delete _status._olhuanhuo_debuff_check);
 						if (!cards.length) {
@@ -2807,7 +2815,7 @@ const skills = {
 			const name = event.triggername;
 			if (name == "useCardToPlayer") {
 				event.result = await player
-					.chooseToDiscard(`###${get.prompt(event.skill, trigger.target)}###弃置任意张红色牌并令其弃置等量红色手牌，否则不能响应该牌`, [1, Infinity], "he", "chooseonly", (card, player) => get.color(card, player) == "red")
+					.chooseToDiscard(`###${get.prompt(event.skill, trigger.target)}###弃置任意张红色牌并令其弃置等量红色手牌，否则不能响应该牌`, [1, Infinity], "he", "chooseonly", (card, player) => get.color(card, player) == "red", "allowChooseAll")
 					.set("ai", card => {
 						const player = get.player(),
 							target = get.event().getTrigger().target,
@@ -3832,6 +3840,7 @@ const skills = {
 		position: "hes",
 		filterOk: () => !get.player().getStorage("olsblunzhan_used").includes(ui.selected.cards.length),
 		viewAs: { name: "juedou", storage: { olsblunzhan: true } },
+		allowChooseAll: true,
 		precontent() {
 			player.addTempSkill("olsblunzhan_used");
 			player.markAuto("olsblunzhan_used", event.result.cards.length);
@@ -9160,9 +9169,14 @@ const skills = {
 			const {
 				result: { bool, cards },
 			} = await player
-				.chooseCard(get.prompt2("olsbfumeng"), [1, Infinity], (card, player) => {
-					return get.name(card, player) != "sha";
-				})
+				.chooseCard(
+					get.prompt2("olsbfumeng"),
+					[1, Infinity],
+					(card, player) => {
+						return get.name(card, player) != "sha";
+					},
+					"allowChooseAll"
+				)
 				.set("ai", card => {
 					const player = get.event("player");
 					if (player.hasSkill("olsbfumeng")) {

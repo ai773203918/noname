@@ -6267,6 +6267,7 @@ export default {
 								var player = _status.event.player;
 								return get.recoverEffect(target, player, player);
 							},
+							allowChooseAll: true,
 						})
 						.setHiddenSkill("gzjiansu_use");
 					"step 1";

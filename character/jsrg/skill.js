@@ -3189,9 +3189,13 @@ const skills = {
 						if (!player.hasValueTarget(card)) {
 							return 200;
 						}
-						if (player.countCards("j", cardx => cardx?.cards?.some(cardxx => {
-							return cardxx.name == card.name;
-						})) > 1) {
+						if (
+							player.countCards("j", cardx =>
+								cardx?.cards?.some(cardxx => {
+									return cardxx.name == card.name;
+								})
+							) > 1
+						) {
 							return 101;
 						}
 						return 1 / Math.max(0.01, player.getUseValue(link));
@@ -3233,7 +3237,8 @@ const skills = {
 								return (card.viewAs || card.name) == "xumou_jsrg";
 							}),
 						],
-						[1, Infinity]
+						[1, Infinity],
+						"allowChooseAll"
 					)
 					.set("filterButton", button => {
 						return lib.filter.cardDiscardable(button.link, get.player(), "jsrgdaimou");

@@ -1695,7 +1695,7 @@ const skills = {
 						return false;
 					}
 					if (event.name == "damage") {
-						return event.card?.dcretanluan === true && event.player != player; 
+						return event.card?.dcretanluan === true && event.player != player;
 					}
 					if (event.type != "card" && event.name != "_wuxie") {
 						return false;
@@ -3270,7 +3270,7 @@ const skills = {
 				});
 			}
 			const [bool, links] = await player
-				.chooseButton([`集筹：将${num < cards.length ? "至多" + get.cnNumber(num) + "张牌" : "任意张牌"}交给等量角色`, cards])
+				.chooseButton([`集筹：将${num < cards.length ? "至多" + get.cnNumber(num) + "张牌" : "任意张牌"}交给等量角色`, cards], "allowChooseAll")
 				.set("selectButton", [1, num])
 				.set("population", [game.countPlayer(current => get.attitude(player, current) > 0), game.countPlayer(current => get.attitude(player, current) < 0)])
 				.set("ai", button => {
@@ -13784,7 +13784,7 @@ const skills = {
 					"step 0";
 					var target = player.storage.zhishi_mark;
 					event.target = target;
-					player.chooseButton([get.prompt("zhishi", target), '<div class="text center">弃置任意张“疠”并令其摸等量的牌</div>', player.getExpansions("xunli")], [1, Infinity]).set("ai", function (button) {
+					player.chooseButton([get.prompt("zhishi", target), '<div class="text center">弃置任意张“疠”并令其摸等量的牌</div>', player.getExpansions("xunli")], [1, Infinity], "allowChooseAll").set("ai", function (button) {
 						var player = _status.event.player,
 							target = player.storage.zhishi_mark;
 						if (target.hp < 1 && target != get.zhu(player)) {
@@ -15107,7 +15107,7 @@ const skills = {
 				use = false;
 			}
 			player
-				.chooseToDiscard("he", get.prompt("mingluan"), "弃置任意张牌，并摸等同于" + get.translation(trigger.player) + "手牌数的牌（至多摸至五张）", [1, Infinity])
+				.chooseToDiscard("he", get.prompt("mingluan"), "弃置任意张牌，并摸等同于" + get.translation(trigger.player) + "手牌数的牌（至多摸至五张）", [1, Infinity], "allowChooseAll")
 				.set("ai", function (card) {
 					let val = get.value(card, player);
 					if (val < 0 && card.name !== "du") {

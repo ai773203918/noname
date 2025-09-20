@@ -4733,15 +4733,15 @@ export class Player extends HTMLDivElement {
 		if (typeof arg1 != "string") {
 			arg1 = "h";
 		}
-		const getCardName = card => {
+		const get.name = card => {
 			return get.name(card, false);
 		};
 		let filter = card => true;
 		if (arg2) {
 			if (typeof arg2 == "string") {
-				filter = card => getCardName(card) == arg2;
+				filter = card => get.name(card) == arg2;
 			} else if (Array.isArray(arg2)) {
-				filter = card => arg2.includes(getCardName(card));
+				filter = card => arg2.includes(get.name(card));
 			} else if (typeof arg2 == "object") {
 				filter = card => {
 					for (let j in arg2) {
@@ -4749,7 +4749,7 @@ export class Player extends HTMLDivElement {
 						if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number") {
 							value = get[j](card);
 						} else if (j == "name") {
-							value = getCardName(card);
+							value = get.name(card);
 						} else {
 							value = card[j];
 						}
@@ -4813,7 +4813,7 @@ export class Player extends HTMLDivElement {
 		if (typeof arg1 != "string") {
 			arg1 = "h";
 		}
-		const getCardName = card => {
+		const get.name = card => {
 			if (card.parentNode == this.node.judges) {
 				if (card.viewAs) {
 					return card.viewAs;
@@ -4824,9 +4824,9 @@ export class Player extends HTMLDivElement {
 		let filter = card => true;
 		if (arg2) {
 			if (typeof arg2 == "string") {
-				filter = card => getCardName(card) == arg2;
+				filter = card => get.name(card) == arg2;
 			} else if (Array.isArray(arg2)) {
-				filter = card => arg2.includes(getCardName(card));
+				filter = card => arg2.includes(get.name(card));
 			} else if (typeof arg2 == "object") {
 				filter = card => {
 					for (let j in arg2) {
@@ -4834,7 +4834,7 @@ export class Player extends HTMLDivElement {
 						if (j == "type" || j == "subtype" || j == "color" || j == "suit" || j == "number") {
 							value = get[j](card);
 						} else if (j == "name") {
-							value = getCardName(card);
+							value = get.name(card);
 						} else {
 							value = card[j];
 						}

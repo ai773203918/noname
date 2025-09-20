@@ -1621,6 +1621,7 @@ const skills = {
 				return ui.create.dialog('###兴功###<div class="text center">请选择要从弃牌堆获得的牌</div>', event.dcshixinggong_cards, "hidden");
 			},
 			select: [1, Infinity],
+			allowChooseAll: true,
 			check: button => {
 				const player = get.player();
 				if (player.hasSkillTag("filterDamage") || player.hasSkillTag("nodamage")) {

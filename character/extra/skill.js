@@ -1054,7 +1054,7 @@ const skills = {
 					continue;
 				}
 				const result = await target
-					.chooseCard("h", "将任意张手牌当作“威”置于武将牌上", [1, Infinity], true)
+					.chooseCard("h", "将任意张手牌当作“威”置于武将牌上", [1, Infinity], true, "allowChooseAll")
 					.set("ai", () => {
 						return -1;
 					})
@@ -4886,7 +4886,8 @@ const skills = {
 							],
 						],
 						[1, num],
-						true
+						true,
+						"allowChooseAll"
 					)
 					.set("ai", function (button) {
 						var name = button.link;
