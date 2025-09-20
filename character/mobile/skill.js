@@ -3402,7 +3402,7 @@ const skills = {
 				return [1, 2, 3, 4, 5, "cancel2"];
 			},
 			check() {
-				return 2;
+				return 4;
 			},
 			backup(result, player) {
 				return {
