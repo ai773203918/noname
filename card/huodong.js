@@ -307,8 +307,8 @@ game.import("card", function () {
 							.forResult();
 						if (result?.control) {
 							const color = result.control;
-							game.log(player, "选择了", "#y" + color);
-							player.popup(color);
+							game.log(target, "选择了", "#y" + color);
+							target.popup(color);
 							const judgeEvent = target.judge(card => {
 								if (get.color(card) == get.event().haoyun_color) {
 									return 1.5;
@@ -333,7 +333,7 @@ game.import("card", function () {
 						}
 					}
 					if (cards.length) {
-						await player.gain(cards, "gain2");
+						await target.gain(cards, "gain2");
 					}
 				},
 				ai: {
