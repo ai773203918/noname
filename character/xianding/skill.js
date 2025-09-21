@@ -240,7 +240,7 @@ const skills = {
 			for (i = 0; i < cards.length; i++) {
 				const result = await player
 					.chooseToUse()
-					.set("filterCard", (cardx, player, target) => get.name(cardx) == get.name(card))
+					.set("filterCard", (cardx, player, target) => get.name(cardx) == get.name(card[i]))
 					.set("ai2", target => {
 						const player = get.player();
 						return -get.attitude(player, target);
@@ -255,13 +255,11 @@ const skills = {
 					.set("complexTarget", true)
 					.set("complexSelect", true)
 					.forResult();
-				if (result.bool) {
-					if (result.targets.length && result.targets.every(target => targets[i].includes(target))) {
-						await player.draw(result.targets.length);
-					} else {
-						player.removeTempSkill("dcmohua_effect");
-						break;
-					}
+				if (result.targets.length && result.targets.every(target => targets[i].includes(target))) {
+					await player.draw(result.targets.length);
+				} else if (!result.bool) {
+					player.removeTempSkill("dcmohua_effect");
+					break;
 				}
 			}
 		},
