@@ -10197,6 +10197,13 @@ export class Player extends HTMLDivElement {
 					player.addSkill(skillsToAdd[i], null, true, true);
 					player.additionalSkills[skill].push(skillsToAdd[i]);
 				}
+				game.broadcast(
+					(player, map) => {
+						player.additionalSkills = map;
+					},
+					player,
+					player.additionalSkills
+				);
 				player.checkConflict();
 			}
 			_status.event.clearStepCache();
