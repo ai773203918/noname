@@ -9734,12 +9734,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		zhuanhuanji: true,
-		filterTarget(card, player, target) {
-			if (player.storage.mbzuoyou) {
-				return get.mode() == "versus" && _status.mode == "two" ? true : target.countCards("h");
-			}
-			return true;
-		},
+		filterTarget: true,
 		prompt() {
 			return get.info("mbzuoyou").intro.content(get.player().storage["mbzuoyou"]);
 		},
@@ -9753,9 +9748,6 @@ const skills = {
 				await target.draw(3);
 				await target.chooseToDiscard(2, true, "h");
 			} else {
-				if ((get.mode() !== "versus" || _status.mode !== "two") && target.countCards("h")) {
-					await target.chooseToDiscard(target === player ? "佐佑" : `${get.translation(player)}对你发动了【佐佑】`, "请弃置一张手牌，然后获得1点护甲", 1, true);
-				}
 				await target.changeHujia(1, null, true);
 			}
 		},
@@ -9767,7 +9759,7 @@ const skills = {
 				if (!storage) {
 					return "转换技。出牌阶段限一次，你可以令一名角色摸三张牌，然后其弃置两张手牌。";
 				}
-				return "转换技。出牌阶段限一次，你可以令一名" + (goon ? "有手牌的角色弃置一张手牌，然后其" : "角色") + "获得1点护甲。";
+				return "转换技。出牌阶段限一次，你可以令一名角色获得1点护甲。";
 			},
 		},
 		ai: {
