@@ -11824,9 +11824,9 @@ export class Library {
 				return false;
 			}
 			let mod = game.checkMod(card, player, target, "unchanged", "playerEnabled", player);
-				if (mod != "unchanged") {
-					return mod;
-				}
+			if (mod != "unchanged") {
+				return mod;
+			}
 			let mod2 = game.checkMod(card, player, target, "unchanged", "targetEnabled", target);
 			if (mod2 != "unchanged") {
 				return mod2;
@@ -12676,7 +12676,7 @@ export class Library {
 							return "暂无战法";
 						}
 						dialog.add([list.map(i => [`zf_${lib.zhanfa.getRarity(i)}`, null, i]), "vcard"]);
-						dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`));
+						dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`, "zhanfa"));
 					},
 				},
 			},

@@ -2241,7 +2241,9 @@ const _zhanfa = {
 					onremove: true,
 					mod: {
 						cardUsable(card, player, num) {
-							return num + player.countMark("zf_woxinchangdan_effect");
+							if (card.name == "sha" && player === _status.currentPhase) {
+								return num + player.countMark("zf_woxinchangdan_effect");
+							}
 						},
 					},
 				},
@@ -2925,7 +2927,7 @@ const _zhanfa = {
 				return event.card.name == "sha" && player.hasCard(card => player.canRecast(card), "he");
 			},
 			async cost(event, trigger, player) {
-				const select = get.info(event.skill);
+				const { select } = get.info(event.skill);
 				event.result = await player
 					.chooseCard(get.prompt2(event.skill), select, (card, player) => player.canRecast(card))
 					.set("ai", card => 6 - get.value(card))
