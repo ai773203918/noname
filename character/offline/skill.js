@@ -52,58 +52,63 @@ const skills = {
 		filter(event, player) {
 			return player.getStorage("pezunwei").length < 3;
 		},
-		async content(event, trigger, player) {
-			const buttons = [
-				[1, "将手牌摸至全场最多"],
-				[2, "随机使用牌堆中的装备牌，直至你的装备区牌数为全场最多"],
-				[3, "将体力回复至全场最多"],
-			];
-			const result = await player
-				.chooseButton(["选择一项执行并移除此项", [buttons, "textbutton"]])
-				.set("ai", button => {
-					const player = get.player();
-					if (button.link == 1) {
-						return game.findPlayer(player => player.isMaxHandcard()).countCards("h") - player.getCards("h");
-					} else if (button.link == 2) {
-						return game.findPlayer(player => player.isMaxHandcard()).countCards("e") - player.getCards("e");
-					} else if (button.link == 3) {
-						const num = game.findPlayer(player => player.isMaxHp()).getHp();
-						if (player.getHp() == 1 && num > 1) {
-							return 2;
+		chooseButton: {
+			dialog(event, player) {
+				var list = ["将手牌摸至全场最多", "随机使用牌堆中的装备牌，直至你的装备区牌数为全场最多", "将体力回复至全场最多"];
+				var choiceList = ui.create.dialog("尊位：请选择一项", "forcebutton", "hidden");
+				choiceList.add([
+					list.map((item, i) => {
+						if (player.getStorage("pezunwei").includes(i)) {
+							item = `<span style="text-decoration: line-through;">${item}</span>`;
 						}
-						return num - player.getHp();
+						return [i, item];
+					}),
+					"textbutton",
+				]);
+			},
+			check(button) {
+				const player = get.player();
+				if (button.link == 1) {
+					return game.findPlayer(player => player.isMaxHandcard()).countCards("h") - player.getCards("h");
+				} else if (button.link == 2) {
+					return game.findPlayer(player => player.isMaxEquip()).countCards("e") - player.getCards("e");
+				} else if (button.link == 3) {
+					const num = game.findPlayer(player => player.isMaxHp()).getHp();
+					if (player.getHp() == 1 && num > 1) {
+						return 2;
 					}
-					return 1;
-				})
-				.set("filterButton", button => {
-					const player = get.player();
-					return !player.getStorage("pezunwei")?.includes(button.link);
-				})
-				.forResult();
-			const list = player.getStorage("pezunwei") || [];
-			if (result.bool) {
+					return num - player.getHp();
+				}
+				return 1;
+			},
+			filter(button) {
+				const player = get.player();
+				return !player.getStorage("pezunwei")?.includes(button.link);
+			},
+			backup(links) {
 				list.add(result.links[0]);
+				let next;
 				player.setStorage("pezunwei", list);
 				if (result.links[0] == 1) {
-					await player.drawTo(game.findPlayer(player => player.isMaxHandcard()).countCards("h"));
+					next = player.drawTo(game.findPlayer(player => player.isMaxHandcard()).countCards("h"));
 				} else if (result.links[0] == 2) {
 					do {
 						const card = get.cardPile(card => get.type(card) == "equip" && player.canUse(card, player));
 						if (card) {
-							const next = player.chooseUseTarget(card, true);
+							next = player.chooseUseTarget(card, true);
 							next.nopopup = true;
-							await next;
 						}
 					} while (!player.isMaxEquip() && [1, 2, 3, 4, 5].some(i => player.hasEmptySlot(i)));
 				} else if (result.links[0] == 3) {
-					await player.recoverTo(game.findPlayer(player => player.isMaxHp()).getHp());
+					next = player.recoverTo(game.findPlayer(player => player.isMaxHp()).getHp());
 				}
-			}
+				return next;
+			},
 		},
 		ai: {
 			order: 1,
 			result: {
-				plsyer(player, target) {
+				player(player, target) {
 					const handNum = game.findPlayer(player => player.isMaxHandcard()).countCards("h"),
 						hpNum = game.findPlayer(player => player.isMaxHp()).getHp(),
 						equipNum = game.findPlayer(player => player.isMaxEquip()).countCards("e");
@@ -2041,19 +2046,25 @@ const skills = {
 						let num = 0;
 						while (list?.length) {
 							const result2 = await player
-								.chooseButton([`###权威###是否跳过一个阶段？（已跳过${num}个阶段）`, [list, (item, type, position, noclick, node) => {
-									let showCard = [item[0], item[1], `lusu_${item[2]}`];
-									node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
-									node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
-									node.node.info.style["font-size"] = "20px";
-									node._link = node.link = item;
-									node._customintro = uiintro => {
-										uiintro.add(get.translation(node._link[2]));
-										uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
-										return uiintro;
-									};
-									return node;
-								}]])
+								.chooseButton([
+									`###权威###是否跳过一个阶段？（已跳过${num}个阶段）`,
+									[
+										list,
+										(item, type, position, noclick, node) => {
+											let showCard = [item[0], item[1], `lusu_${item[2]}`];
+											node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+											node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+											node.node.info.style["font-size"] = "20px";
+											node._link = node.link = item;
+											node._customintro = uiintro => {
+												uiintro.add(get.translation(node._link[2]));
+												uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+												return uiintro;
+											};
+											return node;
+										},
+									],
+								])
 								.set("ai", button => {
 									if (["phaseDiscard", "phaseJudge"].includes(button.link[2])) {
 										return 1;
@@ -8055,7 +8066,7 @@ const skills = {
 			order: 7,
 			result: {
 				target(player, target) {
-					const juedou = new lib.element.VCard({ name: "juedou"});
+					const juedou = new lib.element.VCard({ name: "juedou" });
 					return target.getUseValue(juedou) * Math.sqrt(target.countCards("h"));
 				},
 			},
@@ -10412,9 +10423,11 @@ const skills = {
 						if (index < 0) {
 							return [];
 						}
-						return event.cards.filter((card, i) => {
-							return i !== index;
-						}).filterInD("od");
+						return event.cards
+							.filter((card, i) => {
+								return i !== index;
+							})
+							.filterInD("od");
 					}
 					if (player != event.player && player != event.target) {
 						return [];

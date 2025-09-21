@@ -12,7 +12,7 @@ const skills = {
 				.getHistory("useSkill", evt => evt.skill == "dcfuhui_backup")
 				.reduce((list, evt) => {
 					if (suit) {
-						return list.add(evt.event.cards.map(card => get.suit(card)));
+						return list.addArray(evt.event.cards.map(card => get.suit(card)));
 					}
 					return list.add(get.name(evt.event.card));
 				}, []);
@@ -32,7 +32,7 @@ const skills = {
 			return cards;
 		},
 		filter(event, player) {
-			return lib.skill.dcfuhui.getUsed(event, player);
+			return lib.skill.dcfuhui.getUsed(event, player).length;
 		},
 		check(event, player) {
 			return lib.skill.dcfuhui.getUsed(event, player).some(info => player.getUseValue(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure")) >= 6);
@@ -68,14 +68,14 @@ const skills = {
 					},
 					check(card) {
 						if (
-							[...ui.selected.cards].ruduce((num, card) => {
+							[...ui.selected.cards].reduce((num, card) => {
 								num += player.getUseValue(card);
 								return num;
 							}, 0) > player.getUseValue(get.autoViewAs({ name: links[0][2], nature: links[0][3] }, "unsure"))
 						) {
 							return 0;
 						}
-						-get.value(card);
+						return -get.value(card);
 					},
 					async precontent(event, trigger, player) {
 						const list = lib.skill.dcfuhui.getUsed(event, player, true),
@@ -113,7 +113,7 @@ const skills = {
 				}
 				const list = lib.skill.dcfuhui.getUsed(event, player);
 				if (tag == "save") {
-					list.some(info => {
+					return list.some(info => {
 						const card = get.autoViewAs({ name: info[2], nature: info[3] }, "unsure");
 						return lib.filter.cardSavable(card, player, event.dying);
 					});
@@ -224,18 +224,20 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			const cards = trigger.player
+			const cards = [],
+				targets = [];
+			trigger.player
 				.getHistory("useCard", evt => evt.isPhaseUsing(trigger.player))
-				.map(evt => {
+				.forEach(evt => {
 					if (get.type(evt.card) == "equip") {
 						return false;
 					}
-					return evt.card;
+					crads.push(evt.card);
+					targets.push(evt.targets);
 				});
-			console.log(cards);
 			player.setStorage("dcmohua_effect", trigger.player);
 			player.addTempSkill("dcmohua_effect");
-			for (const card of cards) {
+			for (i = 0; i < cards.length; i++) {
 				const result = await player
 					.chooseToUse()
 					.set("filterCard", (cardx, player, target) => get.name(cardx) == get.name(card))
@@ -253,9 +255,13 @@ const skills = {
 					.set("complexTarget", true)
 					.set("complexSelect", true)
 					.forResult();
-				if (!result.bool) {
-					player.removeTempSkill("dcmohua_effect");
-					break;
+				if (result.bool) {
+					if (result.targets.length && result.targets.every(target => targets[i].includes(target))) {
+						await player.draw(result.targets.length);
+					} else {
+						player.removeTempSkill("dcmohua_effect");
+						break;
+					}
 				}
 			}
 		},
@@ -6466,14 +6472,16 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			player.setStorage(event.skill, [], true);
-			event.result = await player
-				.chooseCard(get.prompt(event.skill), "依次选择至多四张手牌展示并记录花色", [1, 4])
-				.forResult();
+			event.result = await player.chooseCard(get.prompt(event.skill), "依次选择至多四张手牌展示并记录花色", [1, 4]).forResult();
 		},
 		async content(event, trigger, player) {
 			const cards = event.cards;
 			await player.showCards(cards, `${get.translation(player)}发动了【育贤】`);
-			player.setStorage(event.name, cards.map(card => get.suit(card, player)), true);
+			player.setStorage(
+				event.name,
+				cards.map(card => get.suit(card, player)),
+				true
+			);
 			player.addTip(event.name, `育贤 ${player.getStorage(event.name).reduce((str, suit) => str + get.translation(suit), "")}`);
 		},
 		/*trigger: { player: "useCard" },
@@ -6515,10 +6523,12 @@ const skills = {
 							return;
 						}
 						const index = player.getHistory("useCard").length;
-						if (targets.some(target => {
-							const list = target.getStorage("dcyuxian");
-							return list?.[index] == get.suit(card, player);
-						})) {
+						if (
+							targets.some(target => {
+								const list = target.getStorage("dcyuxian");
+								return list?.[index] == get.suit(card, player);
+							})
+						) {
 							return num + 10;
 						}
 					},
@@ -26684,7 +26694,7 @@ const skills = {
 			var next = player.chooseToMove();
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("prompt", "天运：点击或拖动将牌移动到牌堆顶或牌堆底");
-			next.set("allowChooseAll", true)
+			next.set("allowChooseAll", true);
 			next.processAI = function (list) {
 				var cards = list[0][1];
 				return [[], cards];
