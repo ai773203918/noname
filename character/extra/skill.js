@@ -5352,7 +5352,7 @@ const skills = {
 					for (const mutation of mutationsList) {
 						if (mutation.type === "childList") {
 							for (const card of mutation.addedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.hasGaintag(tags[i] + "_tag") && !card.classList.contains(glowClass)) {
@@ -5371,7 +5371,7 @@ const skills = {
 								}
 							}
 							for (const card of mutation.removedNodes) {
-								if (card.nodeType === Node.ELEMENT_NODE && card.classList.contains("card")) {
+								if (card.nodeType === Node.ELEMENT_NODE && get.itemtype(card) === "card") {
 									for (let i = 0; i < tags.length; i++) {
 										const glowClass = `dctuoyu-${tags[i].replace("dctuoyu_", "")}-glow`;
 										if (card.classList.contains(glowClass)) {
