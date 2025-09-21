@@ -391,6 +391,13 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
+	 * 是否拥有对应战法
+	 * @param {string} id 战法的id
+	 */
+	hasZhanfa(id) {
+		return this.getStorage("zhanfa").includes(id);
+	}
+	/**
 	 * 获得对应战法
 	 * @param {string} id 战法的id
 	 */
