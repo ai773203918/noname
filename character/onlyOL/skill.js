@@ -7491,60 +7491,61 @@ const skills = {
 			if (player.countCards("h") < 3 || !game.hasPlayer(current => player != current)) {
 				return;
 			}
-			const [cards, targets] = await player
-				.chooseCardTarget({
-					prompt: "鸿图：请展示三张手牌并选择一名角色",
-					prompt2: "你选择的角色须选择是否使用其中的一张牌，并令你随机弃置其中的另一张牌",
-					position: "h",
-					filterCard: true,
-					selectCard: 3,
-					filterTarget: lib.filter.notMe,
-					forced: true,
-					hasFriend: game.hasPlayer(current => {
-						return current !== player && get.attitude(player, current) > 0;
-					}),
-					ai1(card) {
-						const player = get.player(),
-							val = player.getUseValue(card);
-						if (get.event("hasFriend")) {
-							if (
-								ui.selected.cards.some(cardx => {
-									return player.getUseValue(cardx) > 5;
-								})
-							) {
-								return -val - get.value(card);
-							}
-							return val - 5;
-						}
+			let { result } = await player.chooseCardTarget({
+				prompt: "鸿图：请展示三张手牌并选择一名角色",
+				prompt2: "你选择的角色须选择是否使用其中的一张牌，并令你随机弃置其中的另一张牌",
+				position: "h",
+				filterCard: true,
+				selectCard: 3,
+				filterTarget: lib.filter.notMe,
+				forced: true,
+				hasFriend: game.hasPlayer(current => {
+					return current !== player && get.attitude(player, current) > 0;
+				}),
+				ai1(card) {
+					const player = get.player(),
+						val = player.getUseValue(card);
+					if (get.event("hasFriend")) {
 						if (
-							game.hasPlayer(current => {
-								return get.attitude(get.player(), current) < 0 && !current.hasUseTarget(card);
+							ui.selected.cards.some(cardx => {
+								return player.getUseValue(cardx) > 5;
 							})
 						) {
-							return 100 - val;
+							return -val - get.value(card);
 						}
-						return -val;
-					},
-					ai2(target) {
-						const att = get.attitude(get.player(), target);
-						if (!ui.selected.cards.length) {
-							return 0;
-						}
-						if (ui.selected.cards.every(card => !target.hasUseTarget(card))) {
-							return 10 * (get.damageEffect(target, player, player, "fire") - get.damageEffect(player, player, player, "fire"));
-						}
-						return Math.max(...ui.selected.cards.map(card => target.getUseValue(card) * att));
-					},
-				})
-				.forResult("cards", "targets");
-			if (!cards?.length || !targets?.length) {
+						return val - 5;
+					}
+					if (
+						game.hasPlayer(current => {
+							return get.attitude(get.player(), current) < 0 && !current.hasUseTarget(card);
+						})
+					) {
+						return 100 - val;
+					}
+					return -val;
+				},
+				ai2(target) {
+					const att = get.attitude(get.player(), target);
+					if (!ui.selected.cards.length) {
+						return 0;
+					}
+					if (ui.selected.cards.every(card => !target.hasUseTarget(card))) {
+						return 10 * (get.damageEffect(target, player, player, "fire") - get.damageEffect(player, player, player, "fire"));
+					}
+					return Math.max(...ui.selected.cards.map(card => target.getUseValue(card) * att));
+				},
+			});
+			if (!result?.cards?.length || !result.targets?.length) {
 				return;
 			}
-			const [target] = targets;
+			const {
+				targets: [target],
+				cards,
+			} = result;
 			player.line(target, "green");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【鸿图】`);
 			const videoId = lib.status.videoId++;
-			const func = (id, cards) => {
+			const func = (id, cards, player) => {
 				const dialog = ui.create.dialog(`鸿图：是否使用${get.translation(player)}展示的其中一张牌？`);
 				dialog.add(cards);
 				const numbers = cards.map(card => get.number(card)).toUniqued();
@@ -7572,12 +7573,12 @@ const skills = {
 				dialog.videoId = id;
 				return dialog;
 			};
-			if (player == game.me) {
-				func(videoId, cards);
-			} else if (player.isOnline()) {
-				player.send(func, videoId, cards);
+			if (target == game.me) {
+				func(videoId, cards, player);
+			} else if (target.isOnline()) {
+				target.send(func, videoId, cards, player);
 			}
-			const links = await target
+			result = await target
 				.chooseButton()
 				.set("dialog", get.idDialog(videoId))
 				.set("filterButton", button => {
@@ -7595,9 +7596,9 @@ const skills = {
 				.set("ai", button => {
 					return get.player().getUseValue(button.link);
 				})
-				.forResultLinks();
+				.forResult();
 			game.broadcastAll("closeDialog", videoId);
-			if (!links?.length) {
+			if (!result?.links?.length) {
 				for (const current of [target, player]) {
 					if (!current.isIn()) {
 						continue;
@@ -7609,7 +7610,9 @@ const skills = {
 				const numbers = cards.map(card => get.number(card, player)).toUniqued();
 				const min = Math.min(...numbers);
 				const max = Math.max(...numbers);
-				const [card] = links;
+				const {
+					links: [card],
+				} = result;
 				cards.remove(card);
 				const cardx = get.autoViewAs(
 					{
@@ -7627,7 +7630,7 @@ const skills = {
 					return get.owner(card) === player && get.position(card) === "h" && lib.filter.cardDiscardable(card, player, "olsbhongtu");
 				});
 				if (restCards.length) {
-					player.discard(restCards.randomGet());
+					await player.discard(restCards.randomGet());
 				}
 				const num = get.number(card, player);
 				let skill = null;
@@ -7659,7 +7662,7 @@ const skills = {
 				}
 				if (skill) {
 					let skillName = `olsbhongtu_${player.playerid}`;
-					target.addAdditionalSkills(skillName, [skill], true);
+					await target.addAdditionalSkills(skillName, [skill], true);
 					delete target.storage.olsbhongtu_phased;
 					target.when({ player: "phaseBegin" }).then(() => {
 						player.storage.olsbhongtu_phased = true;
