@@ -1432,7 +1432,7 @@ const _zhanfa = {
 				if (game.roundNumber < 6) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || !!game.findSkill(event);
+				return get.type2(event.card) == "trick" || (!event.card && !!game.findSkill(event));
 			},
 		},
 	},

@@ -10582,7 +10582,7 @@ export class Game extends GameCompatible {
 				}
 			}
 			skill = get.sourceSkillFor(name);
-			const info = get.info(skill);
+			const info = lib.skill[skill];
 			if (!info || !Object.keys(info).length || (!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
 				continue;
 			}
