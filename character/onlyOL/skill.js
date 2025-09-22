@@ -6780,7 +6780,7 @@ const skills = {
 				await target.chooseToDiscard(true, "he");
 			} else {
 				await target.draw();
-				await target.chooseToDiscard(num, true, "he");
+				await target.chooseToDiscard(num, true, "he", "allowChooseAll");
 			}
 		},
 	},

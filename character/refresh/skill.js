@@ -2409,7 +2409,7 @@ const skills = {
 					if (target.isIn()) {
 						player.line(target, "fire");
 						const { result } = await target
-							.chooseToDiscard("he", "焚城：弃置至少" + get.cnNumber(num) + "张牌，或受到2点火焰伤害", [num, Infinity])
+							.chooseToDiscard("he", "焚城：弃置至少" + get.cnNumber(num) + "张牌，或受到2点火焰伤害", [num, Infinity], "allowChooseAll")
 							.set("ai", card => {
 								if (ui.selected.cards.length >= get.event("num")) {
 									return -1;
@@ -6956,7 +6956,7 @@ const skills = {
 				event.target = target;
 				var num = Math.min(Math.max(target.countCards("h") - target.hp, 1), target.countDiscardableCards(player, "he"));
 				player.logSkill("decadezhenjun", target);
-				player.discardPlayerCard(num, target, true);
+				player.discardPlayerCard(num, target, true, "allowChooseAll");
 			}
 			"step 2";
 			if (result.cards && result.cards.length) {
@@ -10795,7 +10795,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.chooseCard([1, Math.max(1, player.countCards("h", "sha"))], get.prompt("rechunlao"), "将任意张【杀】置于武将牌上作为“醇”", { name: "sha" }).set("ai", function () {
+			player.chooseCard([1, Math.max(1, player.countCards("h", "sha"))], get.prompt("rechunlao"), "将任意张【杀】置于武将牌上作为“醇”", { name: "sha" }, "allowChooseAll").set("ai", function () {
 				return 1;
 			});
 			"step 1";

@@ -862,10 +862,16 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseCard(get.prompt2(event.skill, trigger.player), "he", [1, Infinity], (card, player) => {
-					const target = get.event().getTrigger().player;
-					return lib.filter.canBeGained(card, target, player);
-				})
+				.chooseCard(
+					get.prompt2(event.skill, trigger.player),
+					"he",
+					[1, Infinity],
+					(card, player) => {
+						const target = get.event().getTrigger().player;
+						return lib.filter.canBeGained(card, target, player);
+					},
+					"allowChooseAll"
+				)
 				.set("ai", card => {
 					const player = get.player(),
 						target = get.event().getTrigger().player,

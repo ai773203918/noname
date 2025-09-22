@@ -2512,6 +2512,7 @@ const skills = {
 			return [num, Infinity];
 		},
 		log: false,
+		allowChooseAll: true,
 		precontent() {
 			player.logSkill("spolzhujiu");
 			if (event.result.cards?.some(i => get.suit(i) !== "club")) {
@@ -5061,6 +5062,7 @@ const skills = {
 						return 6 - get.value(card);
 					},
 					position: "hes",
+					allowChooseAll: true,
 					precontent() {
 						event.getParent().addCount = false;
 						player.addTempSkill("spolxixiang_effect");
@@ -5309,6 +5311,7 @@ const skills = {
 					return 5 - get.value(card);
 				},
 				log: false,
+				allowChooseAll: true,
 			},
 		},
 	},
@@ -6126,6 +6129,7 @@ const skills = {
 					},
 					position: "hes",
 					popname: true,
+					allowChooseAll: true,
 					async precontent(event, trigger, player) {
 						player.addTempSkill("leiluan_effect");
 					},
@@ -7636,6 +7640,7 @@ const skills = {
 					}
 					return 15 - get.value(card) - get.useful(card);
 				},
+				allowChooseAll: true,
 				lose: false,
 				discard: false,
 				delay: 0,
@@ -7689,7 +7694,7 @@ const skills = {
 					const cards = player.getExpansions("olxvfa"),
 						num = Math.ceil(cards.length / 2);
 					const result = await player
-						.chooseButton(['###蓄发###<div class="text center">请移去至少' + get.cnNumber(num) + "张“蓄发”牌</div>", cards], [num, Infinity], true)
+						.chooseButton(['###蓄发###<div class="text center">请移去至少' + get.cnNumber(num) + "张“蓄发”牌</div>", cards], [num, Infinity], true, "allowChooseAll")
 						.set("ai", button => {
 							const player = get.event("player"),
 								value = player.getUseValue(button.link, true);
@@ -11104,7 +11109,7 @@ const skills = {
 			}
 			return 0;
 		},
-		complexCard: true,
+		allowChooseAll: true,
 		discard: false,
 		lose: false,
 		delay: 0,
@@ -11121,7 +11126,7 @@ const skills = {
 				event.finish();
 			}
 			"step 1";
-			player.chooseToDiscard("h", "宴如：弃置至少一半手牌", [Math.floor(player.countCards("h") / 2), Infinity], true).set("ai", card => {
+			player.chooseToDiscard("h", "宴如：弃置至少一半手牌", [Math.floor(player.countCards("h") / 2), Infinity], true, "allowChooseAll").set("ai", card => {
 				var player = _status.event.player;
 				if (player.hasSkill("hezhong") && !(player.hasSkill("hezhong_0") && player.hasSkill("hezhong_1")) && player.countCards("h") - ui.selected.cards.length > 2) {
 					return 1 / (get.value(card) || 0.5);
@@ -33815,9 +33820,15 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseCard([1, player.countCards("he") - player.countCards("he", { type: "basic" })], "he", get.prompt("yinbing"), function (card) {
-					return get.type(card) != "basic";
-				})
+				.chooseCard(
+					[1, player.countCards("he") - player.countCards("he", { type: "basic" })],
+					"he",
+					get.prompt("yinbing"),
+					function (card) {
+						return get.type(card) != "basic";
+					},
+					"allowChooseAll"
+				)
 				.set("ai", function (card) {
 					return 6 - get.value(card);
 				})

@@ -5461,7 +5461,7 @@ const skills = {
 				num2 == 0
 					? false
 					: await target
-							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity])
+							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity], "allowChooseAll")
 							.set("ai", get.unuseful)
 							.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌")
 							.forResultBool();

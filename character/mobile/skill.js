@@ -3202,6 +3202,7 @@ const skills = {
 			}
 			return 7 - get.value(card);
 		},
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			const cards = event.cards,
 				target = event.targets[0];
@@ -5106,7 +5107,7 @@ const skills = {
 			const target = event.target,
 				cards = target.getCards("h").sort((a, b) => get.number(a, target) - get.number(b, target));
 			const result = await target
-				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true)
+				.chooseCard("展示任意张手牌，只能用这些牌拼点", [1, Infinity], "h", true, "allowChooseAll")
 				.set("maxNum", get.number(cards[cards.length - 1], target))
 				.set("minNum", get.number(cards[0], target))
 				.set("ai", card => {
@@ -15701,7 +15702,7 @@ const skills = {
 		logAudio: () => 1,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "he")
+				.chooseToDiscard(get.prompt2(event.skill), [1, Infinity], "he", "allowChooseAll")
 				.set("ai", card => {
 					var player = _status.event.player;
 					if (ui.selected.cards.length < _status.event.num) {
@@ -17665,6 +17666,7 @@ const skills = {
 			}
 			return 5 - get.value(card);
 		},
+		allowChooseAll: true,
 		content() {
 			var num = 0;
 			for (var i of cards) {

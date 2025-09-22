@@ -9913,6 +9913,7 @@ const skills = {
 						}
 						return 1;
 					})(),
+					allowChooseAll: true,
 				});
 			} else {
 				event.finish();

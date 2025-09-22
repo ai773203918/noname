@@ -488,7 +488,7 @@ const skills = {
 			}
 			const eff = lib.skill.dcshixian.filterx(trigger) ? get.effect(target, trigger.card, trigger.player, target) : 0;
 			const result = await target
-				.chooseCard([1, Infinity], "重铸至少一张牌", true, lib.filter.cardRecastable, "he")
+				.chooseCard([1, Infinity], "重铸至少一张牌", true, lib.filter.cardRecastable, "he", "allowChooseAll")
 				.set("ai", card => {
 					const { player, showCards: cards, eff } = get.event(),
 						suit = get.suit(card),
@@ -1205,7 +1205,7 @@ const skills = {
 			for (const target of event.targets) {
 				const result = await target
 					.chooseCard(`###众望：是否相信${get.translation(player)}？###将至少一张牌置于牌堆顶`, [1, Infinity])
-					.set("complexCard", true)
+					.set("allowChooseAll", true)
 					.set("ai", card => {
 						const { player, att } = get.event();
 						if (att <= 0 || ui.selected.cards?.length) {
@@ -1698,7 +1698,7 @@ const skills = {
 			} else if (target.countGainableCards(player, "h")) {
 				await target
 					.chooseToGive(`###烛晦###交给${get.translation(player)}至少一张牌`, player, "h", [1, Infinity], true)
-					.set("complexCard", true)
+					.set("allowChooseAll", true)
 					.set("ai", card => {
 						if (ui.selected.cards?.length) {
 							return 0;
@@ -1761,7 +1761,7 @@ const skills = {
 					}
 					return 6 - get.value(card);
 				})
-				.set("complexCard", true);
+				.set("allowChooseAll", true);
 			player.markAuto(event.name, target);
 			const num = target
 				.getHistory("lose", evt => evt.getParent(3) == event)
@@ -1803,7 +1803,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.indexedData,
 				num = Math.min(target.countGainableCards(player, "he"), Math.max(3, target.countCards("h") - target.hp));
-			await player.gainPlayerCard(target, num, true, "he");
+			await player.gainPlayerCard(target, num, true, "he", "allowChooseAll");
 			await target.recover();
 		},
 		subSkill: {
@@ -4670,6 +4670,7 @@ const skills = {
 			}
 			return 10 - get.value(card);
 		},
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			await player.give(event.cards, event.target);
 			await player.recover();
@@ -16828,6 +16829,7 @@ const skills = {
 			}
 			return 5 - get.value(card);
 		},
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			let cards = get.cards(event.cards.length, true);
 			await player.showCards(cards, get.translation(player) + "发动了【爵制】");
@@ -20084,6 +20086,7 @@ const skills = {
 		delay: false,
 		discard: false,
 		filterTarget: lib.filter.notMe,
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			const target = event.target,
 				cards = event.cards;
@@ -23558,7 +23561,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			await target.chooseToGive(player, "h", [1, Infinity], true).set("ai", card => {
+			await target.chooseToGive(player, "h", [1, Infinity], true, "allowChooseAll").set("ai", card => {
 				const player = get.player(),
 					target = get.event("target"),
 					att = get.attitude(player, target);

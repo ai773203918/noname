@@ -9188,7 +9188,7 @@ const skills = {
 			if (trigger.name == "dying") {
 				await player.draw();
 			} else {
-				await player.chooseToDiscard("h", [1, Infinity], true).set("ai", card => {
+				await player.chooseToDiscard("h", [1, Infinity], true, "allowChooseAll").set("ai", card => {
 					if (get.player().countCards("h") - ui.selected.cards.length > 1) {
 						return 2 - get.value(card);
 					}
@@ -13752,7 +13752,7 @@ const skills = {
 				cards = player.getExpansions("dclingxi");
 			var num = player.getHistory("useSkill", evt => evt.skill == "dczhifou").length + 1;
 			var result = yield player
-				.chooseButton(["###" + get.prompt("dczhifou") + "###移去至少" + get.cnNumber(num) + "张武将牌上的“翼”", cards], [num, cards.length])
+				.chooseButton(["###" + get.prompt("dczhifou") + "###移去至少" + get.cnNumber(num) + "张武将牌上的“翼”", cards], [num, cards.length], "allowChooseAll")
 				.set("ai", button => {
 					if (!_status.event.res.bool) {
 						return 0;
@@ -20050,7 +20050,7 @@ const skills = {
 					}
 					const target = result.targets[0];
 					const cards = await player
-						.choosePlayerCard(target, true, "hej", [1, num], `选择弃置${get.translation(target)}区域内的牌`)
+						.choosePlayerCard(target, true, "hej", [1, num], `选择弃置${get.translation(target)}区域内的牌`, "allowChooseAll")
 						.set("filterButton", button => {
 							const card = button.link,
 								target = _status.event.target,

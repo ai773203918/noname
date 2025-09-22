@@ -7844,7 +7844,7 @@ const skills = {
 				prompt2 += (num > 0 ? "摸一张牌，" : "") + "视为对" + get.translation(trigger.player) + "使用一张【杀】（伤害基数+1）";
 			} else {
 				var next = player
-					.chooseToDiscard(-num)
+					.chooseToDiscard(-num, "allowChooseAll")
 					.set("ai", card => {
 						if (_status.event.goon) {
 							return 5.2 - get.value(card);
@@ -15861,7 +15861,7 @@ const skills = {
 		usable: 2,
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard("h", [2, Infinity], get.prompt(event.skill, trigger.player), '<div class="text center">弃置至少两张手牌，然后选择一项：<br>⒈弃置其等量的牌。⒉对其造成1点伤害。</div>')
+				.chooseToDiscard("h", [2, Infinity], get.prompt(event.skill, trigger.player), '<div class="text center">弃置至少两张手牌，然后选择一项：<br>⒈弃置其等量的牌。⒉对其造成1点伤害。</div>', "allowChooseAll")
 				.set("ai", function (card) {
 					if (_status.event.goon && ui.selected.cards.length < 2) {
 						return 5.6 - get.value(card);
@@ -15976,7 +15976,7 @@ const skills = {
 			"step 0";
 			player.give(cards, target);
 			"step 1";
-			var next = target.chooseCard("he", [2, Infinity], "交给" + get.translation(player) + "至少两张装备牌，否则受到1点伤害", { type: "equip" });
+			var next = target.chooseCard("he", [2, Infinity], "交给" + get.translation(player) + "至少两张装备牌，否则受到1点伤害", { type: "equip" }, "allowChooseAll");
 			if (get.damageEffect(target, player, target) >= 0) {
 				next.set("ai", () => -1);
 			} else {

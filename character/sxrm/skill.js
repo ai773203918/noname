@@ -344,7 +344,7 @@ const skills = {
 					}
 				},
 				prompt: "将至少半数手牌当杀打出",
-				complexCard: true,
+				allowChooseAll: true,
 				check(card) {
 					const player = get.player(),
 						num = Math.ceil(player.countCards("h") / 2),
