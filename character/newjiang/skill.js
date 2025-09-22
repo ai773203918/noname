@@ -630,6 +630,7 @@ const skills = {
 			}
 			return player.countCards("h") - player.maxHp;
 		},
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			if (!event.cards?.length) {
 				await player.drawTo(player.maxHp);
@@ -987,7 +988,7 @@ const skills = {
 				return;
 			}
 			if (num > 0) {
-				await player.chooseToDiscard("he", num, true);
+				await player.chooseToDiscard("he", num, true, "allowChooseAll");
 			} else {
 				await player.draw(-num);
 			}

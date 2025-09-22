@@ -5232,6 +5232,7 @@ const skills = {
 			}
 			return `${str}，然后选择两名角色，前者视为对后者使用一张【杀】，且这两者的非锁定技失效。`;
 		},
+		allowChooseAll: true,
 		*content(event, map) {
 			var player = map.player;
 			if (player.countCards("h") < player.maxHp) {
@@ -11532,7 +11533,7 @@ const skills = {
 					"step 1";
 					if (result.index == 0) {
 						if (event.index == 0) {
-							target.chooseToDiscard("h", true, num);
+							target.chooseToDiscard("h", true, num, "allowChooseAll");
 						} else {
 							target.draw(num);
 						}

@@ -3918,7 +3918,7 @@ export default {
 			if (target.countCards("h") < target.getHp()) {
 				target.drawTo(target.getHp());
 			} else {
-				target.chooseToDiscard("h", true, target.countCards("h") - target.getHp());
+				target.chooseToDiscard("h", true, target.countCards("h") - target.getHp(), "allowChooseAll");
 			}
 		},
 		ai: { mingzhi_no: true },

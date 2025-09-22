@@ -300,7 +300,7 @@ const skills = {
 					if (winner?.isIn()) {
 						if (winner === player) {
 							const targets = await player
-								.chooseTarget(`###掇月###你可将此次摸牌改为对一名角色造成一点伤害${num < 3 ? "并中止后续拼点" : ""}`)
+								.chooseTarget(`###掇月###你可将此次摸牌改为对一名角色造成1点伤害${num < 3 ? "并中止后续拼点" : ""}`)
 								.set("ai", target => {
 									const { player, drawEff } = get.event();
 									const damageEff = get.damageEffect(target, player, player);
@@ -4432,7 +4432,7 @@ const skills = {
 						if (numx > 0) {
 							await target.draw(numx, "nodelay");
 						} else if (numx < 0) {
-							await target.chooseToDiscard(-numx, "h", true);
+							await target.chooseToDiscard(-numx, "h", true, "allowChooseAll");
 						}
 						if (target.hasHistory("gain", evt => evt.getParent(2) == event)) {
 							await target.chooseToDiscard(3, "he", true);
@@ -5007,7 +5007,7 @@ const skills = {
 			if (num > 0) {
 				await target.draw(Math.min(5, num));
 			} else if (num < 0 && target.countDiscardableCards(target, "h") > 0) {
-				await target.chooseToDiscard(-num, "h", true);
+				await target.chooseToDiscard(-num, "h", true, "allowChooseAll");
 			}
 			if (!target.isIn()) {
 				return;
@@ -11278,7 +11278,7 @@ const skills = {
 				if (player.countCards("h") < storage[1]) {
 					yield player.drawTo(storage[1]);
 				} else {
-					yield player.chooseToDiscard("h", true, player.countCards("h") - storage[1]);
+					yield player.chooseToDiscard("h", true, player.countCards("h") - storage[1], "allowChooseAll");
 				}
 			}
 			if (player.getHp() != storage[2]) {
@@ -13730,7 +13730,7 @@ const skills = {
 					if (num > 0) {
 						player.draw(num);
 					} else {
-						player.chooseToDiscard("h", -num, true);
+						player.chooseToDiscard("h", -num, true, "allowChooseAll");
 					}
 				},
 			},

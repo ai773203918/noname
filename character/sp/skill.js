@@ -897,7 +897,7 @@ const skills = {
 					return;
 				}
 				const resultx = await player
-					.chooseTarget(`雷噬：对一名角色造成一点雷电伤害`, true)
+					.chooseTarget(`雷噬：对一名角色造成1点雷电伤害`, true)
 					.set("targets", targets)
 					.set("ai", target => get.damageEffect(target, get.player(), get.player(), "thunder"))
 					.forResult();
@@ -1518,8 +1518,8 @@ const skills = {
 			const num = player.countCards("h") - event.target.countCards("h");
 			player.addTempSkill("olkuangjuan_effect");
 			if (num > 0) {
-				const result = await player.chooseToDiscard("h", num, true).forResult();
-				if (result?.cards) {
+				const result = await player.chooseToDiscard("h", num, true, "allowChooseAll").forResult();
+				if (result?.cards?.length) {
 					await player.draw(result.cards.length).set("gaintag", ["olkuangjuan_effect"]);
 				}
 			} else if (num < 0) {
@@ -2610,9 +2610,9 @@ const skills = {
 				if (num === 0) {
 					return;
 				}
-				const cards = await target.chooseToDiscard(num, true).forResultCards();
-				if (player != target && cards?.someInD("d")) {
-					await player.gain(cards.filterInD("d"), "gain2").set("giver", target);
+				const { result } = await target.chooseToDiscard(num, true, "allowChooseAll");
+				if (player != target && result?.cards?.someInD("d")) {
+					await player.gain(result.cards.filterInD("d"), "gain2").set("giver", target);
 				}
 			}
 		},
@@ -5816,7 +5816,7 @@ const skills = {
 			const target = event.targets[0];
 			const num = target.countCards("h");
 			if (num > 4) {
-				await target.chooseToDiscard("h", num - 4, true);
+				await target.chooseToDiscard("h", num - 4, true, "allowChooseAll");
 			} else {
 				const cards = await target.draw(4 - num).forResult();
 				if (Array.isArray(cards) && cards.length) {
@@ -9795,8 +9795,8 @@ const skills = {
 					await player.draw(Math.min(5 - player.countCards("h"), num));
 				}
 			} else {
-				const result = await player.chooseToDiscard(-num, "h", true).forResult();
-				if (result.bool && result.cards.length > 1) {
+				const result = await player.chooseToDiscard(-num, "h", true, "allowChooseAll").forResult();
+				if (result?.bool && result.cards?.length > 1) {
 					if (player.isDamaged()) {
 						await player.recover();
 					}
@@ -14688,7 +14688,7 @@ const skills = {
 				} else {
 					num = -num;
 					if (target.countCards("h")) {
-						await target.chooseToDiscard(num, true).set("prompt", "驻颜：请弃置" + get.cnNumber(Math.abs(num)) + "张手牌");
+						await target.chooseToDiscard(num, true).set("prompt", "驻颜：请弃置" + get.cnNumber(Math.abs(num)) + "张手牌", "allowChooseAll");
 					}
 				}
 			}

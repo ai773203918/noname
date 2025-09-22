@@ -21091,7 +21091,7 @@ const skills = {
 			if (player.getHistory("sourceDamage").length) {
 				player.chooseToDiscard("h", true, num);
 			} else if (num > 4) {
-				player.chooseToDiscard("h", true, num - 4);
+				player.chooseToDiscard("h", true, num - 4, "allowChooseAll");
 			} else {
 				player.drawTo(4);
 			}

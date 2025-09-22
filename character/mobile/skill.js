@@ -1646,7 +1646,7 @@ const skills = {
 						.unique()
 				).length;
 				const resultx = await player
-					.chooseToDiscard(`凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成一点伤害`, "he", [0, Infinity])
+					.chooseToDiscard(`凶图：取消并弃置${get.translation(card)}或弃置${num}张牌对${get.translation(target)}造成1点伤害`, "he", [0, Infinity])
 					.set("filterOk", () => {
 						if (ui.selected.cards.length == get.event().num) {
 							return true;
@@ -4070,7 +4070,7 @@ const skills = {
 					.forResult();
 			} else {
 				event.result = await player
-					.chooseToDiscard(prompt, player.countCards("h") - num)
+					.chooseToDiscard(prompt, player.countCards("h") - num, "allowChooseAll")
 					.set("effect", effect)
 					.set("ai", card => {
 						const { player, selectCard, effect } = get.event();
@@ -4134,7 +4134,7 @@ const skills = {
 			if (num > 0) {
 				await target.drawTo(target.maxHp);
 			} else if (num < 0 && target.countDiscardableCards(target, "h") > 0) {
-				await target.chooseToDiscard("h", -num, true);
+				await target.chooseToDiscard("h", -num, true, "allowChooseAll");
 			}
 			const isDraw = target.hasHistory("gain", evt => evt.getParent().name == "draw" && evt.getParent(2) == event);
 			if (!isDraw && target.isDamaged()) {
@@ -4191,7 +4191,7 @@ const skills = {
 			trigger.player.line(source);
 			const result = await source
 				.chooseToGive(
-					"谙达：交给" + get.translation(trigger.player) + "两张不同颜色牌，否则其回复一点体力",
+					"谙达：交给" + get.translation(trigger.player) + "两张不同颜色牌，否则其回复1点体力",
 					(card, source) => {
 						const selected = ui.selected.cards;
 						if (!selected.length) {

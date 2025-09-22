@@ -235,7 +235,7 @@ const skills = {
 			const target = trigger.source;
 			do {
 				let result;
-				const choiceList = ["弃置所有手牌", "失去一点体力"];
+				const choiceList = ["弃置所有手牌", "失去1点体力"];
 				if (!target.countDiscardableCards(target, "h")) {
 					result = { index: 1 };
 				} else {
@@ -7374,7 +7374,7 @@ const skills = {
 						[
 							["damage", `弃置所有花色为${get.translation(suit)}的“掠”，对其造成1点伤害`],
 							["draw", "与其各摸一张牌"],
-							["losehp", `失去一点体力并令${get.translation(trigger.card)}失效，然后将此牌交给一名角色并摸一张牌`],
+							["losehp", `失去1点体力并令${get.translation(trigger.card)}失效，然后将此牌交给一名角色并摸一张牌`],
 						],
 						"textbutton",
 					],
@@ -11175,7 +11175,7 @@ const skills = {
 					if (num > 0) {
 						await target.draw(num);
 					} else if (target.countDiscardableCards(target, "h")) {
-						await target.chooseToDiscard(target.countCards("h") - target.getHp(), true);
+						await target.chooseToDiscard(target.countCards("h") - target.getHp(), true, "allowChooseAll");
 					}
 				}
 			}

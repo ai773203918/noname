@@ -1239,7 +1239,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player //
-				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成一点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
+				.chooseTarget(`###${get.prompt(event.skill)}###对一名没有「凛」的角色造成1点伤害然后令其获得一个「凛」标记`, (card, player, target) => !target.hasMark("dclinjie"))
 				.set("ai", target => {
 					return get.damageEffect(target, get.player(), get.player());
 				})

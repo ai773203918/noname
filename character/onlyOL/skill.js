@@ -9516,7 +9516,7 @@ const skills = {
 					if (num1 < 0) {
 						yield player.drawTo(player.getHandcardLimit());
 					} else {
-						yield player.chooseToDiscard(num1, "h", true);
+						yield player.chooseToDiscard(num1, "h", true, "allowChooseAll");
 					}
 				} else {
 					yield player.recover(player.maxHp - player.hp);
