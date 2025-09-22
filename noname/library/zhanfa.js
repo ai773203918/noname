@@ -251,10 +251,10 @@ const _zhanfa = {
 			trigger: { global: ["eventNeutralized"] },
 			filter(event, player) {
 				const evt = event._neutralize_event;
-				if (evt.name != "wuxie") {
+				if (evt.name != "wuxie" || evt.player != player) {
 					return false;
 				}
-				return event.cards.someInD();
+				return event.cards?.someInD();
 			},
 			async content(event, trigger, player) {
 				await player.gain(trigger.cards.filterInD(), "gain2");
@@ -1516,7 +1516,9 @@ const _zhanfa = {
 		skill: {
 			mod: {
 				targetInRange(card, player) {
-					return card.name == "shunshou";
+					if (card.name == "shunshou") {
+						return true;
+					}
 				},
 			},
 		},
