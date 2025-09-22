@@ -368,7 +368,7 @@ const skills = {
 					.set("dialog", get.idDialog(videoId))
 					.set("filterButton", button => get.player().hasUseTarget(button.link))
 					.set("ai", button => {
-						return player.getUseValue(button.link);
+						return get.player().getUseValue(button.link);
 					})
 					.forResult();
 				game.broadcastAll("closeDialog", videoId);
