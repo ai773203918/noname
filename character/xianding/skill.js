@@ -85,9 +85,9 @@ const skills = {
 				return `###猘锋###将${str}牌当做${get.translation(links[0][2])}使用`;
 			},
 		},
-		getFilter(player) {
+		getFilter(player, toOther) {
 			const hp = player.getHp(),
-				num = player.countCards("h");
+				num = player.countCards("h") - (toOther ? 1 : 0);
 			if (num > hp) {
 				return [["jiu"], player.countCards("hes", { color: "black" }) >= 2];
 			} else if (num == hp) {
@@ -102,6 +102,7 @@ const skills = {
 				return player.getHp() > player.countCards("h");
 			},
 			order(item, player) {
+				player = player || get.player();
 				const cards = get
 					.info("dczhifeng")
 					.getFilter(player)[0]
@@ -191,11 +192,13 @@ const skills = {
 					if (get.damageEffect(target, player, player) > 0) {
 						return 0;
 					} else if (get.event().controls.includes("选项二")) {
-						const info = get.info("dczhifeng");
-						const cards = info.getFilter(target)[0].flatMap(name => {
-							const card = get.autoViewAs({ name, storage: { dczhifeng: name == "jiu" } }, "unsure");
-							return target.hasUseTarget(card) ? [card] : [];
-						});
+						const cards = get
+							.info("dczhifeng")
+							.getFilter(player, target != player)[0]
+							.flatMap(name => {
+								const card = get.autoViewAs({ name, storage: { dczhifeng: name == "jiu" } }, "unsure");
+								return target.hasUseTarget(card) ? [card] : [];
+							});
 						if (cards.some(card => target.getUseValue(card) * get.sgnAttitude(player, target) > 0)) {
 							return 1;
 						} else if (get.attitude(player, target) < 0 && !cards.length) {
@@ -26275,7 +26278,7 @@ const skills = {
 			var next = player.chooseToMove();
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("prompt", "天运：点击或拖动将牌移动到牌堆顶或牌堆底");
-			next.set("allowChooseAll", true)
+			next.set("allowChooseAll", true);
 			next.processAI = function (list) {
 				var cards = list[0][1];
 				return [[], cards];
