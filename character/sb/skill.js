@@ -3814,7 +3814,7 @@ const skills = {
 			if (player.getStorage("sbqicai").includes(card.name)) {
 				return false;
 			}
-			return (get.mode() == "doudizhu" ? get.subtype(card) == "equip2" : get.type(card) == "equip") && game.hasPlayer(target => target != player && target.hasEmptySlot(get.subtype(card)));
+			return get.type(card) == "equip" && game.hasPlayer(target => target != player && target.hasEmptySlot(get.subtype(card)));
 		},
 		usable: 1,
 		chooseButton: {
@@ -3874,9 +3874,6 @@ const skills = {
 							cards = [lib.skill.sbqicai_backup.card];
 							target.$gain2(cards);
 							game.delayx();
-						}
-						if (get.mode() == "doudizhu") {
-							player.markAuto("sbqicai", [cards[0].name]);
 						}
 						target.equip(cards[0]);
 						player.addSkill("sbqicai_gain");
@@ -5402,9 +5399,7 @@ const skills = {
 	sbguose: {
 		audio: 2,
 		enable: "phaseUse",
-		get usable() {
-			return get.mode() == "identity" ? 4 : 2;
-		},
+		usable: 4,
 		discard: false,
 		lose: false,
 		delay: false,
