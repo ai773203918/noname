@@ -340,6 +340,9 @@ const skills = {
 			const goon = () => cards.some(card => player.hasUseTarget(card) && get.position(card) == "d");
 			while (goon()) {
 				const videoId = lib.status.videoId++;
+				if (player.isUnderControl()) {
+					game.swapPlayerAuto(player);
+				}
 				const func = (id, cards, cards2) => {
 					const dialog = ui.create.dialog("戍国：请选择要使用的牌");
 					dialog.add(cards);
@@ -365,7 +368,7 @@ const skills = {
 					.set("dialog", get.idDialog(videoId))
 					.set("filterButton", button => get.player().hasUseTarget(button.link))
 					.set("ai", button => {
-						return player.getUseValue(button.link);
+						return get.player().getUseValue(button.link);
 					})
 					.forResult();
 				game.broadcastAll("closeDialog", videoId);

@@ -15922,7 +15922,7 @@ const skills = {
 			}
 			"step 2";
 			if (result.index == 0) {
-				player.discardPlayerCard(target, num, true, "he");
+				player.discardPlayerCard(target, num, true, "he", "allowChoooseAll");
 			} else {
 				target.damage();
 			}
