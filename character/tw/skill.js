@@ -24658,6 +24658,7 @@ const skills = {
 						})
 					) {
 						player.line(trigger.player, "green");
+						player.draw();
 						trigger.player.damage();
 					}
 				},

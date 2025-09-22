@@ -5,9 +5,42 @@ const skills = {
 	//手杀SP曹操
 	mblingfa: {
 		audio: "twlingfa",
-		audioname: ["mb_caocao"],
 		inherit: "twlingfa",
 		derivation: "new_rejianxiong",
+	},
+	mbzhian: {
+		audio: "twzhian",
+		inherit: "twzhian",
+		filter(event, player) {
+			return player.countMark("mbzhian_round") < 2 && event.player !== player && lib.skill.twzhian.filter(event, player);
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("mbzhian_round", "roundStart");
+			player.addMark("mbzhian_round", 1, false);
+			await lib.skill.twzhian.content(event, trigger, player);
+		},
+		global: "mbzhian_ai",
+		subSkill: {
+			round: {
+				charlotte: true,
+				onremove: true,
+			},
+			ai: {
+				ai: {
+					effect: {
+						player_use(card, player, target) {
+							if (get.type(card) !== "delay" && get.type(card) !== "equip") {
+								return 1;
+							}
+							let za = game.findPlayer(cur => cur !== player && cur.hasSkill("mbzhian") && cur.countMark("mbzhian_round") < 2 && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0);
+							if (za) {
+								return [0.5, -0.8];
+							}
+						},
+					},
+				},
+			},
+		},
 	},
 	//手杀曹洪
 	mbyuanhu: {
@@ -3369,7 +3402,7 @@ const skills = {
 				return [1, 2, 3, 4, 5, "cancel2"];
 			},
 			check() {
-				return 2;
+				return 4;
 			},
 			backup(result, player) {
 				return {
