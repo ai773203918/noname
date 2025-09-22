@@ -2476,7 +2476,12 @@ const _zhanfa = {
 			forced: true,
 			trigger: { player: "recoverBegin" },
 			filter(event, player) {
-				return game.getGlobalHistory("changeHp", evt => evt.name == "recover" && evt.player == player).indexOf(event) == 0;
+				return (
+					game
+						.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
+						.map(evt => evt.getParent())
+						.indexOf(event) == 0
+				);
 			},
 			num: 1,
 			async content(event, trigger, player) {
@@ -2512,7 +2517,10 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_yaoli",
 			filter(event, player) {
-				const index = game.getGlobalHistory("changeHp", evt => evt.name == "recover" && evt.player == player).indexOf(event);
+				const index = game
+					.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
+					.map(evt => evt.getParent())
+					.indexOf(event);
 				return index >= 0 && index < 3;
 			},
 		},
