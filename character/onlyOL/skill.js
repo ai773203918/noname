@@ -7545,6 +7545,9 @@ const skills = {
 			player.line(target, "green");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【鸿图】`);
 			const videoId = lib.status.videoId++;
+			if (target.isUnderControl()) {
+				game.swapPlayerAuto(target);
+			}
 			const func = (id, cards, player) => {
 				const dialog = ui.create.dialog(`鸿图：是否使用${get.translation(player)}展示的其中一张牌？`);
 				dialog.add(cards);
