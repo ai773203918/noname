@@ -311,22 +311,13 @@ const skills = {
 			player.addTempSkill("dcmohua_effect");
 			for (let i = 0; i < cards.length; i++) {
 				const result = await player
-					.chooseToUse()
-					.set("filterCard", (cardx, player, target) => get.name(cardx) == get.name(cards[i]))
-					.set("ai2", target => {
-						const player = get.player();
-						return -get.attitude(player, target);
-					})
-					.set("openskilldialog", `选择${get.translation(get.name(cards[i]))}的目标`)
-					.set("norestore", true)
-					.set("custom", {
-						add: {},
-						replace: { window() {} },
-					})
+					.chooseToUse(`选择${get.translation(get.name(cards[i]))}的目标`)
+					.set("cardx", cards[i])
+					.set("dcmohua", targets[i])
+					.set("filterCard", (card, player) => get.name(card) == get.name(get.event("cardx")))
 					.set("targetRequired", true)
 					.set("complexTarget", true)
 					.set("complexSelect", true)
-					.set("dcmohua", targets[i])
 					.forResult();
 				if (!result.bool) {
 					break;
