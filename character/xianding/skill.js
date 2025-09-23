@@ -99,7 +99,7 @@ const skills = {
 							suit = event.result.cards.map(card => get.suit(card)),
 							bool = suitMap.some(suits => {
 								if (suit.every(suitx => suits.includes(suitx))) {
-									suitMap.removeArray(suits);
+									suitMap.remove(suits);
 									player.markAuto("dcfuhui_count", suitMap);
 									return true;
 								}
@@ -181,7 +181,12 @@ const skills = {
 						for (let suits of storage) {
 							str += get.translation(suits).replace("、", "") + ",";
 						}
-						dialog.addText(str);
+						if (str.length) {
+							dialog.addText(str.slice(0, str.length / 2 + 1));
+							dialog.addText(str.slice(str.length / 2 + 1));
+						} else {
+							dialog.addText("无剩余花色组合");
+						}
 					},
 				},
 				async content(event, trigger, player) {
