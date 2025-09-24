@@ -1453,6 +1453,7 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
+			trigger.set(event.name, true);
 			const choice = event.cost_data;
 			let num = player.getHistory("useSkill", evt => evt.skill == event.name).length;
 			if (choice == "discard") {
@@ -1544,7 +1545,7 @@ const skills = {
 			mark: {
 				init(player, skill) {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && get.type(evt.card) == "equip" && !evt[skill]) {
+					if (evt?.card && get.type(evt.card) == "equip" && !evt.dcjizhan) {
 						player.addTip(skill, "极斩 可连击");
 					}
 				},
@@ -1561,12 +1562,12 @@ const skills = {
 				async content(event, trigger, player) {
 					if (event.triggername == "useCard1") {
 						if (get.type(trigger.card) == "equip") {
-							player.addTip("dcjiazhan", "极斩 可连击");
+							player.addTip(event.name, "极斩 可连击");
 						} else {
-							player.removeTip("dcjiazhan");
+							player.removeTip(event.name);
 						}
-					} else if (trigger.dcjiazhan) {
-						player.removeTip("dcjiazhan");
+					} else if (trigger.dcjizhan) {
+						player.removeTip(event.name);
 					}
 				},
 			},
@@ -5693,7 +5694,7 @@ const skills = {
 				return false;
 			}
 			const evt = get.info("dcjianying").getLastUsed(player, event);
-			return evt && get.type(evt.card) === "equip";
+			return evt && get.type(evt.card) === "equip" && !evt.dcjuchui;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -5710,6 +5711,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
+			trigger.set(event.name, true);
 			const [target] = event.targets;
 			if (target.hasSex("male")) {
 				player.chat("雄性人类！");
@@ -5772,41 +5774,36 @@ const skills = {
 			},
 		},
 		init(player, skill) {
-			player.addSkill(skill + "_combo");
+			player.addSkill(skill + "_mark");
 		},
 		onremove(player, skill) {
-			player.removeSkill(skill + "_combo");
+			player.removeSkill(skill + "_mark");
 		},
 		subSkill: {
-			combo: {
-				charlotte: true,
+			mark: {
 				init(player, skill) {
 					const evt = get.info("dcjianying").getLastUsed(player);
-					if (evt && get.type(evt.card) === "equip") {
-						player.addSkill(skill + "Skill");
+					if (evt && get.type(evt.card) === "equip" && !evt.dcjuchui) {
+						player.addTip(skill, "据陲 可连击");
 					}
-				},
-				onremove(player, skill) {
-					player.removeSkill(skill + "Skill");
-				},
-				trigger: { player: "useCard0" },
-				forced: true,
-				popup: false,
-				firstDo: true,
-				content() {
-					player[get.type(trigger.card) === "equip" ? "addSkill" : "removeSkill"](event.name + "Skill");
-				},
-			},
-			comboSkill: {
-				charlotte: true,
-				init(player, skill) {
-					player.addTip(skill, [get.translation(skill), "可连击"].join(" "));
 				},
 				onremove(player, skill) {
 					player.removeTip(skill);
 				},
-				mark: true,
-				intro: { content: "准备好触发连招吧!" },
+				charlotte: true,
+				trigger: {
+					player: ["useCard1"],
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					if (get.type(trigger.card) == "equip" && !trigger.dcjuchui) {
+						player.addTip(event.name, "据陲 可连击");
+					} else {
+						player.removeTip(event.name);
+					}
+				},
 			},
 			ban: {
 				charlotte: true,
@@ -6678,7 +6675,7 @@ const skills = {
 					//.filter(c => c.targets && c.targets.length)
 					.at(-1);
 			}
-			if (!history) {
+			if (!history || history.dcbaguan) {
 				return false;
 			}
 			return history.targets.length == 1;
@@ -6721,10 +6718,10 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				async content(event, trigger, player) {
-					if (lib.skill.dcbaguan.getUsed(player, true) && !trigger.dcbaguan) {
-						player.addTip("dcbaguan", "霸关 可连击");
+					if (lib.skill.dcbaguan.getUsed(player, true)) {
+						player.addTip(event.name, "霸关 可连击");
 					} else {
-						player.removeTip("dcbaguan");
+						player.removeTip(event.name);
 					}
 				},
 			},
@@ -8280,7 +8277,7 @@ const skills = {
 			mark: {
 				init(player, skill) {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt[skill]) {
+					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcporong) {
 						player.addTip(skill, "破戎 可连击");
 					}
 				},
@@ -8295,12 +8292,12 @@ const skills = {
 				async content(event, trigger, player) {
 					if (event.triggername == "useCard1") {
 						if (get.tag(trigger.card, "damage") > 0.5) {
-							player.addTip("dcporong", "破戎 可连击");
+							player.addTip(event.name, "破戎 可连击");
 						} else {
-							player.removeTip("dcporong");
+							player.removeTip(event.name);
 						}
 					} else if (trigger.dcporong) {
-						player.removeTip("dcporong");
+						player.removeTip(event.name);
 					}
 				},
 			},
