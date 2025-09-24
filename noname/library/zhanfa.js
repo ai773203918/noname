@@ -1156,7 +1156,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_anyDamage",
 			filter(event, player) {
-				return !event.card && game.findSkill(event);
+				return !event.card && !!game.findSkill(event);
 			},
 		},
 	},
@@ -1432,7 +1432,7 @@ const _zhanfa = {
 				if (game.roundNumber < 6) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || (!event.card && !!game.findSkill(event));
+				return event.card ? get.type2(event.card) === "trick" : !!game.findSkill(event);
 			},
 		},
 	},
@@ -1451,7 +1451,7 @@ const _zhanfa = {
 				if (game.roundNumber < 4) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || !!game.findSkill(event);
+				return event.card ? get.type2(event.card) === "trick" : !!game.findSkill(event);
 			},
 		},
 	},
@@ -1470,7 +1470,7 @@ const _zhanfa = {
 				if (game.roundNumber < 2) {
 					return false;
 				}
-				return get.type2(event.card) == "trick" || !!game.findSkill(event);
+				return event.card ? get.type2(event.card) === "trick" : !!game.findSkill(event);
 			},
 		},
 	},
@@ -2263,7 +2263,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_anyDamage",
 			filter(event, player) {
-				return event.card.name == "juedou";
+				return event.card && event.card.name == "juedou";
 			},
 			async content(event, trigger, player) {
 				await player.recover();
