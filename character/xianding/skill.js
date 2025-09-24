@@ -670,6 +670,9 @@ const skills = {
 						replace: { window() {} },
 					})
 					.set("addCount", choice != "jiu")
+					.set("oncard", () => {
+						get.event().addSkillCount = false;
+					})
 					.backup("dczhifeng_backup");
 			}
 		},
