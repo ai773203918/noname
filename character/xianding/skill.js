@@ -3999,12 +3999,12 @@ const skills = {
 			const cards = ui.selected?.cards.slice();
 			cards.push(card);
 			if (cards.length > 2) {
-				const nums = cards.map(card => get.number(card, player)).sort();
-				const diffs = new Set();
+				const nums = cards.map(card => get.number(card, player)).sort((a, b) => a - b);
+				const diffs = [];
 				for (let i = 1; i < nums.length; i++) {
 					diffs.add(nums[i] - nums[i - 1]);
 				}
-				if (diffs.size != 1) {
+				if (diffs.length != 1) {
 					return false;
 				}
 			}
