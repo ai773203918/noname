@@ -1577,7 +1577,7 @@ const skills = {
 		prompt: "失去1点体力并摸两张牌",
 		async content(event, trigger, player) {
 			player.loseHp(1);
-			player.draw(2);
+			player.draw(2, "nodelay");
 		},
 		ai: {
 			basic: {
