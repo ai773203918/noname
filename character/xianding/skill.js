@@ -3,6 +3,78 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋徐盛
+	dcqinqiang: {
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		filter(event, player) {
+			return player.countDiscardableCards("h");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard("选择至多四张手牌弃置", "h")
+				.set("filterCard", (card, player) => {
+					return lib.filter.canBeDiscarded(card, player, player);
+				})
+				.set("ai", card => {
+					const player = get.player(),
+						suits = player.getCards("h").map(card => get.suit(card)),
+						suit = get.suit(card);
+					if (suits.length > 5) {
+						return get.numOf(suits, suit);
+					} else {
+						return 1;
+					}
+				})
+				.set("selectCard", [0, 4])
+				.set("filterOk", () => ui.selected.cards.length > 0)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("qinqiang_effect");
+			await player.modedDiscard(event.cards);
+			await player.draw(event.cards.length * 2);
+		},
+		subSkill: {
+			qinqiang_effect: {
+				trigger: {
+					target: "useCardToTargeted",
+				},
+				filter(event, player) {
+					return player.countCards("h");
+				},
+				async content(event, trigger, player) {
+					const suit = get.suit(trigger.card),
+						suits = player.getCards("h").map(card => get.suit(card)),
+						num = Math.max(...[...lib.suit, "none"].map(suitx => get.numOf(suits, suitx)));
+					if (get.numOf(suits, suit) == num) {
+						player
+							.chooseToDiscard(`弃置一张花色为${get.translation(suit)}的手牌`, "h", true)
+							.set("suitx", suit)
+							.set("filterCard", (card, player) => get.suit(card) == get.event("suitx") && lib.filter.canBeDiscarded(card, player, player));
+					} else if (!suit.includes(suit)) {
+						player
+							.when({ global: "useCardAfter" })
+							.filter((evt, player) => evt.card == trigger.card && lib.filter.canBeGained(card, player))
+							.step(async (event, trigger, player) => await player.gain(trigger.card, "gain2"));
+					}
+				},
+				ai: {
+					effect: {
+						target(card, player, target) {
+							const suit = get.suit(card),
+								suits = target.getKnownCards(player).map(card => get.suit(card));
+							if (suits.length && target.countCards("h") - suits.length < 2 && !suits.includes(suit)) {
+								return [1, 1];
+							}
+							return [1, 0];
+						},
+					},
+				},
+			},
+		},
+	},
 	//徐妏
 	dcfuhui: {
 		audio: 2,
@@ -463,7 +535,9 @@ const skills = {
 				},
 				logTarget: (event, player) => player.getStorage("dcmohua_effect"),
 				async content(event, trigger, player) {
-					if (trigger.targets.length && trigger.targets.every(target => trigger.getParent()?.dcmohua.includes(target))) {
+					const targets = trigger.targets,
+						targetx = trigger.getParent()?.dcmohua || [];
+					if (targets.length == targetx.length && targets.every(target => targetx.includes(target))) {
 						await player.draw(trigger.targets.length);
 					}
 					trigger.player = player.getStorage("dcmohua_effect");
