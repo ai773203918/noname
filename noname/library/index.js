@@ -13899,7 +13899,7 @@ export class Library {
 							}
 						});
 						if (numberOfCardsToDraw) {
-							player.draw(numberOfCardsToDraw).log = false;
+							player.draw(numberOfCardsToDraw, "nodelay").log = false;
 						}
 					});
 				},

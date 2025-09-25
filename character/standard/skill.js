@@ -1575,6 +1575,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		prompt: "失去1点体力并摸两张牌",
+		delay: false,
 		async content(event, trigger, player) {
 			player.loseHp(1);
 			player.draw(2, "nodelay");
