@@ -4546,8 +4546,9 @@ const skills = {
 		},
 		usable: 20,
 		locked: false,
+		delay: false,
 		content() {
-			player.draw();
+			player.draw("nodelay");
 			player.addTempSkill("jishe2");
 			player.addMark("jishe2", 1, false);
 		},
@@ -10747,7 +10748,7 @@ const skills = {
 			return get.type(event.card, "trick") == player.storage.qiangzhi_draw;
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		onremove: true,
 		mark: true,
@@ -14262,7 +14263,7 @@ const skills = {
 			return (get.suit(evt.card) != "none" && get.suit(evt.card) == get.suit(event.card)) || (typeof get.number(evt.card, false) == "number" && get.number(evt.card, false) == get.number(event.card));
 		},
 		content() {
-			player.draw();
+			player.draw("nodelay");
 		},
 		group: "jianying_mark",
 		init(player) {

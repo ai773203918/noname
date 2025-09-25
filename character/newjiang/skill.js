@@ -713,14 +713,14 @@ const skills = {
 							await current.draw();
 						}
 					} else {
-						const sha = new lib.element.VCard({ name: "sha" }),
+						const sha = new lib.element.VCard({ name: "sha", isCard: true }),
 							aim = current === player ? target : player;
 						if (current.isIn() && current.canUse(sha, aim, false)) {
 							current.line(aim);
 							await current.useCard(sha, aim, false, "noai");
 						}
 						if (bool && current == player) {
-							const sha2 = new lib.element.VCard({ name: "sha" });
+							const sha2 = new lib.element.VCard({ name: "sha", isCard: true });
 							if (current.isIn() && current.canUse(sha2, aim, false)) {
 								current.line(aim);
 								await current.useCard(sha2, aim, false, "noai");
@@ -2252,7 +2252,7 @@ const skills = {
 						.event()
 						.getParent(2)
 						.targets.find(i => i != player);
-				const sha = new lib.element.VCard({ name: "sha" });
+				const sha = new lib.element.VCard({ name: "sha", isCard: true });
 				const playerEffect = player.hasUseTarget(sha, false)
 					? Math.max(
 							...game
@@ -2281,7 +2281,7 @@ const skills = {
 				player.getStat("skill").xvzhi--;
 			} else {
 				const aim = targets[result[0].cards.length > result[1].cards.length ? 0 : 1];
-				const sha = new lib.element.VCard({ name: "sha" });
+				const sha = new lib.element.VCard({ name: "sha", isCard: true });
 				if (aim.hasUseTarget(sha, false)) {
 					await aim.chooseUseTarget(sha, true, false, "nodistance");
 				}
@@ -2465,10 +2465,7 @@ const skills = {
 		ai: {
 			order: 9,
 			result: {
-				target(player, target) {
-					const att = get.sgn(get.attitude(player, target));
-					return (2 + att) * att;
-				},
+				target: 1,
 			},
 		},
 	},
@@ -2972,7 +2969,7 @@ const skills = {
 					return player.getStorage("qingbei_effect").length;
 				},
 				content() {
-					player.draw(player.getStorage("qingbei_effect").length);
+					player.draw(player.getStorage("qingbei_effect").length, "nodelay");
 				},
 				mark: true,
 				intro: {
@@ -3339,8 +3336,10 @@ const skills = {
 			if (!game.hasPlayer2(current => current.getHistory("damage").length > 0)) {
 				player
 					.chooseBool(get.prompt("jiangxi"), "与" + get.translation(trigger.player) + "各摸一张牌")
-					.set("ai", () => _status.event.bool)
-					.set("bool", trigger.player.getUseValue({ name: "wuzhong" }) + player.getUseValue({ name: "wuzhong" }) > 0);
+					.set("choice", (() => {
+						let eff = current => get.effect(current, { name: "draw" }, player, player);
+						return eff(trigger.player) + eff(player) > 0;
+					})());
 			} else {
 				event.finish();
 			}

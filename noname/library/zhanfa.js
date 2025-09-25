@@ -1364,6 +1364,11 @@ const _zhanfa = {
 						return false;
 					}
 				},
+				cardDiscardable(card) {
+					if (get.position(card) == "e" && get.type(card) == "equip") {
+						return false;
+					}
+				},
 			},
 		},
 	},
@@ -2207,7 +2212,6 @@ const _zhanfa = {
 		translate: "稳定士气",
 		info: "您的所有伤害值固定为2",
 		card: {
-			cardimage: "zf_bingquanzaiwo",
 			value: 8,
 		},
 		skill: {
