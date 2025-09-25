@@ -84,6 +84,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"xvwen",
 		"mark_shen_machao",
 		"tw_zhenji",
 		"pe_xiahouxuan",
@@ -1006,6 +1007,7 @@ window.noname_character_rank = {
 		"dc_sb_dengai",
 	],
 	b: [
+		"dc_sb_xusheng",
 		"xy_xunyu",
 		"yao_yuanshu",
 		"sunyuan",

@@ -132,14 +132,14 @@ const skills = {
 			cardUsable(card, player, num) {
 				if (get.name(card) == "sha") {
 					return Math.min(
-						3,
+						5,
 						game.countPlayer(current => current.group == "wei")
 					);
 				}
 			},
 			attackRange(player, num) {
 				return Math.min(
-					3,
+					5,
 					game.countPlayer(current => current.group == "wei")
 				);
 			},
@@ -150,7 +150,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			trigger.num = Math.min(
-				3,
+				5,
 				game.countPlayer(current => current.group == "wei")
 			);
 			trigger.numFixed = true;
