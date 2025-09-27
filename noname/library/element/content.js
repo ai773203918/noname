@@ -5639,7 +5639,6 @@ player.removeVirtualEquip(card);
 								return false;
 							})()
 						);
-						next.set("filterOk", info.chooseButton.filterOk || (() => true));
 						next.set("allowChooseAll", info.chooseButton.allowChooseAll);
 					}
 					event.buttoned = event.result.skill;
