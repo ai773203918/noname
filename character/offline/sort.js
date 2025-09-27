@@ -1,5 +1,5 @@
 const characterSort = {
-	offline_scl: ["scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
+	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
 	offline_yijiang: ["ol_xinxianying", "ol_liuyu", "ol_zhangrang"],
@@ -8,11 +8,12 @@ const characterSort = {
 	offline_piracyE_zy: ["pe_wangyun", "pe_zhonghui", "pe_sunchen", "pe_mengda", "pe_wenqin", "ns_caoanmin", "jiangqing", "kongrong", "jiling", "tianfeng", "mateng"],
 	offline_piracyE_xk: ["xk_luoli", "xk_cuilian", "xk_penghu", "xk_shanfu", "xk_pengqi", "xk_zulang"],
 	offline_piracyE_jb: ["pe_jun_caopi", "pe_jun_liushan", "pe_jun_sunquan", "pe_jun_liuxie", "pe_jun_liuhong", "pe_jun_liubei", "pe_jun_caocao", "pe_jun_sunce", "pe_jun_yuanshao", "pe_jun_zhangjiao"],
-	offline_piracyE: ["xia_caopi", "pe_xiahouxuan", "pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao"],
+	offline_piracyE: ["xia_caopi", "pe_xiahouxuan", "pe_guozhao", "pe_que", "yj_zhouji", "yj_ehuan", "yj_tianchuan", "yj_zhonghui", "yj_jiling", "yj_yongkai", "yj_chezhou", "yj_caocaoyuanshao"],
 	offline_piracyS: ["ns_jiaxu", "longyufei", "ps_guanyu", "ps1059_guojia", "ps2070_guojia", "ps2063_zhaoyun", "ps2067_zhaoyun", "ps1062_zhouyu", "ps2080_zhouyu", "ps_caozhi", "ps_jin_simayi", "ps_caopi", "ps_simayi", "ps2068_simayi", "ps_machao", "ps_zhugeliang", "ps2066_zhugeliang", "ps_jiaxu", "ps_lvbu", "jsp_liubei"],
 	offline_piracyK: ["pk_sp_duyu"],
 	offline_vtuber: ["vtb_xiaosha", "vtb_xiaoshan", "vtb_xiaotao", "vtb_xiaole", "vtb_xiaojiu"],
-	offline_juedai: ["zj_liuyuan", "zj_jiangwei", "zj_zhonghui", "xiahouhan", "zj_xiahouhan", "zj_yaokehui", "zj_huoyi", "zj_liuyin", "zj_zhugezhan", "zj_zhaotong", "zj_zhaoguang", "zj_lukang", "zj_zhugexu", "zj_hulie", "zj_zhanghu", "zj_yuechen"],
+	offline_huan: ["jun_lvbu"],
+	offline_juedai: ["zj_zhugeliang", "zj_liuyuan", "zj_jiangwei", "zj_zhonghui", "xiahouhan", "zj_xiahouhan", "zj_yaokehui", "zj_huoyi", "zj_liuyin", "zj_zhugezhan", "zj_zhaotong", "zj_zhaoguang", "zj_lukang", "zj_zhugexu", "zj_hulie", "zj_zhanghu", "zj_yuechen"],
 	offline_longyutao: ["drag_pangde", "drag_guanyu", "drag_caoren", "drag_lvchang"],
 	offline_guansuo: ["drag_huaci", "drag_guansuo", "drag_guanyinping", "drag_guanping", "drag_zhoucang", "drag_liaohua", "drag_shendan", "drag_shenyi", "drag_luxun", "drag_xusheng", "she_lvmeng"],
 	offline_taoyuan: ["ty_guanyu", "ty_sunquan", "ty_liubei", "ty_chenshi", "ty_chengjix", "ty_zhaorong", "ty_zhangnan", "ty_fengxí", "ty_liaohua", "ty_huangzhong", "ty_wuban", "ty_shicong", "ty_guanxing", "ty_shamoke", "ty_guanyinping", "ty_luxun", "ty_ganning", "ty_buzhi", "ty_tanxiong", "ty_liue", "ty_zhangda", "ty_fanjiang", "ty_anying", "ty_anyingx", "ty_wuque", "ty_yanque", "ty_wangque"],
@@ -27,6 +28,7 @@ const characterSort = {
 	offline_shichangshi: ["ps_zhangrang", "ps_zhaozhong", "ps_sunzhang", "ps_bilan", "ps_xiayun", "ps_hankui", "ps_lisong", "ps_duangui", "ps_guosheng", "ps_gaowang"],
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
+	offline_xy: ["xy_caocao", "xy_chengyu", "xy_xunyu", "xy_chengong", "xy_zhangkai", "xy_lvbu", "xy_zhangmiao", "xy_caosong"],
 	//offline_others: [],
 };
 
@@ -46,6 +48,7 @@ const characterSortTranslate = {
 	offline_piracyE: "官盗E系列",
 	offline_piracyS: "官盗S系列",
 	offline_vtuber: "天书乱斗·虚拟偶像",
+	offline_huan: "三国杀·幻",
 	offline_piracyK: "官盗K系列",
 	offline_others: "线下其他系列",
 	offline_juedai: "绝代智将",
@@ -62,6 +65,7 @@ const characterSortTranslate = {
 	offline_shichangshi: "蛇年限定·十常侍",
 	offline_fengyun: "风云际会",
 	offline_Europe: "风云志·欧陆风云",
+	offline_xy: "徐兖纵横",
 };
 
 export { characterSort, characterSortTranslate };

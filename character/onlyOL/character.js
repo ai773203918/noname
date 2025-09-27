@@ -82,7 +82,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 4,
-		skills: ["olchaozheng", "olshenchong", "jsrgjulian"],
+		skills: ["olchaozheng", "olshenchong", "oljulian"],
 		isZhugong: true,
 		img: "image/character/jsrg_liuhong.jpg",
 		dieAudios: ["jsrg_liuhong"],
@@ -113,6 +113,7 @@ const characters = {
 		hp: 3,
 		skills: ["olsblucun", "olsbtuisheng"],
 		trashBin: ["sex:male_castrated"],
+		dieAudios: ["3"],
 	},
 	ol_fuhuanghou: {
 		sex: "female",

@@ -2,6 +2,23 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//主公吕布
+	stdqingjiao: {
+		audio: 2,
+		trigger: {
+			player: "phaseJieshuBegin",
+		},
+		zhuSkill: true,
+		filter(event, player) {
+			return player.hasHistory("sourceDamage", evt => {
+				return evt.player != player && evt.player?.group == "qun";
+			});
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			await player.draw();
+		},
+	},
 	//标准版乐进
 	stdxiaoguo: {
 		audio: "xiaoguo",
@@ -1428,7 +1445,7 @@ const skills = {
 			return get.type(event.card) == "trick" && event.card.isCard;
 		},
 		async content(event, trigger, player) {
-			player.draw();
+			player.draw("nodelay");
 		},
 		ai: {
 			threaten: 1.4,
@@ -1558,9 +1575,10 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		prompt: "失去1点体力并摸两张牌",
+		delay: false,
 		async content(event, trigger, player) {
 			player.loseHp(1);
-			player.draw(2);
+			player.draw(2, "nodelay");
 		},
 		ai: {
 			basic: {

@@ -3501,7 +3501,7 @@ export class Click {
 					this.classList.add("active");
 					if (this.link != "dieAudios") {
 						var skillname = get.translation(this.link);
-						var skilltranslationinfo = get.skillInfoTranslation(this.link);
+						var skilltranslationinfo = get.skillInfoTranslation(this.link, null, false);
 						if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && skillname != "阵亡") {
 							var skillpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? this.link : get.pinyin(skillname);
 							intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + skillname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + skillpinyin + "]" + "</span>" + "  " + skilltranslationinfo;
@@ -3521,7 +3521,7 @@ export class Click {
 							}
 							for (var i = 0; i < derivation.length; i++) {
 								var derivationname = get.translation(derivation[i]);
-								var derivationtranslationinfo = get.skillInfoTranslation(derivation[i]);
+								var derivationtranslationinfo = get.skillInfoTranslation(derivation[i], null, false);
 								if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && derivationname.length <= 5 && derivation[i].indexOf("_faq") == -1) {
 									var derivationpinyin = lib.config.show_skillnamepinyin == "showCodeIdentifier2" ? derivation[i] : get.pinyin(derivationname);
 									intro2.innerHTML += '<br><br><span style="font-weight:bold;margin-right:5px">' + derivationname + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + derivationpinyin + "]" + "</span>" + "  " + derivationtranslationinfo;
@@ -3844,7 +3844,7 @@ export class Click {
 							skillNameSpanStyle.marginRight = "5px";
 							introduction2.appendChild(skillNameSpan);
 						}
-						htmlParser.innerHTML = get.skillInfoTranslation(this.link);
+						htmlParser.innerHTML = get.skillInfoTranslation(this.link, null, false);
 						Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
 						var info = get.info(this.link);
 						var skill = this.link;
@@ -3884,7 +3884,7 @@ export class Click {
 									derivationNameSpanStyle.marginRight = "5px";
 									introduction2.appendChild(derivationNameSpan);
 								}
-								htmlParser.innerHTML = get.skillInfoTranslation(derivation);
+								htmlParser.innerHTML = get.skillInfoTranslation(derivation, null, false);
 								Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
 							});
 						}
@@ -3968,7 +3968,7 @@ export class Click {
 				continue;
 			}
 			let info = get.info(skill);
-			if (!info || info.nopop) {
+			if (!Object.keys(info)?.length || info.nopop) {
 				continue;
 			}
 			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {
@@ -4025,16 +4025,21 @@ export class Click {
 							playerbg.classList.remove("scroll");
 							bg.style.backgroundImage = this.style.backgroundImage;
 							bg.tempSkin = this.name;
+							const skillButtons = document.getElementsByClassName("characterskill")?.[0]?.childNodes;
+							for (let i = 0; i < skills.length; i++) {
+								delete skillButtons[i].playAudio;
+							}
 							refreshIntro();
 							game.callHook("refreshSkin", [list[0], this.name]);
 						});
 						let iSTemp = false;
 						if (!lib.character[i] && skinList.some(skin => skin[0] == i)) {
 							iSTemp = true;
-							lib.character[i] = ["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]];
+							lib.character[i] = get.convertedCharacter(["", "", 0, [], (skinList.find(skin => skin[0] == i) || [i, []])[1]]);
 						}
 						button.name = i;
-						button.setBackground(i, "character");
+						const skinImg = lib.character[i].img;
+						skinImg ? button.setBackgroundImage(skinImg) : button.setBackground(i, "character");
 						if (iSTemp) {
 							delete lib.character[i];
 						}

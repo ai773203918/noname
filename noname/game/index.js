@@ -47,7 +47,7 @@ export class Game extends GameCompatible {
 	playerMap = {};
 	/**
 	 * 当主机返回结果时，客机应该根据此Map的数据寻找回调函数喵
-	 * 
+	 *
 	 * @type { { [key: string]: function } }
 	 */
 	dataRequestMap = {};
@@ -2111,23 +2111,23 @@ export class Game extends GameCompatible {
 	}
 	/**
 	 * 对于客户端syncSkillData使用防抖函数喵
-	 * 
+	 *
 	 * 用Map存储特定sync函数的防抖版本喵
-	 * 
+	 *
 	 * @type {{ [key: string]: { [key: string]: Function } }}
 	 */
 	#skillSyncDebounceMap = {};
 	/**
 	 * 对于客户端requestSkillData使用防抖函数喵
-	 * 
+	 *
 	 * 用Map存储特定sync函数的防抖版本喵
-	 * 
+	 *
 	 * @type {{ [key: string]: { [key: string]: Function } }}
 	 */
 	#skillRequestDebounceMap = {};
 	/**
 	 * 对于技能请求我们应该记录每个lib.skill.xxx.sync函数上次的调用时间，间隔500ms内的重复调用主机应该拒绝喵
-	 * 
+	 *
 	 * @type { WeakMap<Player, { [skill: string]: { [sync: string]: number } }> }
 	 */
 	#skillSyncTicks = new WeakMap();
@@ -2135,14 +2135,14 @@ export class Game extends GameCompatible {
 	 * ```plain
 	 * 在客机发出同步信号，要求主机通过广播或单播更新数据喵
 	 * 此函数会要求主机调用指定的`get.info(skill).sync[sync]`函数但不会等待结果返回喵
-	 * 
+	 *
 	 * 具体调用请参考@see requestSkillData 函数的文档喵
 	 * ```
-	 * 
-	 * @param { string } skill 
-	 * @param { string } sync 
-	 * @param  { ...any } args 
-	 * @returns 
+	 *
+	 * @param { string } skill
+	 * @param { string } sync
+	 * @param  { ...any } args
+	 * @returns
 	 */
 	syncSkillData(skill, sync, ...args) {
 		if ("observe" in game && game.observe) {
@@ -2168,7 +2168,7 @@ export class Game extends GameCompatible {
 	 * 在客机发出请求，要求主机响应并返回特定的数据
 	 * 此函数会要求主机调用指定的`get.info(skill).sync[sync]`函数
 	 * 并通过Promise返回主机的给出的数据
-	 * 
+	 *
 	 * 具体调用例子:
 	 * ```
 	 * ```js
@@ -2200,18 +2200,18 @@ export class Game extends GameCompatible {
 	 *     },
 	 * }
 	 * ```
-	 * 
-	 * @param { string } skill 
-	 * @param { string } sync 
-	 * @param { number | null } timeout 
-	 * @param  { ...any } args 
+	 *
+	 * @param { string } skill
+	 * @param { string } sync
+	 * @param { number | null } timeout
+	 * @param  { ...any } args
 	 * @returns { Promise<[boolean, any]> } 请求是否成功和返回的数据
 	 */
 	requestSkillData(skill, sync, timeout, ...args) {
 		if ("observe" in game && game.observe) {
 			return Promise.resolve([false, null]);
 		}
-		
+
 		if (!timeout || !Number.isFinite(timeout) || timeout <= 0) {
 			timeout = 5000;
 		}
@@ -2226,32 +2226,35 @@ export class Game extends GameCompatible {
 
 		game.#skillRequestDebounceMap[skill] ??= {};
 
-		return (game.#skillRequestDebounceMap[skill][sync] ??= debounce((timeout, ...args) => {
-			const id = (function () {
-				while (true) {
-					const id = Math.random().toString(36).slice(2);
-					if (!(id in game.dataRequestMap)) {
-						return id;
+		return (game.#skillRequestDebounceMap[skill][sync] ??= debounce(
+			(timeout, ...args) => {
+				const id = (function () {
+					while (true) {
+						const id = Math.random().toString(36).slice(2);
+						if (!(id in game.dataRequestMap)) {
+							return id;
+						}
 					}
-				}
-			})();
-			const { promise, resolve } = Promise.withResolvers();
+				})();
+				const { promise, resolve } = Promise.withResolvers();
 
-			game.dataRequestMap[id] = (ok, result) => resolve([ok, result]);
-			game.send("dataSync", { type: "skill", name: skill, key: sync, args, timeout }, id);
+				game.dataRequestMap[id] = (ok, result) => resolve([ok, result]);
+				game.send("dataSync", { type: "skill", name: skill, key: sync, args, timeout }, id);
 
-			const timeoutPromise = new Promise((resolve) => {
-				setTimeout(() => {
-					delete game.dataRequestMap[id];
-					resolve([false, game.SKILL_SYNC_RESULTS.REQUEST_TIMEOUT]);
-				}, timeout);
-			});
+				const timeoutPromise = new Promise(resolve => {
+					setTimeout(() => {
+						delete game.dataRequestMap[id];
+						resolve([false, game.SKILL_SYNC_RESULTS.REQUEST_TIMEOUT]);
+					}, timeout);
+				});
 
-			return Promise.any([promise, timeoutPromise]);
-		}, {
-			delay: 500,
-			failResult: [false, game.SKILL_SYNC_RESULTS.TOO_MANY_CALLS],
-		}))(timeout, ...args);
+				return Promise.any([promise, timeoutPromise]);
+			},
+			{
+				delay: 500,
+				failResult: [false, game.SKILL_SYNC_RESULTS.TOO_MANY_CALLS],
+			}
+		))(timeout, ...args);
 	}
 	/**
 	 * 失败结果常量表喵
@@ -2268,9 +2271,9 @@ export class Game extends GameCompatible {
 	/**
 	 * 由联机接口调用来处理客机请求逻辑喵
 	 * 请不要手动调用此函数喵！！！
-	 * 
-	 * @param {string} id 
-	 * @param {Player} player 
+	 *
+	 * @param {string} id
+	 * @param {Player} player
 	 * @param {*} subject
 	 * @returns { Promise<[boolean, any] | undefined> }
 	 */
@@ -2285,9 +2288,10 @@ export class Game extends GameCompatible {
 		if (!info) {
 			return [false, game.SKILL_SYNC_RESULTS.MISSING_SKILL];
 		}
-		
+
 		// 函数调用权限检查喵
-		if (!lib.skill.global.includes(skill) && !player.hasSkill(skill, true, true, false)) { // 失效技能也有技权喵
+		if (!lib.skill.global.includes(skill) && !player.hasSkill(skill, true, true, false)) {
+			// 失效技能也有技权喵
 			return [false, game.SKILL_SYNC_RESULTS.SKILL_NOT_GRANTED];
 		}
 
@@ -8850,25 +8854,30 @@ export class Game extends GameCompatible {
 		} else if (lib.translate[`${iInfo}_combat`] && get.is.versus()) {
 			lib.translate[iInfo] = lib.translate[`${iInfo}_combat`];
 		}
+		info.skill_id ??= i;
 		let deleteSkill = function (skill, iInfo) {
-			let skillx = {},
-				info = get.info(skill);
-			if (info) {
-				["audio", "audioname", "audioname2"].forEach(name => {
-					if (info[name]) {
-						skillx[name] = info[name];
+			let { audio, audioname, audioname2, skillID } = lib.skill[skill] || {};
+			lib.skill[skill] = { audio, audioname, audioname2, skillID };
+			lib.translate[iInfo] &&= "此模式下不可用";
+			lib.dynamicTranslate[skill] &&= () => "此模式下不可用";
+		};
+		if (info.inherit) {
+			const skill = lib.skill[info.inherit];
+			if (skill) {
+				Object.keys(skill).forEach(value => {
+					if (info[value] == undefined) {
+						if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
+							info[value] = info.inherit;
+						} else {
+							info[value] = skill[value];
+						}
 					}
 				});
 			}
-			lib.skill[skill] = skillx;
-			if (lib.translate[iInfo]) {
-				lib.translate[iInfo] = "此模式下不可用";
-			}
-			if (lib.dynamicTranslate[skill]) {
-				lib.dynamicTranslate[skill] = () => "此模式下不可用";
-			}
-		};
-		if ((info.forbid && info.forbid.includes(mode)) || (info.mode && info.mode.includes(mode) == false) || (info.available && info.available(mode) == false)) {
+			lib.translate[i] ??= lib.translate[info.inherit];
+			lib.translate[iInfo] ??= lib.translate[`${info.inherit}_info`];
+		}
+		if (info.forbid?.includes(mode) || info.mode?.includes(mode) == false || info.available?.(mode) == false) {
 			deleteSkill(i, iInfo);
 			return;
 		}
@@ -8901,43 +8910,12 @@ export class Game extends GameCompatible {
 				});
 			}
 		}
-		if (info.inherit) {
-			const skill = lib.skill[info.inherit];
-			if (skill) {
-				Object.keys(skill).forEach(value => {
-					if (info[value] != undefined) {
-						return;
-					}
-					if (value == "audio" && (typeof info[value] == "number" || typeof info[value] == "boolean")) {
-						info[value] = info.inherit;
-					} else {
-						info[value] = skill[value];
-					}
-				});
-			}
-			if (lib.translate[i] == undefined) {
-				lib.translate[i] = lib.translate[info.inherit];
-			}
-			if (lib.translate[iInfo] == undefined) {
-				lib.translate[iInfo] = lib.translate[`${info.inherit}_info`];
-			}
-		}
 		if (info.limited) {
-			if (info.mark === undefined) {
-				info.mark = true;
-			}
-			if (!info.intro) {
-				info.intro = {};
-			}
-			if (info.intro.content === undefined) {
-				info.intro.content = "limited";
-			}
-			if (info.skillAnimation === undefined) {
-				info.skillAnimation = true;
-			}
-			if (info.init === undefined) {
-				info.init = (player, skill) => (player.storage[skill] = false);
-			}
+			info.mark ??= true;
+			info.intro ??= {};
+			info.intro.content ??= "limited";
+			info.skillAnimation ??= true;
+			info.init ??= (player, skill) => (player.storage[skill] = false);
 		}
 		if (info.subSkill && !sub) {
 			Object.keys(info.subSkill).forEach(value => {
@@ -10584,6 +10562,42 @@ export class Game extends GameCompatible {
 			_status.poptip[1].remove();
 			delete _status.poptip;
 		}
+	}
+	/**
+	 * find the skillname of the event
+	 * 获取触发事件的技能
+	 * @param { GameEvent | GameEventPromise } event
+	 * @param { Boolean } includeCharlotteSkill 是否包含夏洛特技
+	 * @param { Boolean } includeEquipSkill 是否包含装备技能
+	 * @param { Boolean } includeGlobalSkill 是否包含全局技能
+	 * @returns { string | null }
+	 */
+	findSkill(event, includeCharlotteSkill = false, includeEquipSkill = false, includeGlobalSkill = false) {
+		let skill = "";
+		let count = 0;
+		let evt = event;
+		do {
+			evt = evt.parent;
+			let name = evt?.name;
+			if (!name) {
+				break;
+			}
+			if (name.startsWith("pre_")) {
+				name = name.slice(4);
+			}
+			for (const suffix of ["_backup", "ContentBefore", "ContentAfter", "_cost"]) {
+				if (name.endsWith(suffix)) {
+					name = name.slice(0, name.lastIndexOf(suffix));
+				}
+			}
+			skill = get.sourceSkillFor(name);
+			const info = lib.skill[skill];
+			if (!info || !Object.keys(info).length || (!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
+				continue;
+			}
+			return skill;
+		} while (++count < 10);
+		return null;
 	}
 }
 

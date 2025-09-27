@@ -109,7 +109,7 @@ const skills = {
 		viewAs(cards, player) {
 			return {
 				name: "tiesuo",
-			}
+			};
 		},
 		prepare: () => true,
 		async precontent(event, trigger, player) {
@@ -514,7 +514,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard("he", [1, player.countCards("he")], get.prompt(event.skill), "将任意张牌作为“箜”置于武将牌上")
+				.chooseCard("he", [1, player.countCards("he")], get.prompt(event.skill), "将任意张牌作为“箜”置于武将牌上", "allowChooseAll")
 				.set("ai", function (card) {
 					const player = _status.event.player,
 						num = player.getExpansions("olkongsheng") + ui.selected.cards.length;
@@ -1943,7 +1943,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.prompt(event.skill), "将任意张牌置于武将牌上", "he", [1, player.countCards("he")])
+				.chooseCard(get.prompt(event.skill), "将任意张牌置于武将牌上", "he", [1, player.countCards("he")], "allowChooseAll")
 				.set("ai", function (card) {
 					const player = get.player();
 					if (get.position(card) == "e") {
@@ -4922,7 +4922,7 @@ const skills = {
 					const character = player.storage.huashen.current;
 					if (skill && character) {
 						dialog.addSmall([[character], (item, type, position, noclick, node) => lib.skill.rehuashen.$createButton(item, type, position, noclick, node)]);
-						dialog.add('<div><div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(skill, player) + "</div></div>");
+						dialog.add('<div><div class="skill">【' + get.translation(lib.translate[skill + "_ab"] || get.translation(skill).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(skill, player, false) + "</div></div>");
 					}
 					if (player.isUnderControl(true)) {
 						dialog.addSmall([list, (item, type, position, noclick, node) => lib.skill.rehuashen.$createButton(item, type, position, noclick, node)]);
@@ -5966,7 +5966,7 @@ const skills = {
 			} else {
 				await target.draw();
 				if (num > 0) {
-					await target.chooseToDiscard(num, true, "he");
+					await target.chooseToDiscard(num, true, "he", "allowChooseAll");
 				}
 			}
 		},

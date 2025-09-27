@@ -1,4 +1,29 @@
 const characters = {
+	dc_sb_xusheng:{
+		sex:"male",
+		group:"wu",
+		hp:4,
+		skills:["dcsbqinqiang"]
+	},
+	
+	xvwen:{
+		sex:"female",
+		hp:3,
+		group:"wei",
+		skills:["dcfuhui","dcmohua"]
+	},
+	v_sunce: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["dczhifeng", "dcweijing"],
+	},
+	v_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcduoyue", "dcjunhe", "dcxiongwei"],
+	},
 	dc_sb_huangquan: {
 		sex: "male",
 		group: "wei",
@@ -34,13 +59,6 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		skills: ["dcsbzhouxi", "dcsbshijin"],
-	},
-	x_dc_zhangqiying: {
-		sex: "female",
-		group: "qun",
-		hp: 3,
-		skills: ["x_dc_falu", "x_dc_zhenyi", "x_dc_dianhua"],
-		dieAudios: ["zhangqiying"],
 	},
 	y_dc_zhangqiying: {
 		sex: "female",

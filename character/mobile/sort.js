@@ -5,7 +5,7 @@ const characterSort = {
 	mobile_sp6: ["dongcheng", "re_weiwenzhugezhi"],
 	mobile_sp7: ["taoqian", "yangyi"],
 	mobile_sp8: ["shenpei", "re_wangyun"],
-	mobile_sp9: ["jiakui", "sp_sufei", "re_zhanggong", "re_xugong", "sy_baosanniang"],
+	mobile_sp9: ["jiakui", "sp_sufei", "re_zhanggong", "re_xugong", "re_baosanniang"],
 	mobile_sp10: ["furong", "zhouqun", "zhangyì", "dengzhi", "gongsunkang", "hucheer", "chendeng", "dingyuan"],
 	mobile_sp11: ["fuqian", "qiaozhou", "ruanhui", "sp_maojie", "wangjun", "yanpu", "mayuanyi", "xin_mamidi"],
 	mobile_sp12: ["hujinding", "lifeng", "zhaotongzhaoguang", "wangyuanji", "yanghuiyu", "liuye", "simazhao", "zhuling", "yangbiao"],
@@ -34,7 +34,7 @@ const characterSort = {
 	mobile_yijiang5: ["xin_zhangyi", "xin_sunxiu", "xin_quancong", "xin_zhuzhi", "xin_caoxiu"],
 	mobile_yijiang7: ["re_jikang", "mb_xuezong"],
 	mobile_changshi: ["scs_zhangrang", "scs_zhaozhong", "scs_sunzhang", "scs_bilan", "scs_xiayun", "scs_hankui", "scs_lisong", "scs_duangui", "scs_guosheng", "scs_gaowang"],
-	mobile_others: [],
+	mobile_others: ["mb_caocao"],
 };
 
 const characterSortTranslate = {
