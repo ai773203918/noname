@@ -2902,7 +2902,7 @@ export default () => {
 						};
 					},
 					prompt(links, player) {
-						return "将一牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
+						return "将一张牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
 					},
 				},
 				locked: false,
