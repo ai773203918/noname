@@ -7748,10 +7748,11 @@ export class Library {
 					restart: true,
 					item: {
 						disabled: "禁用",
-						kaihei: "获得〖强易〗",
 						yinfu: "获得〖殷富〗",
-						shiqiang: "获得〖恃强〗",
+						kaihei: "获得〖强易〗",
 						qiangyi: "获得削弱〖强易〗",
+						oldshiqiang: "获得〖恃强〗",
+						shiqiang: "获得削弱〖恃强〗",
 					},
 				},
 				enhance_nongmin: {
