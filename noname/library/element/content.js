@@ -5786,7 +5786,7 @@ player.removeVirtualEquip(card);
 				ui.create.cardChooseAll();
 				event.aiChoose = ui.create.control("AI代选", function () {
 					ai.basic.chooseCard(event.ai);
-					if (_status.event.custom && _status.event.custom.add.card) {
+					if (typeof _status.event.custom?.add?.card == "function") {
 						_status.event.custom.add.card();
 					}
 					ui.selected.cards.forEach(i => i.updateTransform(true));
@@ -5973,7 +5973,7 @@ player.removeVirtualEquip(card);
 						ui.create.cardChooseAll();
 						event.promptdiscard = ui.create.control("AI代选", function () {
 							ai.basic.chooseCard(event.ai);
-							if (_status.event.custom && _status.event.custom.add.card) {
+							if (typeof _status.event.custom?.add?.card == "function") {
 								_status.event.custom.add.card();
 							}
 							for (var i = 0; i < ui.selected.cards.length; i++) {
@@ -7443,6 +7443,12 @@ player.removeVirtualEquip(card);
 					ui.click.cancel();
 					return;
 				}
+				if (event.custom === undefined) {
+					event.custom = {
+						add: {},
+						replace: {},
+					};
+				}
 				ui.create.cardChooseAll();
 				if (event.prompt != false) {
 					var str;
@@ -7478,9 +7484,11 @@ player.removeVirtualEquip(card);
 					}
 					if (Array.isArray(event.selectCard)) {
 						event.promptbar = event.dialog.add("0/" + get.numStr(event.selectCard[1], "card"));
-						event.custom.add.card = function () {
-							_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
-						};
+						if (event.custom.add.card === undefined) {
+							event.custom.add.card = function () {
+								_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
+							};
+						}
 					}
 				}
 			} else if (event.isOnline()) {
