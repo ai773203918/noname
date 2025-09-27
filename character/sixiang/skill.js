@@ -483,7 +483,7 @@ const skills = {
 					.chooseTarget(`抚黎：令一名其他角色展示所有手牌并弃置其中的所有伤害类牌（没有则不弃）并回复1体力`, true, (card, player, target) => {
 						return player != target && target.countCards("h");
 					})
-					.set("ai", target => get.effect(target, get.player(), get.player()))
+					.set("ai", target => get.recoverEffect(target, get.player(), get.player()))
 					.forResult();
 				if (result?.targets?.length) {
 					const [target] = result.targets;

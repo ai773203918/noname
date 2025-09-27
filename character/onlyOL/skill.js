@@ -920,12 +920,14 @@ const skills = {
 			},
 			backup(links, player) {
 				const bool = player.storage.olsbzhijue;
+				const backup = get.copy(lib.skill[`olsbzhijue_${!bool ? "yang" : "yin"}`]);
 				if (bool) {
-					game.broadcastAll(link => {
-						lib.skill.olsbzhijue_yin.link = link;
-					}, links[0]);
+					backup.filterCard = function (card, player) {
+						return get.color(card, player) == links[0];
+					};
+					backup.link = links[0];
 				}
-				return get.copy(lib.skill[`olsbzhijue_${!bool ? "yang" : "yin"}`]);
+				return backup;
 			},
 			prompt(links, player) {
 				const link = links[0];
@@ -977,9 +979,6 @@ const skills = {
 			yin: {
 				audio: "olsbzhijue",
 				position: "h",
-				filterCard(card, player) {
-					return get.color(card, player) == lib.skill.olsbzhijue_yin.link;
-				},
 				selectCard: -1,
 				lose: false,
 				discard: false,
@@ -987,7 +986,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.changeZhuanhuanji("olsbzhijue");
 					player.addTempSkill("olsbzhijue_used");
-					player.markAuto("olsbzhijue_used", lib.skill.olsbzhijue_yin.link);
+					player.markAuto("olsbzhijue_used", get.info(event.name).link);
 					const { cards } = event;
 					await player.loseToDiscardpile(cards);
 					let noDamage = true;
