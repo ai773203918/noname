@@ -1819,13 +1819,16 @@ const _zhanfa = {
 	zf_shixue: {
 		rarity: "legend",
 		translate: "噬血I",
-		info: "回复体力后，摸一张牌",
+		info: "回复1点体力后，摸一张牌",
 		card: {
 			value: 7.2,
 		},
 		skill: {
 			inherit: "zf_anyDraw",
 			trigger: { player: "recoverEnd" },
+			getIndex(event, player) {
+				return event.num;
+			},
 		},
 	},
 	//手到擒来
