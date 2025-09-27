@@ -7545,46 +7545,43 @@ const skills = {
 			} = result;
 			player.line(target, "green");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【鸿图】`);
-			const videoId = lib.status.videoId++;
-			if (target.isUnderControl()) {
-				game.swapPlayerAuto(target);
-			}
-			const func = (id, cards, player) => {
-				const dialog = ui.create.dialog(`鸿图：是否使用${get.translation(player)}展示的其中一张牌？`);
-				dialog.add(cards);
-				const numbers = cards.map(card => get.number(card)).toUniqued();
-				const min = Math.min(...numbers);
-				const max = Math.max(...numbers);
-				for (const button of dialog.buttons) {
-					const num = get.number(button.link, player);
-					button.node.gaintag.innerHTML ??= "";
-					if (
-						cards.every(card => {
-							return card === button.link || get.number(card) < num;
-						})
-					) {
-						button.node.gaintag.innerHTML += get.translation("nzry_feijun");
-					} else if (
-						cards.every(card => {
-							return card === button.link || get.number(card) > num;
-						})
-					) {
-						button.node.gaintag.innerHTML += "手牌上限";
-					} else if (num != min && num != max) {
-						button.node.gaintag.innerHTML += get.translation("qianxi");
-					}
-				}
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (target == game.me) {
-				func(videoId, cards, player);
-			} else if (target.isOnline()) {
-				target.send(func, videoId, cards, player);
-			}
+			const numbers = cards.map(card => get.number(card, player)).toUniqued();
+			const min = Math.min(...numbers);
+			const max = Math.max(...numbers);
 			result = await target
-				.chooseButton()
-				.set("dialog", get.idDialog(videoId))
+				.chooseButton([
+					`鸿图：是否使用${get.translation(player)}展示的其中一张牌？`,
+					[
+						cards.map(card => [
+							card,
+							(() => {
+								const num = get.number(card, player);
+								if (
+									cards.every(cardx => {
+										return cardx === card || get.number(cardx) < num;
+									})
+								) {
+									return get.translation("nzry_feijun");
+								} else if (
+									cards.every(cardx => {
+										return cardx === card || get.number(cardx) > num;
+									})
+								) {
+									return "手牌上限";
+								} else if (num != min && num != max) {
+									return get.translation("qianxi");
+								} else {
+									return "";
+								}
+							})(),
+						]),
+						(item, type, position, noclick, node) => {
+							node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+							node.node.gaintag.innerHTML += item[1];
+							return node;
+						},
+					],
+				])
 				.set("filterButton", button => {
 					const player = get.player(),
 						card = button.link;
@@ -7601,7 +7598,6 @@ const skills = {
 					return get.player().getUseValue(button.link);
 				})
 				.forResult();
-			game.broadcastAll("closeDialog", videoId);
 			if (!result?.links?.length) {
 				for (const current of [target, player]) {
 					if (!current.isIn()) {
@@ -7611,9 +7607,6 @@ const skills = {
 					await current.damage("fire");
 				}
 			} else {
-				const numbers = cards.map(card => get.number(card, player)).toUniqued();
-				const min = Math.min(...numbers);
-				const max = Math.max(...numbers);
 				const {
 					links: [card],
 				} = result;

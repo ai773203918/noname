@@ -3794,7 +3794,7 @@ const skills = {
 					);
 					return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 				})
-				.set("complexButton", true)
+				.set("complexSelect", true)
 				.set("ai", button => {
 					if (ui.selected.buttons.length == 0) {
 						return Math.random();
@@ -3857,7 +3857,7 @@ const skills = {
 						);
 						return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 					})
-					.set("complexButton", true)
+					.set("complexSelect", true)
 					.set("ai", button => {
 						if (ui.selected.buttons.length == 0) {
 							return Math.random();

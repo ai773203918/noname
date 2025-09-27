@@ -3449,6 +3449,8 @@ export class Create {
 				position.appendChild(node);
 			}
 			node.link = item;
+			// 复制标记信息
+			node.node.gaintag.innerHTML = item.node.gaintag.innerHTML;
 			if (item.style.backgroundImage) {
 				node.style.backgroundImage = item.style.backgroundImage;
 				node.style.backgroundSize = "cover";

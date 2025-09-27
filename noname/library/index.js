@@ -4030,7 +4030,7 @@ export class Library {
 						if (!game.download) {
 							setTimeout(function () {
 								if (!window.StatusBar) {
-									map.show_statusbar.hide();
+									// map.show_statusbar.hide();
 								}
 							}, 5000);
 						}
