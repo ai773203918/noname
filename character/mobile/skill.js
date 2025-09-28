@@ -574,7 +574,7 @@ const skills = {
 		enable: "phaseUse",
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("###许身###" + get.skillInfoTranslation("mbxushen"));
+				return ui.create.dialog("###许身###" + get.skillInfoTranslation("mbxushen", null, false));
 			},
 			chooseControl(event, player) {
 				const choices = [...[1, 2, 3].map(i => get.cnNumber(i) + "点"), "cancel2"];
@@ -5416,8 +5416,8 @@ const skills = {
 		ai: {
 			order: 10,
 			result: {
-				player(player, target) {
-					return get.effect(target, { name: "guohe_copy", position: "h" }, player, player);
+				target(player, target) {
+					return get.effect(target, { name: "guohe_copy", position: "h" }, player, target);
 				},
 			},
 		},
@@ -7516,7 +7516,7 @@ const skills = {
 			const { result } = await player
 				.chooseControl(choices, "cancel2")
 				.set("prompt", `${get.prompt(event.skill)}（本次弃置${get.cnNumber(player.countMark("mbjiexun_used") + 1)}张）`)
-				.set("prompt2", `${get.skillInfoTranslation(event.skill, player)}<br>${str}`)
+				.set("prompt2", `${get.skillInfoTranslation(event.skill, player, false)}<br>${str}`)
 				.set("ai", () => {
 					const player = get.player(),
 						map = get.event().map;
@@ -15889,7 +15889,7 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseTarget("借兵：选择一名其他角色", get.skillInfoTranslation("jiebing"), true, (card, player, target) => {
+				.chooseTarget("借兵：选择一名其他角色", get.skillInfoTranslation("jiebing", null, false), true, (card, player, target) => {
 					return player != target && target != _status.event.getTrigger().source && target.countGainableCards(player, "he");
 				})
 				.set("ai", target => get.effect(target, { name: "shunshou_copy2" }, player, player) /** (target.countCards('he')>1?1.5:1)*/);
@@ -16083,7 +16083,7 @@ const skills = {
 				.set(
 					"choiceList",
 					kane.map(i => {
-						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player) + "</div>";
+						return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div>" + "<div>" + get.skillInfoTranslation(i, player, false) + "</div>";
 					})
 				)
 				.set("displayIndex", false)
@@ -28074,17 +28074,18 @@ const skills = {
 			}
 			game.addVideo("skill", player, ["xinfu_jingxie", [bool, get.cardInfo(card)]]);
 			game.broadcastAll(
-				function (card, bool) {
+				function (card, bool, player) {
 					card.init([card.suit, card.number, "rewrite_" + card.name]);
 					let vcard = card[card.cardSymbol];
 					if (bool && vcard && player.vcardsMap?.equips) {
 						const cardx = get.autoViewAs(card, void 0, false);
 						player.vcardsMap.equips[player.vcardsMap.equips.indexOf(vcard)] = cardx;
-						vcard = cardx;
+						card[card.cardSymbol] = cardx;
 					}
 				},
 				card,
-				bool
+				bool,
+				player
 			);
 			if (bool) {
 				player.addEquipTrigger(card.card || card);

@@ -2579,7 +2579,7 @@ const skills = {
 					skill = get.sourceSkillFor(skill);
 					info = get.info(skill);
 					//双重检测，如果技能描述中不带伤害字样的去除
-					if (!skill || !get.plainText(get.skillInfoTranslation(skill)).includes("伤害")) {
+					if (!skill || !get.skillInfoTranslation(skill).includes("伤害")) {
 						continue;
 					}
 					//去除觉醒技、隐匿技、势力技、主公技
@@ -3727,7 +3727,7 @@ const skills = {
 									.set(
 										"choiceList",
 										skills.map(i => {
-											return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, target) + "</div>";
+											return '<div class="skill">【' + get.translation(lib.translate[i + "_ab"] || get.translation(i).slice(0, 2)) + "】</div><div>" + get.skillInfoTranslation(i, target, false) + "</div>";
 										})
 									)
 									.set("displayIndex", false)
@@ -4423,7 +4423,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { result } = await player
 				.chooseButton([
-					"请选择一项",
+					get.prompt(event.skill),
 					[
 						[
 							["discard", "弃置所有手牌"],
@@ -4460,12 +4460,13 @@ const skills = {
 				const cards = player.getCards("h");
 				if (cards.length) {
 					await player.discard(cards);
-					if (cards.some(card => card.name == "sha")) {
+					if (cards.some(card => get.name(card) == "sha")) {
 						const { result } = await player.chooseTarget("对一名其他角色造成1点伤害", lib.filter.notMe).set("ai", target => {
 							const player = get.player();
 							return get.damageEffect(target, player, player);
 						});
 						if (result?.bool && result?.targets?.length) {
+							player.line(result.targets);
 							await result.targets[0].damage();
 						}
 					}
@@ -4493,18 +4494,13 @@ const skills = {
 				onremove: true,
 				trigger: { player: "damageEnd" },
 				prompt2(event, player) {
-					const list = player.getStorage("olsbnilan_buff");
-					let str = ``;
-					if (list.includes("draw")) {
-						str += `你可以摸两张牌`;
-					}
-					if (list.includes("draw") && list.includes("discard")) {
-						str += `且`;
-					}
-					if (list.includes("discard")) {
-						str += `你可以弃置所有手牌，然后若其中有【杀】，你可以对一名其他角色造成1点伤害`;
-					}
-					return str;
+					const list = player.getStorage("olsbnilan_buff").toUniqued();
+					return `你可以${list.length > 0 ? "依次" : ""}执行：<br>${list.map(type => {
+						if (type == "draw") {
+							return "摸两张牌";
+						}
+						return "弃置所有手牌，然后若其中有【杀】，你可以对一名其他角色造成1点伤害";
+					}).join("；<br>")}。`;
 				},
 				async content(event, trigger, player) {
 					const list = player.getStorage(event.name);
