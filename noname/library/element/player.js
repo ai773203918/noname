@@ -2419,6 +2419,7 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
+		next._args = Array.from(arguments);
 		return next;
 	}
 	chooseToMove_new() {
@@ -2438,6 +2439,7 @@ export class Player extends HTMLDivElement {
 		next.filterMove = function () {
 			return true;
 		};
+		next._args = Array.from(arguments);
 		return next;
 	}
 	chooseToGuanxing(num) {
