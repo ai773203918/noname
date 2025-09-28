@@ -31,7 +31,7 @@ export class Get extends GetCompatible {
 	 * @param {false | Player} player get.suit/get.color的player参数
 	 * @returns {Array<Row_Item_Option | Row_Item_Option[]>} 返回一个列表，每一项是一个分组配置（addNewRow方法的参数RowItem）或一对分组配置组成的数组
 	 */
-	createCardGroup(cards, type = "suit", player = false) {
+	addNewRowList(cards, type = "suit", player = false) {
 		//把框变成按钮，同时给框加封条，显示xxx牌多少张
 		function createCustom() {
 			/**

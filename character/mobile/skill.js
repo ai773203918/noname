@@ -3427,7 +3427,7 @@ const skills = {
 						}
 						const red = cards.filter(card => get.color(card, false) == "red"),
 							black = cards.filter(card => get.color(card, false) == "black");
-						const list = get.createCardGroup(cards, "color");
+						const list = get.addNewRowList(cards, "color");
 						const result = await player
 							.chooseButtonTarget({
 								createDialog: [[[[`润微：选择一名角色令其获得其中一种颜色的牌`], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]],
@@ -10547,7 +10547,7 @@ const skills = {
 			return promise;
 		},
 		async cost(event, trigger, player) {
-			const list = get.createCardGroup(player.getCards("h"), "suit", player);
+			const list = get.addNewRowList(player.getCards("h"), "suit", player);
 			let limit = event.skill === "sbqingzheng" ? 3 - player.countMark("sbjianxiong") : 1;
 			const { result } = await player.chooseButtonTarget({
 				createDialog: [[[[get.prompt2(event.skill)], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]],
@@ -10611,7 +10611,7 @@ const skills = {
 				}
 				return;
 			}
-			const list = get.createCardGroup(target.getCards("h"), "suit", target);
+			const list = get.addNewRowList(target.getCards("h"), "suit", target);
 			let { result } = await player
 				.chooseButton([[[[`清正：弃置${get.translation(target)}一种花色的所有牌`], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]])
 				.set("filterButton", button => {

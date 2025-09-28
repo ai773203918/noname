@@ -29254,6 +29254,7 @@ const skills = {
 		},
 		subSkill: {
 			mark: {
+				charlotte: true,
 				onremove(player) {
 					delete player.storage.refenyin_mark;
 					delete player.storage.refenyin_mark2;
