@@ -158,7 +158,8 @@ export default () => {
 
 			var next = game.gameDraw(game.zhu || _status.firstAct || game.me);
 			if (_status.mode == "online") {
-				game.zhu.$equip(game.createCard("diqi", "club", 13));
+				const card = game.createCard("diqi", "club", 13);
+				game.zhu.addVirtualEquip(get.autoViewAs(card, void 0, false), [card]);
 				next.num = function (player) {
 					var num = 4;
 					if (player == game.zhu) {
