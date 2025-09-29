@@ -920,12 +920,14 @@ const skills = {
 			},
 			backup(links, player) {
 				const bool = player.storage.olsbzhijue;
+				const backup = get.copy(lib.skill[`olsbzhijue_${!bool ? "yang" : "yin"}`]);
 				if (bool) {
-					game.broadcastAll(link => {
-						lib.skill.olsbzhijue_yin.link = link;
-					}, links[0]);
+					backup.filterCard = function (card, player) {
+						return get.color(card, player) == links[0];
+					};
+					backup.link = links[0];
 				}
-				return get.copy(lib.skill[`olsbzhijue_${!bool ? "yang" : "yin"}`]);
+				return backup;
 			},
 			prompt(links, player) {
 				const link = links[0];
@@ -977,9 +979,6 @@ const skills = {
 			yin: {
 				audio: "olsbzhijue",
 				position: "h",
-				filterCard(card, player) {
-					return get.color(card, player) == lib.skill.olsbzhijue_yin.link;
-				},
 				selectCard: -1,
 				lose: false,
 				discard: false,
@@ -987,7 +986,7 @@ const skills = {
 				async content(event, trigger, player) {
 					player.changeZhuanhuanji("olsbzhijue");
 					player.addTempSkill("olsbzhijue_used");
-					player.markAuto("olsbzhijue_used", lib.skill.olsbzhijue_yin.link);
+					player.markAuto("olsbzhijue_used", get.info(event.name).link);
 					const { cards } = event;
 					await player.loseToDiscardpile(cards);
 					let noDamage = true;
@@ -7541,46 +7540,43 @@ const skills = {
 			} = result;
 			player.line(target, "green");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【鸿图】`);
-			const videoId = lib.status.videoId++;
-			if (target.isUnderControl()) {
-				game.swapPlayerAuto(target);
-			}
-			const func = (id, cards, player) => {
-				const dialog = ui.create.dialog(`鸿图：是否使用${get.translation(player)}展示的其中一张牌？`);
-				dialog.add(cards);
-				const numbers = cards.map(card => get.number(card)).toUniqued();
-				const min = Math.min(...numbers);
-				const max = Math.max(...numbers);
-				for (const button of dialog.buttons) {
-					const num = get.number(button.link, player);
-					button.node.gaintag.innerHTML ??= "";
-					if (
-						cards.every(card => {
-							return card === button.link || get.number(card) < num;
-						})
-					) {
-						button.node.gaintag.innerHTML += get.translation("nzry_feijun");
-					} else if (
-						cards.every(card => {
-							return card === button.link || get.number(card) > num;
-						})
-					) {
-						button.node.gaintag.innerHTML += "手牌上限";
-					} else if (num != min && num != max) {
-						button.node.gaintag.innerHTML += get.translation("qianxi");
-					}
-				}
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (target == game.me) {
-				func(videoId, cards, player);
-			} else if (target.isOnline()) {
-				target.send(func, videoId, cards, player);
-			}
+			const numbers = cards.map(card => get.number(card, player)).toUniqued();
+			const min = Math.min(...numbers);
+			const max = Math.max(...numbers);
 			result = await target
-				.chooseButton()
-				.set("dialog", get.idDialog(videoId))
+				.chooseButton([
+					`鸿图：是否使用${get.translation(player)}展示的其中一张牌？`,
+					[
+						cards.map(card => [
+							card,
+							(() => {
+								const num = get.number(card, player);
+								if (
+									cards.every(cardx => {
+										return cardx === card || get.number(cardx) < num;
+									})
+								) {
+									return get.translation("nzry_feijun");
+								} else if (
+									cards.every(cardx => {
+										return cardx === card || get.number(cardx) > num;
+									})
+								) {
+									return "手牌上限";
+								} else if (num != min && num != max) {
+									return get.translation("qianxi");
+								} else {
+									return "";
+								}
+							})(),
+						]),
+						(item, type, position, noclick, node) => {
+							node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+							node.node.gaintag.innerHTML += item[1];
+							return node;
+						},
+					],
+				])
 				.set("filterButton", button => {
 					const player = get.player(),
 						card = button.link;
@@ -7597,7 +7593,6 @@ const skills = {
 					return get.player().getUseValue(button.link);
 				})
 				.forResult();
-			game.broadcastAll("closeDialog", videoId);
 			if (!result?.links?.length) {
 				for (const current of [target, player]) {
 					if (!current.isIn()) {
@@ -7607,9 +7602,6 @@ const skills = {
 					await current.damage("fire");
 				}
 			} else {
-				const numbers = cards.map(card => get.number(card, player)).toUniqued();
-				const min = Math.min(...numbers);
-				const max = Math.max(...numbers);
 				const {
 					links: [card],
 				} = result;

@@ -54,17 +54,13 @@ const skills = {
 		filter(event, player) {
 			const filter = index => {
 				const target = game.findPlayer(current => {
-						return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
-					});
+					return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
+				});
 				if (!target || target == player || player.getStorage("pezunwei_used").includes(index)) {
 					return false;
 				}
 				const count = current => {
-					return [
-						current.countCards("h"),
-						current.countCards("e"),
-						current.getHp(),
-					][index];
+					return [current.countCards("h"), current.countCards("e"), current.getHp()][index];
 				};
 				return count(target) > count(player);
 			};
@@ -94,11 +90,7 @@ const skills = {
 					return 0;
 				}
 				const count = current => {
-					return [
-						current.countCards("h"),
-						current.countCards("e"),
-						current.getHp(),
-					][button.link];
+					return [current.countCards("h"), current.countCards("e"), current.getHp()][button.link];
 				};
 				return (count(target) - count(player)) * button.link;
 			},
@@ -106,17 +98,13 @@ const skills = {
 				const player = get.player();
 				const filter = index => {
 					const target = game.findPlayer(current => {
-							return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
-						});
+						return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
+					});
 					if (!target || target == player || player.getStorage("pezunwei_used").includes(index)) {
 						return false;
 					}
 					const count = current => {
-						return [
-							current.countCards("h"),
-							current.countCards("e"),
-							current.getHp(),
-						][index];
+						return [current.countCards("h"), current.countCards("e"), current.getHp()][index];
 					};
 					return count(target) > count(player);
 				};
@@ -168,17 +156,13 @@ const skills = {
 				player(player, target) {
 					const value = index => {
 						const target = game.findPlayer(current => {
-								return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
-							});
+							return current[`isMax${["Handcard", "Equip", "Hp"][index]}`]();
+						});
 						if (!target || target == player || player.getStorage("pezunwei_used").includes(index)) {
 							return 0;
 						}
 						const count = current => {
-							return [
-								current.countCards("h"),
-								current.countCards("e"),
-								current.getHp(),
-							][index];
+							return [current.countCards("h"), current.countCards("e"), current.getHp()][index];
 						};
 						return (count(target) - count(player)) * index;
 					};
@@ -562,22 +546,16 @@ const skills = {
 		mod: {
 			cardUsable(card, player, num) {
 				if (get.name(card) == "sha") {
-					return Math.max(
-						num,
-						Math.min(
-							5,
-							game.countPlayer(current => current.group == "wei")
-						)
+					return Math.min(
+						5,
+						game.countPlayer(current => current.group == "wei")
 					);
 				}
 			},
 			attackRange(player, num) {
-				return Math.max(
-					num,
-					Math.min(
-						5,
-						game.countPlayer(current => current.group == "wei")
-					)
+				return Math.min(
+					5,
+					game.countPlayer(current => current.group == "wei")
 				);
 			},
 		},
@@ -586,12 +564,9 @@ const skills = {
 			return !event.numFixed;
 		},
 		async content(event, trigger, player) {
-			trigger.num = Math.max(
-				num,
-				Math.min(
-					5,
-					game.countPlayer(current => current.group == "wei")
-				)
+			trigger.num = Math.min(
+				5,
+				game.countPlayer(current => current.group == "wei")
 			);
 		},
 	},
@@ -3398,7 +3373,7 @@ const skills = {
 						resolve(null);
 						return;
 					}
-		
+
 					if (!Array.isArray(lib.node.waitForResult[event.player.playerid])) {
 						lib.node.waitForResult[event.player.playerid] = [resolve];
 					} else {
@@ -10232,7 +10207,7 @@ const skills = {
 					}
 					return ui.selected.buttons[0].link == "draw" ? false : !actions.includes(button.link);
 				})
-				.set("complexButton", true)
+				.set("complexSelect", true)
 				.set("ai", button => Math.random())
 				.forResult();
 			if (result?.links?.length) {

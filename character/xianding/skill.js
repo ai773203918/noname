@@ -3794,7 +3794,7 @@ const skills = {
 					);
 					return get.player().hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 				})
-				.set("complexButton", true)
+				.set("complexSelect", true)
 				.set("ai", button => {
 					if (ui.selected.buttons.length == 0) {
 						return Math.random();
@@ -3857,7 +3857,7 @@ const skills = {
 						);
 						return player.hasUseTarget(cardx, true, true) && ui.selected.buttons.length;
 					})
-					.set("complexButton", true)
+					.set("complexSelect", true)
 					.set("ai", button => {
 						if (ui.selected.buttons.length == 0) {
 							return Math.random();
@@ -4602,8 +4602,9 @@ const skills = {
 		check: () => true,
 		//frequent:true,
 		async content(event, trigger, player) {
-			const cards = await player.draw(2).forResult();
-			if (get.itemtype(cards) != "cards") {
+			let cards = await player.draw(2).forResult();
+			cards = cards.filter(card => get.owner(card) == player);
+			if (get.itemtype(cards) != "cards" || !cards.length) {
 				return;
 			}
 			const result = await player
@@ -4615,7 +4616,7 @@ const skills = {
 				})
 				.set("cardsx", cards)
 				.forResult();
-			if (result?.targets) {
+			if (result?.targets?.length) {
 				const target = result.targets[0];
 				if (player == target) {
 					return;
@@ -4630,24 +4631,23 @@ const skills = {
 		group: ["dcdujun_init"],
 		subSkill: {
 			effect: {
+				audio: "dcdujun",
 				charlotte: true,
 				onremove: true,
 				intro: {
-					content: "<span class=thundertext>$</span>不能响应你使用的牌",
+					markcount: () => 0,
+					content: "players",
 				},
 				trigger: {
-					player: "useCard1",
+					global: "useCard1",
 				},
 				forced: true,
-				popup: false,
-				content() {
-					trigger.directHit.addArray(player.getStorage(event.name));
+				filter(event, player) {
+					return player.getStorage("dcdujun_effect").includes(event.player);
 				},
-				ai: {
-					directHit_ai: true,
-					skillTagFilter(player, tag, arg) {
-						return player.storage.dcdujun_effect.includes(arg.target);
-					},
+				async content(event, trigger, player) {
+					game.log(player, "不能响应", trigger.card);
+					trigger.directHit.add(player);
 				},
 			},
 			init: {
@@ -4667,11 +4667,10 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0],
-						skill = "dcdujun";
-					player.storage[skill] = target;
-					player.markSkill(skill);
-					target.addSkill(skill + "_effect");
-					target.markAuto(skill + "_effect", player);
+						skill = "dcdujun_effect";
+					player.storage.dcdujun = target;
+					player.addSkill(skill);
+					player.markAuto(skill, target);
 				},
 			},
 		},
@@ -29255,6 +29254,7 @@ const skills = {
 		},
 		subSkill: {
 			mark: {
+				charlotte: true,
 				onremove(player) {
 					delete player.storage.refenyin_mark;
 					delete player.storage.refenyin_mark2;

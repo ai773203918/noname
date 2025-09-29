@@ -3427,62 +3427,38 @@ const skills = {
 						}
 						const red = cards.filter(card => get.color(card, false) == "red"),
 							black = cards.filter(card => get.color(card, false) == "black");
-						event.videoId = lib.status.videoId++;
-						const func = (id, red, black) => {
-							//创建新对话框
-							const dialog = ui.create.dialog(`润微：选择一名角色令其获得其中一种颜色的牌`);
-							//添加显示牌的部分，该部分不可点击
-							dialog.addNewRow({ item: get.translation("black"), retio: 1 }, { item: black, ratio: 3 }, { item: get.translation("red"), retio: 1 }, { item: red, ratio: 3 });
-							//对移动端和PC端对话框高度分别做适配，加了addNewRow的默认高度有点高
-							dialog.css({
-								position: "absolute",
-								top: get.is.phoneLayout() ? "35%" : "45%",
-							});
-							//正常添加按钮
-							dialog.add([
-								[
-									["black", "黑色"],
-									["red", "红色"],
-								],
-								"tdnodes",
-							]);
-							dialog.videoId = id;
-							return dialog;
-						};
-						if (player == game.me) {
-							func(event.videoId, red, black);
-						} else if (player.isOnline()) {
-							player.send(func, event.videoId, red, black);
-						}
+						const list = get.addNewRowList(cards, "color");
 						const result = await player
 							.chooseButtonTarget({
-								dialog: event.videoId,
+								createDialog: [[[[`润微：选择一名角色令其获得其中一种颜色的牌`], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]],
+								css: {
+									position: "absolute",
+									top: get.is.phoneLayout() ? "35%" : "45%",
+								},
 								forced: true,
-								black: black,
-								red: red,
 								used: used,
 								targetsx: game.filterPlayer(target => !target.hasHistory("gain", evt => evt.cards?.length)),
 								filterButton(button) {
-									return get.event()[button.link]?.length;
+									return button.links.length;
 								},
 								filterTarget(card, player, target) {
 									if (get.event().used) {
-										return get.event().targetsx.includes(target);
+										return get.event().targetsx?.includes(target);
 									}
 									return true;
 								},
 								ai1(button) {
-									return get.event()[button.link]?.length;
+									return button.links.length;
 								},
 								ai2(target) {
-									if (!get.event().used && get.player() == target) {
+									const player = get.player();
+									if (!get.event().used && player == target) {
 										return 114514;
 									}
-									return get.attitude(get.player(), target);
+									return get.attitude(player, target);
 								},
 							})
 							.forResult();
-						game.broadcastAll("closeDialog", event.videoId);
 						if (result?.links && result?.targets) {
 							const target = result.targets[0],
 								gain = result.links[0] == "black" ? black : red;
@@ -4119,7 +4095,7 @@ const skills = {
 					.set(
 						"choice",
 						(() => {
-							const count = Math.max(0, (num - hs));
+							const count = Math.max(0, num - hs);
 							return get.effect(player, { name: "draw" }, player, player) * count + effect >= 0;
 						})()
 					)
@@ -6921,6 +6897,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name: skillName } = event;
 			player.markAuto(skillName, [get.type2(trigger.card)]);
+			player.addTip(skillName, get.translation(skillName) + player.getStorage(skillName).reduce((str, type) => str + get.translation(type), ""));
 			if (player.getStorage(skillName).length >= 3) {
 				const types = player.getStorage(skillName).map(i => `caoying_${i}`);
 				const {
@@ -6943,6 +6920,7 @@ const skills = {
 					skillName,
 					links.map(link => link[2].slice(8))
 				);
+				player.addTip(skillName, get.translation(skillName) + player.getStorage(skillName).reduce((str, type) => str + get.translation(type), ""));
 				const { result } = await player
 					.chooseButton(
 						[
@@ -6993,6 +6971,10 @@ const skills = {
 					}
 				}
 			}
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeTip(skill);
 		},
 		intro: { content: "已记录：$" },
 		subSkill: {
@@ -10571,125 +10553,90 @@ const skills = {
 			return promise;
 		},
 		async cost(event, trigger, player) {
-			await Promise.all(event.next);
-			event.videoId = lib.status.videoId++;
-			if (player.isUnderControl()) {
-				game.swapPlayerAuto(player);
-			}
-			const { chooseOneSuitCard } = get.info("mbcmqingzheng");
+			const list = get.addNewRowList(player.getCards("h"), "suit", player);
 			let limit = event.skill === "sbqingzheng" ? 3 - player.countMark("sbjianxiong") : 1;
-			let next,
-				str = get.prompt(event.skill) + "(弃置" + get.cnNumber(limit) + "种花色的所有牌)" + '<div class="text center">' + lib.translate[event.skill + "_info"] + "</div>";
-			let ai = function () {
-				let suits = lib.suits.slice().filter(suit => {
-					let cards = player.getCards("h", { suit: suit });
-					if (!cards.length || cards.filter(card => lib.filter.cardDiscardable(card, player, event.skill)).length !== cards.length) {
+			const { result } = await player.chooseButtonTarget({
+				createDialog: [[[[get.prompt2(event.skill)], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]],
+				filterButton(button) {
+					const player = get.player();
+					if (!button.links.length || button.links.some(card => !lib.filter.cardDiscardable(card, player, get.event().getParent().skill))) {
 						return false;
 					}
-					return 15 - cards.map(i => get.value(i)).reduce((p, c) => p + c, 0) > 0;
-				});
-				if (suits.length < limit) {
-					return { bool: false };
-				}
-				suits.sort((a, b) => {
-					return (
-						player
-							.getCards("h", { suit: a })
-							.map(i => get.value(i))
-							.reduce((p, c) => p + c, 0) -
-						player
-							.getCards("h", { suit: b })
-							.map(i => get.value(i))
-							.reduce((p, c) => p + c, 0)
-					);
-				});
-				return { bool: true, cards: suits.slice(0, limit).reduce((list, suit) => list.addArray(player.getCards("h", { suit: suit })), []) };
-			};
-			if (event.isMine()) {
-				next = chooseOneSuitCard(player, player, null, limit, str, ai);
-			} else if (player.isOnline()) {
-				let { promise, resolve } = Promise.withResolvers();
-				player.send(chooseOneSuitCard, player, player, null, limit, str, ai);
-				player.wait(result => {
-					if (result == "ai") {
-						result = ai();
-					}
-					resolve(result);
-				});
-				next = promise;
-			} else {
-				next = Promise.resolve(ai());
-			}
-			let result = await next;
-			if (!result?.bool || !result?.cards?.length) {
-				return;
-			}
-			const { cards } = result;
-			result = await player
-				.chooseTarget("清正：观看一名其他角色的手牌并弃置其中一种花色的所有牌", (card, player, target) => {
+					return true;
+				},
+				selectButton: limit,
+				limit,
+				filterTarget(card, player, target) {
 					return target != player && target.countCards("h");
-				})
-				.set("ai", target => {
+				},
+				ai1(button) {
+					const player = get.player();
+					if (!game.hasPlayer(current => player != current && current.countDiscardableCards(player, "h") > 0 && get.attitude(player, current) < 0)) {
+						return 0;
+					}
+					let values = button.links.map(i => get.value(i)).reduce((p, c) => p + c, 0) / button.links.length;
+					if (button.links.length > 4 || values > 6) {
+						return 0;
+					}
+					return (13 - button.links.length) / values;
+				},
+				ai2(target) {
 					const player = get.player(),
 						att = get.attitude(player, target);
 					if (att >= 0) {
 						return 0;
 					}
 					return 1 - att / 2 + Math.sqrt(target.countCards("h"));
-				})
-				.forResult();
+				},
+			});
 			event.result = {
 				bool: result?.bool,
+				cost_data: result?.links,
 				targets: result?.targets,
-				cost_data: cards,
 			};
+			if (event.result.bool && result?.links?.length) {
+				event.result.cards = player.getCards("h").filter(card => result.links.includes(get.suit(card, player)));
+			}
 		},
 		async content(event, trigger, player) {
-			const { chooseOneSuitCard } = get.info("mbcmqingzheng");
 			const {
 				targets: [target],
-				cost_data: cards1,
+				cards: cards1,
 			} = event;
 			await player.discard(cards1);
-			if (!target.countCards("h")) {
+			if (
+				!target.countCards("h") ||
+				lib.suits
+					.slice()
+					.filter(suit => target.hasCard((card, playerx) => get.suit(card, playerx) === suit, "h"))
+					.every(suit => target.hasCard((card, playerx) => get.suit(card, playerx) === suit && !lib.filter.cardDiscardable(card, player), "h"))
+			) {
+				if (target.countCards("h")) {
+					const content = [`###清正###<div class="text center">${get.translation(target)}的手牌</div>`, target.getCards("h")];
+					await player.chooseControl("ok").set("dialog", content);
+				}
 				return;
 			}
-			let next,
-				str2 = `清正：弃置${get.translation(target)}一种花色的所有牌`;
-			let ai2 = function () {
-				let list = lib.suits.slice().filter(i => target.hasCard({ suit: i }, "h"));
-				let getv = cards => cards.map(i => get.value(i)).reduce((p, c) => p + c, 0);
-				return {
-					bool: true,
-					cards: target.getCards("h", {
-						suit: list.sort((a, b) => {
-							return getv(target.getCards("h", { suit: b })) - getv(target.getCards("h", { suit: a }));
-						})[0],
-					}),
-				};
-			};
-			if (event.isMine()) {
-				next = chooseOneSuitCard(player, target, true, 1, str2, ai2);
-			} else if (player.isOnline()) {
-				let { promise, resolve } = Promise.withResolvers();
-				player.send(chooseOneSuitCard, player, target, true, 1, str2, ai2);
-				player.wait(result => {
-					if (result == "ai") {
-						result = ai2();
+			const list = get.addNewRowList(target.getCards("h"), "suit", target);
+			let { result } = await player
+				.chooseButton([[[[`清正：弃置${get.translation(target)}一种花色的所有牌`], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]])
+				.set("filterButton", button => {
+					const player = get.player();
+					if (!button.links.length || button.links.some(card => !lib.filter.cardDiscardable(card, player, get.event().getParent().name))) {
+						return false;
 					}
-					resolve(result);
+					return true;
+				})
+				.set("ai", button => {
+					const player = get.player();
+					return button.links.length;
 				});
-				next = promise;
-			} else {
-				next = Promise.resolve(ai2());
-			}
-			let result = await next;
-			if (!result?.cards?.length) {
+			if (!result?.links?.length) {
 				return;
 			}
-			const cards2 = result.cards.slice().filter(card => lib.filter.canBeDiscarded(card, player, target));
+			const cards2 = target.getDiscardableCards(player, "h").filter(card => result.links.includes(get.suit(card, target)));
 			if (cards2.length) {
-				await target.discard(cards2, "notBySelf");
+				await target.discard(cards2, "notBySelf").set("discarder", player);
 			}
 			if (cards1.length > cards2.length) {
 				await target.damage(player);

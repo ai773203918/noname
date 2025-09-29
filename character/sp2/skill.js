@@ -7023,6 +7023,7 @@ const skills = {
 					return 5.5 - get.value(card);
 				},
 				log: false,
+				allowChooseAll: true,
 			},
 		},
 		ai: {
