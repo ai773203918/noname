@@ -376,12 +376,10 @@ export class Card extends HTMLDivElement {
 		if (img) {
 			if (typeof img != "string") {
 				img = null;
-			}
-			else {
+			} else {
 				if (img.startsWith("ext:")) {
 					img = img.replace(/^ext:/, "extension/");
-				}
-				else if (["character:"].some(prefix => img.startsWith(prefix)) || ["background", "card"].includes(img)) {
+				} else if (["character:"].some(prefix => img.startsWith(prefix)) || ["background", "card"].includes(img)) {
 					img = null;
 				}
 			}
@@ -400,8 +398,7 @@ export class Card extends HTMLDivElement {
 			if (img) {
 				if (img.startsWith("db:")) {
 					this.node.image.setBackgroundDB(img.slice(3));
-				}
-				else if (typeof img == "string") {
+				} else if (typeof img == "string") {
 					this.node.image.setBackgroundImage(img);
 				}
 				/*if (img.startsWith("ext:")) {
@@ -443,8 +440,7 @@ export class Card extends HTMLDivElement {
 			if (img) {
 				if (img.startsWith("db:")) {
 					this.setBackgroundDB(img.slice(3));
-				}
-				else if (typeof img == "string") {
+				} else if (typeof img == "string") {
 					this.setBackgroundImage(img);
 					this.style.backgroundSize = "cover";
 				}
@@ -487,8 +483,7 @@ export class Card extends HTMLDivElement {
 			if (img) {
 				if (img.startsWith("db:")) {
 					this.node.avatar.setBackgroundDB(img.slice(3));
-				}
-				else if (typeof img == "string") {
+				} else if (typeof img == "string") {
 					this.node.avatar.setBackgroundImage(img);
 					this.node.avatar.style.backgroundSize = "cover";
 				}
@@ -522,8 +517,7 @@ export class Card extends HTMLDivElement {
 			if (img) {
 				if (img.startsWith("db:")) {
 					this.setBackgroundDB(img.slice(3));
-				}
-				else if (typeof img == "string") {
+				} else if (typeof img == "string") {
 					this.setBackgroundImage(img);
 					this.style.backgroundSize = "cover";
 				}
