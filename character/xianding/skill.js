@@ -248,12 +248,12 @@ const skills = {
 				return false;
 			}
 			const history = event.player.getHistory("useCard", evt => evt.isPhaseUsing(event.player) && get.type(evt.card) !== "equip");
-			return player.hasUsableCard(history[0].card.name);
+			return history.length && player.hasUsableCard(history[0].card.name);
 		},
 		check(event, player) {
 			const history = event.player.getHistory("useCard", evt => evt.isPhaseUsing(event.player) && get.type(evt.card) !== "equip");
-			const { name, nature } = history[0].card;
-			const card = { name, nature, storage: { dcmohua: [null, history[0].player] } };
+			const { name } = history[0].card;
+			const card = { name, storage: { dcmohua: [null, history[0].player] } };
 			return player.hasValueTarget(new lib.element.VCard(card));
 		},
 		round: 1,
@@ -262,17 +262,17 @@ const skills = {
 			player.addTempSkill("dcmohua_effect");
 			const history = trigger.player.getHistory("useCard", evt => evt.isPhaseUsing(trigger.player) && get.type(evt.card) !== "equip");
 			for (const evt of history) {
-				const { name, nature } = evt.card;
-				const card = (event.card = { name, nature, storage: { dcmohua: [evt, evt.player] } });
+				const { name } = evt.card;
+				const card = (event.card = { name, storage: { dcmohua: [evt, evt.player] } });
 				const next = player.chooseToUse(function (card, player, target) {
-					const { name, nature } = get.event().cardx;
-					if (get.name(card) !== name || get.nature(card) !== nature) {
+					const { name } = get.event().cardx;
+					if (get.name(card) !== name) {
 						return false;
 					}
 					return lib.filter.filterCard.apply(this, arguments);
 				});
 				next.set("manualConfirm", true);
-				next.set("openskilldialog", `${get.translation(event.name)}：请选择${get.translation(card.nature || "")}【${get.translation(card.name)}】的目标`);
+				next.set("openskilldialog", `${get.translation(event.name)}：请选择【${get.translation(card.name)}】的目标`);
 				next.set("targetRequired", true);
 				next.set("complexSelect", true);
 				next.set("complexTarget", true);
@@ -304,71 +304,6 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
-				mohua_wrapKey() {
-					var str = "";
-					for (var arg of arguments) {
-						if (arg === null || arg === undefined) {
-							str += arg + "-";
-							continue;
-						}
-						switch (get.itemtype(arg)) {
-							case "player":
-								str += "p:" + arg.playerid;
-								break;
-							case "card":
-								if (arg.cardid) {
-									str += "c:" + arg.cardid;
-								} else {
-									str += "c:" + arg.name;
-								}
-								break;
-							default:
-								str += "n:" + arg;
-								break;
-						}
-						str += "-";
-					}
-					return str;
-				},
-				mohua_effect(target, card, player, viewer) {
-					if (!_status.event) {
-						return get.effect(target, card, player, viewer);
-					}
-					var key = lib.skill.mohua_effect.mohua_wrapKey.apply(null, arguments);
-					var effect = _status.event.getTempCache("effect", key);
-					if (effect !== undefined) {
-						return effect;
-					}
-					effect = get.effect(target, card, player, viewer);
-					_status.event.putTempCache("effect", key, effect);
-					return effect;
-				},
-				mohua_canUse(player, card, target, arg1, arg2) {
-					if (!_status.event) {
-						return player.canUse(card, target, arg1, arg2);
-					}
-					var key = lib.skill.mohua_effect.mohua_wrapKey.apply(null, arguments);
-					var effect = _status.event.getTempCache("canUse", key);
-					if (effect !== undefined) {
-						return effect;
-					}
-					effect = player.canUse(card, target, arg1, arg2);
-					_status.event.putTempCache("canUse", key, effect);
-					return effect;
-				},
-				mohua_effect_use(target, card, player, viewer) {
-					if (!_status.event) {
-						return get.effect_use(target, card, player, viewer);
-					}
-					var key = lib.skill.mohua_effect.mohua_wrapKey.apply(null, arguments);
-					var effect = _status.event.getTempCache("effect_use", key);
-					if (effect !== undefined) {
-						return effect;
-					}
-					effect = get.effect_use(target, card, player, viewer);
-					_status.event.putTempCache("effect_use", key, effect);
-					return effect;
-				},
 				trigger: { player: "useCardBefore" },
 				filter(event, player) {
 					var source = event.card.storage?.dcmohua?.[1];
@@ -379,18 +314,6 @@ const skills = {
 				async content(event, trigger, player) {
 					trigger.player = trigger.card.storage.dcmohua[1];
 					trigger.noai = true;
-				},
-				ai: {
-					order(card, player, target) {
-						if (typeof card != "object") {
-							return;
-						}
-						var source = card.storage?.dcmohua?.[1];
-						if (get.itemtype(source) !== "player" || !source.isIn()) {
-							return;
-						}
-						return [0, lib.skill.mohua_effect.mohua_effect_use(target, card, source, player), 0, lib.skill.mohua_effect.mohua_effect(target, card, source, target)];
-					},
 				},
 				group: "dcmohua_draw",
 			},
