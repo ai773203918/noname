@@ -6897,6 +6897,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name: skillName } = event;
 			player.markAuto(skillName, [get.type2(trigger.card)]);
+			player.addTip(skillName, get.translation(skillName) + player.getStorage(skillName).reduce((str, type) => str + get.translation(type), ""));
 			if (player.getStorage(skillName).length >= 3) {
 				const types = player.getStorage(skillName).map(i => `caoying_${i}`);
 				const {
@@ -6919,6 +6920,7 @@ const skills = {
 					skillName,
 					links.map(link => link[2].slice(8))
 				);
+				player.addTip(skillName, get.translation(skillName) + player.getStorage(skillName).reduce((str, type) => str + get.translation(type), ""));
 				const { result } = await player
 					.chooseButton(
 						[
@@ -6969,6 +6971,10 @@ const skills = {
 					}
 				}
 			}
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeTip(skill);
 		},
 		intro: { content: "已记录：$" },
 		subSkill: {
