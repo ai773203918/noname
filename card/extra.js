@@ -750,6 +750,9 @@ game.import("card", function () {
 				equipSkill: true,
 				enable: "phaseUse",
 				onChooseToUse(event) {
+					if (game.online) {
+						return;
+					}
 					const cards = event.player.getVCards("e").filter(card => card.name == "muniu" && !card?.storage?.used);
 					event.set("muniu_skill", cards);
 				},

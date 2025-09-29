@@ -6,7 +6,7 @@ const characters = {
 		skills:["dcsbqinqiang"]
 	},
 	
-	xvwen:{
+	xuwen:{
 		sex:"female",
 		hp:3,
 		group:"wei",

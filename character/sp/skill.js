@@ -3711,6 +3711,9 @@ const skills = {
 				return "出牌阶段，你可以将一张你本回合未使用过的花色的牌当作【决斗】使用";
 			},
 		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+		},
 		ai: {
 			order: 10,
 			result: {
@@ -7930,13 +7933,15 @@ const skills = {
 				["feiyang", "飞扬"],
 				["bahu", "跋扈"],
 			];
-			return player.getSkills(null, false, false).filter(i => {
-				if (list.some(text => i.includes(text[0]) && get.translation(i) == text[1])) {
-					return true;
-				}
-				const info = get.info(i);
-				return !info || !info.charlotte;
-			}).length + player.getStorage("zhanfa").length;
+			return (
+				player.getSkills(null, false, false).filter(i => {
+					if (list.some(text => i.includes(text[0]) && get.translation(i) == text[1])) {
+						return true;
+					}
+					const info = get.info(i);
+					return !info || !info.charlotte;
+				}).length + player.getStorage("zhanfa").length
+			);
 		},
 		mod: {
 			cardUsable(card, player, num) {
