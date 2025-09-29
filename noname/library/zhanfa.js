@@ -3036,7 +3036,7 @@ export class ZhanfaManager {
 				card.fullskin = true;
 			}
 			lib.card[id] = card;
-			_zhanfa[id] = { skill: skill, rarity: rarity };
+			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 		}
 		this.#zhanfa = _zhanfa;
 	}
