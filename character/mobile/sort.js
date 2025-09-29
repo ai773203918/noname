@@ -11,7 +11,7 @@ const characterSort = {
 	mobile_sp12: ["hujinding", "lifeng", "zhaotongzhaoguang", "wangyuanji", "yanghuiyu", "liuye", "simazhao", "zhuling", "yangbiao"],
 	mobile_sp13: ["sp_caosong", "sp_pengyang", "liwei", "xin_guozhao", "qianzhao", "peixiu", "yanxiang", "xin_hansui", "yangfu"],
 	mobile_sp14: ["mb_ganfuren", "xin_huojun", "laimin", "xin_wuban", "mb_huban", "sp_jianggan", "baoxin", "mb_chengui", "muludawang", "yangfeng"],
-	mobile_sp_default: ["mb_mengda", "mb_caoxing", "mb_qinghegongzhu", "mb_wangjing", "mb_sp_zhenji", "mb_xianglang", "jiangji", "zhangbu", "wuke", "mb_xingdaorong"],
+	mobile_sp_default: ["mb_mengda", "mb_caoxing", "mb_qinghegongzhu", "mb_wangjing", "mb_sp_zhenji", "mb_xianglang", "jiangji", "zhangbu", "wuke", "mb_xingdaorong","mb_caocao"],
 	mobile_xlqk1: ["lingcao", "sunru", "liuzan"],
 	mobile_xlqk2: ["pangdegong", "miheng"],
 	mobile_xlqk3: ["majun", "zhengxuan", "simashi"],
@@ -34,7 +34,7 @@ const characterSort = {
 	mobile_yijiang5: ["xin_zhangyi", "xin_sunxiu", "xin_quancong", "xin_zhuzhi", "xin_caoxiu"],
 	mobile_yijiang7: ["re_jikang", "mb_xuezong"],
 	mobile_changshi: ["scs_zhangrang", "scs_zhaozhong", "scs_sunzhang", "scs_bilan", "scs_xiayun", "scs_hankui", "scs_lisong", "scs_duangui", "scs_guosheng", "scs_gaowang"],
-	mobile_others: ["mb_caocao"],
+	mobile_others: [],
 };
 
 const characterSortTranslate = {
