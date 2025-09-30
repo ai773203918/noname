@@ -1039,6 +1039,7 @@ const skills = {
 			backup: {},
 			yang: {
 				audio: "olsbzhijue",
+				logAudio: () => ["olsbzhijue", 3],
 				filterCard: () => false,
 				selectCard: -1,
 				viewAs(cards, player) {
@@ -1062,6 +1063,7 @@ const skills = {
 			},
 			yin: {
 				audio: "olsbzhijue",
+				logAudio: () => ["olsbzhijue4.mp3", "olsbzhijue5.mp3"],
 				position: "h",
 				selectCard: -1,
 				lose: false,
@@ -1104,18 +1106,24 @@ const skills = {
 							}
 						}
 					}
-					if (noDamage && player.countMark("olsbzhitian") < 7) {
-						player.addMark("olsbzhitian", 1, false);
-						await player.draw(2);
+					if (noDamage && player.countMark("olsbzhitian") < 6) {
+						await player.useResult({ skill: "olsbzhijue_effect" }, event);
 					}
 				},
 			},
 			effect: {
 				audio: "olsbzhijue",
+				logAudio(event, player) {
+					const bool = player.getStorage("olsbzhijue", false);
+					if (bool) {
+						return ["olsbzhijue4.mp3", "olsbzhijue5.mp3"];
+					}
+					return ["olsbzhijue", 3];
+				},
 				forced: true,
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
-					return event.skill == "olsbzhijue_backup" && !game.hasPlayer2(target => target.hasHistory("damage", evt => evt.card == event.card), true) && player.countMark("olsbzhitian") < 7;
+					return event.skill == "olsbzhijue_backup" && !game.hasPlayer2(target => target.hasHistory("damage", evt => evt.card == event.card), true) && player.countMark("olsbzhitian") < 6;
 				},
 				async content(event, trigger, player) {
 					player.addMark("olsbzhitian", 1, false);
