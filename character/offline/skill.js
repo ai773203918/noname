@@ -9921,7 +9921,7 @@ const skills = {
 			const card = game.createCard2("hschenzhi_poker", suit, number);
 			game.broadcastAll(
 				(card, suit) => {
-					card.node.image.setBackgroundImage(`image/card/lukai_${suit}.png`);
+					//card.node.image.setBackgroundImage(`image/card/lukai_${suit}.png`);
 					//处理移出游戏的部分
 					card.destroyed = (card, position, player, event) => {
 						//如果要移入的位置是弃牌堆，直接转移到special

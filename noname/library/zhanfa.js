@@ -3035,6 +3035,9 @@ export class ZhanfaManager {
 			if (!card.fullskin && !card.fullimage) {
 				card.fullskin = true;
 			}
+			if (!card.cardimage && !card.image) {
+				card.image = `image/zhanfa/${id}.png`;
+			}
 			lib.card[id] = card;
 			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 		}
@@ -3077,6 +3080,9 @@ export class ZhanfaManager {
 		}
 		if (!card.fullskin && !card.fullimage) {
 			card.fullskin = true;
+		}
+		if (!card.cardimage && !card.image) {
+			card.image = `image/zhanfa/${id}.png`;
 		}
 		lib.card[id] = card;
 		this.#zhanfa[id] = { skill: skill, rarity: rarity, ...args };
