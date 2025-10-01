@@ -1214,7 +1214,7 @@ body > .background.land {
 }
 .facade-replacing {
 	visibility: hidden !important;
-	filter: opacity(0) !important;
+	display: none !important;
 }
 
 #system > div > div.hidden {
