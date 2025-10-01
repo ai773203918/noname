@@ -229,7 +229,7 @@ const skills = {
 			},
 		},
 		ai: {
-			combo: "pottuntian",
+			combo: ["pottuntian", "potzaoxian"],
 			effect: {
 				target(card, player, target, effect) {
 					if (get.tag(card, "respondShan")) {
@@ -278,7 +278,7 @@ const skills = {
 			content: "mark",
 		},
 		ai: {
-			combo: "pottuntian",
+			combo: ["pottuntian", "potjixi"],
 		},
     },
     //势桓阶（传奇搅屎棍，新时代鲁大师）
