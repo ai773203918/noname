@@ -30908,149 +30908,150 @@ const skills = {
 	by taofendawang1105
 	感谢星语做的联机适配，赞美星语喵！*/
 	refuhan: {
-    	audio: "fuhan",
-    	trigger: { player: "phaseZhunbeiBegin" },
-    	limited: true,
-    	skillAnimation: true,
-    	animationColor: "orange",
-    	filter(event, player) {
-        	return player.countMark("fanghun") > 0;
-    	},
-    	check: () => true,
-    	async content(event, trigger, player) {
-        	const num = player.countMark("fanghun");
-        	if (num) {
-            	await player.draw(num);
-        	}
-        	player.removeMark("fanghun", num);
-        	player.awakenSkill(event.name);
-        	let list;
-        	if (_status.characterlist) {
-            	list = [];
-            	for (let i = 0; i < _status.characterlist.length; i++) {
-                	const name = _status.characterlist[i];
-                	if (lib.character[name][1] == "shu") {
-                    	list.push(name);
-                	}
-            	}
-        	} else if (_status.connectMode) {
-            	list = get.charactersOL(function (i) {
-                	return lib.character[i][1] != "shu";
-            	});
-        	} else {
-            	list = get.gainableCharacters(function (info) {
-                	return info[1] == "shu";
-            	});
-        	}
-        	const players = game.players.concat(game.dead);
-        	for (let i = 0; i < players.length; i++) {
-            	list.remove(players[i].name);
-            	list.remove(players[i].name1);
-            	list.remove(players[i].name2);
-        	}
-        	list.remove("zhaoyun");
-        	list.remove("re_zhaoyun");
-        	list.remove("ol_zhaoyun");
-        	list = list.randomGets(Math.max(4, game.countPlayer()));
-        	if (!list.length) {
-            	return;
-        	}
-        	//孩子们莫慌，美化来也！
-        	let num2 = 0,
-        	skillMap = {};
-        	for (const i of list) {
-            	const skills = (lib.character[i][3] || []).filter(skill => {
-                	const info = get.info(skill);
-                	return info && !info.zhuSkill && !info.limited && !info.juexingji && !info.hiddenSkill && !info.charlotte && !info.dutySkill;
-            	});
-            	if (skills.length > num2) {
-                	num2 = skills.length;
-            	}
-            	skillMap[i] = skills;
-        	}
-        	if (num2 == 0) {
-            	return;
-        	}
-        	const videoId = lib.status.videoId++;
-        	const createDialog = function (list, num2, skillMap, id) {
-            	let dialog = ui.create.dialog("请选择获得至多两个技能", [list, "character"]);
-            	if (list.length > 6) {
-                	const width = list.length * 125;
-                	dialog.style.setProperty("width", (width + "px"), "important");
-                	dialog.style.setProperty("left", `calc(50% - ${(width / 2)}px)`, "important");
-            	}
-            	for (let j = 0; j < num2; j++) {
-                	let skills2 = [];
-                	list.forEach(name => {
-                    	const item = skillMap[name][j];
-                    	if (item) {
-                        	skills2.push([item, get.translation(item)]);
-                    	} else {
-                        	skills2.push(["taofen", "掏粪"]);
-                    	}
-                	});
-                	dialog.add([skills2, "tdnodes"]);
-            	};
-            	dialog.buttons.forEach(button => {
-                	if (!list.includes(button.link)) {
-                    	let margin = "25px";
-                    	button.style.setProperty("margin-left", margin, "important");
-                    	button.style.setProperty("margin-right", margin, "important");
-                	} else {
-                    	button.style.setProperty("opacity", "1", "important");
-                	}
-                	if (button.link == "taofen") {
-                    	button.style.setProperty("opacity", "0", "important");
-                	};
-            	});
-            	dialog.videoId = id;
-            	dialog.style.display = "none";
-            	return dialog;
-        	}
-        	if (player.isOnline()) {
-            	player.send(createDialog, list, num2, skillMap, videoId);
-        	} else {
-            	createDialog(list, num2, skillMap, videoId);
-        	}
-        	const result = await player.chooseButton(get.idDialog(videoId), [1, 2], true)
-            	.set("filterButton", button => {
-                	const list2 = get.event("list2");
-                	return !list2.includes(button.link);
-            	})
-            	.set("list2", list.slice().add("taofen"))
-            	.set("ai", button => {
-                	const list2 = get.event("list2");
-                	const skill = button.link;
-                	if (list2.includes(skill)) {
-                    	return -114514;
-                	}
-                	return get.skillRank(skill, "inout");
-            	})
-            	.forResult();
-        	game.broadcastAll("closeDialog", videoId);
-        	if (result?.links?.length) {
-            	await player.addSkills(result.links);
-        	}
-        	game.broadcastAll(function (list) {
-            	game.expandSkills(list);
-            	for (const i of list) {
-                	var info = lib.skill[i];
-                	if (!info) {
-                    	continue;
-                	}
-                	if (!info.audioname2) {
-                    	info.audioname2 = {};
-                	}
-                	info.audioname2.dc_zhaoxiang = "fuhan";
-            	}
-        	}, result.links);
-        	if (player.isMinHp()) {
-            	await player.recover();
-        	}
-    	},
-    	ai: {
-        	combo: "refanghun",
-    	},
+		audio: "fuhan",
+		trigger: { player: "phaseZhunbeiBegin" },
+		limited: true,
+		skillAnimation: true,
+		animationColor: "orange",
+		filter(event, player) {
+			return player.countMark("fanghun") > 0;
+		},
+		check: () => true,
+		async content(event, trigger, player) {
+			const num = player.countMark("fanghun");
+			if (num) {
+				await player.draw(num);
+			}
+			player.removeMark("fanghun", num);
+			player.awakenSkill(event.name);
+			let list;
+			if (_status.characterlist) {
+				list = [];
+				for (let i = 0; i < _status.characterlist.length; i++) {
+					const name = _status.characterlist[i];
+					if (lib.character[name][1] == "shu") {
+						list.push(name);
+					}
+				}
+			} else if (_status.connectMode) {
+				list = get.charactersOL(function (i) {
+					return lib.character[i][1] != "shu";
+				});
+			} else {
+				list = get.gainableCharacters(function (info) {
+					return info[1] == "shu";
+				});
+			}
+			const players = game.players.concat(game.dead);
+			for (let i = 0; i < players.length; i++) {
+				list.remove(players[i].name);
+				list.remove(players[i].name1);
+				list.remove(players[i].name2);
+			}
+			list.remove("zhaoyun");
+			list.remove("re_zhaoyun");
+			list.remove("ol_zhaoyun");
+			list = list.randomGets(Math.max(4, game.countPlayer()));
+			if (!list.length) {
+				return;
+			}
+			//孩子们莫慌，美化来也！
+			let num2 = 0,
+				skillMap = {};
+			for (const i of list) {
+				const skills = (lib.character[i][3] || []).filter(skill => {
+					const info = get.info(skill);
+					return info && !info.zhuSkill && !info.limited && !info.juexingji && !info.hiddenSkill && !info.charlotte && !info.dutySkill;
+				});
+				if (skills.length > num2) {
+					num2 = skills.length;
+				}
+				skillMap[i] = skills;
+			}
+			if (num2 == 0) {
+				return;
+			}
+			const videoId = lib.status.videoId++;
+			const createDialog = function (list, num2, skillMap, id) {
+				let dialog = ui.create.dialog("请选择获得至多两个技能", [list, "character"]);
+				if (list.length > 6) {
+					const width = list.length * 125;
+					dialog.style.setProperty("width", width + "px", "important");
+					dialog.style.setProperty("left", `calc(50% - ${width / 2}px)`, "important");
+				}
+				for (let j = 0; j < num2; j++) {
+					let skills2 = [];
+					list.forEach(name => {
+						const item = skillMap[name][j];
+						if (item) {
+							skills2.push([item, get.translation(item)]);
+						} else {
+							skills2.push(["taofen", "掏粪"]);
+						}
+					});
+					dialog.add([skills2, "tdnodes"]);
+				}
+				dialog.buttons.forEach(button => {
+					if (!list.includes(button.link)) {
+						let margin = "25px";
+						button.style.setProperty("margin-left", margin, "important");
+						button.style.setProperty("margin-right", margin, "important");
+					} else {
+						button.style.setProperty("opacity", "1", "important");
+					}
+					if (button.link == "taofen") {
+						button.style.setProperty("opacity", "0", "important");
+					}
+				});
+				dialog.videoId = id;
+				dialog.style.display = "none";
+				return dialog;
+			};
+			if (player.isOnline()) {
+				player.send(createDialog, list, num2, skillMap, videoId);
+			} else {
+				createDialog(list, num2, skillMap, videoId);
+			}
+			const result = await player
+				.chooseButton(get.idDialog(videoId), [1, 2], true)
+				.set("filterButton", button => {
+					const list2 = get.event("list2");
+					return !list2.includes(button.link);
+				})
+				.set("list2", list.slice().add("taofen"))
+				.set("ai", button => {
+					const list2 = get.event("list2");
+					const skill = button.link;
+					if (list2.includes(skill)) {
+						return -114514;
+					}
+					return get.skillRank(skill, "inout");
+				})
+				.forResult();
+			game.broadcastAll("closeDialog", videoId);
+			if (result?.links?.length) {
+				await player.addSkills(result.links);
+			}
+			game.broadcastAll(function (list) {
+				game.expandSkills(list);
+				for (const i of list) {
+					var info = lib.skill[i];
+					if (!info) {
+						continue;
+					}
+					if (!info.audioname2) {
+						info.audioname2 = {};
+					}
+					info.audioname2.dc_zhaoxiang = "fuhan";
+				}
+			}, result.links);
+			if (player.isMinHp()) {
+				await player.recover();
+			}
+		},
+		ai: {
+			combo: "refanghun",
+		},
 	},
 	refanghun: {
 		mod: {
