@@ -680,6 +680,10 @@ const skills = {
 						control.close();
 						return dialog._close(...args);
 					};
+					if (_status.olsbzhitian_clickable) {
+						_status.olsbzhitian_clickable.close();
+					}
+					_status.olsbzhitian_clickable = dialog;
 					dialog.open();
 				}
 				if (cards instanceof Promise) {
