@@ -2952,9 +2952,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.line(event.targets);
-			for (const target of event.targets) {
+			for (const target of event.targets.sortBySeat()) {
 				target.removeSkill("mbxiugeng_effect");
-				target.storage["mbxiugeng_effect"] = target.countCards("h");
+				target.setStorage("mbxiugeng_effect", target.countCards("h"));
 				target.addSkill("mbxiugeng_effect");
 			}
 		},
@@ -2982,11 +2982,12 @@ const skills = {
 					const record = player.storage[event.name];
 					if (record) {
 						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
+						if (player.countCards("h") <= record) {
+							player.draw(2);
+						}
 						if (player.countCards("h") >= record) {
 							player.addSkill("mbxiugeng_handcard");
 							player.addMark("mbxiugeng_handcard", 1, false);
-						} else {
-							player.drawTo(record);
 						}
 					}
 					player.removeSkill(event.name);
