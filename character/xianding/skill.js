@@ -1288,26 +1288,25 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog(`###众讨###出牌阶段限一次，你可以选择至多${Math.min(4, player.getDamagedHp() + 2)}种花色，然后随机获得弃牌堆中你选择花色的各一张牌。`, [lib.suit.map(suit => "lukai_" + suit), "vcard"]);
+				return ui.create.dialog(`###众讨###出牌阶段限一次，你可以选择至多${Math.min(4, player.getDamagedHp() + 1)}种花色，然后随机获得弃牌堆中你选择花色的各一张牌。`, [lib.suit.map(suit => "lukai_" + suit), "vcard"]);
 			},
 			check(button) {
 				return Math.random();
 			},
 			select() {
 				const player = get.player();
-				return [1, 2 + player.getDamagedHp()];
+				return [1, 1 + player.getDamagedHp()];
 			},
 			backup(links) {
 				return {
 					audio: "dczhongtao",
 					suits: links.map(list => list[2].slice(6)),
 					async content(event, trigger, player) {
-						player.addTempSkill("dczhongtao_reset");
-						const suits = get.info(event.name).suits;
-						const cards = [];
-						for (const suit of suits) {
-							const card = get.cardPile(card => get.suit(card) == suit, "field", "random");
-							if (card) {
+    					const suits = get.info(event.name).suits;
+    					const cards = [];
+    					for (const suit of suits) {
+        					const card = lib.skill.dczhongtao.getCard(card => get.suit(card) == suit, cards.some(j => get.position(j) == "j"), cards.some(e => get.position(e) == "e"), player);
+        					if (card) {
 								cards.push(card);
 							}
 						}
@@ -1320,6 +1319,52 @@ const skills = {
 				};
 			},
 		},
+		/*珪珪：拿牌优先级应该是
+		优先拿判定区 然后装备区 弃牌堆 最后是牌堆
+		然后判定区和装备区最多各拿一张
+		装备区副类别可能细分还有优先级 就不重要了
+		然后弃牌堆优先
+		最后才是牌堆*/
+		getCard(filter, noj, noe, player) {
+    		let curs = game.filterPlayer(() => true).sortBySeat();
+    		//优先拿自己的
+    		curs.sortBySeat(player);
+    		//判定区
+    		if (noj != true) {
+        		for (let i = 0; i < curs.length; i++) {
+    				const jx = curs[i].getCards("j");
+    				for (let j = 0; j < jx.length; j++) {
+    					if (filter(jx[j])) {
+    						return jx[j];
+    					}
+    				}
+    			}
+			}
+    		//装备区
+    		if (noe != true) {
+        		for (let i = 0; i < curs.length; i++) {
+    				const ex = curs[i].getCards("e");
+    				for (let j = 0; j < ex.length; j++) {
+    					if (filter(ex[j])) {
+    						return ex[j];
+    					}
+    				}
+    			}
+    		}
+    		//弃牌堆
+    		const card1 = get.discardPile(filter, "random");
+    		if (card1) {
+        		return card1;
+    		}
+    		//牌堆
+    		const card2 = get.cardPile2(filter, "random");
+    		if (card2) {
+        		return card2;
+    		}
+    		return null;
+		},
+		//珪珪：刷新的部分是众讨本身的效果而不是拿牌后的buff
+		group: "dczhongtao_reset",
 		subSkill: {
 			backup: {},
 			reset: {
@@ -1331,17 +1376,27 @@ const skills = {
 				intro: {
 					content: "已使用了 $",
 				},
-				trigger: { player: "useCardAfter" },
+				trigger: { player: ["useCardAfter", "phaseAfter"] },
+				filter(event, player) {
+    				if (event.name == "useCard") {
+        				return _status.currentPhase == player;
+    				}
+    				return true;
+				},
 				async content(event, trigger, player) {
-					player.markAuto(event.name, get.type2(trigger.card));
-					if (player.getStorage(event.name).length >= 3) {
-						player.removeSkill(event.name);
-						if (player.getStat().skill.dczhongtao > 0) {
-							player.getStat().skill.dczhongtao--;
-							player.popup("众讨");
-							game.log(player, "重置了", "#g【众讨】");
-						}
-					}
+    				if (event.triggername == "phaseAfter") {
+        				player.setStorage(event.name, [], true);
+        				return;
+    				}
+    				player.markAuto(event.name, get.type2(trigger.card));
+    				if (player.getStorage(event.name).length >= 3) {
+        				player.setStorage(event.name, [], true);
+        				if (player.getStat().skill.dczhongtao > 0) {
+            				player.getStat().skill.dczhongtao--;
+            				player.popup("众讨");
+            				game.log(player, "重置了", "#g【众讨】");
+        				}
+    				}
 				},
 			},
 		},
