@@ -1303,10 +1303,10 @@ const skills = {
 					suits: links.map(list => list[2].slice(6)),
 					async content(event, trigger, player) {
     					const suits = get.info(event.name).suits;
-						const cards = [];
-						for (const suit of suits) {
-    						const card = lib.skill.dczhongtao.getCard(card => get.suit(card) == suit, cards.some(j => get.position(j) == "j"), cards.some(e => get.position(e) == "e"), player);
-							if (card) {
+    					const cards = [];
+    					for (const suit of suits) {
+        					const card = lib.skill.dczhongtao.getCard(card => get.suit(card) == suit, cards.some(j => get.position(j) == "j"), cards.some(e => get.position(e) == "e"), player);
+        					if (card) {
 								cards.push(card);
 							}
 						}
@@ -1389,14 +1389,14 @@ const skills = {
         				return;
     				}
     				player.markAuto(event.name, get.type2(trigger.card));
-					if (player.getStorage(event.name).length >= 3) {
-    					player.setStorage(event.name, [], true);
-    					if (player.getStat().skill.dczhongtao > 0) {
-							player.getStat().skill.dczhongtao--;
-							player.popup("众讨");
-							game.log(player, "重置了", "#g【众讨】");
-						}
-					}
+    				if (player.getStorage(event.name).length >= 3) {
+        				player.setStorage(event.name, [], true);
+        				if (player.getStat().skill.dczhongtao > 0) {
+            				player.getStat().skill.dczhongtao--;
+            				player.popup("众讨");
+            				game.log(player, "重置了", "#g【众讨】");
+        				}
+    				}
 				},
 			},
 		},
