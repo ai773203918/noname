@@ -4048,7 +4048,7 @@ const skills = {
 						.set("ai", card => 7 - get.value(card))
 						.forResult();
 					if (result2?.bool && result2.cards?.length) {
-						await player.useSkill("dcdianlun", result2.cards);
+						await player.useSkill("dcdianlun", result2.cards).set("addCount", false);
 					}
 				},
 				ai: {
