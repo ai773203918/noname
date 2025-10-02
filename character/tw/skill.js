@@ -22630,11 +22630,11 @@ const skills = {
 			switch (game.roundNumber) {
 				case 1:
 					player.line(game.filterPlayer(current => current != player).sortBySeat());
-					player.addTempSkill("twlingfa_sha", "roundStart");
+					player.addTempSkill(`${event.name}_sha`, "roundStart");
 					break;
 				case 2:
 					player.line(game.filterPlayer(current => current != player).sortBySeat());
-					player.addTempSkill("twlingfa_tao", "roundStart");
+					player.addTempSkill(`${event.name}_tao`, "roundStart");
 					break;
 				default:
 					await player.changeSkills([lib.skill[event.name].derivation], [event.name]);
