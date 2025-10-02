@@ -1,4 +1,7 @@
 export default {
+	"#oljingce1": "此地薄弱，当加强防御。",
+	"#oljingce2": "诸葛小计，吾早已预料。",
+	"#ol_guohuai:die": "无五子，亦无淮也……",
 	"#olsbjigu1": "积五谷以供六军，战则大胜。",
 	"#olsbjigu2": "粮草先于兵马而行，无谷则不胜。",
 	"#olsbjiewan1": "断一腕而存全身，为之何妨。",

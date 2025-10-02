@@ -22610,7 +22610,6 @@ const skills = {
 	//群曹操
 	twlingfa: {
 		audio: 2,
-		audioname: ["mb_caocao"],
 		trigger: { global: "roundStart" },
 		filter(event, player) {
 			const skill = this.skill_id;
@@ -22646,7 +22645,6 @@ const skills = {
 		subSkill: {
 			sha: {
 				audio: "twlingfa",
-				audioname: ["mb_caocao"],
 				trigger: { global: "useCard" },
 				charlotte: true,
 				forced: true,
@@ -22677,7 +22675,6 @@ const skills = {
 			},
 			tao: {
 				audio: "twlingfa",
-				audioname: ["mb_caocao"],
 				trigger: { global: "useCardAfter" },
 				charlotte: true,
 				forced: true,
@@ -22711,8 +22708,7 @@ const skills = {
 		},
 	},
 	twzhian: {
-		audio: 2,
-		audioname: ["mb_caocao"],
+		audio: 3,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
 			var type = get.type(event.card);
