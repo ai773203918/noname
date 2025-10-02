@@ -955,7 +955,6 @@ const skills = {
 			backup: {},
 			yang: {
 				audio: "olsbzhijue",
-				logAudio: () => 3,
 				filterCard: () => false,
 				selectCard: -1,
 				viewAs(cards, player) {
@@ -978,7 +977,7 @@ const skills = {
 				},
 			},
 			yin: {
-				audio: ["olsbzhijue4.mp3", "olsbzhijue5.mp3"],
+				audio: "olsbzhijue",
 				position: "h",
 				selectCard: -1,
 				lose: false,
