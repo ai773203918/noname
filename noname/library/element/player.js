@@ -9699,6 +9699,9 @@ export class Player extends HTMLDivElement {
 			range = select;
 		} else if (typeof select == "function") {
 			range = select(card, player);
+			if (typeof range == "number") {
+				range = [range, range];
+			}
 		}
 		if (info.singleCard) {
 			range = [1, 1];
@@ -9761,6 +9764,9 @@ export class Player extends HTMLDivElement {
 			range = select;
 		} else if (typeof select == "function") {
 			range = select(card, player);
+			if (typeof range == "number") {
+				range = [range, range];
+			}
 		}
 		if (info.singleCard) {
 			range = [1, 1];

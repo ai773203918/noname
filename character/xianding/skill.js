@@ -6577,6 +6577,9 @@ const skills = {
 								range = select;
 							} else if (typeof select == "function") {
 								range = select(card, player);
+								if (typeof range == "number") {
+									range = [range, range];
+								}
 							}
 							game.checkMod(card, player, range, "selectTarget", player);
 							if (range[1] === -1 || (range[1] > 1 && ui.selected.targets?.length)) {
@@ -6722,7 +6725,7 @@ const skills = {
 			return event.targets?.length === 1;
 		},
 		async cost(event, trigger, player) {
-			const storage = player.storage[event.skill];
+			const storage = player.getStorage(event.skill, [1, 1, 1, false]);
 			let list = ["摸牌", "拿牌", "拼点"],
 				choices = [list[0]];
 			let choiceList = ["摸" + get.cnNumber(storage[0]) + "张牌", "随机从弃牌堆获得" + get.cnNumber(storage[1]) + "张牌", "与一名角色拼点，赢的角色对没赢的角色造成" + storage[2] + "点伤害"];
@@ -6740,7 +6743,7 @@ const skills = {
 				.chooseControl(choices, "cancel2")
 				.set("ai", () => {
 					const player = get.player(),
-						storage = player.storage.dcrejueyan;
+						storage = player.getStorage("dcrejueyan", [1, 1, 1, false]);
 					const map = {
 						摸牌: get.effect(player, { name: "draw" }, player, player) * storage[0],
 						拿牌: get.effect(player, { name: "draw" }, player, player) * Math.min(Array.from(ui.discardPile.childNodes).length, storage[1]),
@@ -6763,7 +6766,7 @@ const skills = {
 		async content(event, trigger, player) {
 			player.addTempSkill("dcrejueyan_used");
 			player.markAuto("dcrejueyan_used", [get.type2(trigger.card)]);
-			const storage = player.storage[event.name];
+			const storage = player.getStorage(event.name, [1, 1, 1, false]);
 			const index = event.cost_data;
 			switch (index) {
 				case 0:
@@ -17021,6 +17024,9 @@ const skills = {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			if (info.singleCard) {
 				range = [1, 1];
@@ -17107,6 +17113,9 @@ const skills = {
 							range = select;
 						} else if (typeof select == "function") {
 							range = select(card, source);
+							if (typeof range == "number") {
+								range = [range, range];
+							}
 						}
 						game.checkMod(card, source, range, "selectTarget", source);
 					},
