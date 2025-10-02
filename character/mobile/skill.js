@@ -5589,7 +5589,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			player.changeSkin({ characterName: "mb_simazhao" }, "mb_simazhao_shadow");
+			player.changeSkin({ characterName: "mb_simazhao" }, "jin_jsrg_simazhao");
 			await player.changeGroup("qun");
 			//player.node.name.dataset.nature = get.groupnature("jin");
 			await player.addSkills("mbdangyi");
