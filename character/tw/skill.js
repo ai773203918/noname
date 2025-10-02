@@ -22728,7 +22728,7 @@ const skills = {
 				case 2:
 					return "本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害";
 				default:
-					return `失去【${get.translation(skill)}】并获得${(lib.skill[skill].derivation.map(i => "【" + get.translation(i) + "】").join("、"))}`;
+					return `失去【${get.translation(skill)}】并获得${(lib.skill[skill].derivation.map(i => `【${get.translation(i) }】`).join("、"))}`;
 			}
 		},
 		async content(event, trigger, player) {

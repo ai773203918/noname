@@ -364,7 +364,7 @@ const skills = {
 	mblingfa: {
 		audio: 2,
 		inherit: "twlingfa",
-		derivation: ["twzhian", "new_rejianxiong"],
+		derivation: ["mbzhian", "new_rejianxiong"],
 		subSkill: {
 			sha: {
 				audio: "mblingfa",
