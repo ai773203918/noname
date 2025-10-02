@@ -901,7 +901,7 @@ const translates = {
 	tw_jsrg_hejin_prefix: "TW|起",
 	twzhuhuan_info: "准备阶段，你可以展示所有手牌并弃置所有【杀】，然后令一名其他角色选择一项：1.受到1点伤害，然后弃置X+1张牌；2.令你回复1点体力，然后你摸X+1张牌（X为你本次弃置【杀】的数量）。",
 	tw_jsrg_sunjian: "TW起孙坚",
-	tw_jsrg_sunjian: "TW|起",
+	tw_jsrg_sunjian: "TW|起"
 };
 
 export default translates;
