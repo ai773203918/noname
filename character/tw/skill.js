@@ -22613,7 +22613,7 @@ const skills = {
 		trigger: { global: "roundStart" },
 		filter(event, player) {
 			const skill = this.skill_id;
-			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !player.hasSkill(lib.skill[skill].derivation, null, false, false));
+			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
 		},
 		prompt2(event, player) {
 			const skill = this.skill_id;
@@ -22623,7 +22623,7 @@ const skills = {
 				case 2:
 					return "本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害";
 				default:
-					return `失去【${get.translation(skill)}】并获得【${get.translation(lib.skill[skill].derivation)}】`;
+					return `失去【${get.translation(skill)}】并获得${(lib.skill[skill].derivation.map(i => "【" + get.translation(i) + "】").join("、"))}`;
 			}
 		},
 		async content(event, trigger, player) {
@@ -22637,75 +22637,75 @@ const skills = {
 					player.addTempSkill(`${event.name}_tao`, "roundStart");
 					break;
 				default:
-					await player.changeSkills([lib.skill[event.name].derivation], [event.name]);
+					await player.changeSkills(lib.skill[event.name].derivation, [event.name]);
 					break;
 			}
 		},
-		derivation: "twzhian",
-		subSkill: {
-			sha: {
-				audio: "twlingfa",
-				trigger: { global: "useCard" },
-				charlotte: true,
-				forced: true,
-				filter(event, player) {
-					return player != event.player && event.card.name == "sha" && event.player.countCards("he") > 0;
-				},
-				logTarget: "player",
-				content() {
-					"step 0";
-					game.delayx();
-					trigger.player
-						.chooseToDiscard("he", "令法：弃置一张牌，或受到来自" + get.translation(player) + "的1点伤害")
-						.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
-						.set("ai", function (card) {
-							if (!_status.event.goon) {
-								return 0;
-							}
-							return 8 - get.value(card);
-						});
-					"step 1";
-					if (!result.bool) {
-						trigger.player.damage();
-					}
-				},
-				mark: true,
-				marktext: '<span style="text-decoration: line-through;">杀</span>',
-				intro: { content: "其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害。" },
-			},
-			tao: {
-				audio: "twlingfa",
-				trigger: { global: "useCardAfter" },
-				charlotte: true,
-				forced: true,
-				filter(event, player) {
-					return player != event.player && event.card.name == "tao" && event.player.countCards("he") > 0;
-				},
-				logTarget: "player",
-				content() {
-					"step 0";
-					game.delayx();
-					trigger.player
-						.chooseCard("he", "令法：交给" + get.translation(player) + "一张牌，否则受到来自其的1点伤害")
-						.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
-						.set("ai", function (card) {
-							if (!_status.event.goon) {
-								return 0;
-							}
-							return 8 - get.value(card);
-						});
-					"step 1";
-					if (!result.bool) {
-						trigger.player.damage();
-					} else {
-						trigger.player.give(result.cards, player);
-					}
-				},
-				mark: true,
-				marktext: '<span style="text-decoration: line-through;">桃</span>',
-				intro: { content: "其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害。" },
-			},
+		derivation: ["twzhian"],
+	},
+	twlingfa_sha: {
+		audio: "twlingfa",
+		trigger: { global: "useCard" },
+		charlotte: true,
+		forced: true,
+		filter(event, player) {
+			return player != event.player && event.card.name == "sha" && event.player.countCards("he") > 0;
 		},
+		logTarget: "player",
+		content() {
+			"step 0";
+			game.delayx();
+			trigger.player
+				.chooseToDiscard("he", "令法：弃置一张牌，或受到来自" + get.translation(player) + "的1点伤害")
+				.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
+				.set("ai", function (card) {
+					if (!_status.event.goon) {
+						return 0;
+					}
+					return 8 - get.value(card);
+				});
+			"step 1";
+			if (!result.bool) {
+				trigger.player.damage();
+			}
+		},
+		mark: true,
+		marktext: '<span style="text-decoration: line-through;">杀</span>',
+		intro: { content: "其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害。" },
+		sourceSkill: "twlingfa",
+	},
+	twlingfa_tao: {
+		audio: "twlingfa",
+		trigger: { global: "useCardAfter" },
+		charlotte: true,
+		forced: true,
+		filter(event, player) {
+			return player != event.player && event.card.name == "tao" && event.player.countCards("he") > 0;
+		},
+		logTarget: "player",
+		content() {
+			"step 0";
+			game.delayx();
+			trigger.player
+				.chooseCard("he", "令法：交给" + get.translation(player) + "一张牌，否则受到来自其的1点伤害")
+				.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
+				.set("ai", function (card) {
+					if (!_status.event.goon) {
+						return 0;
+					}
+					return 8 - get.value(card);
+				});
+			"step 1";
+			if (!result.bool) {
+				trigger.player.damage();
+			} else {
+				trigger.player.give(result.cards, player);
+			}
+		},
+		mark: true,
+		marktext: '<span style="text-decoration: line-through;">桃</span>',
+		intro: { content: "其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害。" },
+		sourceSkill: "twlingfa",
 	},
 	twzhian: {
 		audio: 3,

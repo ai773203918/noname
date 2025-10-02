@@ -368,65 +368,13 @@ const skills = {
 		subSkill: {
 			sha: {
 				audio: "mblingfa",
-				trigger: { global: "useCard" },
-				charlotte: true,
-				forced: true,
-				filter(event, player) {
-					return player != event.player && event.card.name == "sha" && event.player.countCards("he") > 0;
-				},
-				logTarget: "player",
-				content() {
-					"step 0";
-					game.delayx();
-					trigger.player
-						.chooseToDiscard("he", "令法：弃置一张牌，或受到来自" + get.translation(player) + "的1点伤害")
-						.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
-						.set("ai", function (card) {
-							if (!_status.event.goon) {
-								return 0;
-							}
-							return 8 - get.value(card);
-						});
-					"step 1";
-					if (!result.bool) {
-						trigger.player.damage();
-					}
-				},
-				mark: true,
-				marktext: '<span style="text-decoration: line-through;">杀</span>',
-				intro: { content: "其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害。" },
+				inherit: "twlingfa_sha",
+				sourceSkill: "mblingfa",
 			},
 			tao: {
 				audio: "mblingfa",
-				trigger: { global: "useCardAfter" },
-				charlotte: true,
-				forced: true,
-				filter(event, player) {
-					return player != event.player && event.card.name == "tao" && event.player.countCards("he") > 0;
-				},
-				logTarget: "player",
-				content() {
-					"step 0";
-					game.delayx();
-					trigger.player
-						.chooseCard("he", "令法：交给" + get.translation(player) + "一张牌，否则受到来自其的1点伤害")
-						.set("goon", get.damageEffect(trigger.player, player, trigger.player) < 0)
-						.set("ai", function (card) {
-							if (!_status.event.goon) {
-								return 0;
-							}
-							return 8 - get.value(card);
-						});
-					"step 1";
-					if (!result.bool) {
-						trigger.player.damage();
-					} else {
-						trigger.player.give(result.cards, player);
-					}
-				},
-				mark: true,
-				marktext: '<span style="text-decoration: line-through;">桃</span>',
-				intro: { content: "其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害。" },
+				inherit: "twlingfa_tao",
+				sourceSkill: "mblingfa",
 			},
 		},
 	},
