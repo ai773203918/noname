@@ -2305,9 +2305,9 @@ const skills = {
 						event.filterCard(
 							get.autoViewAs({
 								name: get.name(card, player),
-								suit: get.suit(card, player),
+								//suit: get.suit(card, player),
 								nature: get.nature(card, player),
-								number: get.number(card, player),
+								//number: get.number(card, player),
 								isCard: true,
 							}),
 							player,
@@ -2327,9 +2327,9 @@ const skills = {
 					event._backup.filterCard(
 						get.autoViewAs({
 							name: get.name(card, player),
-							suit: get.suit(card, player),
+							//suit: get.suit(card, player),
 							nature: get.nature(card, player),
-							number: get.number(card, player),
+							//number: get.number(card, player),
 							isCard: true,
 						}),
 						player,
@@ -2346,9 +2346,9 @@ const skills = {
 				const card = cards[0];
 				return {
 					name: get.name(card, player),
-					suit: get.suit(card, player),
+					//suit: get.suit(card, player),
 					nature: get.nature(card, player),
-					number: get.number(card, player),
+					//number: get.number(card, player),
 					isCard: true,
 				};
 			}

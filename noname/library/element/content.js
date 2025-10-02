@@ -5913,16 +5913,10 @@ player.removeVirtualEquip(card);
 					return filterCard.call(this, card, player);
 				};
 			})(event);
-			const skills = player.getSkills("invisible").concat(lib.skill.global);
-			game.expandSkills(skills);
-			const hasSkill = skills.some(skill => {
-				const info = lib.skill[skill];
-				return info?.enable?.includes(event.name) || info?.enable == event.name;
-			});
 			if (_status.noclearcountdown !== "direct") {
 				_status.noclearcountdown = true;
 			}
-			/*if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length && !hasSkill) {
+			/*if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length) {
 				event.result = {
 					bool: false,
 					cards: [],

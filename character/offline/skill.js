@@ -3696,7 +3696,12 @@ const skills = {
 			const name = event.card.name;
 			return name && player.getAllHistory("useCard", evt => evt.card.name === event.card.name).indexOf(event) === 0;
 		},
-		frequent: true,
+		//妈妈再也不用担心我一不小心就摸空牌堆辣！
+		frequent(event, player) {
+    		const num = ui.cardPile.childElementCount + ui.discardPile.childElementCount,
+        		num2 = player.getRoundHistory("useSkill", evt => evt.skill == "pejixin").length + 1;
+    		return num > num2;
+		},
 		async content(event, trigger, player) {
 			const skill = "pejixin_count";
 			player.addTempSkill(skill, "roundStart");
@@ -9925,7 +9930,7 @@ const skills = {
 			const card = game.createCard2("hschenzhi_poker", suit, number);
 			game.broadcastAll(
 				(card, suit) => {
-					card.node.image.setBackgroundImage(`image/card/lukai_${suit}.png`);
+					//card.node.image.setBackgroundImage(`image/card/lukai_${suit}.png`);
 					//处理移出游戏的部分
 					card.destroyed = (card, position, player, event) => {
 						//如果要移入的位置是弃牌堆，直接转移到special
