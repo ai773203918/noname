@@ -1555,29 +1555,28 @@ game.import("card", function () {
 						game.log(card.cards, "被移出了游戏");
         			}
         		},
+        		getIndex(event, player) {
+            		const cards = player.getVCards("e", card => {
+                		return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
+            		});
+            		if (cards?.length) {
+                		return cards;
+            		}
+            		return 1;
+        		},
         		async content(event, trigger, player) {
-        			player.flashAvatar(event.name, "yangbiao");
-        			player.chat("天道昭昭，再兴如光武亦可期！");
-        			const cards = player.getVCards("e", card => {
-        				return card.name == "mb_qingnangshu" && card.storage?.mb_qingnangshu_skill > 0;
-        			});
-        			let num = Math.max(cards?.length, 1);
-        			for (let i = 0; i < num; i++) {
-            			if (i > 0) {
-                			player.logSkill("mb_qingnangshu_skill");
-            			}
-            			await player.gainMaxHp();
-            			await player.recover();
-        			}
-        			if (!cards?.length) {
-            			return;
-        			}
-        			for (const card of cards) {
-        				card.storage.mb_qingnangshu_skill--;
-        				game.log(card, "减少了", "#y1点", "#g耐久值");
-        				lib.skill.mb_qingnangshu_skill.broadcast(card, get.owner(card));
-        			}
-    			},
+            		/*player.flashAvatar(event.name, "yangbiao");
+            		player.chat("天道昭昭，再兴如光武亦可期！");*/
+            		await player.gainMaxHp();
+            		await player.recover();
+            		const card = event.indexedData;
+            		if (!card) {
+                		return;
+            		}
+            		card.storage.mb_qingnangshu_skill--;
+            		game.log(card, "减少了", "#y1点", "#g耐久值");
+            		lib.skill.mb_qingnangshu_skill.broadcast(card, get.owner(card));
+        		},
 			},
 
 			//传国玉玺
@@ -1591,25 +1590,25 @@ game.import("card", function () {
         		},
         		trigger: { player: "phaseDiscardBegin" },
         		forced: true,
+        		getIndex(event, player) {
+            		const cards = player.getVCards("e", card => card.name == "mb_chuanguoyuxi");
+            		if (cards?.length) {
+                		return cards;
+            		}
+            		return 1;
+        		},
         		async content(event, trigger, player) {
-        			player.flashAvatar(event.name, "yuanshu");
-        			let str = "受命于天，既寿永昌！";
-        			const cards = player.getVCards("e", card => card.name == "mb_chuanguoyuxi");
-        			let num = Math.max(cards?.length, 1);
-        			for (let i = 0; i < num; i++) {
-            			if (i > 0) {
-                			player.logSkill(event.name);
-            			}
-            			await player.draw();
-            			player.addSkill(event.name + "_add");
-            			player.addMark(event.name + "_add", 2, false);
-            			game.log(player, "的手牌上限", "#y+2");
-            			if (!player.isZhu2()) {
-                			await player.loseHp();
-                			str = ["你们都得听我的号令！", "我才是皇帝！"].randomGet();
-            			}
-        			}
-        			player.chat(str);
+            		//player.flashAvatar(event.name, "yuanshu");
+            		let str = "受命于天，既寿永昌！";
+            		await player.draw();
+            		player.addSkill(event.name + "_add");
+            		player.addMark(event.name + "_add", 2, false);
+            		game.log(player, "的手牌上限", "#y+2");
+            		if (!player.isZhu2()) {
+                		await player.loseHp();
+                		str = ["你们都得听我的号令！", "我才是皇帝！"].randomGet();
+            		}
+            		player.chat(str);
         		},
         		subSkill: {
         			add: {
