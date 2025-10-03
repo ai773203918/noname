@@ -364,7 +364,7 @@ const skills = {
 	mblingfa: {
 		audio: 2,
 		inherit: "twlingfa",
-		derivation: ["mbzhian", "new_rejianxiong"],
+		derivation: ["twzhian", "new_rejianxiong"],
 		subSkill: {
 			sha: {
 				audio: "mblingfa",
@@ -375,40 +375,6 @@ const skills = {
 				audio: "mblingfa",
 				inherit: "twlingfa_tao",
 				sourceSkill: "mblingfa",
-			},
-		},
-	},
-	mbzhian: {
-		audio: "twzhian",
-		inherit: "twzhian",
-		filter(event, player) {
-			return player.countMark("mbzhian_round") < 2 && event.player !== player && lib.skill.twzhian.filter(event, player);
-		},
-		async content(event, trigger, player) {
-			player.addTempSkill("mbzhian_round", "roundStart");
-			player.addMark("mbzhian_round", 1, false);
-			await lib.skill.twzhian.content(event, trigger, player);
-		},
-		global: "mbzhian_ai",
-		subSkill: {
-			round: {
-				charlotte: true,
-				onremove: true,
-			},
-			ai: {
-				ai: {
-					effect: {
-						player_use(card, player, target) {
-							if (get.type(card) !== "delay" && get.type(card) !== "equip") {
-								return 1;
-							}
-							let za = game.findPlayer(cur => cur !== player && cur.hasSkill("mbzhian") && cur.countMark("mbzhian_round") < 2 && !cur.storage.counttrigger?.twzhian && get.attitude(player, cur) <= 0);
-							if (za) {
-								return [0.5, -0.8];
-							}
-						},
-					},
-				},
 			},
 		},
 	},
