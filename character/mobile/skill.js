@@ -25373,13 +25373,17 @@ const skills = {
 		check(event, player) {
 			return player.phaseNumber < 3;
 		},
-		content() {
-			if (player.phaseNumber < 5) {
-				player.gainMaxHp();
-				player.recover();
-			} else {
-				player.loseMaxHp();
-			}
+		logAudio(event, player) {
+    		const num = (player.phaseNumber < 5) ? 1 : 2;
+    		return `zhaohan${num}.mp3`;
+		},
+		async content(event, trigger, player) {
+    		if (player.phaseNumber < 5) {
+        		await player.gainMaxHp();
+        		await player.recover();
+    		} else {
+        		await player.loseMaxHp();
+    		}
 		},
 	},
 	rangjie: {
