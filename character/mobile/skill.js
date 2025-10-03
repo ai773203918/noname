@@ -362,11 +362,11 @@ const skills = {
 	},
 	//手杀SP曹操
 	mblingfa: {
-		audio: ["mblingfa", "twlingfa"].map(i => [`${i}1.mp3`, `${i}2.mp3`]).flat(),
+		audio: 2,
 		trigger: { global: "roundStart" },
 		filter(event, player) {
 			const skill = "mblingfa";
-			return game.roundNumber < 3 || (player.hasSkill(skill, null, false, false) && !lib.skill[skill].derivation.every(i => player.hasSkill(i, null, false, false)));
+			return game.roundNumber < 3 || player.hasSkill("mblingfa", null, false, false);
 		},
 		prompt2(event, player) {
 			const skill = "mblingfa";
@@ -376,7 +376,8 @@ const skills = {
 				case 2:
 					return "本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害";
 				default:
-					return `失去【${get.translation(skill)}】并获得${(lib.skill[skill].derivation.map(i => `【${get.translation(i)}】`).join("、"))}`;
+					const skills = lib.skill["mblingfa"].derivation.filter(i => !player.hasSkill(i, null, false, false));
+					return `失去【${get.translation("mblingfa")}】${skills.length > 0 ? `并获得${(skills.map(i => `【${get.translation(i)}】`).join("、"))}`:""}`;
 			}
 		},
 		async content(event, trigger, player) {
@@ -390,7 +391,6 @@ const skills = {
 					player.addTempSkill(`${event.name}_tao`, "roundStart");
 					break;
 				default:
-					player.changeSkin({ characterName: "mb_caocao" }, "tw_caocao");
 					await player.changeSkills(lib.skill[event.name].derivation, [event.name]);
 					break;
 			}
@@ -398,13 +398,13 @@ const skills = {
 		derivation: ["twzhian", "new_rejianxiong"],
 		subSkill: {
 			sha: {
-				audio: ["mblingfa", "twlingfa"].map(i => [`${i}1.mp3`, `${i}2.mp3`]).flat(),
-				trigger: { global: "useCard" },
 				charlotte: true,
-				forced: true,
+				audio: "mblingfa",
+				trigger: { global: "useCard" },
 				filter(event, player) {
 					return player != event.player && event.card.name == "sha" && event.player.countCards("he") > 0;
 				},
+				forced: true,
 				logTarget: "player",
 				content() {
 					"step 0";
@@ -428,13 +428,13 @@ const skills = {
 				intro: { content: "其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害。" },
 			},
 			tao: {
-				audio: ["mblingfa", "twlingfa"].map(i => [`${i}1.mp3`, `${i}2.mp3`]).flat(),
-				trigger: { global: "useCardAfter" },
 				charlotte: true,
-				forced: true,
+				audio: "mblingfa",
+				trigger: { global: "useCardAfter" },
 				filter(event, player) {
 					return player != event.player && event.card.name == "tao" && event.player.countCards("he") > 0;
 				},
+				forced: true,
 				logTarget: "player",
 				content() {
 					"step 0";
