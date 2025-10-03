@@ -1598,7 +1598,7 @@ game.import("card", function () {
             		return 1;
         		},
         		async content(event, trigger, player) {
-            		//player.flashAvatar(event.name, "yuanshu");
+            		/*player.flashAvatar(event.name, "yuanshu");*/
             		let str = "受命于天，既寿永昌！";
             		await player.draw();
             		player.addSkill(event.name + "_add");
