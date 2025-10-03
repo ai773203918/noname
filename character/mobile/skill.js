@@ -362,22 +362,21 @@ const skills = {
 	},
 	//手杀SP曹操
 	mblingfa: {
-		audio: 2,
+		audio: 4,
 		trigger: { global: "roundStart" },
 		filter(event, player) {
-			const skill = "mblingfa";
 			return game.roundNumber < 3 || player.hasSkill("mblingfa", null, false, false);
 		},
 		prompt2(event, player) {
-			const skill = "mblingfa";
 			switch (game.roundNumber) {
 				case 1:
 					return "本轮其他角色使用【杀】时，若其有牌，则其需弃置一张牌，否则你对其造成1点伤害";
 				case 2:
 					return "本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害";
-				default:
+				default: {
 					const skills = lib.skill["mblingfa"].derivation.filter(i => !player.hasSkill(i, null, false, false));
-					return `失去【${get.translation("mblingfa")}】${skills.length > 0 ? `并获得${(skills.map(i => `【${get.translation(i)}】`).join("、"))}`:""}`;
+					return `失去【${get.translation("mblingfa")}】${skills.length > 0 ? `并获得${(skills.map(i => `【${get.translation(i)}】`).join("、"))}` : ""}`;
+				}
 			}
 		},
 		async content(event, trigger, player) {

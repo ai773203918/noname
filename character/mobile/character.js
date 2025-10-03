@@ -16,6 +16,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["mblingfa"],
+		dieAudios: ["2"],
 	},
 	mb_caohong: {
 		sex: "male",
