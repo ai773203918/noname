@@ -56,6 +56,7 @@ game.import("character", function () {
 				["mb_zerong_black", ["die:mb_zerong"]],
 				["mb_zerong_all", ["die:mb_zerong"]],
 			],
+			mb_caocao: [["tw_caocao", []]],
 		},
 		card: { ...cards },
 		skill: { ...skills },
