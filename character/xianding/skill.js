@@ -2298,23 +2298,23 @@ const skills = {
 				let result = select.shift();
 				switch (result) {
 					case "选项一": {
+						count++;
 						player.addTempSkill("dcsbzhouxi_range");
 						player.addMark("dcsbzhouxi_range", count, false);
-						count++;
 						break;
 					}
 					case "选项二": {
+						count++;
 						const card = new lib.element.VCard({ name: "shunshou", isCard: true });
 						if (player.hasUseTarget(card)) {
-							count++;
 							await player.chooseUseTarget(card, [1, count], true);
 						}
 						break;
 					}
 					case "选项三": {
+						count++;
 						const card = new lib.element.VCard({ name: "sha", isCard: true });
 						if (player.hasUseTarget(card)) {
-							count++;
 							await player.chooseUseTarget(card, [1, count], true, false);
 						}
 						break;
@@ -8514,7 +8514,7 @@ const skills = {
 			if (color == "red") {
 				await player.draw(3);
 			} else if (color == "black" && targetsx.length) {
-				const targets = await player
+				const result = await player
 					.chooseTarget(`选择一名角色弃置其至多两张牌`, (card, player, target) => {
 						return get.event("targetsx").includes(target);
 					})
@@ -8523,9 +8523,9 @@ const skills = {
 						return get.effect(target, { name: "guohe_copy2" }, player, player);
 					})
 					.set("targetsx", targetsx)
-					.forResultTargets();
-				if (targets?.length) {
-					await player.discardPlayerCard(targets[0], "he", true, [1, 2]);
+					.forResult();
+				if (result?.targets?.length) {
+					await player.discardPlayerCard(result.targets[0], "he", true, [1, 2]);
 				}
 			}
 		},
@@ -8831,21 +8831,8 @@ const skills = {
 					player.removeGaintag(tag, [card]);
 				}
 				tag = tag ? skill + parseFloat(parseInt(tag.slice(skill.length)) + 1) : "dcsblieji_effect1";
-				game.broadcastAll(lib.skill["dcsblieji"].createGainTag, tag, tag.slice(skill.length));
-				game.addVideo("skill", player, ["dcsblieji", [tag, tag.slice(skill.length)]]);
+				game.addTempTag(tag, `烈计+${tag.slice(skill.length)}`);
 				player.addGaintag([card], tag);
-			}
-		},
-		video: (player, info) => lib.skill.dcsblieji.createGainTag(info[0], info[1]),
-		createGainTag(skill, name) {
-			if (!lib.skill[skill]) {
-				lib.skill[skill] = { charlotte: true };
-				lib.translate[skill] = "烈计+" + name;
-				if (!_status.postReconnect.dcsblieji) {
-					_status.postReconnect.dcsblieji = [lib.skill.dcsblieji.createGainTag, [], []];
-				}
-				_status.postReconnect.dcsblieji[1].add(skill);
-				_status.postReconnect.dcsblieji[2].add(name);
 			}
 		},
 		subSkill: {
@@ -28231,7 +28218,7 @@ const skills = {
 			return false;
 		},
 		prompt2(event, player) {
-			const cards2 = get.info(this.skill_id).getCards(event, player);
+			const cards2 = get.info("youyan").getCards(event, player);
 			return `获得与${get.translation(cards2)}花色${cards2.length > 1 ? "各" : ""}不相同的牌各一张`;
 		},
 		async content(event, trigger, player) {
