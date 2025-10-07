@@ -401,6 +401,27 @@ export class Game extends GameCompatible {
 			throw new Error("要移动的元素没有父元素");
 		}
 
+		// 补丁喵，对于没有移动的操作我们直接返回FULFILLED喵
+		if (parentFrom === parentTo) {
+			let notMoved = false;
+
+			if (position === "first") {
+				notMoved = parentTo.firstChild === element;
+			} else if (position === "last") {
+				notMoved = parentTo.lastChild === element;
+			} else if (typeof position == "number") {
+				notMoved = parentTo.childNodes[position] === element;
+			} else if (parent.contains(position)) {
+				notMoved = position === element;
+			} else {
+				notMoved = parentTo.lastChild === element;
+			}
+
+			if (notMoved) {
+				return Promise.resolve();
+			}
+		}
+
 		// @ts-expect-error childNodes是可迭代的
 		const elements = new Set(parentFrom.childNodes).union(parentTo.childNodes);
 
