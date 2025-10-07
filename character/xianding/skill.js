@@ -14304,13 +14304,12 @@ const skills = {
 			}
 			return 1 / (get.value(card) || 0.5);
 		},
-		*content(event, map) {
-			const player = map.player,
-				cards = event.cards,
-				target = event.target;
-			yield player.give(cards, target).gaintag.add("dczengou_debuff");
-			yield player.draw(cards.length);
-			target.addSkill("dczengou_debuff");
+		async content(event, trigger, player) {
+			const next = player.give(event.cards, event.target);
+			next.gaintag.add("dczengou_debuff");
+			await next;
+			await player.draw(event.cards.length);
+			event.target.addSkill("dczengou_debuff");
 		},
 		ai: {
 			order: 10,
@@ -14329,13 +14328,12 @@ const skills = {
 				},
 				forced: true,
 				popup: false,
-				content() {
-					player.removeSkill("dczengou_debuff");
-					const cards = player.getCards("h", card => card.hasGaintag("dczengou_debuff"));
-					player.showHandcards();
+				async content(event, trigger, player) {
+					await player.showHandcards();
+					const cards = player.getCards("h", card => card.hasGaintag(event.name));
+					player.removeSkill(event.name);
 					if (cards.length) {
-						player.loseHp(cards.length);
-						player.removeGaintag(event.name);
+						await player.loseHp(cards.length);
 					}
 				},
 				onremove(player, skill) {
