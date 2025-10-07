@@ -233,19 +233,6 @@ game.import("card", function () {
 				reverseOrder: true,
 				global: ["jiaoyou_skill"],
 				async content(event, trigger, player) {
-					if (!_status.postReconnect.jiaoyou) {
-						_status.postReconnect.jiaoyou = [
-							function (list) {
-								for (const tag of list) {
-									if (!lib.skill[tag]) {
-										lib.skill[tag] = {};
-										lib.translate[tag] = "浇油+" + tag.slice(7);
-									}
-								}
-							},
-							[],
-						];
-					}
 					const { target } = event;
 					const cards = target.getCards("h", card => get.tag(card, "damage") > 0.5),
 						name = event.name;
@@ -257,17 +244,7 @@ game.import("card", function () {
 								target.removeGaintag(tag, [card]);
 							}
 							tag = tag ? name + parseFloat(parseInt(tag.slice(name.length)) + 1) : "jiaoyou1";
-							_status.postReconnect.jiaoyou[1].add(tag);
-							if (!lib.skill[tag]) {
-								game.broadcastAll(
-									(tag, str) => {
-										lib.skill[tag] = {};
-										lib.translate[tag] = "浇油+" + str;
-									},
-									tag,
-									tag.slice(name.length)
-								);
-							}
+							game.addTempTag(tag, `浇油+${tag.slice(name.length)}`);
 							target.addGaintag([card], tag);
 						}
 					}
@@ -1711,12 +1688,12 @@ game.import("card", function () {
 			jiaoyou_skill: {
 				charlotte: true,
 				silent: true,
-				trigger: { source: "damageBegin1" },
+				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (!event.card) {
 						return false;
 					}
-					const evt = event.getParent("useCard");
+					const evt = event;
 					if (evt?.card !== event.card || evt.cards?.length !== 1) {
 						return false;
 					}
@@ -1731,7 +1708,7 @@ game.import("card", function () {
 				},
 				async content(event, trigger, player) {
 					const skill = "jiaoyou",
-						evt = trigger.getParent("useCard");
+						evt = trigger;
 					const evtx = player.getHistory(
 						"lose",
 						evtx =>
@@ -1740,7 +1717,7 @@ game.import("card", function () {
 								return evtx.gaintag_map[i].some(tag => tag.startsWith(skill));
 							})
 					)[0];
-					trigger.num += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
+					trigger.baseDamage += Object.keys(evtx.gaintag_map).reduce((sum, i) => {
 						const tag = evtx.gaintag_map[i].find(tag => tag.startsWith(skill));
 						if (tag) {
 							sum += parseInt(tag.slice(skill.length));
@@ -1969,7 +1946,6 @@ game.import("card", function () {
 							}
 							return lib.filter.targetEnabled.apply(this, arguments);
 						})
-						.set("dying", trigger.player)
 						.set("targetRequired", true);
 				},
 			},

@@ -387,9 +387,6 @@ export default {
 	"#twbudao1": "得天之力，从天之道。",
 	"#twbudao2": "黄天大道，泽及苍生。",
 	"#tw_zhangmancheng:die": "天师，曼成尽力了……",
-	"#twlingfa1": "吾明令在此，汝何以犯之？",
-	"#twlingfa2": "法不阿贵，绳不挠曲！",
-	"#tw_caocao:die": "奸宦当道，难以匡正啊……",
 	"#twyujue1": "财物交足，官位任取。",
 	"#twyujue2": "卖官鬻爵，取财之道。",
 	"#twgezhi1": "改革旧制，保我汉室长存！",
@@ -463,6 +460,7 @@ export default {
 	"#twfeifu2": "以侯归第？终败于其！",
 	"#twzhian1": "此等蝼蚁不除，必溃千丈之堤！",
 	"#twzhian2": "尔等权贵贪赃枉法，岂可轻饶？！",
+	"#twzhian3": "目无禁法，勿问贵贱依律棒杀！",
 	"#bmcanshi_tw_beimihu1": "此患不足为惧，可蚕食而尽。",
 	"#bmcanshi_tw_beimihu2": "小则蚕食，大则溃坝。",
 };

@@ -408,6 +408,9 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.draw(trigger.player.countMark(trigger.mark));
 		},
+		ai: {
+			combo: "mark_shouli",
+		}
 	},
 	//渭南神马超
 	wn_qiangshu: {
@@ -1651,6 +1654,9 @@ const skills = {
 						range = select;
 					} else if (typeof select == "function") {
 						range = select(card, player);
+						if (typeof range == "number") {
+							range = [range, range];
+						}
 					}
 					game.checkMod(card, player, range, "selectTarget", player);
 					if (
@@ -1700,6 +1706,9 @@ const skills = {
 						range = select;
 					} else if (typeof select == "function") {
 						range = select(card, player);
+						if (typeof range == "number") {
+							range = [range, range];
+						}
 					}
 					game.checkMod(card, player, range, "selectTarget", player);
 					if (

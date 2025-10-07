@@ -8334,6 +8334,7 @@ const skills = {
 	},
 	//张辽
 	jsrgzhengbing: {
+		audio: 2,
 		enable: "phaseUse",
 		usable: 3,
 		filter(event, player) {
@@ -8388,6 +8389,7 @@ const skills = {
 		},
 	},
 	jsrgtuwei: {
+		audio: 2,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -8832,7 +8834,9 @@ const skills = {
 			var characters2 = player.getStorage("sbyingmen").slice(0);
 			characters2.removeArray(characters);
 			skills.removeArray(lib.skill.sbyingmen.getSkills(characters2, player));
-			game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			if (Array.isArray(player.tempname)) {
+				game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			}
 			player.unmarkAuto("sbyingmen", characters);
 			_status.characterlist.addArray(characters);
 			player.removeInvisibleSkill(skills);
@@ -11135,7 +11139,7 @@ const skills = {
 				event.player.hasHistory("sourceDamage") ? 1 : 2,
 				game.countPlayer(current => !current.hasMark("jsrgzhenglve_mark"))
 			);
-			let str = `你可以摸${get.cnNumber(lib.skill[this.skill_id].drawNum)}张牌`;
+			let str = `你可以摸一张牌`;
 			if (num) {
 				str += `并令${get.cnNumber(num)}名角色获得“猎”标记`;
 			}

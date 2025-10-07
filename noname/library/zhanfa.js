@@ -1819,13 +1819,16 @@ const _zhanfa = {
 	zf_shixue: {
 		rarity: "legend",
 		translate: "噬血I",
-		info: "回复体力后，摸一张牌",
+		info: "回复1点体力后，摸一张牌",
 		card: {
 			value: 7.2,
 		},
 		skill: {
 			inherit: "zf_anyDraw",
 			trigger: { player: "recoverEnd" },
+			getIndex(event, player) {
+				return event.num;
+			},
 		},
 	},
 	//手到擒来
@@ -2130,7 +2133,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardUsable",
 			modNum: Infinity,
-			cardFilter: { suit: "spade" },
+			cardFilter: { name: "sha", suit: "spade" },
 		},
 	},
 	//稳定体质
@@ -2177,7 +2180,7 @@ const _zhanfa = {
 		},
 	},
 	//稳定进攻
-	zf_wendingjinggong: {
+	zf_wendingjingong: {
 		rarity: "legend",
 		translate: "稳定进攻",
 		info: "回合内出杀次数固定为5",
@@ -2187,7 +2190,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardUsable",
 			cardFilter: "sha",
-			modNum: 5,
+			modNum: () => 5,
 		},
 	},
 	//稳定承载
@@ -2482,8 +2485,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return (
 					game
-						.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-						.map(evt => evt.getParent())
+						.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
 						.indexOf(event) == 0
 				);
 			},
@@ -2522,8 +2524,7 @@ const _zhanfa = {
 			inherit: "zf_yaoli",
 			filter(event, player) {
 				const index = game
-					.getGlobalHistory("changeHp", evt => evt.getParent().name == "recover" && evt.player == player)
-					.map(evt => evt.getParent())
+					.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
 					.indexOf(event);
 				return index >= 0 && index < 3;
 			},
@@ -3015,7 +3016,7 @@ export class ZhanfaManager {
 	 */
 	constructor(lib) {
 		for (const id in _zhanfa) {
-			let { skill, rarity, translate, info, card } = _zhanfa[id];
+			let { skill, rarity, translate, info, card, ...args } = _zhanfa[id];
 			if (typeof skill != "string") {
 				skill ??= {};
 				skill.nopop = true;
@@ -3032,8 +3033,11 @@ export class ZhanfaManager {
 			if (!card.fullskin && !card.fullimage) {
 				card.fullskin = true;
 			}
+			if (!card.cardimage && !card.image) {
+				card.image = `image/zhanfa/${id}.png`;
+			}
 			lib.card[id] = card;
-			_zhanfa[id] = { skill: skill, rarity: rarity };
+			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 		}
 		this.#zhanfa = _zhanfa;
 	}
@@ -3049,7 +3053,7 @@ export class ZhanfaManager {
 	 * @param {object | undefined} [zhanfa.card] 战法的对应类似卡牌的信息（包括战法的ai），扩展可以在这里添加路径（image属性）或者直接引用已有的卡牌图片（cardimage）
 	 */
 	add(zhanfa) {
-		let { id, skill, rarity, translate, info, card } = zhanfa;
+		let { id, skill, rarity, translate, info, card, ...args } = zhanfa;
 		if (!id) {
 			return;
 		}
@@ -3075,16 +3079,24 @@ export class ZhanfaManager {
 		if (!card.fullskin && !card.fullimage) {
 			card.fullskin = true;
 		}
+		if (!card.cardimage && !card.image) {
+			card.image = `image/zhanfa/${id}.png`;
+		}
 		lib.card[id] = card;
-		this.#zhanfa[id] = { skill: skill, rarity: rarity };
+		this.#zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 	}
 
 	/**
 	 * 获取所有战法的id
+	 * @param {boolean | undefined} includeBan 获取所有战法，包括被ban的战法
 	 * @returns {string[]}
 	 */
-	getList() {
-		return [...Object.keys(this.#zhanfa)]; //, ...Object.keys(this.#customZhanfa)
+	getList(includeBan) {
+		let list = [...Object.keys(this.#zhanfa)]; //, ...Object.keys(this.#customZhanfa)
+		if (!includeBan) {
+			list = list.filter(i => !this.get(i)?.modeBan?.(get.mode(), _status.mode));
+		}
+		return list;
 	}
 
 	/**
