@@ -14098,7 +14098,7 @@ const skills = {
 						const cardname = "huashen_card_" + list[i];
 						lib.card[cardname] = {
 							fullimage: true,
-							image: "character/" + list[i],
+							image: "character:" + list[i],
 						};
 						lib.translate[cardname] = get.rawName2(list[i]);
 						cards.push(game.createCard(cardname, "", ""));
