@@ -1985,6 +1985,10 @@ player.removeVirtualEquip(card);
 				 * 是否处于拖拽动画中(禁止其他的选择，拖拽)
 				 */
 				event.isPlayingAnimation = false;
+
+				// 动画时长
+				const animationDuration = lib.config.animation_choose_to_move ? 300 : 0;
+
 				// 初始化触摸点位置和元素偏移量
 				var touchStartX = 0;
 				var touchStartY = 0;
@@ -2388,7 +2392,7 @@ player.removeVirtualEquip(card);
 							}
 
 							// 执行动画喵
-							aniamtionPromise = game.$elementGoto(curCard, buttons, position);
+							aniamtionPromise = game.$elementGoto(curCard, buttons, position, animationDuration);
 						} else {
 							// 如果拖动到按钮上面，我们交换两个按钮喵
 							const buttons2 = curCard.parentElement;
@@ -2396,7 +2400,7 @@ player.removeVirtualEquip(card);
 							const pos2 = curCard.nextElementSibling || "last";
 
 							// 执行动画喵
-							aniamtionPromise = game.$elementSwap(curCard, card);
+							aniamtionPromise = game.$elementSwap(curCard, card, animationDuration);
 						}
 
 						clearSelected();
@@ -2430,7 +2434,7 @@ player.removeVirtualEquip(card);
 						const subPromises = [];
 
 						for (const element of selected) {
-							subPromises.push(game.$elementGoto(element, buttons, position));
+							subPromises.push(game.$elementGoto(element, buttons, position, animationDuration));
 						}
 
 						aniamtionPromise = Promise.all(subPromises);
@@ -13075,6 +13079,7 @@ player.removeVirtualEquip(card);
 			}, event.chooseTime);
 		}
 		if (event.isMine()) {
+			const animationDuration = lib.config.animation_choose_to_move ? 300 : 0;
 			//自动选择
 			event.switchToAuto = function () {
 				if (!event.filterOk(event.moved)) {
@@ -13142,7 +13147,7 @@ player.removeVirtualEquip(card);
 				if (event.dialog.selectedCard) {
 					if (card !== event.dialog.selectedCard && event.filterMove(event.dialog.selectedCard, card, event.moved)) {
 						event.dialog.isBusy = true;
-						game.$swapElement(card, event.dialog.selectedCard, 300).then(() => {
+						game.$swapElement(card, event.dialog.selectedCard, animationDuration).then(() => {
 							event.dialog.isBusy = false;
 							updateButtons();
 						});
@@ -13165,7 +13170,7 @@ player.removeVirtualEquip(card);
 				let index = Array.from(event.dialog.itemContainers).indexOf(itemContainer) / 2 - 1;
 				if (event.filterMove(event.dialog.selectedCard, index, event.moved)) {
 					event.dialog.isBusy = true;
-					game.$elementGoto(event.dialog.selectedCard, itemContainer, 300).then(() => {
+					game.$elementGoto(event.dialog.selectedCard, itemContainer, animationDuration).then(() => {
 						event.dialog.isBusy = false;
 						updateButtons();
 					});

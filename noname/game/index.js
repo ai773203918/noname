@@ -393,6 +393,21 @@ export class Game extends GameCompatible {
 			game.$elementGotoAnimData.endPosition.set(element, position); // 元素结束位置以最晚的为主喵
 		}
 
+		function updateDOM() {
+			// 依照参数选择添加的位置喵
+			if (position === "first") {
+				parent.insertBefore(element, parent.firstChild);
+			} else if (position === "last") {
+				parent.appendChild(element);
+			} else if (typeof position == "number") {
+				parent.insertBefore(element, parent.children[position]);
+			} else if (parent.contains(position)) {
+				parent.insertBefore(element, position);
+			} else {
+				parent.appendChild(element);
+			}
+		}
+
 		// 首先是FIRST喵，记录起始位置哦喵
 		const parentFrom = element.parentElement;
 		const parentTo = parent;
@@ -422,6 +437,12 @@ export class Game extends GameCompatible {
 			}
 		}
 
+		// 额外增强喵，对于duration == 0的情况跳过动画喵
+		if (duration == 0) {
+			updateDOM();
+			return Promise.resolve();
+		}
+
 		// @ts-expect-error childNodes是可迭代的
 		const elements = new Set(parentFrom.childNodes).union(parentTo.childNodes);
 
@@ -435,19 +456,8 @@ export class Game extends GameCompatible {
 		// 如果你需要并发多个动画应该**同步的**调用多次然后使用Promise.all()一起等待哦喵
 		await new Promise(resolve => resolve(null));
 
-		// 依照参数选择添加的位置喵
 		// 此时将更改实际的DOM结构喵
-		if (position === "first") {
-			parent.insertBefore(element, parent.firstChild);
-		} else if (position === "last") {
-			parent.appendChild(element);
-		} else if (typeof position == "number") {
-			parent.insertBefore(element, parent.children[position]);
-		} else if (parent.contains(position)) {
-			parent.insertBefore(element, position);
-		} else {
-			parent.appendChild(element);
-		}
+		updateDOM();
 
 		// 我们再次等待所有节点结构调整完毕喵
 		await new Promise(resolve => resolve(null));
