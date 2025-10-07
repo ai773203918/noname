@@ -4564,7 +4564,7 @@ const skills = {
 			const target = event.targets[0];
 			const num = Math.min(5, target.maxHp) - target.countCards("h");
 			if (num > 0) {
-				await target.drawTo(num);
+				await target.draw(num);
 			} else if (num < 0 && target.countDiscardableCards(target, "h") > 0) {
 				await target.chooseToDiscard("h", -num, true, "allowChooseAll");
 			}
