@@ -13170,7 +13170,7 @@ player.removeVirtualEquip(card);
 				let index = Array.from(event.dialog.itemContainers).indexOf(itemContainer) / 2 - 1;
 				if (event.filterMove(event.dialog.selectedCard, index, event.moved)) {
 					event.dialog.isBusy = true;
-					game.$elementGoto(event.dialog.selectedCard, itemContainer, animationDuration).then(() => {
+					game.$elementGoto(event.dialog.selectedCard, itemContainer, undefined, animationDuration).then(() => {
 						event.dialog.isBusy = false;
 						updateButtons();
 					});
