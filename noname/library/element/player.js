@@ -12701,7 +12701,7 @@ export class Player extends HTMLDivElement {
 				return true;
 			}
 		} else {
-			if (this.countCards(position, name)) {
+			if (this.countVCards(position, name)) {
 				return true;
 			}
 		}
