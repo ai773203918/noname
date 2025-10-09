@@ -4563,9 +4563,8 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const num = Math.min(5, target.maxHp) - target.countCards("h");
-			const isMax = target.isMaxHandcard();
 			if (num > 0) {
-				await target.drawTo(target.maxHp);
+				await target.draw(num);
 			} else if (num < 0 && target.countDiscardableCards(target, "h") > 0) {
 				await target.chooseToDiscard("h", -num, true, "allowChooseAll");
 			}
@@ -14099,7 +14098,7 @@ const skills = {
 						const cardname = "huashen_card_" + list[i];
 						lib.card[cardname] = {
 							fullimage: true,
-							image: "character/" + list[i],
+							image: "character:" + list[i],
 						};
 						lib.translate[cardname] = get.rawName2(list[i]);
 						cards.push(game.createCard(cardname, "", ""));

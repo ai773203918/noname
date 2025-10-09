@@ -1827,7 +1827,7 @@ const skills = {
 							return;
 						}
 						if (get.itemtype(card.cards[0]) === "card" && card.cards[0].hasGaintag("olkuangjuan_effect")) {
-							return true;
+							return Infinity;
 						}
 					},
 				},
