@@ -1,8 +1,9 @@
 import html from "../../../../game/dedent.js";
+import { lib, game, ui, get, ai, _status } from "../../../../noname.js";
+import poptips from "./poptip.js";
 
 export default {
-	template: html`
-		<div :style="titleStyle">声明</div>
+	template: html` <div :style="titleStyle">声明</div>
 		<ul :style="listStyle">
 			<li>以下所有规则均为根据公开爆料整理，经村规改动后制定的临时规则。不代表任何官方意见。请以后续发布的官方规则作为标准。</li>
 		</ul>
@@ -25,11 +26,25 @@ export default {
 			<li>选择发起“拉拢人心”的野心家角色选择一个新的势力作为自己的势力，弃置“野心家”标记，令所有其他非野心家角色且非君主且非已“结盟”角色依次选择是否和该野心家角色“结盟”。选择“是”的角色将势力改为和该野心家势力相同。此次“拉拢人心”对所有其他角色询问结束后，所有选择“否”的角色将手牌摸至四张并回复1点体力。</li>
 		</ul>
 
-		<div :style="titleStyle">纵横捭阖</div>
+		<div :style="titleStyle">君主武将</div>
 		<ul :style="listStyle">
-			<li>当一名角色对目标角色发动具有拥有“纵横”衍生技的技能时，其可以令对方获得“纵横”衍生技直到其下回合结束。</li>
+			<li>玩家必须将君主武将牌设置主将<br /></li>
+			<li>玩家在自己回合开始时，必须将君主武将牌明置，君主武将牌一旦被明置后，不可被暗置。<br /></li>
+			<li>君主武将和所有本势力武将均有“珠联璧合”的关系。<br /></li>
+			<li>君主武将牌明置时，若势力不为对应势力，变更为对应势力；然后令所有与此君主势力相同的野心家角色恢复其原有势力。<br /></li>
+			<li>君主武将作为主将存活时，所有与君主势力相同的角色均不会成为野心家。<br /></li>
+			<li>君主武将作为主将死亡后，其他与君主势力相同的角色均成为野心家。<br /></li>
 		</ul>
-	`,
+
+		${poptips
+			.map(
+				id => `<div :style="titleStyle">${lib.poptip.getName(id)}</div>
+				<ul :style="listStyle">
+					<li>${lib.poptip.getInfo(id)}</li>
+				</ul>`
+			)
+			.unique()
+			.join("")}`,
 
 	setup() {
 		const titleStyle = {

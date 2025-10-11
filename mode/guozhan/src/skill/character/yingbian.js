@@ -1275,6 +1275,9 @@ export default {
 				range = select;
 			} else if (typeof select == "function") {
 				range = select(card, player);
+				if (typeof range == "number") {
+					range = [range, range];
+				}
 			}
 			player._checkXunji = true;
 			game.checkMod(card, player, range, "selectTarget", player);
@@ -2457,9 +2460,6 @@ export default {
 						name1: name,
 						name2: name2,
 					};
-					if (get.is.jun(name) || get.is.jun(name2)) {
-						return lib.character[name][1] == lib.character[name2][1];
-					}
 					return lib.element.player.perfectPair.call(tempPlayer);
 				});
 			});

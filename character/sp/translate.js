@@ -1240,7 +1240,6 @@ const translates = {
 	olmaozhu_info: "锁定技。①你的手牌上限和使用【杀】的额定次数+X（X为你拥有的技能数）。②当你于出牌阶段首次对技能数小于你的角色造成伤害时，此伤害+1。",
 	oljinlan: "尽览",
 	oljinlan_info: "出牌阶段限一次，你可以将手牌数摸至Y张（Y为场上技能数最多的角色的技能数）。",
-	oljinlan_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>〖飞扬〗〖跋扈〗以及持有的战法计入〖茂著〗〖尽览〗的技能数计算</span>',
 	caimao: "蔡瑁",
 	olzuolian: "佐练",
 	olzuolian_tag: "展示牌",
@@ -1557,6 +1556,13 @@ const translates = {
 	olsaying_info: "出牌阶段开始时，你可以获得一名其他角色区域里一张牌，然后若你在其攻击范围内，其可对你使用一张【杀】；若你不在其攻击范围内，本轮你与其视为在对方的攻击范围内。",
 	oltongxin: "恫心",
 	oltongxin_info: "每回合各限一次，你造成或受到伤害后，可弃置受伤角色X+1张牌并对伤害来源造成1点伤害（X为受伤角色已损失体力值），然后你获得其中的【杀】且你使用这些牌无次数限制。",
+	huanshujun: "环淑君",
+	olhuanpei: "环佩",
+	olhuanpei_info: "每轮限一次，你需要使用基本牌时，可以调整手牌数至与体力值相同，视为使用之。",
+	olwenyi: "温宜",
+	olwenyi_info: "每局游戏限一次，一名角色体力值变为1后，你可对其使用一张【桃】或交给其一张装备牌令其使用之，然后其复原武将牌。",
+	olmiaoxin: "妙心",
+	olmiaoxin_info: "锁定技，你受到1点伤害后，令〖温宜〗发动次数+1，然后若本轮你未发动过〖温宜〗，你摸两张牌，",
 };
 
 export default translates;

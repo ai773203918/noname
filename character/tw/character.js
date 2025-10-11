@@ -1,4 +1,14 @@
 const characters = {
+	tw_jsrg_sunjian: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		maxHp: 4,
+		hujia: 1,
+		skills: ["jsrgpingtao", "jsrgjuelie"],
+		img: "image/character/jsrg_sunjian.jpg",
+		dieAudios: ["jsrg_sunjian"],
+	},
 	tw_jsrg_hejin: {
 		sex: "male",
 		group: "qun",
@@ -807,12 +817,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["twfengji", "twyiju", "twbudao"],
-	},
-	tw_caocao: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["twlingfa"],
 	},
 	tw_liuhong: {
 		sex: "male",
