@@ -9,6 +9,7 @@ import characterFilters from "./characterFilter.js";
 import dynamicTranslates from "./dynamicTranslate.js";
 import perfectPairs from "./perfectPairs.js";
 import voices from "./voices.js";
+import characterTitle from "../characterTitle.js";
 import { characterSort, characterSortTranslate } from "./sort.js";
 
 game.import("character", function () {
@@ -28,5 +29,6 @@ game.import("character", function () {
 		perfectPair: { ...perfectPairs },
 		translate: { ...translates, ...voices, ...characterSortTranslate },
 		pinyins: { ...pinyins },
+		characterTitle: { ...characterTitle },
 	};
 });
