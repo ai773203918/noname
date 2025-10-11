@@ -383,7 +383,6 @@ const characterTitle = {
 	buzhi: "积跬靖边",
 	chenlin: "破竹之咒",
 	yuanshu: "仲家帝",
-	gongsunzan: "白马义从",
 	sp_diaochan: "暗黑傀儡师",
 	yangxiu: "恃才放旷",
 	sp_zhaoyun: "真龙之意",
