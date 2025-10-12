@@ -3642,6 +3642,12 @@ export class Library {
 					init: false,
 					unfrequent: false,
 				},
+				animation_choose_to_move: {
+					name: "移动卡牌动画",
+					intro: "开启后将启用chooseToMove（观星类）的动画",
+					init: true,
+					unfrequent: false,
+				},
 				skill_animation_type: {
 					name: "技能特效",
 					intro: "开启后觉醒技、限定技将显示全屏文字",
