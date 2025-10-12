@@ -3398,7 +3398,7 @@ const skills = {
 				trigger: { player: "phaseDrawBegin" },
 				content() {
 					const record = player.storage[event.name];
-					if (record) {
+					if (typeof record == "number") {
 						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
 						if (player.countCards("h") <= record) {
 							player.draw(2);
