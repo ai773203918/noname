@@ -35,7 +35,7 @@ window.noname_character_characterTitle = {
 	re_yuanshu: "野心渐增",
 	gongsunzan:"白马义从",
 	caozhang: "黄须儿", //为什么曹彰的ID会出现在标包的character下的文件夹里？
-	std_panfeng: "联军上将",
+	std_panfeng: "桀骜不驯",
 	ganfuren: "昭烈皇后",
 	old_re_lidian: "学而不厌",
 	std_yuejin: "奋强突固",
@@ -1678,7 +1678,7 @@ window.noname_character_characterTitle = {
 	new_caoren: "神勇可撼",
 	old_liyan: "督运粮草",
 	old_chendao: "白毦统领",
-	old_caocao: "旧神曹操",
+	old_caocao: "超世之英杰",
 	old_caochun: "长坂败备",
 	old_guanyinping: "将门虎女",
 	panfeng: "联军上将",
