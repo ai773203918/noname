@@ -1,10 +1,5 @@
-import { ai } from "../../ai/index.js";
-import { get } from "../../get/index.js";
-import { game } from "../../game/index.js";
-import { lib } from "../index.js";
-import { _status } from "../../status/index.js";
-import { ui } from "../../ui/index.js";
-import { gnc } from "../../gnc/index.js";
+// 不经过编译
+import { _status, game, get, lib, ui, ai, gnc } from "../../../noname.js";
 import { GameEvent } from "./gameEvent.js";
 import { Player } from "./player.js";
 
@@ -3164,8 +3159,8 @@ player.removeVirtualEquip(card);
 		}
 	},
 	/**
-	 * @param {GameEventPromise} event
-	 * @param {GameEventPromise} trigger
+	 * @param {GameEvent} event
+	 * @param {GameEvent} trigger
 	 * @param {Player} player
 	 */
 	chooseToEnable: async function (event, trigger, player) {
@@ -3249,8 +3244,8 @@ player.removeVirtualEquip(card);
 		}
 	},
 	/**
-	 * @param {GameEventPromise} event
-	 * @param {GameEventPromise} trigger
+	 * @param {GameEvent} event
+	 * @param {GameEvent} trigger
 	 * @param {Player} player
 	 */
 	chooseToDisable: async function (event, trigger, player) {
