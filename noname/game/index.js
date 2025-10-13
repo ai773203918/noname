@@ -1489,9 +1489,7 @@ export class Game extends GameCompatible {
 			next[bool] = true;
 		} else if (bool === false) {
 			next.notrigger = true;
-		} else if (bool === false) {
-			next.notrigger = true;
-		}
+		} 
 		next.setContent("cardsGotoSpecial");
 		return next;
 	}
