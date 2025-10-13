@@ -2813,6 +2813,9 @@ export class Create {
 		ui.cardPileButton = ui.create.system("牌堆", null, true);
 		ui.cardPileButton.style.display = "none";
 		lib.setPopped(ui.cardPileButton, ui.click.cardPileButton, 220);
+		ui.commonCardPileButton = ui.create.system("游戏外公共区域", null, true);
+		ui.commonCardPileButton.style.display = "none";
+		lib.setPopped(ui.commonCardPileButton, ui.click.commonCardPileButton, 220);
 		ui.wuxie = ui.create.system("不询问无懈", ui.click.wuxie, true);
 		if (!lib.config.touchscreen) {
 			lib.setPopped(ui.config2, ui.click.pauseconfig, 170);

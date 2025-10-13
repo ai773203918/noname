@@ -1485,8 +1485,10 @@ export class Game extends GameCompatible {
 		}
 		var next = game.createEvent("cardsGotoSpecial");
 		next.cards = type == "cards" ? cards.slice(0) : [cards];
-		if (bool == "toRenku") {
-			next.toRenku = true;
+		if (typeof bool == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.toName == bool)) {
+			next[bool] = true;
+		} else if (bool === false) {
+			next.notrigger = true;
 		} else if (bool === false) {
 			next.notrigger = true;
 		}

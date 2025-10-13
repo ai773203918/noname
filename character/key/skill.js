@@ -4485,8 +4485,6 @@ const skills = {
 			if (!result || !result.links.length) {
 				if (_status.renku.length) {
 					const cards = _status.renku.slice(0);
-					_status.renku.length = 0;
-					game.updateRenku();
 					await player.gain(cards, "gain2", "fromRenku");
 				} else {
 					player.draw(2);
@@ -4536,7 +4534,6 @@ const skills = {
 			if (result.bool) {
 				var card = result.links[0];
 				player.$throw(card, 1000);
-				_status.renku.remove(card);
 				game.cardsDiscard(card).fromRenku = true;
 				game.log(player, "将", card, "置入了弃牌堆");
 				trigger.excluded.add(player);

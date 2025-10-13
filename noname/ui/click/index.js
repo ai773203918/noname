@@ -963,6 +963,21 @@ export class Click {
 		}
 		return uiintro;
 	}
+	commonCardPileButton() {
+		var uiintro = ui.create.dialog("hidden");
+		uiintro.listen(function (e) {
+			e.stopPropagation();
+		});
+		for (const [key, value] of lib.commonArea) {
+			const cards = _status[value.areaStatusName];
+			uiintro.add(`<div class="text center">${value.translate || get.translation(key)} (${get.cnNumber(cards?.length ?? 0)}张)</div>`);
+			if (get.itemtype(cards) == "cards") {
+				uiintro.addSmall([cards, "card"]);
+			}
+			uiintro.add(ui.create.div(".placeholder"));
+		}
+		return uiintro;
+	}
 	chat() {
 		ui.system1.classList.add("shown");
 		ui.system2.classList.add("shown");

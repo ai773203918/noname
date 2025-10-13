@@ -7617,9 +7617,9 @@ export class Player extends HTMLDivElement {
 				next.log = true;
 			} else if (arguments[i] == "fromStorage") {
 				next.fromStorage = true;
-			} else if (arguments[i] == "fromRenku") {
+			} else if (typeof arguments[i] == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.fromName == arguments[i])) {
 				next.fromStorage = true;
-				next.fromRenku = true;
+				next[arguments[i]] = true;
 			} else if (arguments[i] == "bySelf") {
 				next.bySelf = true;
 			} else if (typeof arguments[i] == "string") {
@@ -7720,9 +7720,9 @@ export class Player extends HTMLDivElement {
 				next.log = true;
 			} else if (arguments[i] == "fromStorage") {
 				next.fromStorage = true;
-			} else if (arguments[i] == "fromRenku") {
+			} else if (typeof arguments[i] == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.fromName == arguments[i])) {
 				next.fromStorage = true;
-				next.fromRenku = true;
+				next[arguments[i]] = true;
 			} else if (arguments[i] == "bySelf") {
 				next.bySelf = true;
 			} else if (typeof arguments[i] == "string") {
@@ -7735,6 +7735,9 @@ export class Player extends HTMLDivElement {
 			if (!("log" in next)) {
 				next.log = true;
 			}
+		}
+		if (get.itemtype(next.cards) !== "cards") {
+			next.cards = [];
 		}
 		next.setContent("addToExpansion");
 		next.getd = function (player, key, position) {
@@ -7826,9 +7829,9 @@ export class Player extends HTMLDivElement {
 				next.position = arguments[i];
 			} else if (arguments[i] == "toStorage") {
 				next.toStorage = true;
-			} else if (arguments[i] == "toRenku") {
+			} else if (typeof arguments[i] == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.toName == arguments[i])) {
 				next.toStorage = true;
-				next.toRenku = true;
+				next[arguments[i]] = true;
 			} else if (arguments[i] == "visible") {
 				next.visible = true;
 			} else if (arguments[i] == "insert") {
