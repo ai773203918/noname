@@ -7518,7 +7518,6 @@ const skills = {
 				await lib.skill.friendyance.minigame(event, trigger, player);
 			}
 		},
-		derivation: "friendyance_minigame",
 		marktext: "策",
 		intro: { content: "初始可预测#次" },
 		async minigame(event, trigger, player) {

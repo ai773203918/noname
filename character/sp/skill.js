@@ -8149,11 +8149,14 @@ const skills = {
 		countSkill(player) {
 			return (
 				player.getSkills(null, false, false).filter(i => {
-					if (["飞扬", "跋扈"].includes(get.plainText(get.translation(i)))) {
+					const info = get.info(i);
+					if (info) {
+						if (info.charlotte) {
+							return get.plainText(get.translation(`${i}_info`)).length > 0;
+						}
 						return true;
 					}
-					const info = get.info(i);
-					return !info || !info.charlotte;
+					return false;
 				}).length + player.getStorage("zhanfa").length
 			);
 		},
