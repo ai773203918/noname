@@ -108,7 +108,7 @@ export default {
 				}
 				const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
 				return get.tag(card, "fireDamage") && event.filterCard(card, player, event);
-			}).length;
+			}).length > 0;
 		},
 		chooseButton: {
 			dialog(event, player) {
@@ -433,7 +433,7 @@ export default {
 					position: "hs",
 					popname: true,
 					ai(card) {
-						return 6 - ai.get.value(card);
+						return 6 - get.value(card);
 					},
 					viewAs: { name: links[0][2] },
 					precontent() {
@@ -15634,7 +15634,7 @@ export default {
 					selectCard: 1,
 					popname: true,
 					ai(card) {
-						return 6 - ai.get.value(card);
+						return 6 - get.value(card);
 					},
 					viewAs: { name: links[0][2] },
 					onuse(result, player) {
