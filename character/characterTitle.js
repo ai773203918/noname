@@ -3,7 +3,7 @@
 	如果你们识相点的话就老实自己去写，去扒三国杀的wiki网站和看线下制图称号自己写，别用你们那肮脏只会敲复制粘贴的残疾烂手来染指我们团队的心血。      	                                                                                        
     我们或许无法阻止你们恬不知耻地盗窃，但我们可以公开处刑你们厚颜无耻的盗窃行为。    
  */
-const characterTitle = {
+window.noname_character_characterTitle = {
 	//标准包
 	caocao: "魏武帝",
 	simayi: "狼顾之鬼",
@@ -2253,4 +2253,3 @@ const characterTitle = {
 	suyue: "苏越",
 	guotiying: "郭缇萦",
 };
-export default characterTitle;
