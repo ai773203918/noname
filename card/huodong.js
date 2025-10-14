@@ -17,7 +17,7 @@ game.import("card", function () {
 					if (!card.storage || typeof card.storage.mb_qingnangshu_skill != "number") {
 						card.storage ??= {};
 						card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
-						lib.skill.mb_qingnangshu_skill.broadcast(card, player);
+						lib.skill.mb_qingnangshu_skill.broadcast(card, null, player);
 					}
 					if (player.getVCards("e", i => i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0).length) {
 						player.markSkill("mb_qingnangshu_skill");
@@ -1758,66 +1758,66 @@ game.import("card", function () {
 				audio: "zhaohan1.mp3",
 				trigger: { player: "phaseZhunbeiBegin" },
 				getIndex(event, player) {
-					let cards = player.getVCards("e", card => card.name == "mb_qingnangshu");
+					let cards = player.getCards("e", card => card.name == "mb_qingnangshu");
 					if (!cards.length) {
 						return 1;
 					}
-					cards = cards.filter(card => card.storage?.mb_qingnangshu_skill > 0);
 					return cards;
 				},
 				filter(event, player, triggername, indexedData) {
-					return indexedData;
+					if (get.itemtype(indexedData) != "card") {
+						return indexedData;
+					}
+					let vcard = indexedData[indexedData["cardSymbol"]];
+					return vcard.storage?.mb_qingnangshu_skill > 0;
 				},
 				forced: true,
 				async content(event, trigger, player) {
 					/*player.flashAvatar(event.name, "yangbiao");
-            		player.chat("天道昭昭，再兴如光武亦可期！");*/
+											player.chat("天道昭昭，再兴如光武亦可期！");*/
 					const card = event.indexedData;
-					if (get.itemtype(card) == "vcard") {
-						card.storage.mb_qingnangshu_skill--;
-						game.log(card, "减少了", "#y1点", "#g耐久值");
-						await lib.skill.mb_qingnangshu_skill.broadcast(card, get.owner(card));
+					if (get.itemtype(card) == "card") {
+						const vcard = card[card["cardSymbol"]];
+						vcard.storage.mb_qingnangshu_skill--;
+						game.log(vcard, "减少了", "#y1点", "#g耐久值");
+						await lib.skill.mb_qingnangshu_skill.broadcast(vcard, card, get.owner(card));
 					}
 					await player.gainMaxHp();
 					await player.recover();
 				},
-				async broadcast(card, player) {
+				async broadcast(vcard, card, player) {
 					game.broadcast(
-						(card, storage) => {
-							card.storage = storage;
+						(vcard, storage) => {
+							vcard.storage = storage;
 						},
-						card,
-						card.storage
+						vcard,
+						vcard.storage
 					);
-					if (get.is.ordinaryCard(card)) {
+					if (get.is.ordinaryCard(vcard)) {
 						game.broadcastAll(
 							(vcard, num) => {
 								vcard.cards[0].storage.mb_qingnangshu_skill = num;
 							},
-							card,
-							card.storage.mb_qingnangshu_skill
+							vcard,
+							vcard.storage.mb_qingnangshu_skill
 						);
-					}
-					if (!player) {
-						player = get.owner(card);
 					}
 					if (player) {
 						player.markSkill("mb_qingnangshu_skill");
 					}
-					if (card.storage.mb_qingnangshu_skill <= 0) {
+					if (vcard.storage.mb_qingnangshu_skill <= 0) {
 						if (player) {
-							let cardx = player.getCards("e", i => i.name == "mb_qingnangshu").find(i => i[i.cardSymbol] == card);
-							if (cardx) {
-								await player.lose(cardx, ui.special);
-								player.$throw(cardx, 1000);
+							if (card) {
+								await player.lose(card, ui.special);
+								player.$throw(card, 1000);
 							}
-							if (!player.getVCards("e", i => i.name == "mb_qingnangshu" && i != card && i.storage?.mb_qingnangshu_skill > 0).length) {
+							if (!player.getVCards("e", i => i.name == "mb_qingnangshu" && i != vcard && i.storage?.mb_qingnangshu_skill > 0).length) {
 								player.unmarkSkill("mb_qingnangshu_skill");
 							}
 						} else {
-							await game.cardsGotoSpecial(card.cards);
+							await game.cardsGotoSpecial(card);
 						}
-						game.log(card.cards, "被移出了游戏");
+						game.log(card, "被移出了游戏");
 					}
 				},
 			},
@@ -2222,7 +2222,7 @@ game.import("card", function () {
 							: {
 									bool: true,
 									targets: targets,
-							  };
+								};
 				},
 				async content(event, trigger, player) {
 					const target = event.targets[0];
@@ -2298,7 +2298,7 @@ game.import("card", function () {
 			mb_chuanguoyuxi_append: '<span style="font-family: yuanli">受命于天，既寿永昌！</span>',
 			mb_chuanguoyuxi_skill: "传国玉玺",
 			mb_chuanguoyuxi_skill_info: "锁定技，弃牌阶段开始时，你摸一张牌且手牌上限永久+2，然后若你不为主公，你失去1点体力。",
-		
+
 			jianhao: "见好就收",
 			jianhao_bg: "收",
 			jianhao_info: "出牌阶段，对你使用。你展示牌堆顶一张牌，猜测牌堆顶的下张牌点数大于或小于此牌并展示。若猜对，你可选择一项：1.获得所有展示牌；2.再次猜测。",
@@ -2427,7 +2427,7 @@ game.import("card", function () {
 		list: [
 			["heart", 9, "mb_qingnangshu"],
 			["spade", 13, "mb_chuanguoyuxi"],
-			
+
 			[lib.suit.randomGet(), get.rand(1, 13), "haoyun"],
 			[lib.suit.randomGet(), get.rand(1, 13), "haoyun"],
 
