@@ -13,17 +13,17 @@ game.import("card", function () {
 				subtype: "equip5",
 				skills: ["mb_qingnangshu_skill"],
 				maxNum: 3,
-				async onEquip(event, trigger, player) {
+				onEquip() {
 					if (!card.storage || typeof card.storage.mb_qingnangshu_skill != "number") {
 						card.storage ??= {};
 						card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
-						await lib.skill.mb_qingnangshu_skill.broadcast(card, player);
+						lib.skill.mb_qingnangshu_skill.broadcast(card, player);
 					}
 					if (player.getVCards("e", i => i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0).length) {
 						player.markSkill("mb_qingnangshu_skill");
 					}
 				},
-				async onLose(event, trigger, player) {
+				onLose() {
 					if (!player.getVCards("e", i => i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0).length) {
 						player.unmarkSkill("mb_qingnangshu_skill");
 					} else {
