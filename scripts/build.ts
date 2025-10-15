@@ -7,9 +7,7 @@ import path from "path";
 import fs from "fs";
 import JSZip from "jszip";
 
-const argv = minimist(process.argv.slice(2), {
-	boolean: true,
-});
+const argv = minimist(process.argv.slice(2));
 
 const getDiffResources = () => {
 	const latestTag = execSync("git describe --tags --abbrev=0").toString().trim();
@@ -57,6 +55,7 @@ if (argv.mode == "full") {
 	staticModules.push({ src: "audio", dest: "" });
 	staticModules.push({ src: "image", dest: "" });
 	staticModules.push({ src: "extension", dest: "" });
+	staticModules.push({ src: "scripts/noname-server.exe", dest: "" });
 	staticModules.push(...sourceCode);
 }
 //离线包
@@ -65,6 +64,7 @@ else if (argv.mode == "diff") {
 	staticModules.push({ src: "extension/boss", dest: "extension" });
 	staticModules.push({ src: "extension/cardpile", dest: "extension" });
 	staticModules.push({ src: "extension/coin", dest: "extension" });
+	staticModules.push({ src: "scripts/noname-server.exe", dest: "" });
 	staticModules.push(...sourceCode);
 }
 //无资源包
