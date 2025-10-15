@@ -3666,7 +3666,7 @@ export class Library {
 				die_move: {
 					name: "阵亡效果",
 					intro: "阵亡后武将的显示效果",
-					init: "flip",
+					init: "off",
 					unfrequent: true,
 					item: {
 						off: "关闭",
