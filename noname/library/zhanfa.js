@@ -3015,6 +3015,9 @@ export class ZhanfaManager {
 	 * @param {Library} lib
 	 */
 	constructor(lib) {
+		lib.cardPack["zhanfa"] = [];
+		lib.translate["zhanfa_card_config"] = "战法";
+		lib.translate["zhanfa_cardsInfo"] = "这里是用来浏览战法的，这些不是卡牌！";
 		for (const id in _zhanfa) {
 			let { skill, rarity, translate, info, card, ...args } = _zhanfa[id];
 			if (typeof skill != "string") {
@@ -3036,7 +3039,10 @@ export class ZhanfaManager {
 			if (!card.cardimage && !card.image) {
 				card.image = `image/zhanfa/${id}.png`;
 			}
+			card.type = "zhanfa";
+			card.subtype = `zf_${rarity}`;
 			lib.card[id] = card;
+			lib.cardPack["zhanfa"].push(id);
 			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 		}
 		this.#zhanfa = _zhanfa;
@@ -3082,7 +3088,10 @@ export class ZhanfaManager {
 		if (!card.cardimage && !card.image) {
 			card.image = `image/zhanfa/${id}.png`;
 		}
+		card.type = "zhanfa";
+		card.subtype = `zf_${rarity}`;
 		lib.card[id] = card;
+		lib.cardPack["zhanfa"].push(id);
 		this.#zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 	}
 
