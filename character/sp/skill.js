@@ -31175,7 +31175,6 @@ const skills = {
 			if (!list.length) {
 				return;
 			}
-			//孩子们莫慌，美化来也！
 			let num2 = 0,
 				skillMap = {};
 			for (const i of list) {
@@ -31191,62 +31190,68 @@ const skills = {
 			if (num2 == 0) {
 				return;
 			}
-			const videoId = lib.status.videoId++;
-			const createDialog = function (list, num2, skillMap, id) {
-				let dialog = ui.create.dialog("请选择获得至多两个技能", [list, "character"]);
-				if (list.length > 6) {
-					const width = list.length * 125;
-					dialog.style.setProperty("width", width + "px", "important");
-					dialog.style.setProperty("left", `calc(50% - ${width / 2}px)`, "important");
-				}
-				for (let j = 0; j < num2; j++) {
-					let skills2 = [];
-					list.forEach(name => {
-						const item = skillMap[name][j];
-						if (item) {
-							skills2.push([item, get.translation(item)]);
-						} else {
-							skills2.push(["taofen", "掏粪"]);
-						}
-					});
-					dialog.add([skills2, "tdnodes"]);
-				}
-				dialog.buttons.forEach(button => {
-					if (!list.includes(button.link)) {
-						let margin = "25px";
-						button.style.setProperty("margin-left", margin, "important");
-						button.style.setProperty("margin-right", margin, "important");
-					} else {
-						button.style.setProperty("opacity", "1", "important");
-						//彩蛋喵
-						if (!skillMap[button.link]?.length) {
-    						setTimeout(() => {
-        						button.setBackground("sunce", "character");
-        						button.node.name.innerText = "蜀奸";
-        						button.node.name.dataset.nature = "wood";
-    						}, 824);
-						}
-					}
-					if (button.link == "taofen") {
-						button.style.setProperty("opacity", "0", "important");
-					}
-				});
-				dialog.videoId = id;
-				dialog.style.display = "none";
-				return dialog;
-			};
-			if (player.isOnline()) {
-				player.send(createDialog, list, num2, skillMap, videoId);
-			} else {
-				createDialog(list, num2, skillMap, videoId);
-			}
-			const result = await player
-				.chooseButton(get.idDialog(videoId), [1, 2], true)
+			const { result } = await player
+				.chooseButton(
+					[
+						[["请选择获得至多两个技能"], "addNewRow"],
+						[list, "character"],
+						[
+							dialog => {
+								dialog.css({
+									top: "20%",
+								});
+								const { list, num2, skillMap } = get.event();
+								if (list.length > 6) {
+									const width = list.length * 125;
+									dialog.style.setProperty("width", width + "px", "important");
+									dialog.style.setProperty("left", `calc(50% - ${width / 2}px)`, "important");
+								}
+								for (let j = 0; j < num2; j++) {
+									let skills2 = [];
+									list.forEach(name => {
+										const item = skillMap[name][j];
+										if (item) {
+											skills2.push([item, get.translation(item)]);
+										} else {
+											skills2.push(["refuhan_kongwei", "空位"]);
+										}
+									});
+									dialog.add([skills2, "tdnodes"]);
+								}
+								dialog.buttons.forEach(button => {
+									if (!list.includes(button.link)) {
+										let margin = "25px";
+										button.style.setProperty("margin-left", margin, "important");
+										button.style.setProperty("margin-right", margin, "important");
+									} else {
+										button.style.setProperty("opacity", "1", "important");
+										if (!skillMap[button.link]?.length) {
+											setTimeout(() => {
+												button.setBackground("sunce", "character");
+												button.node.name.innerText = "蜀奸";
+												button.node.name.dataset.nature = "wood";
+											}, 824);
+										}
+									}
+									if (button.link == "refuhan_kongwei") {
+										button.style.setProperty("opacity", "0", "important");
+									}
+								});
+							},
+							"handle",
+						],
+					],
+					[1, 2],
+					true
+				)
 				.set("filterButton", button => {
 					const list2 = get.event("list2");
 					return !list2.includes(button.link);
 				})
-				.set("list2", list.slice().add("taofen"))
+				.set("list", list.slice())
+				.set("list2", list.slice().add("refuhan_kongwei"))
+				.set("num2", num2)
+				.set("skillMap", skillMap)
 				.set("ai", button => {
 					const list2 = get.event("list2");
 					const skill = button.link;
@@ -31254,25 +31259,23 @@ const skills = {
 						return -114514;
 					}
 					return get.skillRank(skill, "inout");
-				})
-				.forResult();
-			game.broadcastAll("closeDialog", videoId);
+				});
 			if (result?.links?.length) {
 				await player.addSkills(result.links);
+				/* game.broadcastAll(function (list) {
+					game.expandSkills(list);
+					for (const i of list) {
+						var info = lib.skill[i];
+						if (!info) {
+							continue;
+						}
+						if (!info.audioname2) {
+							info.audioname2 = {};
+						}
+						info.audioname2.dc_zhaoxiang = "fuhan";
+					}
+				}, result.links); */
 			}
-			/*game.broadcastAll(function (list) {
-				game.expandSkills(list);
-				for (const i of list) {
-					var info = lib.skill[i];
-					if (!info) {
-						continue;
-					}
-					if (!info.audioname2) {
-						info.audioname2 = {};
-					}
-					info.audioname2.dc_zhaoxiang = "fuhan";
-				}
-			}, result.links);*/
 			if (player.isMinHp()) {
 				await player.recover();
 			}
