@@ -7203,9 +7203,6 @@ player.removeVirtualEquip(card);
 		if (event.dialog == undefined) {
 			event.dialog = ui.dialog;
 		}
-		if (get.objtype(event.css) == "object") {
-			event.dialog.css(event.css);
-		}
 		if (event.isMine() || event.dialogdisplay) {
 			event.dialog.style.display = "";
 			event.dialog.open();
@@ -7773,9 +7770,6 @@ player.removeVirtualEquip(card);
 			}
 			if (event.dialog == undefined) {
 				event.dialog = ui.dialog;
-			}
-			if (get.objtype(event.css) == "object") {
-				event.dialog.css(event.css);
 			}
 			if (event.isMine() || event.dialogdisplay) {
 				event.dialog.style.display = "";
