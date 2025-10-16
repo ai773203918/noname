@@ -1980,16 +1980,6 @@ const _zhanfa = {
 					await player.recover(num);
 				});
 			},
-			onremove(player, skill) {
-				const num = get.info(skill).num;
-				const next = game.createEvent(skill + "_onremove", false, get.event());
-				next.set("player", player);
-				next.set("num", num);
-				next.setContent(async (event, trigger, player) => {
-					const { num } = event;
-					await player.loseMaxHp(num);
-				});
-			},
 		},
 	},
 	//体魄Ⅱ
@@ -2845,16 +2835,6 @@ const _zhanfa = {
 				next.setContent(async (event, trigger, player) => {
 					const { num } = event;
 					await player.gainMaxHp(num);
-				});
-			},
-			onremove(player, skill) {
-				const num = get.info(skill).num;
-				const next = game.createEvent(skill + "_onremove", false, get.event());
-				next.set("player", player);
-				next.set("num", num);
-				next.setContent(async (event, trigger, player) => {
-					const { num } = event;
-					await player.loseMaxHp(num);
 				});
 			},
 		},
