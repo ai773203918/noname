@@ -10068,8 +10068,8 @@ export class Player extends HTMLDivElement {
 				this,
 				skill
 			);
-			if (!player.hasSkill(skill, true)) {
-				player.removeSkill(skill);
+			if (!this.hasSkill(skill, true)) {
+				this.removeSkill(skill);
 			}
 		}
 		return skill;
