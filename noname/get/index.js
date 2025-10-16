@@ -1,19 +1,17 @@
-import { userAgentLowerCase, GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "../util/index.js";
-import { game } from "../game/index.js";
-import { lib } from "../library/index.js";
-import { _status } from "../status/index.js";
-import { ui } from "../ui/index.js";
-import { CacheContext } from "../library/cache/cacheContext.js";
 import { Is } from "./is.js";
 import { Promises } from "./promises.js";
-import { rootURL } from "../../noname.js";
-import * as pinyinPro from "./pinyins/index.js";
-import { Audio } from "./audio.js";
-import security from "../util/security.js";
-import { CodeSnippet, ErrorManager } from "../util/error.js";
+import { rootURL, game, lib, _status, ui } from "@noname";
+import * as pinyinPro from "pinyin-pro";
+import NonameDictionary from "./pinyins/noname-dict.js";
+import { Audio } from "./audio.ts";
+import { GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "@/util/index.js";
+import security from "@/util/security.js";
+import { CodeSnippet, ErrorManager } from "@/util/error.ts";
 
+import JSZip from "jszip";
 import { GetCompatible } from "./compatible.js";
-import { HTMLPoptipElement } from "../library/poptip.js";
+import { HTMLPoptipElement } from "@/library/poptip.js";
+import { CacheContext } from "@/library/cache/cacheContext.js";
 
 // 用于标识Map、Set等对象在序列化中的类型
 // 使用了md5("__noname_type")的值作为键
@@ -210,7 +208,7 @@ export class Get extends GetCompatible {
 	/**
 	 * 获取当前事件是由何skill/card事件衍生并生成相应的卡牌信息提示
 	 * @param {Player} player
-	 * @param {GameEventPromise} sourceEvent
+	 * @param {GameEvent} sourceEvent
 	 * @returns {GameEvent|string}
 	 */
 	cardsetion(player, sourceEvent) {
@@ -1336,13 +1334,7 @@ export class Get extends GetCompatible {
 	 * @param { (zip: JSZip) => any } callback
 	 */
 	zip(callback) {
-		if (!window.JSZip) {
-			lib.init.js(lib.assetURL + "game", "jszip", function () {
-				callback(new JSZip());
-			});
-		} else {
-			callback(new JSZip());
-		}
+		callback(new JSZip());
 	}
 	delayx(num, max) {
 		if (typeof num != "number") {
@@ -3038,7 +3030,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @returns { 'dialog' }
 	 *
 	 * @overload
-	 * @param { GameEvent | GameEventPromise } obj
+	 * @param { GameEvent } obj
 	 * @returns { 'event' }
 	 */
 	itemtype(obj) {
@@ -3100,7 +3092,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		if (obj instanceof lib.element.Dialog) {
 			return "dialog";
 		}
-		if (obj instanceof lib.element.GameEvent || obj instanceof lib.element.GameEventPromise) {
+		if (obj instanceof lib.element.GameEvent) {
 			return "event";
 		}
 
@@ -7362,6 +7354,8 @@ freezeSlot(Get.prototype, "isFunctionBody");
 freezeSlot(Get.prototype, "pureFunctionStr");
 freezeSlot(Get.prototype, "funcInfoOL");
 freezeSlot(Get.prototype, "infoFuncOL");
+
+pinyinPro.addDict(NonameDictionary);
 
 export let get = new Get();
 /**

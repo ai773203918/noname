@@ -1,7 +1,4 @@
-import { lib } from "../library/index.js";
-import { game } from "../game/index.js";
-import { get } from "../get/index.js";
-import { _status } from "../status/index.js";
+import { _status, game, get, lib } from "@noname";
 
 /**
  * 战法！！！！！有几种类型的战法是有模板可以套的，详情请看library的index.js，搜索zf_开头的技能
@@ -1208,7 +1205,7 @@ const _zhanfa = {
 				const num = player.getHistory("gain", evt => evt.getParent()?.name == "draw" && evt.getParent("phaseDraw") == trigger).reduce((sum, evt) => sum + evt.cards.length, 0);
 				if (num) {
 					player.addMark(event.name, Math.ceil(num / 2), false);
-					player.when({ global: "phaseAfter" }).then(() => {
+					player.when({ global: "phaseAfter" }).step(async (event, trigger, player) => {
 						player.clearMark("zf_jinnangji", false);
 					});
 				}

@@ -20,7 +20,6 @@ game.import("character", function () {
 			standard: characterSort,
 		},
 		characterFilter: { ...characterFilters },
-		characterTitle: {},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
 		card: { ...cards },

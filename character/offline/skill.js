@@ -11681,10 +11681,8 @@ const skills = {
 	jymushi: {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return get
-				.info("jymushi")
-				.logTarget(event, player)
-				.some(current => current.countGainableCards(player, "he") || current.countCards("h") != current.getHp());
+			const targets = get.info("jymushi").logTarget(event, player);
+			return targets.length && targets.every(current => current.countCards("h") >= current.getHp());
 		},
 		async cost(event, trigger, player) {
 			const targets = get.info(event.skill).logTarget(trigger, player);
@@ -11726,7 +11724,7 @@ const skills = {
 			};
 		},
 		logTarget(event, player) {
-			return game.filterPlayer(current => current.countCards("h") >= current.getHp() && current != player).sortBySeat();
+			return game.filterPlayer(current => current != player).sortBySeat();
 		},
 		async content(event, trigger, player) {
 			const { cost_data, targets } = event;

@@ -189,11 +189,11 @@ game.import("card", function () {
 								if (event.baseDamage + event.extraDamage <= 0 && !game.hasNature(event.card, "ice")) {
 									return false;
 								}
+								if (!game.hasNature(event.card, "ice") && !player.hasSkillTag("jueqing", false, target) && !target.hasSkill("gangzhi") && get.damageEffect(target, player, target, get.nature(event.card)) >= 0) {
+									return false;
+								}
 								if (event.baseDamage + event.extraDamage >= target.hp + (player.hasSkillTag("jueqing", false, target) || target.hasSkill("gangzhi") ? 0 : target.hujia)) {
 									return true;
-								}
-								if (!game.hasNature(event.card, "ice") && get.damageEffect(target, player, target, get.nature(event.card)) >= 0) {
-									return false;
 								}
 								if (
 									event.shanRequired > 1 &&
