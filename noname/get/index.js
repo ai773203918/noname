@@ -1860,8 +1860,10 @@ export class Get extends GetCompatible {
 			over: _status.over,
 			inpile: lib.inpile,
 			inpile_nature: lib.inpile_nature,
-			renku: _status.renku,
 		};
+		for (const [key, value] of lib.commonArea) {
+			state[value.areaStatusName] = _status[value.areaStatusName];
+		}
 		for (var i in lib.playerOL) {
 			state.players[i] = lib.playerOL[i].getState();
 		}

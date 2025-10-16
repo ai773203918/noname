@@ -6833,7 +6833,11 @@ const skills = {
 			if (result.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card.sha--;
+					const stat = trigger.player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 				if (get.color(trigger.card) == "red") {
 					player.draw();
@@ -11856,7 +11860,7 @@ const skills = {
 						return result;
 					};
 				},
-			}
+			},
 		},
 	},
 	sishu2: {

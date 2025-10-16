@@ -1374,7 +1374,7 @@ game.import("card", function () {
 							next.autochoose = lib.filter.autoRespondSha;
 							result = await next.forResult();
 						}
-						if (result.bool === false) {
+						if (!result?.bool) {
 							await target.damage();
 							break;
 						} else {
@@ -1762,7 +1762,7 @@ game.import("card", function () {
 							next.autochoose = lib.filter.autoRespondShan;
 							result = await next.forResult();
 						}
-						if (result.bool === false) {
+						if (!result?.bool) {
 							await target.damage();
 							break;
 						} else {

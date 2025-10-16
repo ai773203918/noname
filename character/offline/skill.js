@@ -3197,9 +3197,7 @@ const skills = {
 	},
 	zj_jianxi: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		frequent: true,
 		initSkill(name) {
 			game.broadcastAll(() => {
@@ -3245,219 +3243,171 @@ const skills = {
 			return _status.jianxiSkill[name];
 		},
 		async content(event, trigger, player) {
-			const result = await player.draw().forResult();
-			if (!result?.length) {
+			let result = await player.draw().forResult();
+			if (get.itemtype(result) !== "cards") {
 				return;
 			}
 			await player.showCards(result, `${get.translation(player)}发动了【兼习】`);
-			const name = result[0].name,
-				chooseSkill = get.info(event.name).chooseSkill(player, name);
-			const result2 = await chooseSkill.forResult();
-			let skill = null,
-				str = `【${get.translation(name)}】`;
-			if (result2?.name?.length) {
-				if (result2.name in lib.skill) {
-					skill = result2.name;
+			const name = get.name(result[0]);
+			result = await player
+				.chooseButton([
+					[
+						dialog => {
+							dialog.add("兼习", "forcebutton");
+							dialog.addText(`声明一个含有【${get.translation(get.event("cardName"))}】的技能，或点击“取消”令你使用基本牌的数值+1`);
+							const caption = ui.create.div(".searcher.caption");
+							const input = document.createElement("input").css({
+								textAlign: "center",
+								border: "solid 2px #294510",
+								borderRadius: "6px",
+								fontWeight: "bold",
+								fontSize: "21px",
+							});
+							input.type = "text";
+							input.placeholder = "请输入技能id/技能名";
+							input.spellcheck = false;
+							//使用click事件确定，因为用input事件，难以解决按下a键会触发自动托管的bug
+							let find = ui.create.button(["find", "确定"], "tdnodes");
+							find.style.display = "inline";
+							const updateFind = () => {
+								const value = input.value.trim();
+								caption.link = value;
+								ui.selected.buttons.add(caption);
+								ui.create.confirm();
+								ui.click.ok();
+							};
+							find.addEventListener("click", updateFind);
+							input.onkeydown = function (e) {
+								e.stopPropagation();
+								if (e.code == "Enter") {
+									updateFind();
+								}
+							};
+							//阻止冒泡以防止触发窗口被拖动而无法选中文字
+							input.onmousedown = function (e) {
+								e.stopPropagation();
+							};
+							caption.append(input, find);
+							dialog.content.appendChild(caption);
+						},
+						"handle",
+					],
+				])
+				.set("cardName", name)
+				.set("processAI", () => {
+					// 单纯输入字符串，不是选牌或者按钮，需要使用processAI直接输出选择结果
+					const skills = get
+						.info("zj_jianxi")
+						.initSkill(get.event("cardName"))
+						.filter(skill => {
+							return !game.hasPlayer(current => current.hasSkill(skill[0]));
+						})
+						.sort((a, b) => {
+							let value = list => {
+								const [skill, name] = list;
+								let value = get.skillRank(skill, "inout") * get.rank(name, true);
+								if (["relonghun", "dunshi", "olfuhun", "mbjuejin", "dcjiushi"].includes(skill)) {
+									value *= 24;
+								}
+								const info = get.info(skill);
+								if (info?.ai?.neg) {
+									value = 0;
+								}
+								if (info?.ai?.combo) {
+									let skills = info.ai.combo;
+									if (!Array.isArray(skills)) {
+										skills = [skills];
+									}
+									if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
+										value = 0;
+									}
+								}
+								return value;
+							};
+							return value(b) - value(a);
+						});
+					const choice = skills?.length ? skills[0][0] : ["wusheng", "jiang", "hunzi"].randomGet();
+					return { bool: true, links: [choice] };
+				})
+				.set("switchToAuto", () => {
+					_status.event.result = "ai";
+					_status.event.dialog?.close();
+					ui.confirm?.close();
+				})
+				.forResult();
+			if (!result?.links?.length) {
+				player.addMark("zj_jianxi_effect", 1, false);
+				return;
+			} else {
+				let skill,
+					str = `【${get.translation(name)}】`,
+					[link] = result.links;
+				if (link in lib.skill) {
+					skill = link;
 				} else {
 					const skills = get
 						.info(event.name)
-						?.initSkill(name)
-						?.filter(skill => {
+						.initSkill(name)
+						.filter(skill => {
 							if (game.hasPlayer(current => current.hasSkill(skill[0]))) {
 								return false;
 							}
-							return get.translation(skill[0], "skill") == result2.name;
+							return get.translation(skill[0], "skill") == link;
 						});
 					if (skills.length) {
-						if (skills.length > 1) {
-							const result3 = await player
-								.chooseButton(
-									[
-										"选择你要声明的技能",
-										[
-											skills,
-											(item, type, position, noclick, node) => {
-												node = ui.create.buttonPresets.skill(item, "skill", position, noclick);
-												node._customintro = function (uiintro, evt) {
-													const skill = node.link;
-													uiintro.add(get.translation(skill));
-													if (node.owner) {
-														uiintro.add(`持有者 ${get.slimName(node.owner)}`);
-													}
-												};
-												return node;
-											},
-										],
-									],
-									true
-								)
-								.forResult();
-							if (result3?.bool) {
-								skill = result3.links[0];
-							}
-						} else {
-							skill = skills[0][0];
+						const result =
+							skills.length == 1
+								? { bool: true, links: skills }
+								: await player
+										.chooseButton(
+											[
+												"选择你要声明的技能",
+												[
+													skills,
+													(item, type, position, noclick, node) => {
+														node = ui.create.buttonPresets.skill(item, "skill", position, noclick);
+														node._customintro = function (uiintro, evt) {
+															const skill = node.link;
+															uiintro.add(get.translation(skill));
+															if (node.owner) {
+																uiintro.add(`持有者 ${get.slimName(node.owner)}`);
+															}
+														};
+														return node;
+													},
+												],
+											],
+											true
+										)
+										.forResult();
+						if (result?.links?.length) {
+							skill = Array.isArray(result.links[0]) ? result.links[0][0] : result.links[0];
 						}
-					} else {
-						skill = result2.name;
 					}
 				}
-			}
-			if (skill !== null) {
-				game.log(player, "声明了技能", `【${get.translation(skill)}】`);
-				player.chat(`我声明技能【${get.translation(skill)}】`);
-				if (
-					get.skillInfoTranslation(skill).includes(str) &&
-					!game.hasPlayer(current => {
-						return current.hasSkill(skill);
-					})
-				) {
-					const skills = get.info(event.name)?.initSkill(name),
-						list = skills.find(info => info[0] == skill);
-					if (list[1]) {
-						player.flashAvatar(event.name, list[1]);
-					}
-					await player.addSkills(skill);
-					return;
-				}
-				game.log("可是", `【${get.translation(skill)}】`, "并不符合条件！");
-				player.popup("杯具");
-				await game.delay();
-			}
-			player.addMark("zj_jianxi_effect", 1, false);
-		},
-		chooseSkill() {
-			const chooseSkill = game.createEvent("chooseSkillEvent", false);
-			for (const arg of arguments) {
-				if (typeof arg === "string") {
-					chooseSkill.set("cardName", arg);
-				} else if (get.itemtype(arg) === "player") {
-					chooseSkill.set("player", arg);
-				}
-			}
-			chooseSkill._args = Array.from(arguments);
-			chooseSkill.setContent(get.info("zj_jianxi").chooseSkillEvent);
-			return chooseSkill;
-		},
-		async chooseSkillEvent(event, trigger, player) {
-			let result;
-			if (event.isMine()) {
-				result = await new Promise(function (resolve, reject) {
-					event.settleed = false;
-					event.dialog = ui.create.dialog("兼习", "forcebutton", "hidden");
-					event.dialog.addText(`声明一个含有【${get.translation(event.cardName)}】的技能，或直接确定令你使用基本牌的数值+1`);
-					event.switchToAuto = function () {
-						event._result = "ai";
-						event.dialog.close();
-						if (ui.confirm) {
-							ui.confirm.close();
+				if (skill) {
+					game.log(player, "声明了技能", `【${get.translation(skill)}】`);
+					player.chat(`我声明技能【${get.translation(skill)}】`);
+					if (
+						get.skillInfoTranslation(skill).includes(str) &&
+						!game.hasPlayer(current => {
+							return current.hasSkill(skill);
+						})
+					) {
+						const skills = get.info(event.name).initSkill(name),
+							list = skills.find(info => info[0] == skill);
+						if (list[1]) {
+							player.flashAvatar(event.name, list[1]);
 						}
-						game.resume();
-						_status.imchoosing = false;
-						resolve(event._result);
-					};
-
-					const input = document.createElement("input");
-					input.type = "text";
-					input.classList.add("add-setting");
-					input.placeholder = "输入技能名";
-					input.style.margin = "0";
-					input.style.width = "30%";
-					input.style.position = "relative";
-					input.onchange = function () {
-						event.skillName = this.value.toString();
-					};
-
-					event.dialog.content.appendChild(input);
-					event.dialog.add(" <br> ");
-					event.dialog.open();
-					event.custom.replace.confirm = function (bool) {
-						if (bool && event.skillName !== "") {
-							event._result = { bool: true, name: event.skillName };
-						} else {
-							event._result = { bool: false };
-						}
-						event.dialog.close();
-						if (ui.confirm) {
-							ui.confirm.close();
-						}
-						game.resume();
-						_status.imchoosing = false;
-						resolve(event._result);
-					};
-					ui.create.confirm("o");
-					game.pause();
-					game.countChoose();
-					event.choosing = true;
-				});
-			} else if (event.isOnline()) {
-				result = await new Promise(resolve => {
-					event.player.send(
-						function (player, name, event, skills) {
-							game.me.applySkills(skills);
-							const next = get.info("zj_jianxi").chooseSkill(player, name);
-							next._modparent = event;
-							game.resume();
-						},
-						event.player,
-						event.cardName,
-						get.stringifiedResult(event.parent),
-						get.skillState(event.player)
-					);
-					event.player.wait();
-					game.pause();
-					if (!lib.node?.waitForResult || !event.player.playerid) {
-						resolve(null);
+						await player.addSkills(skill);
 						return;
 					}
-
-					if (!Array.isArray(lib.node.waitForResult[event.player.playerid])) {
-						lib.node.waitForResult[event.player.playerid] = [resolve];
-					} else {
-						lib.node.waitForResult[event.player.playerid].push(resolve);
-					}
-				});
-			} else {
-				result = "ai";
-			}
-			if (!result || result == "ai") {
-				const skills = get
-					.info("zj_jianxi")
-					?.initSkill(event.cardName)
-					.filter(skill => {
-						return !game.hasPlayer(current => current.hasSkill(skill[0]));
-					})
-					.sort((a, b) => {
-						let value = list => {
-							const [skill, name] = list;
-							let value = get.skillRank(skill, "inout") * get.rank(name, true);
-							if (["relonghun", "dunshi", "olfuhun", "mbjuejin", "dcjiushi"].includes(skill)) {
-								value *= 24;
-							}
-							const info = get.info(skill);
-							if (info?.ai?.neg) {
-								value = 0;
-							}
-							if (info?.ai?.combo) {
-								let skills = info.ai.combo;
-								if (!Array.isArray(skills)) {
-									skills = [skills];
-								}
-								if (!skills.every(skill => player.hasSkill(skill, null, null, false))) {
-									value = 0;
-								}
-							}
-							return value;
-						};
-						return value(b) - value(a);
-					});
-				if (skills?.length) {
-					result = { bool: true, name: skills[0][0] };
-				} else {
-					result = { bool: true, name: ["wusheng", "jiang", "hunzi"].randomGet() };
+					game.log("可是", `【${get.translation(skill)}】`, "并不符合条件！");
+					player.popup("杯具");
+					await game.delay();
 				}
+				player.addMark("zj_jianxi_effect", 1, false);
 			}
-			event.result = result;
 		},
 		ai: {
 			maixie: true,
@@ -3478,12 +3428,8 @@ const skills = {
 		group: "zj_jianxi_effect",
 		subSkill: {
 			effect: {
-				intro: {
-					content: "使用基本牌的数值+$",
-				},
-				trigger: {
-					player: ["useCard", "respond"],
-				},
+				intro: { content: "使用基本牌的数值+$" },
+				trigger: { player: ["useCard", "respond"] },
 				locked: false,
 				forced: true,
 				filter(event, player) {
@@ -3735,9 +3681,9 @@ const skills = {
 		},
 		//妈妈再也不用担心我一不小心就摸空牌堆辣！
 		frequent(event, player) {
-    		const num = ui.cardPile.childElementCount + ui.discardPile.childElementCount,
-        		num2 = player.getRoundHistory("useSkill", evt => evt.skill == "pejixin").length + 1;
-    		return num > num2;
+			const num = ui.cardPile.childElementCount + ui.discardPile.childElementCount,
+				num2 = player.getRoundHistory("useSkill", evt => evt.skill == "pejixin").length + 1;
+			return num > num2;
 		},
 		async content(event, trigger, player) {
 			const skill = "pejixin_count";
@@ -6371,10 +6317,13 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					const { card } = trigger;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat("card")[card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
 				},
 				mark: true,
@@ -20848,7 +20797,11 @@ const skills = {
 				let evt = trigger.getParent("useCard", true);
 				if (evt?.addCount !== false) {
 					evt.addCount = false;
-					evt.player.getStat().card.sha--;
+					const stat = evt.player.getStat().card,
+						name = evt.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 			} else if (trigger.player.isIn()) {
 				trigger.player.addTempSkill("tychengshi_tiaoxin", { global: "phaseAnyEnd" });
@@ -25351,7 +25304,11 @@ const skills = {
 			if (result.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card.sha--;
+					const stat = trigger.player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 				trigger.player.addTempSkill("vtbguisha_bonus");
 				if (!trigger.card.storage) {
@@ -34010,7 +33967,11 @@ const skills = {
 			await player.showCards(result, `${get.translation(player)}发动了【龙吟】`);
 			if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				trigger.player.getStat().card.sha--;
+				const stat = trigger.player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] === "number") {
+					stat[name]--;
+				}
 			}
 			if (get.color(result[0]) == get.color(trigger.card)) {
 				trigger.effectCount++;

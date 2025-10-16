@@ -4426,9 +4426,7 @@ const skills = {
 			"step 0";
 			var cards = _status.renku.slice();
 			game.cardsDiscard(cards).fromRenku = true;
-			_status.renku.removeArray(cards);
 			player.$throw(cards, 1000);
-			game.updateRenku();
 			game.log(cards, "从仁库进入了弃牌堆");
 			"step 1";
 			var targets = game.filterPlayer();

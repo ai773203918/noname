@@ -5662,7 +5662,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				onremove(player, skill) {
-					player.removeGaintag("dclvecheng_xiongluan");
+					player.removeGaintag(skill);
 					delete player.storage[skill];
 				},
 				filter(event, player) {
@@ -5683,10 +5683,14 @@ const skills = {
 				async content(event, trigger, player) {
 					if (trigger.name == "useCard") {
 						trigger.addCount = false;
-						trigger.player.getStat().card[trigger.card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 						return;
 					}
-					const targets = player.getStorage("dclvecheng_xiongluan").slice().sortBySeat();
+					const targets = player.getStorage(event.name).slice().sortBySeat();
 					if (!targets.length) {
 						return;
 					}

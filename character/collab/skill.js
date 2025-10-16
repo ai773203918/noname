@@ -21,12 +21,14 @@ const skills = {
 			if (event.name == "phaseZhunbei") {
 				return player.getStorage("oltuoquan").length;
 			}
-			if (!game.hasPlayer(current => {
-				if (get.mode() == "doudizhu") {
-					return current.identity == "fan";
-				}
-				return current != player;
-			})) {
+			if (
+				!game.hasPlayer(current => {
+					if (get.mode() == "doudizhu") {
+						return current.identity == "fan";
+					}
+					return current != player;
+				})
+			) {
 				return false;
 			}
 			return event.name != "phase" || game.phaseNumber == 0;
@@ -37,12 +39,14 @@ const skills = {
 				bool: true,
 			};
 			if (trigger.name != "phaseZhunbei") {
-				event.result.targets = game.filterPlayer(current => {
-					if (get.mode() == "doudizhu") {
-						return current.identity == "fan";
-					}
-					return current != player;
-				}).sortBySeat();
+				event.result.targets = game
+					.filterPlayer(current => {
+						if (get.mode() == "doudizhu") {
+							return current.identity == "fan";
+						}
+						return current != player;
+					})
+					.sortBySeat();
 			} else if (player.getStorage(event.skill).length == 1) {
 				event.result.cost_data = true;
 			}
@@ -72,9 +76,13 @@ const skills = {
 				next.player = player;
 				next.fuchens = nows;
 				next.setContent("emptyEvent");
-				game.broadcastAll((player, names) => {
-					player.tempname.removeArray(names);
-				}, player, nows);
+				game.broadcastAll(
+					(player, names) => {
+						player.tempname.removeArray(names);
+					},
+					player,
+					nows
+				);
 				await next;
 			}
 			const names = player.getStorage(event.name).randomGets(4);
@@ -103,9 +111,13 @@ const skills = {
 				}, []);
 				await player.addAdditionalSkills(event.name, skills);
 				player.markAuto(`${event.name}_current`, fuchens);
-				game.broadcastAll((player, names) => {
-					player.tempname.addArray(names);
-				}, player, fuchens);
+				game.broadcastAll(
+					(player, names) => {
+						player.tempname.addArray(names);
+					},
+					player,
+					fuchens
+				);
 				const next = game.createEvent("gainFuchen", false);
 				next.player = player;
 				next.fuchens = fuchens;
@@ -123,7 +135,7 @@ const skills = {
 		init() {
 			if (!_status._click_throwFlower) {
 				game.broadcastAll(() => {
-					_status._click_throwFlower = function() {
+					_status._click_throwFlower = function () {
 						const target = this,
 							player = game.me;
 						if (!player?._click_throwFlower?.includes(target)) {
@@ -137,7 +149,7 @@ const skills = {
 						}
 					};
 					game.countPlayer2(current => {
-						current.addEventListener('click', _status._click_throwFlower);
+						current.addEventListener("click", _status._click_throwFlower);
 					}, true);
 				});
 			}
@@ -245,9 +257,13 @@ const skills = {
 					return arr;
 				}, []);
 				await player.addAdditionalSkills("oltuoquan", skills);
-				game.broadcastAll((player, names) => {
-					player.tempname.removeArray(names);
-				}, player, removes);
+				game.broadcastAll(
+					(player, names) => {
+						player.tempname.removeArray(names);
+					},
+					player,
+					removes
+				);
 				const next = game.createEvent("removeFuchen", false);
 				next.player = player;
 				next.fuchens = removes;
@@ -1029,7 +1045,11 @@ const skills = {
 			if (bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 			} else {
 				const prompt = `弃置一张${get.translation(get.type2(trigger.card, player))}牌令${get.translation(trigger.card)}额外结算一次，否则无效`;
@@ -4049,9 +4069,9 @@ const skills = {
 					});
 					const cards = get.cards(3, true);
 					const gains = await player
-							.chooseButton(["虎翼：选择获得其中一张牌", cards], true)
-							.set("ai", button => get.value(button.link))
-							.forResult("links");
+						.chooseButton(["虎翼：选择获得其中一张牌", cards], true)
+						.set("ai", button => get.value(button.link))
+						.forResult("links");
 					if (gains?.length) {
 						await player.gain(gains, "draw");
 					}

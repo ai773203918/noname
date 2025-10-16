@@ -1816,7 +1816,6 @@ const skills = {
 				if (chooser === player) {
 					forceTargets.forEach(current => results.push([current, target]));
 				}
-
 			}
 			//统计票数
 			const ticketsMap = new Map();
@@ -4888,7 +4887,11 @@ const skills = {
 				var evt = trigger.getParent();
 				if (evt.addCount !== false) {
 					evt.addCount = false;
-					player.getStat().card.sha--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 				var map = trigger.getParent().customArgs;
 				var id = target.playerid;

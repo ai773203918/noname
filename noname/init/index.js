@@ -575,7 +575,6 @@ export async function boot() {
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "rank"));
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "replace"));
 	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "perfectPairs"));
-	toLoad.push(lib.init.promises.js(`${lib.assetURL}character`, "characterTitle"));
 
 	// @deprecated lib.init.jsForExtension
 	_status.javaScriptExtensions.forEach(ctx => {

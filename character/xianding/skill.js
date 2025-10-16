@@ -18242,7 +18242,11 @@ const skills = {
 			if (result.control == "选项一") {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card.sha--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 			} else {
 				var cards = trigger.cards.filterInD();

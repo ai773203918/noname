@@ -8838,11 +8838,15 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				content() {
+					player.removeSkill(event.name);
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat().card[trigger.card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
-					player.removeSkill("junkshengzhi_effect");
 				},
 				mark: true,
 				intro: { content: "使用下一张牌无距离和次数限制" },

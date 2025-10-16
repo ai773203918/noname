@@ -277,7 +277,11 @@ const skills = {
 							var evt = trigger.getParent();
 							if (evt.addCount !== false) {
 								evt.addCount = false;
-								player.getStat().card.sha--;
+								const stat = player.getStat().card,
+									name = trigger.card.name;
+								if (typeof stat[name] == "number") {
+									stat[name]--;
+								}
 							}
 							break;
 					}
@@ -3138,7 +3142,11 @@ const skills = {
 				},
 				content() {
 					trigger.addCount = false;
-					player.getStat("card")[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				},
 			},
 		},
@@ -4485,8 +4493,6 @@ const skills = {
 			if (!result || !result.links.length) {
 				if (_status.renku.length) {
 					const cards = _status.renku.slice(0);
-					_status.renku.length = 0;
-					game.updateRenku();
 					await player.gain(cards, "gain2", "fromRenku");
 				} else {
 					player.draw(2);
@@ -4536,7 +4542,6 @@ const skills = {
 			if (result.bool) {
 				var card = result.links[0];
 				player.$throw(card, 1000);
-				_status.renku.remove(card);
 				game.cardsDiscard(card).fromRenku = true;
 				game.log(player, "将", card, "置入了弃牌堆");
 				trigger.excluded.add(player);
@@ -9500,9 +9505,10 @@ const skills = {
 				trigger.directHit.addArray(game.players);
 			} else if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				var stat = player.getStat().card;
-				if (stat.sha) {
-					stat.sha--;
+				const stat = player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] == "number") {
+					stat[name]--;
 				}
 			}
 		},
@@ -10196,7 +10202,11 @@ const skills = {
 				var evt = trigger.getParent();
 				if (evt.addCount !== false) {
 					evt.addCount = false;
-					player.getStat().card.sha--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 				player.draw();
 			}
