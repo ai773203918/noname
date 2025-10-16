@@ -2401,7 +2401,11 @@ const skills = {
 				async content(event, trigger, player) {
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat("card")[trigger.card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
 					player.removeMark("potzhuangshi_limit", 1, false);
 					const num = player.countMark("potzhuangshi_limit");
@@ -7247,10 +7251,13 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					const { card } = trigger;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat("card")[card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
 				},
 				mark: true,

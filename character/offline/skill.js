@@ -6317,10 +6317,13 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					const { card } = trigger;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat("card")[card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
 				},
 				mark: true,
@@ -20796,7 +20799,11 @@ const skills = {
 				let evt = trigger.getParent("useCard", true);
 				if (evt?.addCount !== false) {
 					evt.addCount = false;
-					evt.player.getStat().card.sha--;
+					const stat = evt.player.getStat().card,
+						name = evt.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 			} else if (trigger.player.isIn()) {
 				trigger.player.addTempSkill("tychengshi_tiaoxin", { global: "phaseAnyEnd" });
@@ -25299,7 +25306,11 @@ const skills = {
 			if (result.bool) {
 				if (trigger.addCount !== false) {
 					trigger.addCount = false;
-					trigger.player.getStat().card.sha--;
+					const stat = trigger.player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 				trigger.player.addTempSkill("vtbguisha_bonus");
 				if (!trigger.card.storage) {
@@ -33958,7 +33969,11 @@ const skills = {
 			await player.showCards(result, `${get.translation(player)}发动了【龙吟】`);
 			if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				trigger.player.getStat().card.sha--;
+				const stat = trigger.player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] === "number") {
+					stat[name]--;
+				}
 			}
 			if (get.color(result[0]) == get.color(trigger.card)) {
 				trigger.effectCount++;

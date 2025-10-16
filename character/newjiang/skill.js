@@ -420,7 +420,9 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			const { targets: [target] } = event;
+			const {
+				targets: [target],
+			} = event;
 			await player.gainPlayerCard(target, "he", true);
 		},
 	},
@@ -432,13 +434,16 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
-				return get.tag({ name: info[2] }, "damage") > 0.5 && player.countCards("hs", card => {
-					if (get.color(card) != "black") {
-						return false;
-					}
-					const vcard = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
-					return player.canUse(vcard, trigger.player, false);
-				}) > 0;
+				return (
+					get.tag({ name: info[2] }, "damage") > 0.5 &&
+					player.countCards("hs", card => {
+						if (get.color(card) != "black") {
+							return false;
+						}
+						const vcard = get.autoViewAs({ name: info[2], nature: info[3] }, [card]);
+						return player.canUse(vcard, trigger.player, false);
+					}) > 0
+				);
 			});
 			if (!list.length) {
 				return;
@@ -469,10 +474,14 @@ const skills = {
 				nature: result.links[0][3],
 			};
 			const prompt = `撼捷：是否将一张黑色手牌当做${get.translation(card)}对${get.translation(trigger.player)}使用？`;
-			game.broadcastAll((card, prompt) => {
-				lib.skill.dchanjie_backup.viewAs = card;
-				lib.skill.dchanjie_backup.prompt = prompt;
-			}, card, prompt);
+			game.broadcastAll(
+				(card, prompt) => {
+					lib.skill.dchanjie_backup.viewAs = card;
+					lib.skill.dchanjie_backup.prompt = prompt;
+				},
+				card,
+				prompt
+			);
 			const next = player.chooseToUse();
 			next.set("openskilldialog", prompt);
 			next.set("norestore", true);
@@ -1798,14 +1807,16 @@ const skills = {
 					},
 					ai1(card) {
 						const player = get.player();
-						if (player.hasCard(cardx => {
-							return get.type2(cardx, false) === get.type2(card, false);
-						}, "e")) {
+						if (
+							player.hasCard(cardx => {
+								return get.type2(cardx, false) === get.type2(card, false);
+							}, "e")
+						) {
 							return 7 - get.value(card);
 						}
 						return 15 - get.value(card);
 					},
-					ai2:() => 1,
+					ai2: () => 1,
 				};
 			},
 			prompt(result, player) {
@@ -4212,7 +4223,11 @@ const skills = {
 					trigger.card.storage.kousheng = true;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat("card").sha--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
 				},
 				onremove(player) {

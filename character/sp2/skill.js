@@ -307,10 +307,13 @@ const skills = {
 							player: "useCard1",
 						})
 						.step(async (event, trigger, player) => {
-							const { card } = trigger;
 							if (trigger.addCount !== false) {
 								trigger.addCount = false;
-								player.getStat("card")[card.name]--;
+								const stat = player.getStat().card,
+									name = trigger.card.name;
+								if (typeof stat[name] === "number") {
+									stat[name]--;
+								}
 							}
 						})
 						.assign({
@@ -3669,7 +3672,11 @@ const skills = {
 				content() {
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						trigger.player.getStat().card.sha--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
 					}
 					player.addTempSkill("dcjiaoxia_mark", "phaseUseAfter");
 					player.markAuto(
@@ -6644,7 +6651,11 @@ const skills = {
 			trigger.directHit.addArray(game.players);
 			if (player == trigger.player && trigger.addCount !== false) {
 				trigger.addCount = false;
-				player.getStat().card.sha--;
+				const stat = player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] === "number") {
+					stat[name]--;
+				}
 			}
 		},
 	},
@@ -7543,7 +7554,11 @@ const skills = {
 		},
 		content() {
 			trigger.addCount = false;
-			player.getStat().card.sha--;
+			const stat = player.getStat().card,
+				name = trigger.card.name;
+			if (typeof stat[name] === "number") {
+				stat[name]--;
+			}
 		},
 	},
 	//辛评

@@ -1794,11 +1794,15 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				content() {
+					player.removeSkill(event.name);
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat().card[trigger.card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
-					player.removeSkill(event.name);
 				},
 				mark: true,
 				intro: {
@@ -6322,7 +6326,11 @@ const skills = {
 						}
 					} else if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat().card.sha--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
 					}
 				},
 			},

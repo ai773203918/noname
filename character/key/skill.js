@@ -277,7 +277,11 @@ const skills = {
 							var evt = trigger.getParent();
 							if (evt.addCount !== false) {
 								evt.addCount = false;
-								player.getStat().card.sha--;
+								const stat = player.getStat().card,
+									name = trigger.card.name;
+								if (typeof stat[name] == "number") {
+									stat[name]--;
+								}
 							}
 							break;
 					}
@@ -3138,7 +3142,11 @@ const skills = {
 				},
 				content() {
 					trigger.addCount = false;
-					player.getStat("card")[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				},
 			},
 		},
@@ -9497,9 +9505,10 @@ const skills = {
 				trigger.directHit.addArray(game.players);
 			} else if (trigger.addCount !== false) {
 				trigger.addCount = false;
-				var stat = player.getStat().card;
-				if (stat.sha) {
-					stat.sha--;
+				const stat = player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] == "number") {
+					stat[name]--;
 				}
 			}
 		},
@@ -10193,7 +10202,11 @@ const skills = {
 				var evt = trigger.getParent();
 				if (evt.addCount !== false) {
 					evt.addCount = false;
-					player.getStat().card.sha--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
 				}
 				player.draw();
 			}

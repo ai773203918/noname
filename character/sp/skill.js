@@ -1819,7 +1819,11 @@ const skills = {
 				firstDo: true,
 				content() {
 					trigger.addCount = false;
-					player.getStat("card")[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				},
 				mod: {
 					cardUsable(card, player) {
@@ -5094,7 +5098,11 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					trigger.addCount = false;
-					player.getStat("card")[trigger.card.name]--;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				},
 			},
 		},
@@ -12587,7 +12595,7 @@ const skills = {
 				silent: true,
 				firstDo: true,
 				content() {
-					player.removeSkill("oltuishi_unlimit");
+					player.removeSkill(event.name);
 					var card = trigger.card;
 					if (!card.storage) {
 						card.storage = {};
@@ -12595,7 +12603,11 @@ const skills = {
 					card.storage.oltuishi = true;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat("card")[card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
 					}
 				},
 				mark: true,
