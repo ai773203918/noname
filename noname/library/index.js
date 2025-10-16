@@ -790,7 +790,7 @@ export class Library {
 					event.player
 						.when("useCard")
 						.filter(evt => evt == event)
-						.then(async (event, trigger) => {
+						.step(async (event, trigger,player) => {
 							trigger.getParent(2).decrease("shanRequired", 1);
 						});
 				},
