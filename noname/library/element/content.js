@@ -6055,9 +6055,9 @@ player.removeVirtualEquip(card);
 				event.promptdiscard.close();
 			}
 			if (event.result) {
-				/*if (event.result._sendskill) {
+				if (event.result._sendskill) {
 					lib.skill[event.result._sendskill[0]] = event.result._sendskill[1];
-				}*/
+				}
 				if (event.result.skill) {
 					const info = get.info(event.result.skill);
 					if (info && info.precontent && !game.online) {
@@ -6084,23 +6084,34 @@ player.removeVirtualEquip(card);
 			if (typeof event.dialog?.close == "function") {
 				event.dialog.close();
 			}
-			if (event.logSkill && event.result.bool && !game.online) {
-				if (typeof event.logSkill == "string") {
-					player.logSkill(event.logSkill);
-				} else if (Array.isArray(event.logSkill)) {
-					player.logSkill.apply(player, event.logSkill);
+			if (!game.online && event.result.bool) {
+				if (event.logSkill && event.result.bool && !game.online) {
+					if (typeof event.logSkill == "string") {
+						player.logSkill(event.logSkill);
+					} else if (Array.isArray(event.logSkill)) {
+						player.logSkill.apply(player, event.logSkill);
+					}
+				}				
+				if (event.result.skill) {
+					event.done = player.useResult(event.result, event);
+				}
+				else {
+					event.done ??= player.discard(event.result.cards);
+					if (typeof event.delay == "boolean") {
+						event.done.delay = event.delay;
+					}
+					event.done.discarder = player;
+				}
+				if (!event.chooseonly) {
+					await event.done;
+				}
+				else {
+					event.next.remove(event.done);
+					event.result.cost_data = { done: event.done };
 				}
 			}
-			/*if (event._sendskill) {
+			else if (event._sendskill) {
 				event.result._sendskill = event._sendskill;
-			}*/
-			if (!game.online && !event.chooseonly) {
-				event.done ??= player.discard(event.result.cards);
-				if (typeof event.delay == "boolean") {
-					event.done.delay = event.delay;
-				}
-				event.done.discarder = player;
-				await event.done;
 			}
 			if (!_status.noclearcountdown) {
 				game.stopCountChoose();

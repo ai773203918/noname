@@ -845,17 +845,21 @@ const skills = {
 						.set("ai", button => Math.random())
 						.forResult();
 					if (result?.links?.length) {
-						const cards = result.links;
 						event.result.bool = result.bool;
 						event.result.cards = result.links;
-						evt.done = game.cardsDiscard(cards);
-						player.$throw(cards, 1000);
-						player.logSkill(event.name.slice(4));
-						game.log(player, "弃置了", "#g牌堆", "的", cards);
 					} else {
 						evt.goto(0);
 					}
 				},
+				lose: false,
+				discard: false,
+				delay: false,
+				async content(event, trigger, player) {
+					const {cards} = event;
+					player.$throw(cards, 1000);
+					game.log(player, "弃置了", "#g牌堆", "的", cards);
+					await game.cardsDiscard(cards);
+				}
 			},
 			tag: {},
 		},
