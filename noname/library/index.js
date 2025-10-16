@@ -918,12 +918,9 @@ export class Library {
 					}
 					game.updateRenku();
 				},
-				/**
-				 * 处理区域中移出的卡牌，目前仅作为刷新区域的简单使用
-				 * @param {Card[]} cards 区域中需要移出的卡牌
-				 */
-				removeHandeler(cards) {
-					_status.renku.removeArray(cards);
+				/** 处理从相应区域中移出的卡牌*/
+				async removeHandeler(event, trigger, player) {
+					_status.renku.removeArray(event.cards);
 					game.updateRenku();
 				},
 			},

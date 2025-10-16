@@ -1011,9 +1011,14 @@ export const Content = {
 				event.relatedLose = next;
 			}
 			for (const [key, value] of lib.commonArea) {
-				const list = (_status[value.areaStatusName] || [])?.filter(card => loseCards.includes(card));
-				if (list.length) {
-					value.removeHandeler(list);
+				const list = (_status[value.areaStatusName] || []).filter(card => loseCards.includes(card));
+				if (event[value.fromName] || list.length) {
+					const next = game.createEvent("from_" + value.fromName);
+					next.setContent(value.removeHandeler);
+					next.cards = list;
+					next.player = player;
+					next.type = event.name;
+					await next;
 				}
 			}
 		}
@@ -3083,8 +3088,13 @@ player.removeVirtualEquip(card);
 			game.updateRoundNumber();
 		}
 		for (const [key, value] of lib.commonArea) {
-			if (event[value.fromName]) {
-				value.removeHandeler(cards);
+			const list = (_status[value.areaStatusName] || []).filter(card => cards.includes(card));
+			if (event[value.fromName] || list.length) {
+				const next = game.createEvent("from_" + value.fromName);
+				next.setContent(value.removeHandeler);
+				next.cards = cards;
+				next.player = player;
+				next.type = event.name;
 			}
 		}
 	},
@@ -3115,6 +3125,16 @@ player.removeVirtualEquip(card);
 		}
 		if (withPile) {
 			game.updateRoundNumber();
+		}
+		for (const [key, value] of lib.commonArea) {
+			const list = (_status[value.areaStatusName] || []).filter(card => cards.includes(card));
+			if (event[value.fromName] || list.length) {
+				const next = game.createEvent("from_" + value.fromName);
+				next.setContent(value.removeHandeler);
+				next.cards = cards;
+				next.player = player;
+				next.type = event.name;
+			}
 		}
 		var evt = event.relatedEvent || event.getParent();
 		if (!evt.orderingCards) {
@@ -3173,6 +3193,16 @@ player.removeVirtualEquip(card);
 		game.getGlobalHistory().cardMove.push(event);
 		if (!event._triggeronly) {
 			game.$cardsGotoPile(event);
+			for (const [key, value] of lib.commonArea) {
+				const list = (_status[value.areaStatusName] || []).filter(card => cards.includes(card));
+				if (event[value.fromName] || list.length) {
+					const next = game.createEvent("from_" + value.fromName);
+					next.setContent(value.removeHandeler);
+					next.cards = cards;
+					next.player = player;
+					next.type = event.name;
+				}
+			}
 		}
 	},
 	/**
@@ -9627,12 +9657,6 @@ player.removeVirtualEquip(card);
 				}
 				if (directDiscard.length) {
 					event.lose_map.noowner.addArray(directDiscard);
-					for (const [key, value] of lib.commonArea) {
-						const list = (_status[value.areaStatusName] || [])?.filter(card => directDiscard.includes(card));
-						if (list.length) {
-							value.removeHandeler(list);
-						}
-					}
 					await game.cardsGotoOrdering(directDiscard);
 				}
 			}
@@ -10996,8 +11020,14 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			let { cards } = event;
 			for (const [key, value] of lib.commonArea) {
-				if (event[value.fromName]) {
-					value.removeHandeler(cards);
+				const list = (_status[value.areaStatusName] || []).filter(card => cards.includes(card));
+				if (event[value.fromName] || list.length) {
+					const next = game.createEvent("from_" + value.fromName);
+					next.setContent(value.removeHandeler);
+					next.cards = cards;
+					next.player = player;
+					next.type = event.name;
+					await next;
 				}
 			}
 		},
@@ -11240,8 +11270,14 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			let { cards } = event;
 			for (const [key, value] of lib.commonArea) {
-				if (event[value.fromName]) {
-					value.removeHandeler(cards);
+				const list = (_status[value.areaStatusName] || []).filter(card => cards.includes(card));
+				if (event[value.fromName] || list.length) {
+					const next = game.createEvent("from_" + value.fromName);
+					next.setContent(value.removeHandeler);
+					next.cards = cards;
+					next.player = player;
+					next.type = event.name;
+					await next;
 				}
 			}
 		},
@@ -11718,6 +11754,7 @@ player.removeVirtualEquip(card);
 					next.cards = cards;
 					next.relatedEvent = event;
 					next.type = event.name;
+					await next;
 				}
 			}
 		},
@@ -13054,11 +13091,10 @@ player.removeVirtualEquip(card);
 		);
 		game.addVideo("link", player, player.isLinked());
 	},
-	chooseToGuanxing: function () {
-		"step 0";
-		var cards = get.cards(num);
-		game.cardsGotoOrdering(cards);
-		var next = player.chooseToMove();
+	async chooseToGuanxing(event, trigger, player) {
+		const cards = get.cards(event.num);
+		await game.cardsGotoOrdering(cards);
+		const next = player.chooseToMove();
 		next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 		next.set("prompt", event.prompt || "点击或拖动将牌移动到牌堆顶或牌堆底");
 		next.processAI =
@@ -13157,26 +13193,25 @@ player.removeVirtualEquip(card);
 						return [top, cards];
 				}
 			};
-		"step 1";
-		var top = result.moved[0];
-		var bottom = result.moved[1];
+		const { result } = await next;
+		const top = result?.moved?.[0] || [];
+		const bottom = result?.moved?.[1] || [];
 		top.reverse();
-		for (var i = 0; i < top.length; i++) {
-			ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-		}
-		for (i = 0; i < bottom.length; i++) {
-			ui.cardPile.appendChild(bottom[i]);
-		}
+		await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+			if (event.top_cards.includes(card)) {
+				return ui.cardPile.firstChild;
+			}
+			return null;
+		});
+		game.addCardKnower(top, player);
+		game.addCardKnower(bottom, player);
 		event.result = {
 			bool: true,
 			moved: [top, bottom],
 		};
-		game.addCardKnower(top, player);
-		game.addCardKnower(bottom, player);
-		player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
-		game.log(player, "将" + get.cnNumber(top.length) + "张牌置于牌堆顶");
-		game.updateRoundNumber();
-		game.delayx();
+		player.popup(`${get.cnNumber(top.length)}上${get.cnNumber(bottom.length)}下`);
+		game.log(player, `将${get.cnNumber(top.length)}张牌置于牌堆顶`);
+		await game.delayx();
 	},
 	chooseToMove_new: function () {
 		"step 0";
