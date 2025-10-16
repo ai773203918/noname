@@ -2305,7 +2305,17 @@ const _zhanfa = {
 				return event.getParent()?.name == "huogong";
 			},
 			async content(event, trigger, player) {
-				const result = await player
+				trigger.chooseonly = true;
+				player
+					.when("chooseToDiscardAfter")
+					.filter(evt => evt == trigger)
+					.step(async (event, trigger, player) => {
+						if (trigger.result?.cards?.length) {
+							const {cards} = trigger.result;
+							await  player.showCards(cards, `${get.translation(player)}【火攻】展示的牌`);
+						}
+					})
+				/*const result = await player
 					.chooseCard(trigger.filterCard, () => true)
 					.set("prompt", false)
 					.forResult();
@@ -2313,8 +2323,11 @@ const _zhanfa = {
 					const { cards } = result;
 					await player.showCards(cards, `${get.translation(player)}因【火攻】展示的牌`, false);
 					trigger.result = { bool: true, cards: cards };
-					trigger.finish();
 				}
+				else {
+					trigger.result = { bool: false};
+				}
+				trigger.finish();*/
 			},
 		},
 	},
