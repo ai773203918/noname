@@ -862,7 +862,7 @@ const skills = {
 					const {cards} = event;
 					player.$throw(cards, 1000);
 					game.log(player, "弃置了", "#g牌堆", "的", cards);
-					await game.cardsDiscard(cards);
+					await game.cardsDiscard(cards).set("relatedEvent", event.getParent(2));
 				}
 			},
 			tag: {},
