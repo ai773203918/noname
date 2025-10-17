@@ -134,7 +134,7 @@ window.noname_character_replace = {
 	jiangqing: ["dc_jiangqing", "sp_jiangqing", "tw_jiangqing", "jiangqing"],
 	jiangwei: ["jiangwei", "ol_jiangwei", "re_jiangwei", "ol_sb_jiangwei", "sp_jiangwei", "dc_sb_jiangwei", "sb_jiangwei", "huan_jiangwei", "jsrg_jiangwei", "jd_sb_jiangwei", "ren_jiangwei", "zj_jiangwei"],
 	jianyong: ["jianyong", "ol_jianyong", "re_jianyong", "xin_jianyong"],
-	jiaxu: ["jiaxu", "re_jiaxu", "sp_jiaxu", "ol_sb_jiaxu", "dc_sb_jiaxu", "dc_sp_jiaxu", "sb_jiaxu", "yj_jiaxu", "ps_jiaxu", "ns_jiaxu", "wn_jiaxu"],
+	jiaxu: ["jiaxu", "re_jiaxu", "sp_jiaxu", "ol_sb_jiaxu", "dc_sb_jiaxu", "dc_sp_jiaxu", "sb_jiaxu", "yj_jiaxu", "ps_jiaxu", "wn_jiaxu", "scl_jiaxu", "ns_jiaxu"],
 	jikang: ["jikang", "re_jikang", "dc_jikang"],
 	jiling: ["jiling", "dc_jiling", "tw_jiling", "std_jiling", "yj_jiling"],
 	kanze: ["kanze", "re_kanze"],
