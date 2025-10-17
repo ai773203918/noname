@@ -1,5 +1,4 @@
 import { defineConfig } from "vite";
-import path from "path";
 import vue from "@vitejs/plugin-vue";
 import jit from "./jit/vite-plugin-jit";
 
@@ -12,18 +11,18 @@ export default defineConfig({
 	root: ".",
 	resolve: {
 		alias: {
-			"@": path.resolve(import.meta.dirname, "./noname"),
-			"@noname": path.resolve(import.meta.dirname, "./noname.js"),
+			"@": "/noname",
+			"@noname": "/noname.js",
 		},
-		extensions: [".tsx", ".ts", ".js"],
+		extensions: [".tsx", ".ts", ".js", ".vue"],
 	},
 	build: {
-		sourcemap: true,
+		minify: false,
 		rollupOptions: {
 			preserveEntrySignatures: "strict",
 			treeshake: false,
 			input: {
-				main: "index.html",
+				index: "index.html",
 			},
 			output: {
 				preserveModules: true, // 保留文件结构
@@ -40,7 +39,13 @@ export default defineConfig({
 			},
 		},
 	},
-	plugins: [vue(), jit()],
+	plugins: [
+		vue(),
+		jit({
+			vue: "vue/dist/vue.esm-browser.js",
+			"@noname": "/noname.js",
+		}),
+	],
 	server: {
 		open: true,
 		host: "127.0.0.1",

@@ -700,7 +700,11 @@ const skills = {
 				trigger.untrigger();
 				if (evt.addCount !== false) {
 					evt.addCount = false;
-					evt.player.getStat().card[trigger.card.name]--;
+					const stat = evt.player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] === "number") {
+						stat[name]--;
+					}
 				}
 				evt.player = target;
 				game.log(target, "成为了", trigger.card, "的使用者");
@@ -949,11 +953,15 @@ const skills = {
 				popup: false,
 				firstDo: true,
 				content() {
+					player.removeSkill(event.name);
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
-						player.getStat().card[trigger.card.name]--;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] === "number") {
+							stat[name]--;
+						}
 					}
-					player.removeSkill("olsbwujing_effect");
 				},
 				mark: true,
 				intro: {
@@ -6885,8 +6893,8 @@ const skills = {
 				targets = [player, target];
 			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [targets]).forResult();
 			const getColor = result => {
-				return result.control == "none2" ? "none" : result.control;
-			},
+					return result.control == "none2" ? "none" : result.control;
+				},
 				cards_player = player.getDiscardableCards(player, "h", card => get.color(card) == getColor(map.get(player))),
 				cards_target = target.getDiscardableCards(target, "h", card => get.color(card) == getColor(map.get(target)));
 			if (cards_player.length && cards_target.length) {

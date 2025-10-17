@@ -4,6 +4,7 @@ import cards from "./card.js";
 import pinyins from "./pinyin.js";
 import skills from "./skill.js";
 import translates from "./translate.js";
+import characterTitles from "./characterTitle.js";
 import characterIntros from "./intro.js";
 import perfectPairs from "./perfectPairs.js";
 import characterFilters from "./characterFilter.js";
@@ -28,10 +29,7 @@ game.import("character", function () {
 			dc_sb_jiangwei: [["dc_sb_jiangwei_shadow", []]],
 		},
 		characterFilter: { ...characterFilters },
-		characterTitle: {
-			// wulan:'#b对决限定武将',
-			// leitong:'#b对决限定武将',
-		},
+		characterTitle: { ...characterTitles },
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },
 		perfectPair: { ...perfectPairs },

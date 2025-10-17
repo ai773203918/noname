@@ -6,7 +6,7 @@ import NonameDictionary from "./pinyins/noname-dict.js";
 import { Audio } from "./audio.ts";
 import { GeneratorFunction, AsyncFunction, AsyncGeneratorFunction } from "@/util/index.js";
 import security from "@/util/security.js";
-import { CodeSnippet, ErrorManager } from "@/util/error.js";
+import { CodeSnippet, ErrorManager } from "@/util/error.ts";
 
 import JSZip from "jszip";
 import { GetCompatible } from "./compatible.js";
@@ -1860,8 +1860,10 @@ export class Get extends GetCompatible {
 			over: _status.over,
 			inpile: lib.inpile,
 			inpile_nature: lib.inpile_nature,
-			renku: _status.renku,
 		};
+		for (const [key, value] of lib.commonArea) {
+			state[value.areaStatusName] = _status[value.areaStatusName];
+		}
 		for (var i in lib.playerOL) {
 			state.players[i] = lib.playerOL[i].getState();
 		}

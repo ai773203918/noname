@@ -19,7 +19,7 @@ import { defaultHooks } from "./hooks/index.js";
 import { Concurrent } from "./concurrent/index.js";
 import { freezeButExtensible } from "@/util/index.js";
 import security from "@/util/security.js";
-import { ErrorManager } from "@/util/error.js";
+import { ErrorManager } from "@/util/error.ts";
 import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
@@ -790,7 +790,7 @@ export class Library {
 					event.player
 						.when("useCard")
 						.filter(evt => evt == event)
-						.then(async (event, trigger) => {
+						.step(async (event, trigger,player) => {
 							trigger.getParent(2).decrease("shanRequired", 1);
 						});
 				},
@@ -894,6 +894,42 @@ export class Library {
 	get poptip() {
 		return this.#poptip;
 	}
+
+	commonArea = new Map([
+		[
+			"renku",
+			{
+				/**翻译名 */
+				translate: "仁库",
+				/** 存牌的区域名，_status.renku即是仁库这一区域 */
+				areaStatusName: "renku",
+				/** #player.lose和game.cardsGotoSpecial中的参数名，用于指向区域 */
+				toName: "toRenku",
+				/** #player.gain/.addToExpansion中的参数名，表示来源区域 */
+				fromName: "fromRenku",
+				/** 处理添加到相应区域中的卡牌，由于仁库需要处理溢出，所以采用事件的content*/
+				async addHandeler(event, trigger, player) {
+					const { cards } = event;
+					_status.renku.addArray(
+						cards.filter(function (card) {
+							return !card.willBeDestroyed("renku", null, event.relatedEvent);
+						})
+					);
+					if (_status.renku.length > 6) {
+						const cards2 = _status.renku.splice(0, _status.renku.length - 6);
+						game.log(cards2, "从仁库进入了弃牌堆");
+						await game.cardsDiscard(cards2).set("outRange", true).set("fromRenku", true);
+					}
+					game.updateRenku();
+				},
+				/** 处理从相应区域中移出的卡牌*/
+				async removeHandeler(event, trigger, player) {
+					_status.renku.removeArray(event.cards);
+					game.updateRenku();
+				},
+			},
+		],
+	]);
 
 	characterDialogGroup = {
 		收藏: function (name, capt) {
@@ -3666,7 +3702,7 @@ export class Library {
 				die_move: {
 					name: "阵亡效果",
 					intro: "阵亡后武将的显示效果",
-					init: "flip",
+					init: "off",
 					unfrequent: true,
 					item: {
 						off: "关闭",
@@ -4606,6 +4642,19 @@ export class Library {
 							ui.cardPileButton.style.display = "";
 						} else {
 							ui.cardPileButton.style.display = "none";
+						}
+					},
+				},
+				show_commonCardpile: {
+					name: "显示游戏外公共区域（仁库等）按钮",
+					init: true,
+					unfrequent: true,
+					onclick(bool) {
+						game.saveConfig("show_commonCardpile", bool);
+						if (bool) {
+							ui.commonCardPileButton.style.display = "";
+						} else {
+							ui.commonCardPileButton.style.display = "none";
 						}
 					},
 				},
@@ -13175,7 +13224,9 @@ export class Library {
 					state = get.parsedResult(state);
 					ui.arena.setNumber(state.number);
 					_status.mode = state.mode;
-					_status.renku = state.renku;
+					for (const [key, value] of lib.commonArea) {
+						_status[value.areaStatusName] = state[value.areaStatusName];
+					}
 					lib.inpile = state.inpile;
 					lib.inpile_nature = state.inpile_nature;
 					var pos = state.players[observe || game.onlineID].position;
@@ -13441,6 +13492,9 @@ export class Library {
 					if (lib.config.show_cardpile) {
 						ui.cardPileButton.style.display = "";
 					}
+					if (lib.config.show_commonCardpile) {
+						ui.commonCardPileButton.style.display = "";
+					}
 					if (!observe && game.me && (game.me.isDead() || _status.over)) {
 						ui.create.exit();
 					}
@@ -13591,6 +13645,9 @@ export class Library {
 				ui.pause.show();
 				if (lib.config.show_cardpile) {
 					ui.cardPileButton.style.display = "";
+				}
+				if (lib.config.show_commonCardpile) {
+					ui.commonCardPileButton.style.display = "";
 				}
 				_status.gameStarted = true;
 				game.showHistory();

@@ -107,31 +107,42 @@ const skills = {
 			if (game.hasPlayer(target => target != player)) {
 				const map = Object.groupBy(cards, i => get.suit(i, player));
 				const list = get.addNewRowList(cards, "suit", player);
-				const result = await player
-					.chooseButtonTarget({
-						createDialog: [[[[`整经：选择一名其他角色令其获得其中一种花色的牌`], "addNewRow"], list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"])]],
-						forced: true,
-						filterTarget: lib.filter.notMe,
-						filterButton(button) {
-							return button.links?.length > 0;
-						},
-						ai1(button) {
-							const player = get.player();
-							if (!game.hasPlayer(current => player != current && get.attitude(player, target) > 0)) {
-								return button.links.length;
-							}
-							return 1 / button.links.length;
-						},
-						ai2(target) {
-							const att = get.attitude(get.player(), target);
-							if (att > 0) {
-								return att / (1 + target.countCards("h"));
-							} else {
-								return att / 100;
-							}
-						},
-					})
-					.forResult();
+				const { result } = await player.chooseButtonTarget({
+					createDialog: [
+						[
+							[[`整经：选择一名其他角色令其获得其中一种花色的牌`], "addNewRow"],
+							[
+								dialog => {
+									dialog.classList.add("fullheight");
+									dialog.forcebutton = false;
+									dialog._scrollset = false;
+								},
+								"handle",
+							],
+							list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+						],
+					],
+					forced: true,
+					filterTarget: lib.filter.notMe,
+					filterButton(button) {
+						return button.links.length > 0;
+					},
+					ai1(button) {
+						const player = get.player();
+						if (!game.hasPlayer(current => player != current && get.attitude(player, target) > 0)) {
+							return button.links.length;
+						}
+						return 1 / button.links.length;
+					},
+					ai2(target) {
+						const att = get.attitude(get.player(), target);
+						if (att > 0) {
+							return att / (1 + target.countCards("h"));
+						} else {
+							return att / 100;
+						}
+					},
+				});
 				if (result?.links?.length && result.targets?.length) {
 					const suit = result.links[0];
 					const target = result.targets[0];
