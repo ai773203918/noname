@@ -86,6 +86,7 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"zc26_shen_huangyueying",
 		"xuwen",
 		"mark_shen_machao",
 		"tw_zhenji",
@@ -2149,6 +2150,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"zc26_shen_huangyueying",
 			"x_yao_yuanshu",
 			"zj_liuyuan",
 			"zj_zhonghui",
