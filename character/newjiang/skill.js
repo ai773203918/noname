@@ -497,9 +497,8 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent } = event.cost_data;
-			event.next.push(ResultEvent);
-			await ResultEvent;
+			const { result } = event.cost_data;
+			await player.useResult(result, event);
 		},
 		subSkill: {
 			backup: {

@@ -10,7 +10,6 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("h");
 		},
-		popup: false,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToUse()
@@ -31,16 +30,8 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent, logSkill } = event.cost_data;
-			event.next.push(ResultEvent);
-			if (logSkill) {
-				if (typeof logSkill == "string") {
-					ResultEvent.player.logSkill(logSkill);
-				} else if (Array.isArray(logSkill)) {
-					ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-				}
-			}
-			await ResultEvent;
+			const { result } = event.cost_data;
+			await player.useResult(result, event);
 		},
 		/*ai: {
 			effect: {
@@ -1476,7 +1467,6 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("hes") && player.hasUseTarget(get.autoViewAs({ name: "sha" }, "unsure"), false, false) && player.hasHistory("lose");
 		},
-		popup: false,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToUse()
@@ -1497,16 +1487,8 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent, logSkill } = event.cost_data;
-			event.next.push(ResultEvent);
-			if (logSkill) {
-				if (typeof logSkill == "string") {
-					ResultEvent.player.logSkill(logSkill);
-				} else if (Array.isArray(logSkill)) {
-					ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-				}
-			}
-			await ResultEvent;
+			const { result, logSkill } = event.cost_data;
+			await player.useResult(result, event);
 		},
 		subSkill: {
 			backup: {

@@ -849,20 +849,21 @@ const skills = {
 						.set("ai", button => Math.random())
 						.forResult();
 					if (result?.links?.length) {
+						const cards = result.links;
 						event.result.bool = result.bool;
-						event.result.cards = result.links;
+						event.result.cards = cards;
+						player.logSkill("olsbzhitian");
+						player
+							.when("discardBegin")
+							.filter(evtx => evtx.getParent() == evt)
+							.step(async (event, trigger, player) => {
+								player.$throw(cards, 1000);
+								game.log(player, "弃置了", "#g牌堆", "的", cards);
+								trigger.setContent("cardsDiscard");
+							})
 					} else {
 						evt.goto(0);
 					}
-				},
-				lose: false,
-				discard: false,
-				delay: false,
-				async content(event, trigger, player) {
-					const { cards } = event;
-					player.$throw(cards, 1000);
-					game.log(player, "弃置了", "#g牌堆", "的", cards);
-					await game.cardsDiscard(cards).set("relatedEvent", event.getParent(2));
 				},
 			},
 			tag: {},
@@ -4866,18 +4867,9 @@ const skills = {
 					next.set("logSkill", event.name.slice(0, -5));
 					event.result = await next.forResult();
 				},
-				popup: false,
 				async content(event, trigger, player) {
-					const { ResultEvent, logSkill } = event.cost_data;
-					event.next.push(ResultEvent);
-					if (logSkill) {
-						if (typeof logSkill == "string") {
-							ResultEvent.player.logSkill(logSkill);
-						} else if (Array.isArray(logSkill)) {
-							ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-						}
-					}
-					await ResultEvent;
+					const { result, logSkill } = event.cost_data;
+					await player.useResult(result, event);
 				},
 			},
 		},

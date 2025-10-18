@@ -208,10 +208,8 @@ const skills = {
 			player.addSkill("olwenyi_used");
 			player.addMark("olwenyi_used", 1, false);
 			player.markSkill("olwenyi_limit");
-			if (cost_data?.ResultEvent) {
-				const evt = cost_data.ResultEvent;
-				event.next.push(evt);
-				await evt;
+			if (cost_data?.result) {
+				await player.useResult(cost_data.result, event);
 			} else {
 				await player.give(cards, target);
 				if (target.getCards("h").includes(cards[0]) && target.hasUseTarget(cards[0])) {

@@ -5498,10 +5498,12 @@ player.removeVirtualEquip(card);
 				if (event.chooseonly) {
 					event.logSkill = false;
 				}
-				const ResultEvent = player.useResult(event.result, event);
-				if (event.chooseonly && get.itemtype(ResultEvent) == "event") {
-					event.next.remove(ResultEvent);
-					event.result.cost_data = { ResultEvent };
+				if (!event.chooseonly) {
+					//event.done = player.useResult(event.result, event);
+					const next = player.useResult(event.result, event);
+				}
+				else {
+					event.result.cost_data = { result: event.result };
 					if (oldLogSkill) {
 						event.result.cost_data.logSkill = oldLogSkill;
 					}
@@ -6136,28 +6138,20 @@ player.removeVirtualEquip(card);
 				event.dialog.close();
 			}
 			if (!game.online && event.result.bool) {
-				if (event.logSkill && event.result.bool && !game.online) {
+				if (event.logSkill && event.result.bool && !game.online && !event.chooseonly) {
 					if (typeof event.logSkill == "string") {
 						player.logSkill(event.logSkill);
 					} else if (Array.isArray(event.logSkill)) {
 						player.logSkill.apply(player, event.logSkill);
 					}
 				}
-				if (event.result.skill) {
-					event.done = player.useResult(event.result, event);
-				} else {
-					event.done ??= player.discard(event.result.cards);
-					if (typeof event.delay == "boolean") {
-						event.done.delay = event.delay;
-					}
-					event.done.discarder = player;
+				const next = player.discard(event.result.cards);
+				if (typeof event.delay == "boolean") {
+					next.delay = event.delay;
 				}
-				if (!event.chooseonly) {
-					await event.done;
-				} else {
-					event.next.remove(event.done);
-					event.result.cost_data = { done: event.done };
-				}
+				next.discarder = player;
+				event.done = next;
+				await next;
 			} else if (event._sendskill) {
 				event.result._sendskill = event._sendskill;
 			}

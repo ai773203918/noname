@@ -3366,9 +3366,8 @@ export default {
 				},
 				async content(event, trigger, player) {
 					if (event.cost_data) {
-						const { ResultEvent } = event.cost_data;
-						event.next.push(ResultEvent);
-						await ResultEvent;
+						const { result } = event.cost_data;
+						await player.useResult(result, event);
 					} else {
 						await player.draw(2);
 					}
