@@ -290,7 +290,11 @@ const skills = {
 							const addSkill = get.skillsFromEquips([{ name }]),
 								removeSkill = get.skillsFromEquips([{ name: map[name] }]);
 							for (let current of game.players) {
-								current.removeSkill(removeSkill);
+								let keepSkills = Object.values(current.additionalSkills).flat(),
+									removeSkill2 = removeSkill.slice().removeArray(keepSkills);
+								if (removeSkill2.length) {
+									current.removeSkill(removeSkill2);
+								}
 								if (check(name, current)) {
 									current.addSkill(addSkill);
 								}

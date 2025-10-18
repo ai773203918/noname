@@ -10462,8 +10462,11 @@ export class Player extends HTMLDivElement {
 				return !es.some(cardx => cardx.name == card.name);
 			});
 			if (equips.length) {
-				let skills = get.skillsFromEquips(equips);
-				player2.removeSkill(skills);
+				let keepSkills = Object.values(player2.additionalSkills).flat(),
+					skills = get.skillsFromEquips(equips).removeArray(keepSkills);
+				if (skills.length) {
+					player2.removeSkill(skills);
+				}
 			}
 		}
 	}
