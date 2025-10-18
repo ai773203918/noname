@@ -5677,6 +5677,9 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					if (lib.translate[name + "_append"]) {
 						uiintro.add('<div class="text" style="display:inline">' + lib.translate[name + "_append"] + "</div>");
 					}
+					if (Vcard?.storage?.equipEnable) {
+						uiintro.add('<div class="text center">— 装备牌仍然生效 —</div>');
+					}
 					if (uiintro.isNotCard) {
 						if (Vcard?.cards?.length) {
 							uiintro.add('<div class="text center">—— 对应实体牌 ——</div>');

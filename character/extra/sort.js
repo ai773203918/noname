@@ -18,6 +18,7 @@ const characterSort = {
 	extra_changan: ["ca_shen_wangyun", "ca_shen_caocao", "ca_shen_lijueguosi", "zombie_jiaxu", "zombie_zombie"],
 	extra_weinan: ["wn_shen_machao", "wn_shen_xuzhu"],
 	extra_jingxiang: ["jx_shen_caoren", "jx_shen_liubiao"],
+	extra_zc: ["zc26_shen_huangyueying"],
 };
 
 const characterSortTranslate = {
@@ -42,6 +43,7 @@ const characterSortTranslate = {
 	extra_weinan: "风云志·渭南风云",
 	extra_taoyuan: "山河煮酒·桃园挽歌",
 	extra_jingxiang: "风云志·荆襄风云",
+	extra_zc: "珍藏",
 };
 
 export { characterSort, characterSortTranslate };

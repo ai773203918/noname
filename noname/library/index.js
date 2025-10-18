@@ -14598,6 +14598,20 @@ export class Library {
 				nature: "firemm",
 			},
 		],
+		[
+			"26",
+			{
+				getSpan: () => {
+					const span = document.createElement("span"),
+						style = span.style;
+					style.writingMode = style.webkitWritingMode = "horizontal-tb";
+					style.fontFamily = "MotoyaLMaru";
+					style.transform = "scaleY(0.85)";
+					span.textContent = "26";
+					return span.outerHTML;
+				},
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
