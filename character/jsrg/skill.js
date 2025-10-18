@@ -9347,10 +9347,13 @@ const skills = {
 				})
 				.set("max", trigger.target.countDiscardableCards(player, "he"))
 				.set("goon", get.attitude(player, trigger.target) < 0)
+				.set("chooseonly", true)
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const num = event.cards.length;
+			const { cards } = event;
+			await player.discard(cards);
+			const num = cards.length;
 			if (trigger.target.countDiscardableCards(player, "he")) {
 				await player.discardPlayerCard("平讨：弃置" + get.translation(trigger.target) + get.cnNumber(num) + "张牌", num, "he", trigger.target, true);
 			}

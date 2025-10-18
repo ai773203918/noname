@@ -516,6 +516,7 @@ const skills = {
 				async precontent(event) {
 					delete event.result.skill;
 				},
+				log: false,
 				popname: true,
 			},
 		},
@@ -2302,7 +2303,7 @@ const skills = {
 								.map(current => {
 									return get.effect(current, sha, player, player);
 								})
-					  )
+						)
 					: 0;
 				const targetEffect = target.hasUseTarget(sha, false)
 					? Math.max(
@@ -2311,7 +2312,7 @@ const skills = {
 								.map(current => {
 									return get.effect(current, sha, player, player);
 								})
-					  )
+						)
 					: 0;
 				return 5 + 2 * get.sgn(playerEffect - targetEffect) - get.value(card);
 			});
@@ -5196,12 +5197,15 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "射却：是否对" + get.translation(trigger.player) + "使用一张杀？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"射却：是否对" + get.translation(trigger.player) + "使用一张杀？"
+				)
 				.set("logSkill", "gnsheque")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {

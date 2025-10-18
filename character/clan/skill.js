@@ -208,7 +208,7 @@ const skills = {
 						: {
 								bool: true,
 								links: skills,
-						  };
+							};
 				if (result2?.bool && result2?.links?.length) {
 					await player.removeSkills(result2.links);
 				}
@@ -3652,11 +3652,10 @@ const skills = {
 				.forResult();
 		},
 		popup: false,
-		*content(event, map) {
-			const player = map.player;
-			yield player.link(true);
+		async content(event, trigger, player) {
+			await player.link(true);
 			if (player.getDamagedHp() > 0) {
-				yield player.draw(player.getDamagedHp());
+				await player.draw(player.getDamagedHp());
 			}
 			if (
 				game.getGlobalHistory("everything", evt => {
@@ -4865,12 +4864,15 @@ const skills = {
 					"step 6";
 					var current = targets.shift();
 					current
-						.chooseToUse(function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						}, "联诛：是否对" + get.translation(event.targetx) + "使用一张杀？")
+						.chooseToUse(
+							function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							"联诛：是否对" + get.translation(event.targetx) + "使用一张杀？"
+						)
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("complexTarget", true)

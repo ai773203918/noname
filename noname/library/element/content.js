@@ -10655,7 +10655,12 @@ player.removeVirtualEquip(card);
 				if (lib.skill[event.skill].audio) {
 					cardaudio = false;
 				}
-				player.logSkill(event.skill);
+				if (lib.skill[event.skill].log != false) {
+					player.logSkill(event.skill, false, null, null, [event, event.player]);
+				}
+				/*if (get.info(event.skill).popname) {
+					player.tryCardAnimate(event.card, event.card.name, "metal", true);
+				}*/
 				player.checkShow(event.skill, true);
 				if (lib.skill[event.skill].onrespond && !game.online) {
 					lib.skill[event.skill].onrespond(event, player);

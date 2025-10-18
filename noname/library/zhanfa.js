@@ -3063,9 +3063,6 @@ export class ZhanfaManager {
 			skill.priority = Infinity;
 			lib.skill["" + id] = skill;
 			skill = id;
-			if (!_status.importingExtension) {
-				game.finishSkill(id);
-			}
 		} else {
 			translate ??= lib.translate[skill];
 			info ??= lib.translate[skill + "_info"];

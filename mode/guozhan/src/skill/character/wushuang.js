@@ -1280,7 +1280,7 @@ export default {
 					: {
 							bool: true,
 							links: skills,
-					  };
+						};
 			if (result2?.bool) {
 				const skill = result2.links[0],
 					name = "gz_duorui_tieqi";
@@ -1496,7 +1496,7 @@ export default {
 							: {
 									bool: true,
 									targets: targets,
-							  };
+								};
 					if (result.bool) {
 						player.line(result.targets, "green");
 						await result.targets[0].link(true);
@@ -2288,7 +2288,7 @@ export default {
 					? {
 							bool: true,
 							links: list,
-					  }
+						}
 					: await player
 							.chooseButton(["党锢：请选择亮出常侍", [list, "character"]], true)
 							.set("ai", button => Math.random() * 10)
@@ -2830,7 +2830,7 @@ export default {
 							.forResult()
 					: {
 							index: 1,
-					  };
+						};
 			if (result.index == 0) {
 				const { bool, cards, targets } = await player
 					.chooseCardTarget({
@@ -3961,7 +3961,7 @@ export default {
 							: {
 									bool: true,
 									targets: targets,
-							  };
+								};
 					if (result?.bool) {
 						const [target] = result.targets;
 						player.logSkill("gz_qingzhong", [target]);
