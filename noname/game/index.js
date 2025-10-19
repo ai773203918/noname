@@ -9937,29 +9937,64 @@ export class Game extends GameCompatible {
 				}
 			});
 		}
-		game.saveConfig("version", lib.version);
-		if (_status.extensionChangeLog) {
-			Object.keys(_status.extensionChangeLog).forEach(value => {
-				const li = document.createElement("li");
-				li.innerHTML = `${value}：${_status.extensionChangeLog[value]}`;
-				ul.appendChild(li);
-			});
+		const dialog = ui.create.dialog(caption, "hidden");
+		if (lib.version != lib.config.version) {
+			const lic = ui.create.div(dialog.content);
+			lic.style.display = "block";
+			lic.appendChild(ul);
 		}
-		const dialog = ui.create.dialog(caption, "hidden"),
-			lic = ui.create.div(dialog.content);
-		lic.style.display = "block";
-		ul.style.display = "inline-block";
-		ul.style.marginLeft = "-40px";
-		lic.appendChild(ul);
-		if (players && players.length) {
+		game.saveConfig("version", lib.version);
+		if (players?.length) {
 			dialog.addSmall([players, "character"]);
 			dialog.classList.add("forcebutton");
 			dialog.classList.add("withbg");
 		}
-		if (cards && cards.length) {
+		if (cards?.length) {
 			dialog.addSmall([cards.map(value => [get.translation(get.type(value)), "", value]), "vcard"]);
 			dialog.classList.add("forcebutton");
 			dialog.classList.add("withbg");
+		}
+		if (_status.extensionChangeLog) {
+			Object.keys(_status.extensionChangeLog).forEach(extname => {
+				dialog.add(ui.create.div(".placeholder"));
+				dialog.add(`${extname} ${lib.extensionPack[extname].version} 更新内容`);
+				dialog.add(ui.create.div(".placeholder"));
+				const changeLogList = _status.extensionChangeLog[extname];
+				changeLogList.forEach(item => {
+					switch (item.type) {
+						case "text": {
+							const list = Array.isArray(item.data) ? item.data : [item.data];
+							if (item.addText) {
+								list.forEach(value => {
+									dialog.addText(value);
+								});
+							} else {
+								list.forEach(value => {
+									const li = document.createElement("li");
+									li.innerHTML = value;
+									li.style.textAlign = item.textAlign || "center";
+									dialog.content.appendChild(li);
+								});
+							}
+							break;
+						}
+						case "players": {
+							dialog.addSmall([item.data, "character"]);
+							dialog.classList.add("forcebutton");
+							dialog.classList.add("withbg");
+							break;
+						}
+						case "cards": {
+							dialog.addSmall([item.data.map(value => [get.translation(get.type(value)), "", value]), "vcard"]);
+							dialog.classList.add("forcebutton");
+							dialog.classList.add("withbg");
+							break;
+						}
+						default:
+							return;
+					}
+				});
+			});
 		}
 		dialog.open();
 		let hidden = false;
@@ -9979,8 +10014,9 @@ export class Game extends GameCompatible {
 		lib.init.onfree();
 	}
 	/**
-	 * @param { string } str
-	 * @param { string } [extname]
+	 * 显示显示扩展的更新日志，在game.showChangeLog时显示扩展更新内容
+	 * @param { string } str 更新日志内容，支持以下格式：`string`: 文本，自动包装为 `{ type: 'text', data: str }`；`Array`: 对象数组，每个对象格式为 `{ type, data, 其他属性 }`； `Object`: 单个日志对象，自动包装成数组
+	 * @param { string } [extname] 扩展名，未输入则使用_status.extension
 	 */
 	showExtensionChangeLog(str, extname) {
 		extname = extname || _status.extension;
@@ -9989,11 +10025,19 @@ export class Game extends GameCompatible {
 			return;
 		}
 		game.saveConfig(cfg, lib.extensionPack[extname].version);
-		if (_status.extensionChangeLog) {
-			return;
+		_status.extensionChangeLog ??= {};
+		if (typeof str === "string") {
+			_status.extensionChangeLog[extname] = [
+				{
+					type: "text",
+					data: str,
+				},
+			];
+		} else if (Array.isArray(str)) {
+			_status.extensionChangeLog[extname] = str;
+		} else if (get.objtype(str) === "object") {
+			_status.extensionChangeLog[extname] = [str];
 		}
-		_status.extensionChangeLog = {};
-		_status.extensionChangeLog[extname] = str;
 	}
 	/**
 	 * @param { string } key
