@@ -566,15 +566,15 @@ game.import("card", function () {
 				cardcolor: "red",
 				toself: true,
 				enable(card, player) {
-					return player.hp < player.maxHp;
+					return player.isDamaged();
 				},
 				savable: true,
 				selectTarget: -1,
 				filterTarget(card, player, target) {
-					return target === player && target.hp < target.maxHp;
+					return target === player && target.isDamaged();
 				},
 				modTarget(card, player, target) {
-					return target.hp < target.maxHp;
+					return target.isDamaged();
 				},
 				content() {
 					target.recover();
