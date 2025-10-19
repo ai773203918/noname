@@ -9957,7 +9957,7 @@ export class Game extends GameCompatible {
 		if (_status.extensionChangeLog) {
 			Object.keys(_status.extensionChangeLog).forEach(extname => {
 				dialog.add(ui.create.div(".placeholder"));
-				dialog.add(`《${extname}》更新内容`);
+				dialog.add(`${extname} ${lib.extensionPack[extname].version} 更新内容`);
 				dialog.add(ui.create.div(".placeholder"));
 				const changeLogList = _status.extensionChangeLog[extname];
 				changeLogList.forEach(item => {
