@@ -2842,6 +2842,9 @@ export class Player extends HTMLDivElement {
 	 * @returns { number }
 	 */
 	getDamagedHp(raw) {
+		if (this.getHp(raw) == Infinity) {
+			return 0;
+		}
 		return this.maxHp - this.getHp(raw);
 	}
 	/**
