@@ -3623,7 +3623,7 @@ const skills = {
 				str += "，然后摸" + get.cnNumber(player.getDamagedHp()) + "张牌";
 			}
 			event.result = await player
-				.chooseToDiscard(get.prompt(event.skill), "横置武将牌并弃置" + get.cnNumber(num) + "张牌" + str, "he", num)
+				.chooseToDiscard(get.prompt(event.skill), "横置武将牌并弃置" + get.cnNumber(num) + "张牌" + str, "he", num, "chooseonly")
 				.set("ai", function (card) {
 					var player = _status.event.player;
 					var num = _status.event.num;
@@ -3640,11 +3640,12 @@ const skills = {
 					return 0;
 				})
 				.set("num", num)
-				.set("logSkill", "clanxieshu")
+				//.set("logSkill", "clanxieshu")
 				.forResult();
 		},
-		popup: false,
+		//popup: false,
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			await player.link(true);
 			if (player.getDamagedHp() > 0) {
 				await player.draw(player.getDamagedHp());
