@@ -9709,7 +9709,7 @@ const skills = {
 					if (typeof player.ai?.shown === "number" && target.ai) {
 						target.ai.shown = player.ai.shown;
 					}
-					if (player.side) {
+					if (typeof player.side == "boolean") {
 						target.side = player.side;
 						target.node.identity.firstChild.innerHTML = player.node.identity.firstChild.innerHTML;
 						target.node.identity.dataset.color = player.node.identity.dataset.color;
