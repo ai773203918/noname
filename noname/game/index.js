@@ -9962,7 +9962,7 @@ export class Game extends GameCompatible {
 				const changeLogList = _status.extensionChangeLog[extname];
 				changeLogList.forEach(item => {
 					switch (item.type) {
-						case "text":
+						case "text": {
 							const list = Array.isArray(item.data) ? item.data : [item.data];
 							if (item.addText) {
 								list.forEach(value => {
@@ -9977,16 +9977,19 @@ export class Game extends GameCompatible {
 								});
 							}
 							break;
-						case "players":
+						}
+						case "players": {
 							dialog.addSmall([item.data, "character"]);
 							dialog.classList.add("forcebutton");
 							dialog.classList.add("withbg");
 							break;
-						case "cards":
+						}
+						case "cards": {
 							dialog.addSmall([item.data.map(value => [get.translation(get.type(value)), "", value]), "vcard"]);
 							dialog.classList.add("forcebutton");
 							dialog.classList.add("withbg");
 							break;
+						}
 						default:
 							return;
 					}
