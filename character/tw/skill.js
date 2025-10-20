@@ -4352,12 +4352,14 @@ const skills = {
 									"tdnodes",
 								],
 							],
+							[
+								dialog => {
+									dialog.style.setProperty("top", get.is.phoneLayout() ? "20%" : "30%", "important");
+								},
+								"handle",
+							],
 						],
 					],
-					css: {
-						position: "absolute",
-						top: get.is.phoneLayout() ? "20%" : "30%",
-					},
 					forced: true,
 					selectButton: [1, 2],
 					filterOk: () => {
