@@ -13126,6 +13126,8 @@ player.removeVirtualEquip(card);
 		const cards = get.cards(event.num);
 		await game.cardsGotoOrdering(cards);
 		const next = player.chooseToMove();
+		next.set("forceDie", event.forceDie);
+		next.set("includeOut", event.includeOut);
 		next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 		next.set("prompt", event.prompt || "点击或拖动将牌移动到牌堆顶或牌堆底");
 		next.processAI =

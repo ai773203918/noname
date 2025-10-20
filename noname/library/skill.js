@@ -5,6 +5,80 @@ import { _status, game, get, lib, ui } from "../../noname.js";
  * @type {Record<string, Skill>}
  */
 export default {
+	equipEnable: {
+		chalotte: true,
+		mod: {
+			globalFrom(from, to, distance) {
+				let num = from
+					.getVCards("j", vcard => {
+						if (get.type(vcard) != "delay") {
+							false;
+						} else if (!vcard.storage?.equipEnable) {
+							return false;
+						}
+						return vcard.cards.some(card => get.type(card) == "equip");
+					})
+					.map(vcard => {
+						const sum = vcard.cards?.reduce((sum, card) => {
+							if (get.type(card) != "equip") {
+								return sum;
+							}
+							let globalFrom = get.info(card)?.distance?.globalFrom || 0;
+							return sum + globalFrom;
+						}, 0);
+						return sum || 0;
+					})
+					.reduce((a, b) => a + b, 0);
+				return distance + num;
+			},
+			globalTo(from, to, distance) {
+				let num = to
+					.getVCards("j", vcard => {
+						if (get.type(vcard) != "delay") {
+							false;
+						} else if (!vcard.storage?.equipEnable) {
+							return false;
+						}
+						return vcard.cards.some(card => get.type(card) == "equip");
+					})
+					.map(vcard => {
+						const sum = vcard.cards?.reduce((sum, card) => {
+							if (get.type(card) != "equip") {
+								return sum;
+							}
+							let globalTo = get.info(card)?.distance?.globalTo || 0;
+							return sum + globalTo;
+						}, 0);
+						return sum || 0;
+					})
+					.reduce((a, b) => a + b, 0);
+				return distance + num;
+			},
+			attackRangeBase(player) {
+				let num = player
+					.getVCards("j", vcard => {
+						if (get.type(vcard) != "delay") {
+							false;
+						} else if (!vcard.storage?.equipEnable) {
+							return false;
+						}
+						return vcard.cards.some(card => get.type(card) == "equip");
+					})
+					.map(vcard => {
+						const num = vcard.cards?.reduce((sum, card) => {
+							if (get.type(card) != "equip") {
+								return sum;
+							}
+							let attackFrom = get.info(card)?.distance?.attackFrom || 0;
+							return sum + attackFrom;
+						}, 0);
+						return num || 0;
+					})
+					.reduce((a, b) => a + b, 0);
+				return Math.max(player.getEquipRange(player.getCards("e")), 1 - num);
+			},
+		},
+	},
 	stratagem_fury: {
 		marktext: "🔥",
 		intro: {
@@ -94,12 +168,7 @@ export default {
 							}
 							const storage = player.storage,
 								zhibi = storage.zhibi;
-							return (
-								((zhibi && !zhibi.includes(current)) ||
-									get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) &&
-								current.mayHaveShan(player, "use") &&
-								player.hasSkill("jiu")
-							);
+							return ((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) && current.mayHaveShan(player, "use") && player.hasSkill("jiu");
 						})
 					) {
 						return 1;
@@ -117,10 +186,7 @@ export default {
 			if (_status.event.type == "dying") {
 				return get.attitude(player, _status.event.dying) > 3 ? 1 : 0;
 			}
-			return (_status.event.getParent().shanRequired || 1) > 1 &&
-				get.damageEffect(player, _status.event.getParent().player || player, player) < 0
-				? 1
-				: 0;
+			return (_status.event.getParent().shanRequired || 1) > 1 && get.damageEffect(player, _status.event.getParent().player || player, player) < 0 ? 1 : 0;
 		},
 		position: "hs",
 		filterCard: (card, player, event) => {
@@ -212,11 +278,7 @@ export default {
 									}
 									const storage = player.storage,
 										zhibi = storage.zhibi;
-									return (
-										((zhibi && !zhibi.includes(current)) ||
-											get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) &&
-										current.mayHaveShan(player, "use")
-									);
+									return ((zhibi && !zhibi.includes(current)) || get.effect(current, card, player, player) >= 2 - Math.max(0, (storage.stratagem_fury || 0) - 1)) && current.mayHaveShan(player, "use");
 								})
 							) {
 								return get.order(card, player) + 0.5;
@@ -333,10 +395,7 @@ export default {
 						} else {
 							value = card[j];
 						}
-						if (
-							(typeof cardFilter[j] == "string" && value != cardFilter[j]) ||
-							(Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))
-						) {
+						if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
 							return false;
 						}
 					}
@@ -539,10 +598,7 @@ export default {
 						} else {
 							value = card[j];
 						}
-						if (
-							(typeof cardFilter[j] == "string" && value != cardFilter[j]) ||
-							(Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))
-						) {
+						if ((typeof cardFilter[j] == "string" && value != cardFilter[j]) || (Array.isArray(cardFilter[j]) && !cardFilter[j].includes(value))) {
 							return false;
 						}
 					}
@@ -860,11 +916,7 @@ export default {
 					}
 					var storage = player.getStorage("cooperation");
 					for (var info of storage) {
-						if (
-							info.type == "use" &&
-							(event.player == player || event.player == info.target) &&
-							(!info.used || !info.used.includes(suit))
-						) {
+						if (info.type == "use" && (event.player == player || event.player == info.target) && (!info.used || !info.used.includes(suit))) {
 							return true;
 						}
 					}
@@ -1107,12 +1159,7 @@ export default {
 								var val = 0;
 								if (
 									player.hasCard(function (cardx) {
-										return (
-											get.suit(cardx) == suitx &&
-											card != cardx &&
-											(!card.cards || !card.cards.includes(cardx)) &&
-											player.hasValueTarget(cardx)
-										);
+										return get.suit(cardx) == suitx && card != cardx && (!card.cards || !card.cards.includes(cardx)) && player.hasValueTarget(cardx);
 									}, "hs")
 								) {
 									val = [2, 0.1];
@@ -1318,11 +1365,7 @@ export default {
 				if (card.name == "tao") {
 					const evt = get.event(),
 						viewAs = name => get.autoViewAs({ name: name, cards: [card] }, [card]);
-					if (
-						typeof evt.filterCard == "function" &&
-						evt.filterCard(viewAs("shan"), player, evt) &&
-						!evt.filterCard(viewAs("sha"), player, evt)
-					) {
+					if (typeof evt.filterCard == "function" && evt.filterCard(viewAs("shan"), player, evt) && !evt.filterCard(viewAs("sha"), player, evt)) {
 						return "shan";
 					}
 					return "sha";
@@ -1337,20 +1380,11 @@ export default {
 		firstDo: true,
 		priority: Infinity,
 		filter(event, player) {
-			if (
-				!event.card ||
-				!event.cards ||
-				!["sha", "shan"].includes(event.card.name) ||
-				event.card === event.cards[0] ||
-				event.cards.length != 1 ||
-				event.cards[0].name != "tao"
-			) {
+			if (!event.card || !event.cards || !["sha", "shan"].includes(event.card.name) || event.card === event.cards[0] || event.cards.length != 1 || event.cards[0].name != "tao") {
 				return false;
 			}
 			const evt = event.getParent();
-			return (
-				typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt)
-			);
+			return typeof evt.filterCard == "function" && evt.filterCard({ name: "shan" }, player, evt) && evt.filterCard({ name: "sha" }, player, evt);
 		},
 		async content(event, trigger, player) {
 			const control = await player
@@ -1425,26 +1459,7 @@ export default {
 	autoswap: {
 		firstDo: true,
 		trigger: {
-			player: [
-				"chooseToUseBegin",
-				"chooseToRespondBegin",
-				"chooseToDiscardBegin",
-				"chooseToCompareBegin",
-				"chooseButtonBegin",
-				"chooseCardBegin",
-				"chooseTargetBegin",
-				"chooseCardTargetBegin",
-				"chooseControlBegin",
-				"chooseBoolBegin",
-				"choosePlayerCardBegin",
-				"discardPlayerCardBegin",
-				"gainPlayerCardBegin",
-				"chooseToMoveBegin",
-				"chooseToPlayBeatmapBegin",
-				"chooseToGiveBegin",
-				"chooseToGuanxingBegin",
-				"chooseButtonTargetBegin",
-			],
+			player: ["chooseToUseBegin", "chooseToRespondBegin", "chooseToDiscardBegin", "chooseToCompareBegin", "chooseButtonBegin", "chooseCardBegin", "chooseTargetBegin", "chooseCardTargetBegin", "chooseControlBegin", "chooseBoolBegin", "choosePlayerCardBegin", "discardPlayerCardBegin", "gainPlayerCardBegin", "chooseToMoveBegin", "chooseToPlayBeatmapBegin", "chooseToGiveBegin", "chooseToGuanxingBegin", "chooseButtonTargetBegin"],
 		},
 		forced: true,
 		priority: 100,

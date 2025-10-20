@@ -62,4 +62,5 @@ export default {
 	ty_shen_liubei: "龙兴海内",
 	ty_shen_guanyu: "佑子伐吴",
 	ty_shen_zhangfei: "傲睨山河",
+	zc26_shen_huangyueying: "卧龙的点睛人",
 };
