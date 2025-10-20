@@ -8980,7 +8980,7 @@ export class Game extends GameCompatible {
 				const iValue = `${i}_${value}`;
 				lib.skill[iValue] = info.subSkill[value];
 				lib.skill[iValue].sub = true;
-				if (info.subSkill[value].sourceSkill !== false) {
+				if (info.subSkill[value].sourceSkill === null) {
 					lib.skill[iValue].sourceSkill = i;
 				}
 				if (info.subSkill[value].name) {

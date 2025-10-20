@@ -13872,6 +13872,13 @@ export class Library {
 			},
 		],
 		[
+			"慢",
+			{
+				color: "#5a6968",
+				nature: "graymm",
+			},
+		],
+		[
 			"用间",
 			{
 				color: "#c3f9ff",
