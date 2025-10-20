@@ -1435,10 +1435,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets.slice(0);
-			targets.forEach(async target => {
+			await game.doAsyncInOrder(targets, async (target, index) => {
 				if (player.isIn() && target.countCards("h") > 0) {
 					//暂时没有写给牌AI
-					await target.chooseToGive(player, "h", true);
+					return target.chooseToGive(player, "h", true);
 				}
 			});
 		},
@@ -9347,10 +9347,13 @@ const skills = {
 				})
 				.set("max", trigger.target.countDiscardableCards(player, "he"))
 				.set("goon", get.attitude(player, trigger.target) < 0)
+				.set("chooseonly", true)
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const num = event.cards.length;
+			const { cards } = event;
+			await player.discard(cards);
+			const num = cards.length;
 			if (trigger.target.countDiscardableCards(player, "he")) {
 				await player.discardPlayerCard("平讨：弃置" + get.translation(trigger.target) + get.cnNumber(num) + "张牌", num, "he", trigger.target, true);
 			}

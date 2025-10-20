@@ -2842,6 +2842,9 @@ export class Player extends HTMLDivElement {
 	 * @returns { number }
 	 */
 	getDamagedHp(raw) {
+		if (this.getHp(raw) == Infinity) {
+			return 0;
+		}
 		return this.maxHp - this.getHp(raw);
 	}
 	/**
@@ -10068,8 +10071,8 @@ export class Player extends HTMLDivElement {
 				this,
 				skill
 			);
-			if (!player.hasSkill(skill, true)) {
-				player.removeSkill(skill);
+			if (!this.hasSkill(skill, true)) {
+				this.removeSkill(skill);
 			}
 		}
 		return skill;

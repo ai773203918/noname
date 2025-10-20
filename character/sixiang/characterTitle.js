@@ -1,4 +1,11 @@
 export default {
+	std_huangwudie: "刀弓双绝",
+	std_qinghegongzhu: "冀不推实",
+	std_quyi: "名门的骁将",
+	std_wenyuan: "揾泪红袖",
+	std_xushao: "识人读心",
+	std_zhangxuan: "玉宇嫁蔷",
+	std_jushou: "徐图渐营",
 	std_sunhao: "荒政享黛",
 	std_mateng: "勇冠西州",
 	std_mayunlu: "花海舞枪",

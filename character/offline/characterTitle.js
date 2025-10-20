@@ -1,4 +1,5 @@
 export default {
+	scl_jiaxu: "陈筹画策",
 	xia_caopi: "弃旧学新",
 	eu_kaisa: "无冕之皇",
 	eu_makang: "马米科尼扬",

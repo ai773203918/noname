@@ -10763,12 +10763,14 @@ const skills = {
 						return num;
 					})()
 				)
+				.set("chooseonly", true)
 				.set("logSkill", [skillName, trigger.player])
 				.forResult();
 			event.result.skill_popup = false;
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
+			await player.discard(event.cards);
 			if (typeof trigger.baseDamage !== "number") {
 				trigger.baseDamage = 1;
 			}
@@ -15973,39 +15975,33 @@ const skills = {
 				.forResult();
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			player.discard(cards);
-			"step 1";
-			var num = cards.length;
-			event.num = num;
-			var target = targets[0],
-				str = get.translation(target);
-			event.target = target;
+		async content(event, trigger, player) {
+			const { cards, targets: [target] } = event;
+			await player.discard(cards);
+			const num = cards.length;
+			let result;
 			if (!target.isIn()) {
-				event.finish();
-			} else if (
-				!target.hasCard(function (card) {
-					return lib.filter.canBeDiscarded(card, player, target);
-				}, "he")
-			) {
-				event._result = { index: 1 };
-			} else {
-				player
+				return event.finish();
+			}
+			else if (!target.countDiscardableCards(player, "he")) {
+				result = { index: 1 };
+			}
+			else {
+				result = await player
 					.chooseControl()
 					.set("choiceList", ["弃置" + str + "的" + get.cnNumber(num) + "张牌", "对" + str + "造成1点伤害"])
 					.set("ai", function () {
-						var player = _status.event.player;
-						var eff0 = get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(1.7, target.countCards("he"));
-						var eff1 = get.damageEffect(target, player, player);
+						const player = _status.event.player;
+						const eff0 = get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(1.7, target.countCards("he"));
+						const eff1 = get.damageEffect(target, player, player);
 						return eff0 > eff1 ? 0 : 1;
-					});
+					})
+					.forResult();
 			}
-			"step 2";
-			if (result.index == 0) {
-				player.discardPlayerCard(target, num, true, "he", "allowChoooseAll");
-			} else {
-				target.damage();
+			if (result?.index == 0) {
+				await player.discardPlayerCard(target, num, true, "he", "allowChoooseAll");
+			} else if (result?.index == 1) {
+				await target.damage();
 			}
 		},
 	},
@@ -16105,15 +16101,15 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			trigger.num--;
 			if (!event.cards || !event.cards.length) {
 				const cards = player.getCards("h", card => lib.filter.cardDiscardable(card, player, "rewangzu"));
 				if (cards.length) {
-					player.discard(cards.randomGet());
+					await player.discard(cards.randomGet());
 				}
 			} else {
-				player.discard(event.cards);
+				await player.discard(event.cards);
 			}
+			trigger.num--;
 		},
 	},
 	//万年公主
