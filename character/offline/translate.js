@@ -1,6 +1,10 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const translates = {
+	scl_jiaxu: "SCL贾诩",
+	scl_jiaxu_prefix: "SCL",
+	sclwansha: "完杀",
+	sclwansha_info: "锁定技，当其他角色于你的回合内进入濒死状态时，你令其死亡。",
 	pe_guozhao: "郭照",
 	pepianchong: "偏宠",
 	pepianchong_info: "摸牌阶段，你可以改为获得牌堆底的一张牌，此牌倒置（标记为“偏宠”），然后你摸一张牌，直到你下回合开始：你每失去一张倒置牌后，摸一张牌；你每失去一张未倒置的手牌后，获得牌堆底的一张牌并倒置。",

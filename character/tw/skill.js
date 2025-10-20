@@ -2859,7 +2859,7 @@ const skills = {
 							],
 						],
 						true
-				  )
+					)
 				: { result: { links: ["huogong"] } };
 			if (links[0] === "huogong") {
 				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
@@ -3054,7 +3054,7 @@ const skills = {
 					get.prompt(event.name.slice(0, -5)),
 					[
 						[
-							["phase", "当前回合结束后执行一个额外的回合"],
+							//["phase", "当前回合结束后执行一个额外的回合"],
 							["twchihui", `保留〖炽灰〗直到下次退幻`],
 							["draw", `摸牌至体力上限`],
 							["enable", `恢复所有装备栏`],
@@ -3086,9 +3086,9 @@ const skills = {
 					if (link == "draw") {
 						return 5 - player.countCards("h");
 					}
-					if (link == "phase") {
+					/*if (link == "phase") {
 						return Math.max(4, player.countCards("h"));
-					}
+					}*/
 					return 1;
 				})
 				.set("selectButton", [1, 2]);
@@ -3105,21 +3105,21 @@ const skills = {
 			if (history.length) {
 				history[history.length - 1][event.name + "_num"] = num;
 			}
-			if (choices.includes("phase")) {
+			/*if (choices.includes("phase")) {
 				game.log(player, "选择了", "#y选项一");
 				player.addTempSkill(event.name + "_mark");
 				player.insertPhase();
-			}
+			}*/
 			if (choices.includes("twchihui")) {
-				game.log(player, "选择了", "#y选项二");
+				game.log(player, "选择了", "#y选项一");
 				skills.remove("twchihui");
 			}
 			if (choices.includes("draw")) {
-				game.log(player, "选择了", "#y选项三");
+				game.log(player, "选择了", "#y选项二");
 				await player.drawTo(Math.min(player.maxHp, 5));
 			}
 			if (choices.includes("enable")) {
-				game.log(player, "选择了", "#y选项四");
+				game.log(player, "选择了", "#y选项三");
 				const list = Array.from({ length: 5 })
 					.map((_, i) => `equip${i + 1}`)
 					.filter(i => player.hasDisabledSlot(i));
@@ -3130,7 +3130,7 @@ const skills = {
 			await player.changeSkills(["twhuangzhu", "twliyuan", "twjifa"], skills);
 		},
 		derivation: ["twhuangzhu", "twliyuan", "twjifa"],
-		subSkill: {
+		/*subSkill: {
 			mark: {
 				charlotte: true,
 				mark: true,
@@ -3138,7 +3138,7 @@ const skills = {
 					content: "本回合结束后执行一个额外回合",
 				},
 			},
-		},
+		},*/
 	},
 	twhuangzhu: {
 		audio: 2,
@@ -3308,6 +3308,14 @@ const skills = {
 					);
 					if (!player.getStorage(event.name).length) {
 						player.removeSkill(event.name);
+					} else {
+						player.addAdditionalSkill(
+							event.name,
+							player
+								.getStorage(equip)
+								.map(name => lib.card[name[2]]?.skills || [])
+								.flat()
+						);
 					}
 				},
 			},
@@ -16405,12 +16413,15 @@ const skills = {
 					var target2 = result.targets[0];
 					player.line(target2, "green");
 					target
-						.chooseToUse(function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						}, "对" + get.translation(target2) + "使用一张杀，否则本回合使用伤害牌指定" + get.translation(player) + "为目标时须交给" + get.translation(player) + "两张牌，否则此牌对" + get.translation(player) + "无效")
+						.chooseToUse(
+							function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							"对" + get.translation(target2) + "使用一张杀，否则本回合使用伤害牌指定" + get.translation(player) + "为目标时须交给" + get.translation(player) + "两张牌，否则此牌对" + get.translation(player) + "无效"
+						)
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("complexTarget", true)
@@ -17769,7 +17780,7 @@ const skills = {
 					: {
 							bool: true,
 							cards: hs,
-					  };
+						};
 			if (result?.bool) {
 				player.$throw(result.cards.length, 1000);
 				const next = player.lose(result.cards, ui.cardPile);
@@ -19472,12 +19483,15 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "侠望：是否对" + get.translation(trigger.source) + "使用一张杀？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"侠望：是否对" + get.translation(trigger.source) + "使用一张杀？"
+				)
 				.set("logSkill", "twxiawang")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
@@ -22717,7 +22731,7 @@ const skills = {
 				case 2:
 					return "本轮其他角色使用【桃】结算结束后，若其有牌，则其需交给你一张牌，否则你对其造成1点伤害";
 				default:
-					return `失去【${get.translation(skill)}】并获得${(lib.skill[skill].derivation.map(i => "【" + get.translation(i) + "】").join("、"))}`;
+					return `失去【${get.translation(skill)}】并获得${lib.skill[skill].derivation.map(i => "【" + get.translation(i) + "】").join("、")}`;
 			}
 		},
 		async content(event, trigger, player) {

@@ -2599,21 +2599,19 @@ const skills = {
 			});
 			event.result = await next.forResult();
 		},
-		content() {
-			"step 0";
-			event.suit1 = get.suit(cards[0], player);
-			player.discard(cards);
-			player.chooseUseTarget("jiu", true);
-			"step 1";
-			var suit1 = event.suit1,
-				suit2 = get.suit(trigger.card, false);
+		async content(event, trigger, player) {
+			const { cards } = event;
+			await player.discard(cards);
+			const suit1 = get.suit(cards[0], player);
+			await player.chooseUseTarget("jiu", true);
+			const suit2 = get.suit(trigger.card, false);
 			if (suit1 == suit2 && lib.suit.includes(suit1)) {
 				trigger.excluded.add(player);
 			}
 			if (suit1 == "club") {
-				var cards = trigger.cards.filterInD();
+				const cards = trigger.cards.filterInD();
 				if (cards.length > 0) {
-					player.gain(cards, "gain2");
+					await player.gain(cards, "gain2");
 				}
 			}
 		},

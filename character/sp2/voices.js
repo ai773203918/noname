@@ -1,4 +1,9 @@
 export default {
+	"#zhuiji_matie1": "伏波之裔，岂惧险地。",
+	"#zhuiji_matie2": "纵龙潭虎穴在前，吾亦不惧半分。",
+	"#dcquxian1": "策马赴国难，醉卧青山头。",
+	"#dcquxian2": "曹贼坐据之处，建功立业之途。",
+	"#matie:die": "铁视死如归，无憾！",
 	"#starchongwei1": "敌聚如蝗，不可等闲视之。",
 	"#starchongwei2": "贼围甚密，唯乘夜伺隙。",
 	"#starchongzu1": "黄天已死，北海当立！",

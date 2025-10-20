@@ -208,7 +208,7 @@ const skills = {
 						: {
 								bool: true,
 								links: skills,
-						  };
+							};
 				if (result2?.bool && result2?.links?.length) {
 					await player.removeSkills(result2.links);
 				}
@@ -1114,19 +1114,11 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player.chooseToUse(get.prompt2(event.skill)).set("chooseonly", true).set("logSkill", event.name.slice(0, -5)).forResult();
 		},
-		popup: false,
 		async content(event, trigger, player) {
-			const { ResultEvent, logSkill } = event.cost_data;
-			event.next.push(ResultEvent);
-			if (logSkill) {
-				if (typeof logSkill == "string") {
-					ResultEvent.player.logSkill(logSkill);
-				} else if (Array.isArray(logSkill)) {
-					ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-				}
-			}
-			await ResultEvent;
-			const card = ResultEvent.card;
+			const { result, logSkill } = event.cost_data;
+			const next = player.useResult(result, event);
+			await next;
+			const { card } = next;
 			const target = _status.currentPhase;
 			if (!player.hasHistory("sourceDamage", evt => evt.card == card) && target?.canAddJudge("lebu")) {
 				await player
@@ -3631,7 +3623,7 @@ const skills = {
 				str += "，然后摸" + get.cnNumber(player.getDamagedHp()) + "张牌";
 			}
 			event.result = await player
-				.chooseToDiscard(get.prompt(event.skill), "横置武将牌并弃置" + get.cnNumber(num) + "张牌" + str, "he", num)
+				.chooseToDiscard(get.prompt(event.skill), "横置武将牌并弃置" + get.cnNumber(num) + "张牌" + str, "he", num, "chooseonly")
 				.set("ai", function (card) {
 					var player = _status.event.player;
 					var num = _status.event.num;
@@ -3648,15 +3640,15 @@ const skills = {
 					return 0;
 				})
 				.set("num", num)
-				.set("logSkill", "clanxieshu")
+				//.set("logSkill", "clanxieshu")
 				.forResult();
 		},
-		popup: false,
-		*content(event, map) {
-			const player = map.player;
-			yield player.link(true);
+		//popup: false,
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			await player.link(true);
 			if (player.getDamagedHp() > 0) {
-				yield player.draw(player.getDamagedHp());
+				await player.draw(player.getDamagedHp());
 			}
 			if (
 				game.getGlobalHistory("everything", evt => {
@@ -4865,12 +4857,15 @@ const skills = {
 					"step 6";
 					var current = targets.shift();
 					current
-						.chooseToUse(function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						}, "联诛：是否对" + get.translation(event.targetx) + "使用一张杀？")
+						.chooseToUse(
+							function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							"联诛：是否对" + get.translation(event.targetx) + "使用一张杀？"
+						)
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("complexTarget", true)

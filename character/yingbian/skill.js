@@ -2162,6 +2162,10 @@ const skills = {
 						control.close();
 						return dialog._close(...args);
 					};
+					if (_status.smyyingshi_clickable) {
+						_status.smyyingshi_clickable.close();
+					}
+					_status.smyyingshi_clickable = dialog;
 					dialog.open();
 				}
 				if (cards instanceof Promise) {

@@ -1980,16 +1980,6 @@ const _zhanfa = {
 					await player.recover(num);
 				});
 			},
-			onremove(player, skill) {
-				const num = get.info(skill).num;
-				const next = game.createEvent(skill + "_onremove", false, get.event());
-				next.set("player", player);
-				next.set("num", num);
-				next.setContent(async (event, trigger, player) => {
-					const { num } = event;
-					await player.loseMaxHp(num);
-				});
-			},
 		},
 	},
 	//体魄Ⅱ
@@ -2305,7 +2295,17 @@ const _zhanfa = {
 				return event.getParent()?.name == "huogong";
 			},
 			async content(event, trigger, player) {
-				const result = await player
+				trigger.chooseonly = true;
+				player
+					.when("chooseToDiscardAfter")
+					.filter(evt => evt == trigger)
+					.step(async (event, trigger, player) => {
+						if (trigger.result?.cards?.length) {
+							const {cards} = trigger.result;
+							await  player.showCards(cards, `${get.translation(player)}【火攻】展示的牌`);
+						}
+					})
+				/*const result = await player
 					.chooseCard(trigger.filterCard, () => true)
 					.set("prompt", false)
 					.forResult();
@@ -2313,8 +2313,11 @@ const _zhanfa = {
 					const { cards } = result;
 					await player.showCards(cards, `${get.translation(player)}因【火攻】展示的牌`, false);
 					trigger.result = { bool: true, cards: cards };
-					trigger.finish();
 				}
+				else {
+					trigger.result = { bool: false};
+				}
+				trigger.finish();*/
 			},
 		},
 	},
@@ -2834,16 +2837,6 @@ const _zhanfa = {
 					await player.gainMaxHp(num);
 				});
 			},
-			onremove(player, skill) {
-				const num = get.info(skill).num;
-				const next = game.createEvent(skill + "_onremove", false, get.event());
-				next.set("player", player);
-				next.set("num", num);
-				next.setContent(async (event, trigger, player) => {
-					const { num } = event;
-					await player.loseMaxHp(num);
-				});
-			},
 		},
 	},
 	//增寿Ⅱ
@@ -3015,6 +3008,9 @@ export class ZhanfaManager {
 	 * @param {Library} lib
 	 */
 	constructor(lib) {
+		lib.cardPack["zhanfa"] = [];
+		lib.translate["zhanfa_card_config"] = "战法";
+		lib.translate["zhanfa_cardsInfo"] = "这里是用来浏览战法的，这些不是卡牌！";
 		for (const id in _zhanfa) {
 			let { skill, rarity, translate, info, card, ...args } = _zhanfa[id];
 			if (typeof skill != "string") {
@@ -3036,7 +3032,10 @@ export class ZhanfaManager {
 			if (!card.cardimage && !card.image) {
 				card.image = `image/zhanfa/${id}.png`;
 			}
+			card.type = "zhanfa";
+			card.subtype = `zf_${rarity}`;
 			lib.card[id] = card;
+			lib.cardPack["zhanfa"].push(id);
 			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 		}
 		this.#zhanfa = _zhanfa;
@@ -3064,9 +3063,6 @@ export class ZhanfaManager {
 			skill.priority = Infinity;
 			lib.skill["" + id] = skill;
 			skill = id;
-			if (!_status.importingExtension) {
-				game.finishSkill(id);
-			}
 		} else {
 			translate ??= lib.translate[skill];
 			info ??= lib.translate[skill + "_info"];
@@ -3082,7 +3078,10 @@ export class ZhanfaManager {
 		if (!card.cardimage && !card.image) {
 			card.image = `image/zhanfa/${id}.png`;
 		}
+		card.type = "zhanfa";
+		card.subtype = `zf_${rarity}`;
 		lib.card[id] = card;
+		lib.cardPack["zhanfa"].push(id);
 		this.#zhanfa[id] = { skill: skill, rarity: rarity, ...args };
 	}
 
