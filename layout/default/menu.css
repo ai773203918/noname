@@ -314,13 +314,15 @@
 /* 技能按钮 */
 .menubg.charactercard > .characterskill {
 	left: 41%;
+	right: 0;
 	padding-left: 9px;
 	padding-right: 10px;
-	width: 60%;
+	width: auto;
+	box-sizing: border-box;
 	top: 48%;
 	height: 16.67%;
 	white-space: nowrap;
-	overflow-x: scroll;
+	overflow-x: auto;
 }
 
 .menubg.charactercard > .characterskill > .menubutton.large {
