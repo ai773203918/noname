@@ -5030,6 +5030,7 @@ const skills = {
 		group: ["olsblixian_addTrigger"],
 		subSkill: {
 			addTrigger: {
+				audio: "olsblixian",
 				forced: true,
 				locked: false,
 				trigger: { player: "useCardAfter" },
