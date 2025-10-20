@@ -1435,10 +1435,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const targets = event.targets.slice(0);
-			targets.forEach(async target => {
+			await game.doAsyncInOrder(targets, async (target, index) => {
 				if (player.isIn() && target.countCards("h") > 0) {
 					//暂时没有写给牌AI
-					await target.chooseToGive(player, "h", true);
+					return target.chooseToGive(player, "h", true);
 				}
 			});
 		},
