@@ -3953,14 +3953,7 @@ const skills = {
 						.getCards("e")
 						.map(card => get.suit(card))
 						.unique().length;
-					if (event.getg?.(player)?.length) {
-						return player.countCards("h") < num;
-					}
-					var evt = event.getl(player);
-					if (!evt || !evt.hs || evt.hs.length == 0 || player.countCards("h") >= num) {
-						return false;
-					}
-					return true;
+					return player.countCards("h") < num;
 				},
 				async content(event, trigger, player) {
 					const num = player
@@ -24261,7 +24254,7 @@ const skills = {
 							return false;
 						}
 					});
-					return prev > num;
+					return prev > num && prev <= (num + evt.cards2.length);
 				},
 				forced: true,
 				popup: false,
