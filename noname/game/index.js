@@ -10091,6 +10091,9 @@ export class Game extends GameCompatible {
 		localStorage.removeItem(`${lib.configprefix}${mode}`);
 	}
 	/**
+	 * @deprecated 请使用addPlayerOL，addPlayer已被废除！
+	 */
+	/**
 	 * @param { number } position
 	 * @param { string } [character]
 	 * @param { string } [character2]
@@ -10170,6 +10173,9 @@ export class Game extends GameCompatible {
 		game.arrangePlayers();
 		return player;
 	}
+	/**
+	 * @deprecated 请使用removePlayerOL，removePlayer已被废除！
+	 */
 	/**
 	 * @param { Player } player
 	 */

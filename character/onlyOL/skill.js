@@ -4984,9 +4984,7 @@ const skills = {
 			return player.getStorage("olsblixian_triggers").includes(event.name);
 		},
 		async cost(event, trigger, player) {
-			const list = get.inpileVCardList(info => {
-				return info[2] == "wuzhong" || player.getStorage("olsblixian_names").includes(info[2]);
-			});
+			const list = ["wuzhong"].concat(player.getStorage("olsblixian_names")).map(i => ["trick", "", i]);
 			if (!list.length) {
 				return;
 			}
