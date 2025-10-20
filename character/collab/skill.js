@@ -1495,13 +1495,13 @@ const skills = {
 									return 2 * numx(player);
 								}
 								return numx(player);
-						  }
+							}
 						: function (player) {
 								if (player == me) {
 									return 2 * numx;
 								}
 								return numx;
-						  };
+							};
 				player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
 			}
 			if (!trigger.gaintag) {
@@ -3453,12 +3453,15 @@ const skills = {
 				target = event.targets[1];
 			await drawer.draw(2);
 			const result = await drawer
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"邀仙：对" + get.translation(target) + "使用一张杀，否则失去1点体力"
+				)
 				.set("targetRequired", true)
 				.set("complexTarget", true)
 				.set("complexSelect", true)
@@ -6802,12 +6805,15 @@ const skills = {
 				return;
 			}
 			const result = await targets[0]
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "密信：对" + get.translation(targets[1]) + "使用一张【杀】，或令其观看并获得你的一张手牌")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"密信：对" + get.translation(targets[1]) + "使用一张【杀】，或令其观看并获得你的一张手牌"
+				)
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
 					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {

@@ -1759,9 +1759,12 @@ player.removeVirtualEquip(card);
 						addNode();
 					}, getTimeout());
 				} else {
-					setTimeout(function () {
-						event.settle();
-					}, speed * 110 + 100);
+					setTimeout(
+						function () {
+							event.settle();
+						},
+						speed * 110 + 100
+					);
 				}
 			};
 			//点击时的判断操作
@@ -1813,16 +1816,19 @@ player.removeVirtualEquip(card);
 
 			game.pause();
 			game.countChoose();
-			setTimeout(() => {
-				if (!lib.config.background_audio) {
-					return;
-				}
-				if (beatmap.filename.startsWith("ext:")) {
-					game.playAudio(beatmap.filename);
-				} else {
-					game.playAudio("effect", beatmap.filename);
-				}
-			}, Math.floor(speed * 100 * (0.9 + beatmap.judgebar_height)) + beatmap.current);
+			setTimeout(
+				() => {
+					if (!lib.config.background_audio) {
+						return;
+					}
+					if (beatmap.filename.startsWith("ext:")) {
+						game.playAudio(beatmap.filename);
+					} else {
+						game.playAudio("effect", beatmap.filename);
+					}
+				},
+				Math.floor(speed * 100 * (0.9 + beatmap.judgebar_height)) + beatmap.current
+			);
 			setTimeout(function () {
 				addNode();
 			}, getTimeout());
@@ -5492,10 +5498,12 @@ player.removeVirtualEquip(card);
 				if (event.chooseonly) {
 					event.logSkill = false;
 				}
-				const ResultEvent = player.useResult(event.result, event);
-				if (event.chooseonly && get.itemtype(ResultEvent) == "event") {
-					event.next.remove(ResultEvent);
-					event.result.cost_data = { ResultEvent };
+				if (!event.chooseonly) {
+					//event.done = player.useResult(event.result, event);
+					const next = player.useResult(event.result, event);
+				}
+				else {
+					event.result.cost_data = { result: event.result };
 					if (oldLogSkill) {
 						event.result.cost_data.logSkill = oldLogSkill;
 					}
@@ -6100,9 +6108,9 @@ player.removeVirtualEquip(card);
 				event.promptdiscard.close();
 			}
 			if (event.result) {
-				/*if (event.result._sendskill) {
+				if (event.result._sendskill) {
 					lib.skill[event.result._sendskill[0]] = event.result._sendskill[1];
-				}*/
+				}
 				if (event.result.skill) {
 					const info = get.info(event.result.skill);
 					if (info && info.precontent && !game.online) {
@@ -6129,23 +6137,23 @@ player.removeVirtualEquip(card);
 			if (typeof event.dialog?.close == "function") {
 				event.dialog.close();
 			}
-			if (event.logSkill && event.result.bool && !game.online) {
-				if (typeof event.logSkill == "string") {
-					player.logSkill(event.logSkill);
-				} else if (Array.isArray(event.logSkill)) {
-					player.logSkill.apply(player, event.logSkill);
+			if (!game.online && event.result.bool) {
+				if (event.logSkill && event.result.bool && !game.online && !event.chooseonly) {
+					if (typeof event.logSkill == "string") {
+						player.logSkill(event.logSkill);
+					} else if (Array.isArray(event.logSkill)) {
+						player.logSkill.apply(player, event.logSkill);
+					}
 				}
-			}
-			/*if (event._sendskill) {
-				event.result._sendskill = event._sendskill;
-			}*/
-			if (!game.online && !event.chooseonly) {
-				event.done ??= player.discard(event.result.cards);
+				const next = player.discard(event.result.cards);
 				if (typeof event.delay == "boolean") {
-					event.done.delay = event.delay;
+					next.delay = event.delay;
 				}
-				event.done.discarder = player;
-				await event.done;
+				next.discarder = player;
+				event.done = next;
+				await next;
+			} else if (event._sendskill) {
+				event.result._sendskill = event._sendskill;
 			}
 			if (!_status.noclearcountdown) {
 				game.stopCountChoose();
@@ -9395,7 +9403,7 @@ player.removeVirtualEquip(card);
 					? []
 					: targets[0].getCards("j", card => {
 							return event.filter(card) && targets[1].canAddJudge(card);
-					  });
+						});
 			if (es.length) {
 				dialogArgs.push(`<div class="text center">装备区</div>`);
 				dialogArgs.push([es, "vcard"]);
@@ -10641,7 +10649,12 @@ player.removeVirtualEquip(card);
 				if (lib.skill[event.skill].audio) {
 					cardaudio = false;
 				}
-				player.logSkill(event.skill);
+				if (lib.skill[event.skill].log != false) {
+					player.logSkill(event.skill, false, null, null, [event, event.player]);
+				}
+				/*if (get.info(event.skill).popname) {
+					player.tryCardAnimate(event.card, event.card.name, "metal", true);
+				}*/
 				player.checkShow(event.skill, true);
 				if (lib.skill[event.skill].onrespond && !game.online) {
 					lib.skill[event.skill].onrespond(event, player);
@@ -11082,48 +11095,57 @@ player.removeVirtualEquip(card);
 			if (event.animate == "draw") {
 				player.$draw(cards.length);
 				game.pause();
-				setTimeout(function () {
-					addv();
-					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-					player.update();
-					if (player == game.me) {
-						ui.updatehl();
-					}
-					broadcast();
-					game.resume();
-				}, get.delayx(500, 500));
+				setTimeout(
+					function () {
+						addv();
+						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+						player.update();
+						if (player == game.me) {
+							ui.updatehl();
+						}
+						broadcast();
+						game.resume();
+					},
+					get.delayx(500, 500)
+				);
 			} else if (event.animate == "gain") {
 				player.$gain(cards, event.log);
 				game.pause();
-				setTimeout(function () {
-					addv();
-					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-					player.update();
-					if (player == game.me) {
-						ui.updatehl();
-					}
-					broadcast();
-					game.resume();
-				}, get.delayx(700, 700));
+				setTimeout(
+					function () {
+						addv();
+						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+						player.update();
+						if (player == game.me) {
+							ui.updatehl();
+						}
+						broadcast();
+						game.resume();
+					},
+					get.delayx(700, 700)
+				);
 			} else if (event.animate == "gain2" || event.animate == "draw2") {
 				var gain2t = 300;
 				if (player.$gain2(cards, event.log) && player == game.me) {
 					gain2t = 500;
 				}
 				game.pause();
-				setTimeout(function () {
-					addv();
-					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-					player.update();
-					if (player == game.me) {
-						ui.updatehl();
-					}
-					broadcast();
-					game.resume();
-				}, get.delayx(gain2t, gain2t));
+				setTimeout(
+					function () {
+						addv();
+						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+						player.update();
+						if (player == game.me) {
+							ui.updatehl();
+						}
+						broadcast();
+						game.resume();
+					},
+					get.delayx(gain2t, gain2t)
+				);
 			} else if (event.animate == "give" || event.animate == "giveAuto") {
 				var evtmap = event.losing_map;
 				if (event.animate == "give") {
@@ -11143,31 +11165,37 @@ player.removeVirtualEquip(card);
 					}
 				}
 				game.pause();
-				setTimeout(function () {
-					addv();
-					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-					player.update();
-					if (player == game.me) {
-						ui.updatehl();
-					}
-					broadcast();
-					game.resume();
-				}, get.delayx(500, 500));
+				setTimeout(
+					function () {
+						addv();
+						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+						player.update();
+						if (player == game.me) {
+							ui.updatehl();
+						}
+						broadcast();
+						game.resume();
+					},
+					get.delayx(500, 500)
+				);
 			} else if (typeof event.animate == "function") {
 				var time = event.animate(event);
 				game.pause();
-				setTimeout(function () {
-					addv();
-					player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
-					player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
-					player.update();
-					if (player == game.me) {
-						ui.updatehl();
-					}
-					broadcast();
-					game.resume();
-				}, get.delayx(time, time));
+				setTimeout(
+					function () {
+						addv();
+						player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
+						player.node.handcards2.insertBefore(frag2, player.node.handcards2.firstChild);
+						player.update();
+						if (player == game.me) {
+							ui.updatehl();
+						}
+						broadcast();
+						game.resume();
+					},
+					get.delayx(time, time)
+				);
 			} else {
 				addv();
 				player.node.handcards1.insertBefore(frag1, player.node.handcards1.firstChild);
@@ -11296,36 +11324,45 @@ player.removeVirtualEquip(card);
 					game.log(player, "将", get.cnNumber(cards.length), "张牌置于了武将牌上");
 				}
 				game.pause();
-				setTimeout(function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				}, get.delayx(500, 500));
+				setTimeout(
+					function () {
+						player.$addToExpansion(cards, null, event.gaintag);
+						for (var i of event.gaintag) {
+							player.markSkill(i);
+						}
+						game.resume();
+					},
+					get.delayx(500, 500)
+				);
 			} else if (event.animate == "gain") {
 				player.$gain(cards, false);
 				game.pause();
-				setTimeout(function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				}, get.delayx(700, 700));
+				setTimeout(
+					function () {
+						player.$addToExpansion(cards, null, event.gaintag);
+						for (var i of event.gaintag) {
+							player.markSkill(i);
+						}
+						game.resume();
+					},
+					get.delayx(700, 700)
+				);
 			} else if (event.animate == "gain2" || event.animate == "draw2") {
 				var gain2t = 300;
 				if (player.$gain2(cards) && player == game.me) {
 					gain2t = 500;
 				}
 				game.pause();
-				setTimeout(function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				}, get.delayx(gain2t, gain2t));
+				setTimeout(
+					function () {
+						player.$addToExpansion(cards, null, event.gaintag);
+						for (var i of event.gaintag) {
+							player.markSkill(i);
+						}
+						game.resume();
+					},
+					get.delayx(gain2t, gain2t)
+				);
 			} else if (event.animate == "give" || event.animate == "giveAuto") {
 				var evtmap = event.losing_map;
 				if (event.animate == "give") {
@@ -11354,23 +11391,29 @@ player.removeVirtualEquip(card);
 					}
 				}
 				game.pause();
-				setTimeout(function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				}, get.delayx(500, 500));
+				setTimeout(
+					function () {
+						player.$addToExpansion(cards, null, event.gaintag);
+						for (var i of event.gaintag) {
+							player.markSkill(i);
+						}
+						game.resume();
+					},
+					get.delayx(500, 500)
+				);
 			} else if (typeof event.animate == "function") {
 				var time = event.animate(event);
 				game.pause();
-				setTimeout(function () {
-					player.$addToExpansion(cards, null, event.gaintag);
-					for (var i of event.gaintag) {
-						player.markSkill(i);
-					}
-					game.resume();
-				}, get.delayx(time, time));
+				setTimeout(
+					function () {
+						player.$addToExpansion(cards, null, event.gaintag);
+						for (var i of event.gaintag) {
+							player.markSkill(i);
+						}
+						game.resume();
+					},
+					get.delayx(time, time)
+				);
 			} else {
 				player.$addToExpansion(cards, null, event.gaintag);
 				for (var i of event.gaintag) {

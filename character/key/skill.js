@@ -4219,10 +4219,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const num = player.countMark("erika_yousheng_ruka") + 1;
-			event.result = await player.chooseToDiscard("he", num, get.prompt(event.skill, trigger.target), "弃置" + num + "张牌，并转移" + get.translation(trigger.card)).forResult();
+			event.result = await player.chooseToDiscard("he", num, get.prompt(event.skill, trigger.target), "弃置" + num + "张牌，并转移" + get.translation(trigger.card), "chooseonly").forResult();
 		},
 		async content(event, trigger, player) {
-			player.discard(event.cards);
+			await player.discard(event.cards);
 			var ruka = trigger.target,
 				evt = trigger.getParent();
 			evt.targets.remove(ruka);
@@ -11634,23 +11634,19 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			player.discard(cards);
-			"step 1";
-			event.bool = true;
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			let result;
 			if (trigger.numFixed) {
-				event._result = { index: 0 };
+				result = { index: 0 };
 			} else if (trigger.player.isIn()) {
-				var name = get.translation(trigger.player);
-				player.chooseControl().set("choiceList", ["对" + name + "造成1点火属性伤害", "令" + name + "此出牌阶段的额定摸牌数改为0"]);
-			} else {
-				event.finish();
+				const name = get.translation(trigger.player);
+				result = await player.chooseControl().set("choiceList", ["对" + name + "造成1点火属性伤害", "令" + name + "此出牌阶段的额定摸牌数改为0"]).forResult();
 			}
-			"step 2";
-			if (result.index == 0) {
-				trigger.player.damage("fire");
-			} else {
+			if (result?.index == 0) {
+				await trigger.player.damage("fire");
+			}
+			if (result?.index == 1) {
 				trigger.changeToZero();
 			}
 		},

@@ -298,7 +298,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.chooseToDiscard(`义拒：请弃置一张牌`, "he", true).set("ai", card => {
 				const player = get.player();
-				if (player.hasSkill("dcshuguoi", null, false, false)) {
+				if (player.hasSkill("dcshuguo", null, false, false)) {
 					return Math.max(...game.filterPlayer2(target => player.canUse(card, target, true, false)).map(target => get.effect_use(target, card, player, player)));
 				}
 				return 6 - get.value(card);
@@ -497,9 +497,8 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent } = event.cost_data;
-			event.next.push(ResultEvent);
-			await ResultEvent;
+			const { result } = event.cost_data;
+			await player.useResult(result, event);
 		},
 		subSkill: {
 			backup: {
@@ -516,6 +515,7 @@ const skills = {
 				async precontent(event) {
 					delete event.result.skill;
 				},
+				log: false,
 				popname: true,
 			},
 		},
@@ -2302,7 +2302,7 @@ const skills = {
 								.map(current => {
 									return get.effect(current, sha, player, player);
 								})
-					  )
+						)
 					: 0;
 				const targetEffect = target.hasUseTarget(sha, false)
 					? Math.max(
@@ -2311,7 +2311,7 @@ const skills = {
 								.map(current => {
 									return get.effect(current, sha, player, player);
 								})
-					  )
+						)
 					: 0;
 				return 5 + 2 * get.sgn(playerEffect - targetEffect) - get.value(card);
 			});
@@ -5196,12 +5196,15 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "射却：是否对" + get.translation(trigger.player) + "使用一张杀？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"射却：是否对" + get.translation(trigger.player) + "使用一张杀？"
+				)
 				.set("logSkill", "gnsheque")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {
