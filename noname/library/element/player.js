@@ -10454,7 +10454,7 @@ export class Player extends HTMLDivElement {
 			cards.remove(VCard);
 		}
 		if (VCard.storage.equipEnable && VCard.cards?.some(card => get.type(card) == "equip")) {
-			const es = player2.getVCards("e");
+			const es = player.getVCards("e");
 			const equips = VCard.cards.filter(card => {
 				if (get.type(card) == "equip") {
 					return false;
@@ -10462,10 +10462,10 @@ export class Player extends HTMLDivElement {
 				return !es.some(cardx => cardx.name == card.name);
 			});
 			if (equips.length) {
-				let keepSkills = Object.values(player2.additionalSkills).flat(),
+				let keepSkills = Object.values(player.additionalSkills).flat(),
 					skills = get.skillsFromEquips(equips).removeArray(keepSkills);
 				if (skills.length) {
-					player2.removeSkill(skills);
+					player.removeSkill(skills);
 				}
 			}
 		}
@@ -13968,9 +13968,9 @@ export class Player extends HTMLDivElement {
 		if (cardx.storage.equipEnable && (cardx.cards || cards).some(card => get.type(card) == "equip")) {
 			const equips = (cardx.cards || cards).filter(card => get.type(card) == "equip");
 			if (equips.length) {
-				let skills = get.skillsFromEquips(equips).filter(skill => !player2.hasSkill(skill, "e"));
+				let skills = get.skillsFromEquips(equips).filter(skill => !player.hasSkill(skill, "e"));
 				if (skills.length) {
-					player2.addSkill(skills);
+					player.addSkill(skills);
 				}
 			}
 			game.addGlobalSkill("equipEnableSkill");

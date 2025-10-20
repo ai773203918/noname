@@ -83,7 +83,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const storage = player.getStorage(
-				event.name,
+				event.skill,
 				lib.inpile.filter(name => get.type(name) == "delay")
 			);
 			const choice = storage
@@ -574,16 +574,18 @@ const skills = {
 				trigger.next[trigger.next.length - 1].zc26_lingling.add(event.indexedData);
 				const targets = game.dead.slice();
 				const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [player, event.indexedData]).forResult();
-				let source = player,
-					aim;
 				for (const target of targets) {
+					let source = game.findPlayer(current => current.hasCards(card => card == event.indexedData, "ej")),
+						aim;
 					const control = map.get(target).control;
 					if (control == "上家") {
-						aim = source.previous;
+						aim = source?.previous;
 					} else if (control == "下家") {
-						aim = source.next;
+						aim = source?.next;
 					}
-					target.line(source);
+					if (!source || !aim) {
+						return;
+					}
 					await target
 						.moveCard(true, source, aim, card => {
 							const cardx = get.event("card");
@@ -596,7 +598,6 @@ const skills = {
 						.set("forceDie", true)
 						.setContent(async function (event, trigger, player) {
 							if (player.canMoveCard(null, event.nojudge, event.sourceTargets, event.aimTargets, event.filter, event.canReplace ? "canReplace" : "noReplace")) {
-								console.log(1);
 								const source = event.sourceTargets[0],
 									aim = event.aimTargets[0];
 								let position = "j";
@@ -631,9 +632,10 @@ const skills = {
 		chooseControl(player, source, card, eventId) {
 			return player
 				.chooseControl(["上家", "下家"])
-				.set("prompt", "軨軨：选择一个方向")
-				.set("prompt2", `令${get.translation(source)}的&${get.translation(card)}移动至其上家或下家`)
+				.set("prompt", "軨軨：秘密选择一个方向")
+				.set("prompt2", `令${get.translation(source)}的${get.translation(card)}移动至其上家或下家`)
 				.set("ai", () => {
+					//哪管死后洪水滔天
 					let controls = get.event().controls.slice();
 					return get.event().getRand() < 0.5 ? controls[0] : controls[1];
 				})
