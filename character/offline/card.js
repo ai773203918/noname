@@ -78,7 +78,7 @@ const cards = {
 	zongma_attack: {
 		derivation: "eu_makang",
 		fullskin: true,
-		cardimage: "chitu",
+		image: "image/card/makang_zongma.png",
 		type: "equip",
 		subtype: "equip4",
 		skills: ["eu_zongma_attack"],
@@ -86,7 +86,7 @@ const cards = {
 	zongma_defend: {
 		derivation: "eu_makang",
 		fullskin: true,
-		cardimage: "dilu",
+		image: "image/card/makang_zongma.png",
 		type: "equip",
 		subtype: "equip3",
 		skills: ["eu_zongma_defend"],

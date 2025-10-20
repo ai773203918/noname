@@ -10347,7 +10347,7 @@ export class Player extends HTMLDivElement {
 		}
 		this.awakenedSkills.remove(skill);
 		this.enableSkill(skill + "_awake", skill);
-		if (!nomark) {
+		if (!nomark && this.hasSkill(skill, null, null, false)) {
 			this.markSkill(skill);
 		}
 		_status.event.clearStepCache();

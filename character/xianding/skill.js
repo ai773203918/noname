@@ -3861,7 +3861,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const slot = event.cost_data.slot,
 				card = event.cost_data.card;
-			const cardx = get.autoViewAs(card);
+			const cardx = get.autoViewAs({ name: `dchuashang_${get.type2(card)}` }, [card]);
 			cardx.subtypes = [`equip${slot}`];
 			await player.equip(cardx);
 		},
@@ -3935,7 +3935,7 @@ const skills = {
 								.forResult();
 							if (result?.control) {
 								const slot = result.control;
-								const cardx = get.autoViewAs(card);
+								const cardx = get.autoViewAs({ name: `dchuashang_${get.type2(card)}` }, [card]);
 								cardx.subtypes = [slot];
 								await player.equip(cardx);
 							}
@@ -9196,7 +9196,7 @@ const skills = {
 							return false;
 						}
 						let att = get.attitude(player, owner);
-						if (get.position(card) == "j" && (card.viewAs || card.name) == "jsrg_xumou") {
+						if (get.position(card) == "j" && (card.viewAs || card.name) == "xumou_jsrg") {
 							att *= -1;
 						}
 						if (get.position(card) == "e" && get.equipValue(card, owner) > 0) {
