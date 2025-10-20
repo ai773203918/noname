@@ -1866,12 +1866,21 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const target = event.targets[0];
+			const target = event.targets[0],
+				skill = event.name + "_clear";
 			target.markAuto(event.name + "_use", player);
 			target.addAdditionalSkill(`${event.name}_use_${player.playerid}`, event.name + "_use");
-			player.markAuto(event.name + "_clear", target);
-			player.addTempSkill(event.name + "_clear", { player: "phaseBeforeStart" });
-			player.addTempSkill(event.name + "_change", { player: "phaseBeforeStart" });
+			player.addTempSkill(skill, { player: "phaseBegin" });
+			player.storage[skill].set(target, 2);
+			player.addTip(
+				skill,
+				[...player.storage[skill].entries()]
+					.map(([target, num]) => {
+						return `${get.translation(skill)}${get.translation(target)} ${num}`;
+					})
+					.join("<br>")
+			);
+			player.addTempSkill(event.name + "_change", { player: "phaseBegin" });
 		},
 		group: ["pothaoshi_draw"],
 		subSkill: {
@@ -1883,20 +1892,36 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return event.getl(player)?.hs?.length && !player.countCards("h") && event.getParent().pothaoshi;
+					const storage = player.storage["pothaoshi_clear"],
+						target = event.getParent().pothaoshi;
+					return event.getl(player)?.hs?.length && !player.countCards("h") && storage?.has(target) && storage.get(target) > 0;
 				},
 				async content(event, trigger, player) {
+					const skill = "pothaoshi_clear";
+					player.storage[skill].set(trigger.getParent().pothaoshi, player.storage[skill].get(trigger.getParent().pothaoshi) - 1);
+					player.addTip(
+						skill,
+						[...player.storage[skill].entries()]
+							.map(([target, num]) => {
+								return `${get.translation(skill)}${get.translation(target)} ${num}`;
+							})
+							.join("<br>")
+					);
 					await player.drawTo(player.maxHp);
 				},
 			},
 			clear: {
 				charlotte: true,
+				init(player, skill) {
+					player.storage[skill] = new Map([]);
+				},
 				onremove(player, skill) {
-					player.storage[skill].forEach(target => {
+					[...player.storage[skill].entries()].forEach(([target, num]) => {
 						target.unmarkAuto("pothaoshi_use", [player]);
 						lib.skill.pothaoshi_use.init(target, "pothaoshi_use");
 						target.removeAdditionalSkill(`pothaoshi_use_${player.playerid}`);
 					});
+					player.removeTip(skill);
 					delete player.storage[skill];
 				},
 			},
@@ -1954,7 +1979,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const tag = "pothaoshi_tag";
 					if (["useCard", "respond"].includes(trigger.name)) {
-						trigger.set("pothaoshi", true);
+						trigger.set("pothaoshi", player);
 						const real = player.getStorage(event.name).reduce((cards, target) => {
 							const hs = target.isAlive() && target.countCards("h") ? target.getCards("h") : [];
 							return cards.addArray(hs);
