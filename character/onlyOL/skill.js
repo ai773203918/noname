@@ -21,13 +21,12 @@ const skills = {
 				let str = "<li>本轮选择效果<br>";
 				if (storage?.length) {
 					str += map[storage];
-				}
-				else {
+				} else {
 					str += "无";
 				}
 				str += `<br><br><li>已选择过的效果：${record.map(i => map[i].slice(0, 2)).join("、")}`;
 				return str;
-			}
+			},
 		},
 		trigger: {
 			global: "roundStart",
@@ -48,33 +47,37 @@ const skills = {
 					let result;
 					if (choices.length == 1) {
 						result = { bool: true, links: choices };
-					}
-					else {
+					} else {
 						result = await target
-							.chooseButton([
-								`权御：请选择一个效果`,
+							.chooseButton(
 								[
-									list,
-									(item, type, position, noclick, node) => {
-										let card = ["", "", item];
-										node = ui.create.buttonPresets.vcard(card, type, position, noclick);
-										node._link = node.link = item;
-										node._customintro = uiintro => {
-											uiintro.add(get.translation(node._link));
-											uiintro.addText(get.info("olquanyu").map[node._link].slice(3));
-											return uiintro;
-										};
-										return node;
-									},
-								]
-							], true)
+									`权御：请选择一个效果`,
+									[
+										list,
+										(item, type, position, noclick, node) => {
+											let card = ["", "", item];
+											node = ui.create.buttonPresets.vcard(card, type, position, noclick);
+											node._link = node.link = item;
+											node._customintro = uiintro => {
+												uiintro.add(get.translation(node._link));
+												uiintro.addText(get.info("olquanyu").map[node._link].slice(3));
+												return uiintro;
+											};
+											return node;
+										},
+									],
+								],
+								true
+							)
 							.set("choices", choices)
 							.set("filterButton", button => get.event().choices.includes(button.link))
 							.set("ai", button => Math.random())
 							.forResult();
 					}
 					if (result?.links?.length) {
-						const { links: [link] } = result;
+						const {
+							links: [link],
+						} = result;
 						target.markAuto(name, link);
 						target.setStorage(event.name, link);
 						target.markSkill(event.name);
@@ -85,10 +88,10 @@ const skills = {
 							.step(async (event, trigger, player) => {
 								delete player.storage["olquanyu"];
 								player.markSkill("olquanyu");
-							})
+							});
 					}
 				}
-			})
+			});
 		},
 		group: "olquanyu_effect",
 		subSkill: {
@@ -101,8 +104,7 @@ const skills = {
 					}
 					if (player.storage.olquanyu?.length) {
 						return true;
-					}
-					else if (player.storage.olquanyu_upgrade) {
+					} else if (player.storage.olquanyu_upgrade) {
 						return event.targets.length == 1;
 					}
 				},
@@ -120,7 +122,7 @@ const skills = {
 								.set("ai", target => get.effect(target, get.card(), get.player(), get.player()))
 								.forResult();
 							if (result?.targets?.length) {
-								const {targets} = result;
+								const { targets } = result;
 								player.line(targets);
 								trigger.targets.addArray(targets);
 								game.log(targets, "也成为", trigger.card, "的目标");
@@ -152,7 +154,7 @@ const skills = {
 					},
 				},
 				async content(event, trigger, player) {
-					const toDoList = []
+					const toDoList = [];
 					if (player.storage.olquanyu?.length) {
 						toDoList.push(player.storage.olquanyu);
 					}
@@ -169,7 +171,7 @@ const skills = {
 						if (card.name == "sha" && player.storage.olquanyu == "olquanyu_liuxing") {
 							return Infinity;
 						}
-					}
+					},
 				},
 				ai: {
 					unequip: true,
@@ -178,7 +180,7 @@ const skills = {
 							return false;
 						}
 					},
-				}
+				},
 			},
 		},
 	},
@@ -196,7 +198,9 @@ const skills = {
 		},
 		logTarget: "target",
 		async content(event, trigger, player) {
-			const { targets: [target] } = event;
+			const {
+				targets: [target],
+			} = event;
 			const bool = player.storage.olquanyu == target.storage.olquanyu;
 			player.addTempSkill(`${event.name}_used`);
 			player.markAuto(`${event.name}_used`, bool);
@@ -208,13 +212,11 @@ const skills = {
 				next.set("targets", [target]);
 				next.setContent(get.info("olquanyu").content);
 				await next;
-			}
-			else {
+			} else {
 				const card = get.cardPile("sha");
 				if (card) {
 					await player.gain(card, "gain2");
-				}
-				else {
+				} else {
 					player.chat("我的王之力啊！");
 				}
 			}
@@ -223,11 +225,11 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
-			}
+			},
 		},
 		ai: {
 			combo: "olquanyu",
-		}
+		},
 	},
 	olqiangang: {
 		audio: 2,
@@ -235,9 +237,6 @@ const skills = {
 		enable: "phaseUse",
 		filter(event, player) {
 			return !player.hasSkill("olrumo");
-		},
-		check(event, player) {
-			return game.hasPlayer(target => get.attitude(player, target) < 0 && target.getStorage("olquanyu_record").length > 3);
 		},
 		skillAnimation: true,
 		animationColor: "wood",
@@ -248,7 +247,16 @@ const skills = {
 		},
 		ai: {
 			combo: "olquanyu",
-		}
+			order: 6,
+			result: {
+				player(player) {
+					if (game.hasPlayer(target => get.attitude(player, target) < 0 && target.getStorage("olquanyu_record").length > 3)) {
+						return 1;
+					}
+					return 0;
+				},
+			},
+		},
 	},
 	//谋郭嘉
 	olsbdinglun: {
