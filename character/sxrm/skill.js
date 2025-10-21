@@ -73,6 +73,12 @@ const skills = {
 				async content(event, trigger, player) {
 					await trigger.player.die({ source: player });
 				},
+				ai: {
+					jueqing: true,
+					skillTagFilter(player, tag, arg) {
+						return arg?.getStorage("sxrmhanguo_hujia")?.includes(player);
+					},
+				},
 			},
 			hujia: {
 				inherit: "hujia",
@@ -94,26 +100,29 @@ const skills = {
 					return game.hasPlayer(current => current != player);
 				},
 				async content(event, trigger, player) {
+					const start = _status.currentPhase == player ? _status.currentPhase.getNext() : (_status.currentPhase || player);
 					while (true) {
 						let bool;
 						if (!event.current) {
-							event.current = player.next;
+							event.current = start;
+						} else if (event.current == start) {
+							return;
 						}
 						if (event.current == player) {
-							return;
-						} else {
-							if ((event.current == game.me && !_status.auto) || get.attitude(event.current, player) > 2 || event.current.isOnline()) {
-								player.storage.hujiaing = true;
-								const next = event.current.chooseToRespond("是否替" + get.translation(player) + "打出一张闪？", { name: "shan" });
-								next.set("ai", () => {
-									const event = _status.event;
-									return get.attitude(event.player, event.source) - 2;
-								});
-								next.set("skillwarn", "替" + get.translation(player) + "打出一张闪");
-								next.autochoose = lib.filter.autoRespondShan;
-								next.set("source", player);
-								bool = await next.forResultBool();
-							}
+							event.current = event.current.getNext();
+							continue;
+						}
+						if ((event.current == game.me && !_status.auto) || get.attitude(event.current, player) > 2 || event.current.isOnline()) {
+							player.storage.hujiaing = true;
+							const next = event.current.chooseToRespond("是否替" + get.translation(player) + "打出一张闪？", { name: "shan" });
+							next.set("ai", () => {
+								const event = _status.event;
+								return get.attitude(event.player, event.source) - 2;
+							});
+							next.set("skillwarn", "替" + get.translation(player) + "打出一张闪");
+							next.autochoose = lib.filter.autoRespondShan;
+							next.set("source", player);
+							bool = await next.forResultBool();
 						}
 						player.storage.hujiaing = false;
 						if (bool) {
@@ -149,7 +158,7 @@ const skills = {
 							}
 							return;
 						} else {
-							event.current = event.current.next;
+							event.current = event.current.getNext();
 						}
 					}
 				},

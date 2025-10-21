@@ -56,6 +56,7 @@ const characters = {
 		group: "qun",
 		hp: 5,
 		skills: ["sxrmhaibian", "sxrmqiewang"],
+		names: "颜|良-文|丑",
 	},
 	//疑
 	sxrm_caocao: {
