@@ -593,7 +593,7 @@ export default {
 	gz_ol_paiyi: "排异",
 	gz_ol_paiyi_info: `${get.poptip("guozhan_mainSkill")}，①此武将牌计算体力上限时减少半个阴阳鱼。②弃牌阶段结束时，若你此阶段未弃置牌，你可以将任意张“权”交给一名角色，然后若其手牌数大于你，你对其造成1点伤害。`,
 	gz_yaopan: "邀叛",
-	gz_yaopan_info: `${get.poptip("guozhan_viceSkill")}，你杀死过角色的回合结束时，可以选择一名同势力角色，其可与你副将易位，然后控制此武将牌的角色获得所有“权”并执行一个额外回合。`,
+	gz_yaopan_info: `${get.poptip("guozhan_viceSkill")}，你杀死过角色的回合结束时，可以选择一名同势力角色，其可与你副将${get.poptip("guozhan_transCharacter")}，然后控制此武将牌的角色获得所有“权”并执行一个仅有出牌阶段的额外回合。`,
 	gz_mb_luxun: "手杀陆逊",
 	gz_mb_luxun_prefix: "手杀",
 	gz_mb_qianxun: "谦逊",
