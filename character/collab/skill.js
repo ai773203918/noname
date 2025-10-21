@@ -129,8 +129,8 @@ const skills = {
 					player,
 					fuchens
 				);
-				player.markAuto(`${event.name}_current`, fuchens);
-				player.setStorage(`${event.name}_current2`, fuchens);
+				player.setStorage(`${event.name}_current`, [...fuchens]);
+				player.setStorage(`${event.name}_current2`, [...fuchens]);
 				const next = game.createEvent("gainFuchen", false);
 				next.player = player;
 				next.fuchens = fuchens;
@@ -142,9 +142,12 @@ const skills = {
 	oldianzan: {
 		clickableFilter(player) {
 			const targets = player.getStorage("oldianzan");
-			return targets.some(target => target?.isIn() && target != player);
+			return targets.some(target => target?.isIn());
 		},
-		init() {
+		init(player, skill) {
+			if (get.nameList(player).some(name => get.character(name)?.skills?.includes(skill))) {
+				player.markAuto(skill, player);
+			}
 			if (!_status._click_throwFlower) {
 				game.broadcastAll(() => {
 					_status._click_throwFlower = function () {
@@ -174,7 +177,7 @@ const skills = {
 		},
 		clickable(player) {
 			if (player.isUnderControl(true)) {
-				const targets = player.getStorage("oldianzan").filter(current => current != player);
+				const targets = player.getStorage("oldianzan").filter(current => current?.isIn());
 				if (targets.length === 1) {
 					player.throwEmotion(targets[0], ["flower", "wine", "egg", "shoe"].randomGet());
 				} else {
@@ -248,7 +251,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const removes = player.getStorage("oltuoquan_current");
+			const removes = [...player.getStorage("oltuoquan_current")];
 			player.unmarkAuto("oltuoquan", removes);
 			player.unmarkAuto("oltuoquan_current", removes);
 			const next = game.createEvent("removeFuchen", false);
