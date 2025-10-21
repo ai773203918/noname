@@ -1,5 +1,5 @@
 const characterSort = {
-	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong", "scl_jiaxu"],
+	offline_scl: ["scl_lvbu", "scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
 	offline_yijiang: ["ol_xinxianying", "ol_liuyu", "ol_zhangrang"],
@@ -29,6 +29,7 @@ const characterSort = {
 	offline_qingshi: ["chenshou", "hs_liuxuan", "hs_caohuan", "hs_liuxie", "hs_sunhao"],
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
 	offline_xy: ["xy_caocao", "xy_chengyu", "xy_xunyu", "xy_chengong", "xy_zhangkai", "xy_lvbu", "xy_zhangmiao", "xy_caosong"],
+	offline_zc26: ["zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],
 	//offline_others: [],
 };
 
@@ -66,6 +67,7 @@ const characterSortTranslate = {
 	offline_fengyun: "风云际会",
 	offline_Europe: "风云志·欧陆风云",
 	offline_xy: "徐兖纵横",
+	offline_zc26: "26珍藏",
 };
 
 export { characterSort, characterSortTranslate };

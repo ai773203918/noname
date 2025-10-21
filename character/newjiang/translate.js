@@ -1,4 +1,10 @@
 const translates = {
+	yj_sp_puyuan_prefix: "SP",
+	yj_sp_puyuan: "SP蒲元二号",
+	yj_sp_huanling: "唤灵",
+	yj_sp_huanling_info: "出牌阶段开始时或你受到伤害后，你可以重铸一张牌，然后获得场上、弃牌堆或牌堆一张花色相同的装备牌，并随机出现该装备的三个兵主技能选择其中一个令一名角色获得。若该角色不为你，你摸X张牌。(X为其技能数)",
+	yj_sp_shenduan: "神锻",
+	yj_sp_shenduan_info: "锁定技，每个副类别每回合限一次，你使用一张装备牌后，根据副类别执行对应效果：武器：视为使用一张【杀】；防具：增加1点体力上限并回复1点体力；进攻马：弃置每名其他角色各一张牌；防御马：摸一张牌且本局手牌上限+1。",
 	yj_zhanghe: "☆张郃",
 	yj_zhanghe_prefix: "☆",
 	yj_zhangliao: "☆张辽",
