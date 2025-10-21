@@ -4547,8 +4547,9 @@ const skills = {
 		},
 		seatRelated: "changeSeat",
 		derivation: "tamo_faq",
-		async cost(event, trigger, player) {
-			const toSortPlayers = get.info(event.skill).getTargets();
+		frequent: true,
+		async content(event, trigger, player) {
+			const toSortPlayers = get.info(event.name).getTargets();
 			toSortPlayers.sortBySeat(game.findPlayer2(current => current.getSeatNum() == 1, true));
 			const next = player.chooseToMove("榻谟：是否分配" + (get.mode() != "doudizhu" ? (game.hasPlayer(cur => cur.isZhu2()) ? "除主公外" : "") : "") + "所有角色的座次？");
 			next.set("list", [["（以下排列的顺序即为发动技能后角色的座次顺序）", [toSortPlayers.map(i => `${i.getSeatNum()}|${i.name}`), lib.skill.tamo.$createButton]]]);
@@ -4560,13 +4561,7 @@ const skills = {
 				return [players.map(i => `${i.getSeatNum()}|${i.name}`)];
 			});
 			const { result } = await next;
-			event.result = {
-				bool: result?.bool,
-				cost_data: [toSortPlayers, result?.moved],
-			};
-		},
-		async content(event, trigger, player) {
-			const [toSortPlayers, moved] = event.cost_data;
+			const moved = result?.moved;
 			const resultList = moved[0].map(info => {
 				return parseInt(info.split("|")[0]);
 			});

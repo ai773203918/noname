@@ -13499,6 +13499,16 @@ const skills = {
 		frequent: true,
 		content() {
 			"step 0";
+			if (Object.keys(player.storage.pingjian_check)?.length) {
+				Object.keys(player.storage.pingjian_check).forEach(skill => {
+					player.removeSkill(skill);
+					const names = player.tempname && player.tempname.filter(i => lib.character[i][3].includes(skill));
+					if (names) {
+						game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
+					}
+					delete player.storage.pingjian_check[skill];
+				})
+			}
 			if (!_status.characterlist) {
 				game.initCharacterList();
 			}
@@ -13610,6 +13620,16 @@ const skills = {
 		prompt: () => lib.translate.pingjian_info,
 		content() {
 			"step 0";
+			if (Object.keys(player.storage.pingjian_check)?.length) {
+				Object.keys(player.storage.pingjian_check).forEach(skill => {
+					player.removeSkill(skill);
+					const names = player.tempname && player.tempname.filter(i => lib.character[i][3].includes(skill));
+					if (names) {
+						game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
+					}
+					delete player.storage.pingjian_check[skill];
+				})
+			}
 			var list = [];
 			var skills = [];
 			var map = [];

@@ -18416,10 +18416,10 @@ const skills = {
 					continue;
 				}
 				const list = [];
-				if (target.countCards("h")) {
+				if (target.countDiscardableCards(target, "h")) {
 					list.push("手牌区");
 				}
-				if (target.countCards("e")) {
+				if (target.countDiscardableCards(target, "e")) {
 					list.push("装备区");
 				}
 				if (list.length == 0) {

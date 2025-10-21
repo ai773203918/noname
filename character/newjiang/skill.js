@@ -3644,6 +3644,8 @@ const skills = {
 						.set("ai", target => {
 							return get.effect(target, { name: "guohe" }, _status.event.player);
 						});
+				} else {
+					event.finish();
 				}
 			} else {
 				event.finish();
