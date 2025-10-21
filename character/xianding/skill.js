@@ -3482,11 +3482,12 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseTarget(`###${get.prompt(event.skill)}###令一名角色弃置另一名角色一张牌并受到其造成的1点伤害`, 2, (card, player, target) => {
-						const selected = ui.selected.targets;
+						return true; //不检测可行性这一块
+						/*const selected = ui.selected.targets;
 						if (!selected.length) {
 							return game.hasPlayer(targetx => targetx.countDiscardableCards(target, "he"));
 						}
-						return target.countDiscardableCards(selected[0], "he");
+						return target.countDiscardableCards(selected[0], "he");*/
 					})
 					.set("complexTarget", true)
 					.set("complexSelect", true)
@@ -3519,7 +3520,9 @@ const skills = {
 				const source = event.targets[0],
 					target = event.targets[1];
 				player.line2([source, target], "green");
-				await source.discardPlayerCard(target, "he", true);
+				if (target.countDiscardableCards(source, "he")) {
+					await source.discardPlayerCard(target, "he", true);
+				}
 				await source.damage(target);
 			}
 		},
@@ -3858,7 +3861,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const slot = event.cost_data.slot,
 				card = event.cost_data.card;
-			const cardx = get.autoViewAs(card);
+			const cardx = get.autoViewAs({ name: `dchuashang_${get.type2(card)}` }, [card]);
 			cardx.subtypes = [`equip${slot}`];
 			await player.equip(cardx);
 		},
@@ -3932,7 +3935,7 @@ const skills = {
 								.forResult();
 							if (result?.control) {
 								const slot = result.control;
-								const cardx = get.autoViewAs(card);
+								const cardx = get.autoViewAs({ name: `dchuashang_${get.type2(card)}` }, [card]);
 								cardx.subtypes = [slot];
 								await player.equip(cardx);
 							}
@@ -3953,14 +3956,7 @@ const skills = {
 						.getCards("e")
 						.map(card => get.suit(card))
 						.unique().length;
-					if (event.getg?.(player)?.length) {
-						return player.countCards("h") < num;
-					}
-					var evt = event.getl(player);
-					if (!evt || !evt.hs || evt.hs.length == 0 || player.countCards("h") >= num) {
-						return false;
-					}
-					return true;
+					return player.countCards("h") < num;
 				},
 				async content(event, trigger, player) {
 					const num = player
@@ -8350,7 +8346,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const firstCard = player.getExpansions("dczhengyue")[0];
 					if (get.suit(firstCard) == get.suit(trigger.card) || get.number(firstCard) == get.number(trigger.card) || get.name(firstCard) == get.name(trigger.card)) {
-						await player.loseToDiscardpile(firstCard);
+						await player.modedDiscard(firstCard);
 						await player.draw(2);
 					} else {
 						const puts = trigger.cards.filterInD("ode");
@@ -9200,7 +9196,7 @@ const skills = {
 							return false;
 						}
 						let att = get.attitude(player, owner);
-						if (get.position(card) == "j" && (card.viewAs || card.name) == "jsrg_xumou") {
+						if (get.position(card) == "j" && (card.viewAs || card.name) == "xumou_jsrg") {
 							att *= -1;
 						}
 						if (get.position(card) == "e" && get.equipValue(card, owner) > 0) {
@@ -15807,6 +15803,14 @@ const skills = {
 		ai: {
 			order: () => get.order({ name: "sha" }) + 0.2,
 			result: { player: 1 },
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.dchuahuo) {
+					return Infinity;
+				}
+			},
 		},
 	},
 	//武陆逊
@@ -24261,7 +24265,7 @@ const skills = {
 							return false;
 						}
 					});
-					return prev > num;
+					return prev > num && prev <= (num + evt.cards2.length);
 				},
 				forced: true,
 				popup: false,

@@ -2260,6 +2260,7 @@ game.import("card", function () {
 				intro: {
 					content: "你是$的义父",
 				},
+				nopop: true,
 				marktext: "父",
 				mark: true,
 				trigger: { global: "phaseZhunbeiBegin" },

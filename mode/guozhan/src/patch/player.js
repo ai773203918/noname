@@ -451,6 +451,19 @@ export class PlayerGuozhan extends Player {
 		}
 		return next;
 	}
+	transCharacter(target, num1 = 2, num2 = num1) {
+		var next = game.createEvent("transCharacter");
+		// @ts-expect-error 类型就是这么写的
+		next.player = this;
+		next.target = target;
+		// @ts-expect-error 类型就是这么写的
+		next.num1 = num1;
+		// @ts-expect-error 类型就是这么写的
+		next.num2 = num2;
+		// @ts-expect-error 类型就是这么写的
+		next.setContent("transCharacter");
+		return next;
+	}
 	hasMainCharacter() {
 		return this.name1.indexOf("gz_shibing") != 0;
 	}

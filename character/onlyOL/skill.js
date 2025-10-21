@@ -4984,7 +4984,7 @@ const skills = {
 			return player.getStorage("olsblixian_triggers").includes(event.name);
 		},
 		async cost(event, trigger, player) {
-			const list = ["wuzhong"].concat(player.getStorage("olsblixian_names")).map(i => ["trick", "", i]);
+			const list = ["wuzhong", ...player.getStorage("olsblixian_names")].map(name => ["", "", name]);
 			if (!list.length) {
 				return;
 			}

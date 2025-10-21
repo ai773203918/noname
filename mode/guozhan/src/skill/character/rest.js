@@ -232,9 +232,6 @@ export default {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			if (get.event()?.getParent("gz_yaopan", true)) {
-				return;
-			}
 			const cards = player.getExpansions(skill);
 			if (cards.length) {
 				player.loseToDiscardpile(cards);
@@ -367,14 +364,11 @@ export default {
 							.set("choice", Math.random() > 0.5)
 							.forResult();
 			if (result.bool) {
-				game.log(player, "与", target, "交换了副将");
-				const name = player.name2;
-				player.reinitCharacter(player.name2, target.name2, false);
-				target.reinitCharacter(target.name2, name, false);
-				await game.delayx(2);
+				// @ts-expect-error 祖宗之法就是这么做的
+				await player.transCharacter(target);
 			}
 			const targetx = result.bool ? target : player,
-				cards = player.getExpansions("gz_ol_quanji");
+				cards = targetx?.getExpansions("gz_ol_quanji");
 			if (cards.length) {
 				if (targetx) {
 					await targetx.gain(cards, "give", player);
@@ -383,7 +377,9 @@ export default {
 				}
 			}
 			if (targetx) {
-				targetx.insertPhase();
+				const next = targetx.insertPhase();
+				// @ts-expect-error 祖宗之法就是这么做的
+				next.phaseList = ["phaseUse"];
 			}
 		},
 	},

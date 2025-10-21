@@ -4689,6 +4689,7 @@ export class Library {
 				},
 				show_tip: {
 					name: "显示tip标记",
+					intro: "显示类似手杀的武将标记效果，如：<br><li>蒺藜 5<br><li>放逐 技能失效<br><li>渐营 ♥7",
 					init: false,
 					unfrequent: true,
 					onclick(bool) {
@@ -13866,6 +13867,13 @@ export class Library {
 		],
 		[
 			"疑",
+			{
+				color: "#5a6968",
+				nature: "graymm",
+			},
+		],
+		[
+			"慢",
 			{
 				color: "#5a6968",
 				nature: "graymm",

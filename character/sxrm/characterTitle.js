@@ -1,4 +1,14 @@
 export default {
+	sxrm_guanyu: "四海仰鼻息",
+	sxrm_guanyinping: "天骄虎女",
+	sxrm_yujin: "立地成佛",
+	sxrm_mifang: "负荆之臣",
+	sxrm_liufeng: "不动如山",
+	sxrm_luxun: "孺子为将",
+	sxrm_lvmeng: "病入膏肓",
+	sxrm_pangde: "狂徒",
+	sxrm_yanwen: "土鸡瓦犬",
+
 	sxrm_caocao: "一目窥九州",
 	sxrm_liubei: "潜隐波涛",
 	sxrm_jianggan: "舌锁千帆",
