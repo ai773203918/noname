@@ -87,6 +87,8 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"dm_sunquan",
+		"ol_sb_guojia",
 		"zc26_shen_huangyueying",
 		"zc26_lusu",
 		"zc26_zhanghe",
