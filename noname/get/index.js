@@ -1190,10 +1190,7 @@ export class Get extends GetCompatible {
 		if (typeof name != "string") {
 			name = get.name(name);
 		}
-		if (!lib.bingzhu.get(name)) {
-			return [];
-		}
-		return lib.bingzhu.get(name);
+		return lib.card[name].bingzhu || [];
 	}
 	/**
 	 * @overload

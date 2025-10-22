@@ -23,6 +23,13 @@ const characters = {
 		hp: 3,
 		skills:["zc26_wansha", "zc26_weimu","luanwu"],
 	},
+	scl_jiaxu: {
+        sex: "male",
+        group: "qun",
+        hp: 3,
+        skills: ["sclwansha", "reluanwu", "reweimu"],
+        dieAudios: ["re_jiaxu"],
+    },
 	pe_guozhao: {
 		sex: "female",
 		group: "wei",

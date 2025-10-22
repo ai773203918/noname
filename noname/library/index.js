@@ -154,28 +154,6 @@ export class Library {
 		}
 	);
 	cardPackInfo = {};
-	bingzhu = new Map([
-		["zhuge", ["诸葛亮", "马钧"]],
-		["qinggang", ["赵云", "曹操", "五虎"]],
-		["guding", ["孙坚"]],
-		["cixiong", ["刘备"]],
-		["guanshi", ["徐晃"]],
-		["zhangba", ["张飞", "关兴张苞", "关兴", "张苞", "张星彩", "五虎"]],
-		["qinglong", ["关羽", "关兴张苞", "关兴", "张苞", "关银屏", "五虎"]],
-		["zhuque", ["周瑜"]],
-		["fangtian", ["吕布"]],
-		["qilin", ["吕布"]],
-		["bagua", ["诸葛亮", "黄月英", "黄承彦"]],
-		["baiyin", ["马超", "五虎"]],
-		["tengjia", ["兀突骨", "孟获", "祝融"]],
-		["dilu", ["刘备"]],
-		["jueying", ["曹操"]],
-		["zhuahuang", ["曹操"]],
-		["hualiu", ["徐晃"]],
-		["chitu", ["吕布", "关羽", "五虎"]],
-		["zixin", ["曹植"]],
-		["dawan", ["曹操"]],
-	]);
 	/**
 	 * @type { SMap<number> }
 	 */

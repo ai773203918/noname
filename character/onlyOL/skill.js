@@ -39,7 +39,24 @@ const skills = {
 			const storage = target.getStorage("olquanyu_record");
 			const choices = list.filter(i => !storage.includes(i));
 			const next = target
-				.chooseButton([`权御：请选择一个效果`, [list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"], [list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"], [list.slice(4).map(i => [i, map[i]]), "tdnodes"]], true)
+				.chooseButton(
+					[
+						`权御：请选择一个效果`,
+						[list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"],
+						[list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"],
+						[list.slice(4).map(i => [i, map[i]]), "tdnodes"],
+						[
+							dialog => {
+								dialog.buttons.forEach(i => {
+									i.style.setProperty("width", "200px", "important");
+									i.style.setProperty("text-align", "left", "important");
+								});
+							},
+							"handle",
+						],
+					],
+					true
+				)
 				.set("choices", choices)
 				.set("filterButton", button => get.event().choices.includes(button.link))
 				.set("ai", button => Math.random())
@@ -79,11 +96,7 @@ const skills = {
 					if (event.card.name != "sha") {
 						return false;
 					}
-					if (player.storage.olquanyu?.length) {
-						return true;
-					} else if (player.storage.olquanyu_upgrade) {
-						return event.targets.length == 1;
-					}
+					return player.storage.olquanyu?.length;
 				},
 				actionMap: {
 					olquanyu_baihong: async (trigger, player) => {
@@ -130,54 +143,10 @@ const skills = {
 						}
 					},
 				},
-				async cost(event, trigger, player) {
-					const links = [];
-					if (player.storage.olquanyu?.length) {
-						links.push(player.storage.olquanyu);
-					}
-					if (player.storage.olquanyu_upgrade && trigger.targets.length == 1) {
-						const choices = trigger.targets[0].getStorage("olquanyu_record");
-						const map = get.info("olquanyu").map;
-						const list = Object.keys(map);
-						const result = await player
-							.chooseButton([`权御：请选择要额外执行的效果`, [list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"], [list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"], [list.slice(4).map(i => [i, map[i]]), "tdnodes"]], [1, 6])
-							.set("choices", choices)
-							.set("filterButton", button => {
-								if (!get.event().choices.includes(button.link)) {
-									return false;
-								}
-								if (button.link == "olquanyu_qingmin") {
-									const trigger = get.event().getTrigger();
-									const card = trigger.card;
-									const player = get.player();
-									return game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target));
-								}
-								return true;
-							})
-							.set("ai", button => {
-								const trigger = get.event().getTrigger();
-								const card = trigger.card;
-								const player = get.player();
-								if (button.link == "olquanyu_qingmin") {
-									if (!game.hasPlayer(target => !trigger.targets.includes(target) && get.effect(target, card, player, player) > 0)) {
-										return 0;
-									}
-								}
-								return 1;
-							})
-							.forResult();
-						if (result?.links?.length) {
-							links.addArray(result.links);
-						}
-					}
-					event.result = { bool: true, cost_data: links };
-				},
+				forced: true,
 				async content(event, trigger, player) {
-					const { cost_data: toDoList } = event;
 					const map = get.info(event.name).actionMap;
-					for (const i of toDoList) {
-						await map[i](trigger, player);
-					}
+					await map[player.storage.olquanyu](trigger, player);
 				},
 				mod: {
 					cardUsable(card, player, num) {
@@ -256,7 +225,75 @@ const skills = {
 		async content(event, trigger, player) {
 			player.addSkill("olrumo");
 			await player.removeSkills("oltianen");
-			player.setStorage("olquanyu_upgrade", true);
+			player.addSkill(`${event.name}_effect`);
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					return event.card.name == "sha" && event.targets.length == 1 && event.targets[0].getStorage("olquanyu_record").length > 0;
+				},
+				async cost(event, trigger, player) {
+					const choices = trigger.targets[0].getStorage("olquanyu_record");
+					const map = get.info("olquanyu").map;
+					const list = Object.keys(map);
+					const result = await player
+						.chooseButton(
+							[
+								`乾纲：请选择要额外执行的“权御”效果`,
+								[list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"],
+								[list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"],
+								[list.slice(4).map(i => [i, map[i]]), "tdnodes"],
+								[
+									dialog => {
+										dialog.buttons.forEach(i => {
+											i.style.setProperty("width", "200px", "important");
+											i.style.setProperty("text-align", "left", "important");
+										});
+									},
+									"handle",
+								],
+							],
+							[1, 6]
+						)
+						.set("choices", choices)
+						.set("filterButton", button => {
+							if (!get.event().choices.includes(button.link)) {
+								return false;
+							}
+							if (button.link == "olquanyu_qingmin") {
+								const trigger = get.event().getTrigger();
+								const card = trigger.card;
+								const player = get.player();
+								return game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target));
+							}
+							return true;
+						})
+						.set("ai", button => {
+							const trigger = get.event().getTrigger();
+							const card = trigger.card;
+							const player = get.player();
+							if (button.link == "olquanyu_qingmin") {
+								if (!game.hasPlayer(target => !trigger.targets.includes(target) && get.effect(target, card, player, player) > 0)) {
+									return 0;
+								}
+							}
+							return 1;
+						})
+						.forResult();
+					if (result?.links?.length) {
+						event.result = { bool: true, cost_data: result.links };
+					}
+				},
+				async content(event, trigger, player) {
+					const { cost_data: list } = event;
+					const map = get.info("olquanyu_effect").actionMap;
+					for (const i of list) {
+						await map[i](trigger, player);
+					}
+				},
+			},
 		},
 		ai: {
 			combo: "olquanyu",

@@ -578,6 +578,22 @@ const skills = {
 			},
 		},
 	},
+	//王战贾诩
+	sclwansha: {
+		audio: "rewansha",
+		forced: true,
+		trigger: {
+			global: "dying",
+		},
+		filter(event, player) {
+			return _status.currentPhase == player && player != event.player;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await target.die(trigger.reason);
+		},
+	},
 	//e郭照
 	pepianchong: {
 		trigger: { player: "phaseDrawBegin1" },
