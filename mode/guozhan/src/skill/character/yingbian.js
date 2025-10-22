@@ -1237,7 +1237,7 @@ export default {
 				}
 			},
 			playerEnabled(card, player, target) {
-				if (game.hasPlayer(current => current.isUnseen()) && card.name == "sha" && target.isUnseen()) {
+				if (game.hasPlayer(current => current.isUnseen()) && card.name == "sha" && !target.isUnseen()) {
 					return false;
 				}
 			},

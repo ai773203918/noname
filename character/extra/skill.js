@@ -11229,7 +11229,7 @@ const skills = {
 				player.logSkill("qinyin", null, null, null, [result.control == "回复体力" ? 2 : 1]);
 				event.bool = result.control == "回复体力";
 				event.num = 0;
-				event.players = game.filterPlayer();
+				event.players = game.filterPlayer().sortBySeat();
 			}
 			"step 2";
 			if (event.num < event.players.length) {
