@@ -7,11 +7,11 @@ const skills = {
 		audio: 2,
 		map: {
 			olquanyu_baihong: "白虹：基础伤害改为2",
-			olquanyu_qingmin: "青冥：额外指定一个目标",
+			olquanyu_qingmin: "青冥：多指定一个目标",
 			olquanyu_bixie: "辟邪：无视防具",
 			olquanyu_zidian: "紫电：不可响应",
-			olquanyu_baili: "百里：额外结算一次",
-			olquanyu_liuxing: "流星：无次数限制且不计入使用次数",
+			olquanyu_baili: "百里：多结算一次",
+			olquanyu_liuxing: "流星：无次数限制",
 		},
 		intro: {
 			markcount: () => 0,
@@ -35,68 +35,45 @@ const skills = {
 			return game.players;
 		},
 		forced: true,
+		chooseButton(target, list, map) {
+			const storage = target.getStorage("olquanyu_record");
+			const choices = list.filter(i => !storage.includes(i));
+			const next = target
+				.chooseButton([`权御：请选择一个效果`, [list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"], [list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"], [list.slice(4).map(i => [i, map[i]]), "tdnodes"]], true)
+				.set("choices", choices)
+				.set("filterButton", button => get.event().choices.includes(button.link))
+				.set("ai", button => Math.random())
+				.set("_global_waiting", true);
+			return next;
+		},
 		async content(event, trigger, player) {
 			const { targets } = event;
 			const name = "olquanyu_record";
 			const map = get.info(event.name).map;
 			const list = Object.keys(map);
-			await game.doAsyncInOrder(targets, async target => {
-				const storage = target.getStorage(name);
-				if (storage.length < 6) {
-					const choices = list.filter(i => !storage.includes(i));
-					let result;
-					if (choices.length == 1) {
-						result = { bool: true, links: choices };
-					} else {
-						result = await target
-							.chooseButton(
-								[
-									`权御：请选择一个效果`,
-									[
-										list,
-										(item, type, position, noclick, node) => {
-											let card = ["", "", item];
-											node = ui.create.buttonPresets.vcard(card, type, position, noclick);
-											node._link = node.link = item;
-											node._customintro = uiintro => {
-												uiintro.add(get.translation(node._link));
-												uiintro.addText(get.info("olquanyu").map[node._link].slice(3));
-												return uiintro;
-											};
-											return node;
-										},
-									],
-								],
-								true
-							)
-							.set("choices", choices)
-							.set("filterButton", button => get.event().choices.includes(button.link))
-							.set("ai", button => Math.random())
-							.forResult();
-					}
-					if (result?.links?.length) {
-						const {
-							links: [link],
-						} = result;
-						target.markAuto(name, link);
-						target.setStorage(event.name, link);
-						target.markSkill(event.name);
-						target.popup(get.translation(link));
-						target
-							.when("roundStart")
-							.filter(evt => evt != trigger)
-							.step(async (event, trigger, player) => {
-								delete player.storage["olquanyu"];
-								player.markSkill("olquanyu");
-							});
-					}
+			const result = await game.chooseAnyOL(targets.filter(target => target.getStorage(name).length < 6).sortBySeat(), get.info(event.name).chooseButton, [list, map]).forResult();
+			for (const [target, resultx] of result.entries()) {
+				if (resultx?.links?.length) {
+					const {
+						links: [link],
+					} = resultx;
+					target.markAuto(name, link);
+					target.setStorage(event.name, link);
+					target.markSkill(event.name);
+					target.popup(map[link].slice(0, 2));
+					target
+						.when("roundStart")
+						.filter(evt => evt != trigger)
+						.step(async (event, trigger, player) => {
+							delete player.storage["olquanyu"];
+							player.markSkill("olquanyu");
+						});
 				}
-			});
+			}
 		},
 		group: "olquanyu_effect",
 		subSkill: {
 			effect: {
-				forced: true,
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (event.card.name != "sha") {
@@ -153,14 +130,50 @@ const skills = {
 						}
 					},
 				},
-				async content(event, trigger, player) {
-					const toDoList = [];
+				async cost(event, trigger, player) {
+					const links = [];
 					if (player.storage.olquanyu?.length) {
-						toDoList.push(player.storage.olquanyu);
+						links.push(player.storage.olquanyu);
 					}
 					if (player.storage.olquanyu_upgrade && trigger.targets.length == 1) {
-						toDoList.addArray(trigger.targets[0].getStorage("olquanyu_record"));
+						const choices = trigger.targets[0].getStorage("olquanyu_record");
+						const map = get.info("olquanyu").map;
+						const list = Object.keys(map);
+						const result = await player
+							.chooseButton([`权御：请选择要额外执行的效果`, [list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"], [list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"], [list.slice(4).map(i => [i, map[i]]), "tdnodes"]], [1, 6])
+							.set("choices", choices)
+							.set("filterButton", button => {
+								if (!get.event().choices.includes(button.link)) {
+									return false;
+								}
+								if (button.link == "olquanyu_qingmin") {
+									const trigger = get.event().getTrigger();
+									const card = trigger.card;
+									const player = get.player();
+									return game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target));
+								}
+								return true;
+							})
+							.set("ai", button => {
+								const trigger = get.event().getTrigger();
+								const card = trigger.card;
+								const player = get.player();
+								if (button.link == "olquanyu_qingmin") {
+									if (!game.hasPlayer(target => !trigger.targets.includes(target) && get.effect(target, card, player, player) > 0)) {
+										return 0;
+									}
+								}
+								return 1;
+							})
+							.forResult();
+						if (result?.links?.length) {
+							links.addArray(result.links);
+						}
 					}
+					event.result = { bool: true, cost_data: links };
+				},
+				async content(event, trigger, player) {
+					const { cost_data: toDoList } = event;
 					const map = get.info(event.name).actionMap;
 					for (const i of toDoList) {
 						await map[i](trigger, player);
@@ -213,7 +226,7 @@ const skills = {
 				next.setContent(get.info("olquanyu").content);
 				await next;
 			} else {
-				const card = get.cardPile("sha");
+				const card = get.cardPile2("sha");
 				if (card) {
 					await player.gain(card, "gain2");
 				} else {
