@@ -1190,7 +1190,18 @@ export class Get extends GetCompatible {
 		if (typeof name != "string") {
 			name = get.name(name);
 		}
-		return lib.card[name].bingzhu || [];
+		const list = [],
+			info = lib.card[name];
+		if (lib.cardBingzhu[name]) {
+			list.addArray(lib.cardBingzhu[name]);
+		}
+		if (info.derivation) {
+			list.addArray(info.derivation);
+		}
+		if (info.bingzhu) {
+			list.addArray(info.bingzhu);
+		}
+		return list;
 	}
 	/**
 	 * @overload
