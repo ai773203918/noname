@@ -10,7 +10,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name == "useCard") {
-				if (!["zheji", "nvzhuang", "numa"].includes(event.card.name)) {
+				if (!["duanjian", "serafuku", "yonglv"].includes(event.card.name)) {
 					return false;
 				}
 				return player.countCards("h") < player.getHandcardLimit();
@@ -27,9 +27,9 @@ const skills = {
 				if (!_status.zc26_cangqiao) {
 					game.broadcastAll(function () {
 						_status.zc26_cangqiao = [
-							{ name: "zheji", number: 13, suit: "club" },
-							{ name: "nvzhuang", number: 9, suit: "heart" },
-							{ name: "numa", number: 13, suit: "club" },
+							{ name: "duanjian", number: 13, suit: "club" },
+							{ name: "serafuku", number: 9, suit: "heart" },
+							{ name: "yonglv", number: 13, suit: "club" },
 						];
 						for (let info of _status.zc26_cangqiao) {
 							if (!lib.inpile.includes(info.name)) {
@@ -38,7 +38,7 @@ const skills = {
 						}
 					});
 				}
-				let list = ["zheji", "nvzhuang", "numa"],
+				let list = ["duanjian", "serafuku", "yonglv"],
 					cards = [];
 				for (let name of list) {
 					let card = get.discardPile(name);
@@ -169,7 +169,7 @@ const skills = {
 			}
 			event.set(
 				"zc26_huaxiu",
-				["zheji", "nvzhuang", "numa"].filter(i => i in lib.card)
+				["duanjian", "serafuku", "yonglv"].filter(i => i in lib.card)
 			);
 		},
 		filter(event, player) {
@@ -191,9 +191,9 @@ const skills = {
 			if (result?.bool && result.links?.length) {
 				const name = result.links[0][2],
 					map = {
-						zheji: "zc26_zhuge",
-						nvzhuang: "zc26_bagua",
-						numa: "zc26_lingling",
+						duanjian: "zc26_zhuge",
+						serafuku: "zc26_bagua",
+						yonglv: "zc26_lingling",
 					};
 				game.log(player, "将", `#y${get.translation({ name })}`, "升级为", `#y${get.translation({ name: map[name] })}`);
 				player.addTempSkill("zc26_huaxiu_restore", { player: "phaseBegin" });
@@ -201,7 +201,7 @@ const skills = {
 					function (name, player, map) {
 						if (!_status.zc26_huaxiu_origin) {
 							_status.zc26_huaxiu_origin = {};
-							for (let name of ["zheji", "nvzhuang", "numa"]) {
+							for (let name of ["duanjian", "serafuku", "yonglv"]) {
 								_status.zc26_huaxiu_origin[name] = { info: lib.card[name], translate: lib.translate[name], translate2: lib.translate[`${name}_info`] };
 							}
 						}
@@ -245,7 +245,7 @@ const skills = {
 				},
 				trigger: { player: "phaseBegin" },
 				filter(event, player) {
-					for (let name of ["zheji", "nvzhuang", "numa"]) {
+					for (let name of ["duanjian", "serafuku", "yonglv"]) {
 						if (_status.zc26_huaxiu?.[name]?.includes(player)) {
 							return true;
 						}
@@ -259,7 +259,7 @@ const skills = {
 				},
 				contentx(event, trigger, player) {
 					game.broadcastAll(function (player) {
-						for (let name of ["zheji", "nvzhuang", "numa"]) {
+						for (let name of ["duanjian", "serafuku", "yonglv"]) {
 							if (_status.zc26_huaxiu?.[name]?.includes(player)) {
 								_status.zc26_huaxiu[name].remove(player);
 							}
@@ -277,11 +277,11 @@ const skills = {
 						}, "j");
 					}
 					const map = {
-						zheji: "zc26_zhuge",
-						nvzhuang: "zc26_bagua",
-						numa: "zc26_lingling",
+						duanjian: "zc26_zhuge",
+						serafuku: "zc26_bagua",
+						yonglv: "zc26_lingling",
 					};
-					for (let name of ["zheji", "nvzhuang", "numa"]) {
+					for (let name of ["duanjian", "serafuku", "yonglv"]) {
 						if (name in _status.zc26_huaxiu && !_status.zc26_huaxiu[name].length) {
 							game.log(`#y${get.translation({ name })}`, "的效果还原了");
 							lib.card[name] = _status.zc26_huaxiu_origin[name].info;
@@ -302,6 +302,12 @@ const skills = {
 						}
 					}
 				},
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 1,
 			},
 		},
 	},
@@ -6483,7 +6489,8 @@ const skills = {
 		content() {
 			"step 0";
 			event.num = target.getCards("h").reduce(function (arr, card) {
-				return arr.add(get.suit(card, player)), arr;
+				arr.add(get.suit(card, player));
+				return arr;
 			}, []).length;
 			"step 1";
 			var cards = target.getCards("h");
@@ -6519,7 +6526,8 @@ const skills = {
 			if (
 				event.num >
 				target.getCards("h").reduce(function (arr, card) {
-					return arr.add(get.suit(card, target)), arr;
+					arr.add(get.suit(card, target));
+					return arr;
 				}, []).length
 			) {
 				player.line(target);
@@ -8373,9 +8381,8 @@ const skills = {
 						break;
 					}
 				}
-			}
-			//在已经发动过其他非锁定技时抽选技能
-			else {
+			} else {
+				//在已经发动过其他非锁定技时抽选技能
 				skills.add(fullskills.randomRemove(1)[0]);
 			}
 			for (var i of skills) {
@@ -9183,10 +9190,10 @@ const skills = {
 				content() {
 					"step 0";
 					var dialog = [get.prompt("dinghan")];
-					(list1 = player.getStorage("dinghan")),
-						(list2 = lib.inpile.filter(function (i) {
-							return get.type2(i, false) == "trick" && !list1.includes(i);
-						}));
+					list1 = player.getStorage("dinghan");
+					list2 = lib.inpile.filter(function (i) {
+						return get.type2(i, false) == "trick" && !list1.includes(i);
+					});
 					if (list1.length) {
 						dialog.push('<div class="text center">已记录</div>');
 						dialog.push([list1, "vcard"]);
@@ -11222,7 +11229,7 @@ const skills = {
 				player.logSkill("qinyin", null, null, null, [result.control == "回复体力" ? 2 : 1]);
 				event.bool = result.control == "回复体力";
 				event.num = 0;
-				event.players = game.filterPlayer();
+				event.players = game.filterPlayer().sortBySeat();
 			}
 			"step 2";
 			if (event.num < event.players.length) {

@@ -11,6 +11,12 @@ const characters = {
 		hp: 3,
 		skills: ["yj_sp_huanling", "yj_sp_shenduan"],
 	},
+	v_sunce: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["dczhifeng", "dcweijing"],
+	},
 	yao_yuanshu: {
 		sex: "male",
 		group: "qun",
