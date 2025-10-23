@@ -3377,6 +3377,37 @@ export class Click {
 			list = [],
 			clickSkill;
 		let skills = ui.create.div(".characterskill", uiintro);
+		let btnIntro = ui.create.div(".menubutton.large.introButton", uiintro, "简介", function () {
+			applyViewMode("intro");
+		});
+		let btnSkill = ui.create.div(".menubutton.large.skillButton", uiintro, "技能", function () {
+			applyViewMode("skill");
+		});
+		const applyViewMode = function (viewMode = "intro") {
+			// 控制显示的区域
+			const intro2Node = uiintro.querySelector(".intro2");
+			if (viewMode === "intro") {
+				if (intro) intro.style.display = "";
+				if (intro2Node) intro2Node.style.display = "none";
+				if (skills) skills.style.display = "none";
+			} else {
+				if (intro) intro.style.display = "none";
+				if (intro2Node) intro2Node.style.display = "";
+				if (skills) {
+					skills.style.display = "";
+					// 若尚未选中技能，则初始化第一个技能
+					const first = skills.firstChild;
+					if (first && !skills.querySelector(".active") && typeof clickSkill === "function") {
+						clickSkill.call(first, "init");
+						first.classList.add("active");
+					}
+				}
+			}
+			if (btnIntro && btnSkill) {
+				btnIntro.classList.toggle("active", viewMode === "intro");
+				btnSkill.classList.toggle("active", viewMode === "skill");
+			}
+		};
 		const refreshIntro = function () {
 			if (intro?.firstChild) {
 				while (intro.firstChild) {
@@ -3942,6 +3973,8 @@ export class Click {
 			}
 		};
 		refreshIntro();
+		// 默认显示人物简介
+		applyViewMode("intro");
 
 		var initskill = false;
 		let deri = [];
@@ -4039,7 +4072,7 @@ export class Click {
 							for (let i = 0; i < skillButtons.length; i++) {
 								delete skillButtons[i].playAudio;
 							}
-							refreshIntro();
+							// refreshIntro();
 							game.callHook("refreshSkin", [list[0], this.name]);
 						});
 						let iSTemp = false;

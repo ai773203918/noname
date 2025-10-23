@@ -248,8 +248,8 @@
 
 /* 武将头像 */
 .menubg.charactercard > .menubutton.large.ava {
-	width: 39%;
-	height: 95%;
+	width: 34%;
+	height: 79%;
 	left: 1.67%;
 	top: 2.78%;
 	overflow: hidden;
@@ -267,16 +267,34 @@
 
 .menubg.charactercard > .menubutton.ban {
 	left: auto;
-	right: -13%;
-	bottom: calc(0% + 38px);
+	right: 81.8%;
+	bottom: calc(0% + 44px);
 	z-index: 10;
+	width: 16.5%;
 }
 
 .menubg.charactercard > .menubutton.fav {
 	left: auto;
-	right: -13%;
-	bottom: 0%;
+	right: 64.33%;
+	bottom: calc(0% + 44px);
 	z-index: 10;
+	width: 16.5%;
+}
+
+.menubg.charactercard > .menubutton.introButton {
+	left: auto;
+	right: 81.8%;
+	bottom: calc(0% + 10px);
+	z-index: 10;
+	width: 16.5%;
+}
+
+.menubg.charactercard > .menubutton.skillButton {
+	left: auto;
+	right: 64.33%;
+	bottom: calc(0% + 10px);
+	z-index: 10;
+	width: 16.5%;
 }
 
 .menubg.charactercard > .ava > .changeskin {
@@ -313,13 +331,13 @@
 
 /* 技能按钮 */
 .menubg.charactercard > .characterskill {
-	left: 41%;
+	left: 37%;
 	right: 0;
 	padding-left: 9px;
 	padding-right: 10px;
 	width: auto;
 	box-sizing: border-box;
-	top: 48%;
+	top: 1%;
 	height: 16.67%;
 	white-space: nowrap;
 	overflow-x: auto;
@@ -414,9 +432,9 @@
 
 /* 武将信息技能描述 */
 .menubg.charactercard .characterintro {
-	left: 42%;
-	width: 55%;
-	height: 35%;
+	left: 38%;
+	width: 58%;
+	height: 82%;
 	padding: 5px;
 	overflow: scroll;
 	border-radius: 4px;
@@ -426,12 +444,12 @@
 .menubg.charactercard .characterintro:not(.intro2) {
 	top: 10px;
 	bottom: auto;
-    height: 43%;
+    height: 93%;
 }
 
 .menubg.charactercard .characterintro.intro2 {
-	top: auto;
-	bottom: 10px;
+	top: 60px;
+	bottom: auto;
 }
 
 .menubg.charactercard > .ava > .avatars {
