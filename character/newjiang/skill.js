@@ -85,12 +85,12 @@ const skills = {
 					player: ["useCard2"],
 				},
 				filter(event, player) {
-					return game.hasPlayer(curr => player.canUse(event.card, curr));
+					return game.hasPlayer(curr => lib.filter.targetEnabled2(event.card, player, curr));
 				},
 				charlotte: true,
 				async cost(event, trigger, player) {
 					event.result = await player
-						.chooseTarget("为此牌额外指定任意目标")
+						.chooseTarget(`为${get.translation(trigger.card)}额外指定任意目标`)
 						.set("ai", target => {
 							const player = get.player(),
 								trigger = get.event().getTrigger();
@@ -125,14 +125,13 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard("是否弃置一张牌并发动【神锋】", "he")
-				.set("filterCrad", card => player.getDiscardableCards().includes(card))
+				.chooseToDiscard(get.prompt(event.skill), "he")
 				.set("ai", card => {
 					const player = get.player();
 					if (get.name(card) == "muniu" && player.countCards("h") > 3) {
 						return 0;
 					}
-					return get.value(card);
+					return 6 - get.value(card);
 				})
 				.set("chooseonly", true)
 				.forResult();
@@ -141,7 +140,7 @@ const skills = {
 			await player.discard(event.cards);
 			const result = await player
 				.chooseButton([
-					"选择一些",
+					"选择一项",
 					[
 						[
 							["damage", "此【杀】伤害+1"],
@@ -156,6 +155,9 @@ const skills = {
 					if (button.link == "discard") {
 						return trigger.target.countCards("he") > 0;
 					}
+					if (button.link == "losehp") {
+						return !trigger.yjspshenfeng;
+					}
 					return true;
 				})
 				.set("ai", button => Math.random())
@@ -163,16 +165,26 @@ const skills = {
 			if (result.links[0] == "damge") {
 				trigger.baseDamage++;
 			} else if (result.links[0] == "losehp") {
-				player
-					.when({ source: "damageBegin" })
-					.filter((event, player) => event.card == trigger.card)
-					.step(async (event, trigger, player) => {
-						trigger.cancel();
-						await await trigger.player.loseHp(trigger.num);
-					});
+				trigger.yjspshenfeng = true;
 			} else {
-				await await trigger.target.chooseToDiscard(2, true);
+				await trigger.target.chooseToDiscard(2, "he", true);
 			}
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					source: ["damageBegin"],
+				},
+				charlotte: true,
+				forced: true,
+				filter(event, player) {
+					return event.yjspshenfeng;
+				},
+				async content(event, trigger, player) {
+					trigger.cancel();
+					await trigger.player.loseHp(trigger.num);
+				},
+			},
 		},
 	},
 	yj_sp_huanling: {
@@ -232,7 +244,7 @@ const skills = {
 				.set("forced", true)
 				.forResult();
 			const name = get.bingzhu(card).randomGet();
-			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !result1.targets[0].hasSkill(skill)).randomGets(3);
+			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !result1.targets[0].hasSkill(skill, null, false, false)).randomGets(3);
 			if (!skills.length) {
 				player.chat("没有技能喵");
 			} else {
@@ -246,7 +258,7 @@ const skills = {
 				await result1.targets[0].addSkills(result2.links[0]);
 			}
 			if (result1.targets[0] != player) {
-				await player.draw(result1.targets[0].getSkills().length);
+				await player.draw(result1.targets[0].getSkills(null, false, false).length);
 			}
 		},
 	},
@@ -261,6 +273,7 @@ const skills = {
 					async player => {
 						const card = get.autoViewAs({
 							name: "sha",
+							isCard: true,
 						});
 						await player.chooseUseTarget(card, false);
 					},
@@ -276,7 +289,7 @@ const skills = {
 					"equip3",
 					async player => {
 						await player.draw();
-						player.addMark("yj_sp_shenduan_max");
+						player.addMark("yj_sp_shenduan_max", 1, false);
 					},
 				],
 				[
@@ -284,7 +297,7 @@ const skills = {
 					async player => {
 						const targets = game.filterPlayer(curr => curr != player);
 						await game.doAsyncInOrder(targets, async target => {
-							await player.discardPlayerCard(target, true);
+							await player.discardPlayerCard(target, true, "he");
 						});
 					},
 				],
@@ -292,7 +305,6 @@ const skills = {
 			player.addSkill("yj_sp_shenduan_max");
 		},
 		check(event, player) {
-			console.log(game.players.length - game.countPlayer(curr => get.attitude(player, curr) < 0));
 			if (get.subtypes(event.card) == "equip4" && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
 				return false;
 			}
@@ -302,14 +314,16 @@ const skills = {
 			if (get.type(event.card) != "equip" || get.subtypes(event.card) == "equip5") {
 				return false;
 			}
-			const subtypes = player
-				.getHistory("useSkill", evt => evt.skill == "yj_sp_shenduan")
-				.map(evt => get.subtypes(evt.event.getParent(2).card))
-				.flat();
+			const subtypes = player.getStorage("yj_sp_shenduan_used");
 			return !subtypes.some(type => get.subtypes(event.card).includes(type));
 		},
 		async content(event, trigger, player) {
 			const types = get.subtypes(trigger.card);
+			const subtypes = (player.getStorage("yj_sp_shenduan_used") || []).addArray(types);
+			player.markAuto("yj_sp_shenduan_used", subtypes);
+			if (!player.hasSkill("yj_sp_shenduan_used", null, false, false)) {
+				player.addTempSkill("yj_sp_shenduan_used");
+			}
 			for (let type of types) {
 				await player.storage.yj_sp_shenduan_effect.get(type)(player);
 			}
@@ -332,6 +346,19 @@ const skills = {
 				mod: {
 					maxHandcard: function (player, num) {
 						return num + player.countMark("yj_sp_shenduan_max");
+					},
+				},
+			},
+			used: {
+				charlotte: true,
+				marktext: "神锻",
+				onremove: true,
+				intro: {
+					name: "神锻",
+					mark(dialog, storage) {
+						const text = storage.map(type => `${get.translation(type)}`).join("、");
+						dialog.addText("神锻使用过的类型:" + "<br>");
+						dialog.addText(text);
 					},
 				},
 			},
@@ -633,7 +660,7 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.chooseToDiscard(`义拒：请弃置一张牌`, "he", true).set("ai", card => {
 				const player = get.player();
-				if (player.hasSkill("dcshuguoi", null, false, false)) {
+				if (player.hasSkill("dcshuguo", null, false, false)) {
 					return Math.max(...game.filterPlayer2(target => player.canUse(card, target, true, false)).map(target => get.effect_use(target, card, player, player)));
 				}
 				return 6 - get.value(card);
@@ -832,9 +859,8 @@ const skills = {
 			event.result = await next.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent } = event.cost_data;
-			event.next.push(ResultEvent);
-			await ResultEvent;
+			const { result } = event.cost_data;
+			await player.useResult(result, event);
 		},
 		subSkill: {
 			backup: {
@@ -851,6 +877,7 @@ const skills = {
 				async precontent(event) {
 					delete event.result.skill;
 				},
+				log: false,
 				popname: true,
 			},
 		},
@@ -3817,8 +3844,6 @@ const skills = {
 						.set("ai", target => {
 							return get.effect(target, { name: "guohe" }, _status.event.player);
 						});
-				} else {
-					event.finish();
 				}
 			} else {
 				event.finish();

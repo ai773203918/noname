@@ -1922,13 +1922,13 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const { ResultEvent } = event.cost_data,
+			const { result } = event.cost_data,
 				{
 					targets: [target],
-				} = ResultEvent;
-			event.next.push(ResultEvent);
-			await ResultEvent;
-			if (!target.hasHistory("damage", evt => evt.card == ResultEvent.card)) {
+				} = result;
+			const next = player.useResult(result, event);
+			await next;
+			if (!target.hasHistory("damage", evt => evt.card == next.card)) {
 				await player.discardPlayerCard(target, "he", true);
 			}
 		},
@@ -10285,7 +10285,7 @@ const skills = {
 					if (typeof player.ai?.shown === "number" && target.ai) {
 						target.ai.shown = player.ai.shown;
 					}
-					if (player.side) {
+					if (typeof player.side == "boolean") {
 						target.side = player.side;
 						target.node.identity.firstChild.innerHTML = player.node.identity.firstChild.innerHTML;
 						target.node.identity.dataset.color = player.node.identity.dataset.color;
@@ -18432,10 +18432,10 @@ const skills = {
 					continue;
 				}
 				const list = [];
-				if (target.countDiscardableCards(target, "h")) {
+				if (target.countCards("h")) {
 					list.push("手牌区");
 				}
-				if (target.countDiscardableCards(target, "e")) {
+				if (target.countCards("e")) {
 					list.push("装备区");
 				}
 				if (list.length == 0) {
