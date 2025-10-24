@@ -4,13 +4,13 @@ FROM node:20-alpine
 # ENV PNPM_HOME=/usr/local/share/pnpm
 # ENV PATH=$PNPM_HOME:$PATH
 
-# 使用 npm 安装生产依赖
-RUN npm install --omit=dev express@4.18.2 minimist ws
-
 WORKDIR /app
 
 # 复制文件
 COPY . .
+
+# 使用 npm 安装生产依赖
+RUN npm install --omit=dev express@4.18.2 minimist ws
 
 # 直接使用 npm，避免 pnpm 兼容性问题
 RUN npm install -g pm2
