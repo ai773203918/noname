@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: '版本的标签名称（例如，v0.0.0）'
+        description: '发布的标签名称(例如 v0.0.0)'
         required: true
         default: 'v0.0.0'
 
@@ -36,18 +36,9 @@ jobs:
     - name: Install dependencies
       run: pnpm install
     
-    # 构建项目
+    # 构建项目，这会自动生成 zip 包
     - name: Build project
       run: pnpm build:full --zip
-    
-    # # 构建生产环境 Docker 镜像
-    # - name: Build Docker image
-    #   run: |
-    #     docker build -t noname-server:${{ github.event.inputs.tag_name || github.ref_name }} -f ./.github/workflows/Dockerfile .
-    
-    # - name: Save Docker image
-    #   run: |
-    #     docker save noname-server:${{ github.event.inputs.tag_name || github.ref_name }} | gzip > noname-server-${{ github.event.inputs.tag_name || github.ref_name }}.tar.gz
     
     # 创建发布
     - name: Create Release
@@ -56,12 +47,13 @@ jobs:
       with:
         # 使用手动输入的标签名，或者使用推送的标签名
         tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+        # 上传所有由构建命令生成的 zip 包
         files: |
-          noname-*.zip
-          noname-server-${{ github.event.inputs.tag_name || github.ref_name }}.tar.gz
+          *.zip
         draft: false
         prerelease: false
       env:
+        # 修改为你指定的 secret 名称
         GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
     
     # # 推送 Docker 镜像到 Docker Hub (可选)
