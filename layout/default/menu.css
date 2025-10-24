@@ -231,9 +231,9 @@
 }
 
 .removing > .menubg.charactercard {
-	transform: scale(0.8);
+	transform: translate(-50%, -50%) scale(0.8);
 	opacity: 0;
-	transition: all 0.3s;
+	transition: transform 0.3s, opacity 0.3s;
 }
 
 .menubg.charactercard {
@@ -242,8 +242,8 @@
 	left: 50%;
 	top: 50%;
 	transform: translate(-50%, -50%);
-	animation: dialog_start2 0.3s;
-	-webkit-animation: dialog_start2 0.3s;
+	animation: dialog_scale_in 0.3s;
+	-webkit-animation: dialog_scale_in 0.3s;
 }
 
 /* 武将头像 */
@@ -1279,6 +1279,30 @@ input.fileinput::-webkit-file-upload-button {
 		transform: scale(0.5);
 		opacity: 0;
 		transform-origin: 2px -35px;
+	}
+}
+
+@keyframes dialog_scale_in {
+	from {
+		transform: translate(-50%, -50%) scale(0.8);
+		opacity: 0;
+	}
+
+	to {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
+	}
+}
+
+@-webkit-keyframes dialog_scale_in {
+	from {
+		transform: translate(-50%, -50%) scale(0.8);
+		opacity: 0;
+	}
+
+	to {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 1;
 	}
 }
 
