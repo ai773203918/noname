@@ -10712,7 +10712,7 @@ export class Game extends GameCompatible {
 		}
 		const addPlayer = function (id, target, character, character2, isNext) {
 			const players = game.players.concat(game.dead);
-			ui.arena.setNumber(players.length + 1);
+			ui.arena.setNumber(parseInt(players.length) - 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
 				position = players.length;
@@ -10810,7 +10810,7 @@ export class Game extends GameCompatible {
 			player.delete();
 			game.players.remove(player);
 			game.dead.remove(player);
-			ui.arena.setNumber(players.length - 1);
+			ui.arena.setNumber(parseInt(players.length) - 1);
 			player.removed = true;
 			if (player == game.me) {
 				ui.me.hide();
