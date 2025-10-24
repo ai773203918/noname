@@ -248,6 +248,8 @@ const skills = {
 						.forResult();
 				},
 				async content(event, trigger, player) {
+					const { result, logSkill } = event.cost_data;
+					await player.useResult(result, event);
 					trigger.cancel();
 					game.log(trigger.player, "跳过了", "#y" + ["判定", "摸牌", "出牌", "弃牌"][get.info(event.name).trigger.global.indexOf(event.triggername)] + "阶段");
 					if (trigger.name == "phaseUse") {
