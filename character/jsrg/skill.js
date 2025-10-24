@@ -1700,18 +1700,8 @@ const skills = {
 				(targets, cards, id, player) => {
 					const dialog = ui.create.dialog(get.translation(player) + "发动了【执盟】", cards);
 					dialog.videoId = id;
-					const getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
 					for (let i = 0; i < targets.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + get.translation(get.suit(cards[i], targets[i]));
+						game.creatButtonCardsetion(targets[i].getName(true) + get.translation(get.suit(cards[i], targets[i])), dialog.buttons[i]);
 					}
 				},
 				targets,
@@ -3789,7 +3779,7 @@ const skills = {
 					return { bool: true, cards: [hs.randomGet()] };
 				});
 			next._args.remove("glow_result");
-			const { result } = await next;
+			let { result } = await next;
 			const cards = [];
 			const videoId = lib.status.videoId++;
 			for (let i = 0; i < targets.length; i++) {
@@ -3800,18 +3790,8 @@ const skills = {
 				(targets, cards, id, player) => {
 					var dialog = ui.create.dialog(get.translation(player) + "发动了【浮海】", cards);
 					dialog.videoId = id;
-					const getName = target => {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
 					for (let i = 0; i < targets.length; i++) {
-						dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + "|" + get.strNumber(cards[i].number);
+						game.creatButtonCardsetion(`${targets[i].getName(true)}|${get.translation(get.strNumber(cards[i].number))}`, dialog.buttons[i]);
 					}
 				},
 				targets,
@@ -3856,14 +3836,14 @@ const skills = {
 					clock = Math.max(1, count);
 				}
 			}
-			const {
-				result: { index },
-			} = await player
+			result = await player
 				.chooseControl(`↖顺时针(${clock})`, `逆时针(${anticlock})↗`)
 				.set("prompt", "请选择一个方向，摸对应数量的牌")
 				.set("ai", () => get.event("choice"))
-				.set("choice", clock > anticlock ? 0 : 1);
-			player.draw(index == 0 ? clock : anticlock);
+				.set("choice", clock > anticlock ? 0 : 1)
+				.forResult();
+			if (typeof result?.index !== "number") return;
+			await player.draw(result.index == 0 ? clock : anticlock);
 		},
 		ai: {
 			order: 8,

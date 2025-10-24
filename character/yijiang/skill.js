@@ -3583,7 +3583,7 @@ const skills = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (var i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									dialog.buttons[i].querySelector(".info").innerHTML = name;
+									game.creatButtonCardsetion(name, dialog.buttons[i]);
 									break;
 								}
 							}
@@ -3592,16 +3592,7 @@ const skills = {
 					},
 					result2.links[0],
 					dialog.videoId,
-					(function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(current),
+					current.getName(true),
 					capt
 				);
 			}
@@ -3610,7 +3601,7 @@ const skills = {
 				_status.dieClose.remove(dialog);
 			}, dialog);
 			if (cards.length) {
-				game.cardsDiscard(cards);
+				await game.cardsDiscard(cards);
 			}
 		},
 	},

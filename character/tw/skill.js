@@ -5969,9 +5969,7 @@ const skills = {
 	},
 	twdaigui: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseEnd",
-		},
+		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
 			if (!player.countCards("h")) {
 				return false;
@@ -6012,7 +6010,7 @@ const skills = {
 				if (!current.isIn() || !chooseableCards.length) {
 					continue;
 				}
-				const links = await current
+				const { result } = await current
 					.chooseButton(true)
 					.set("dialog", videoId)
 					.set("closeDialog", false)
@@ -6023,10 +6021,11 @@ const skills = {
 					})
 					.set("ai", button => {
 						return get.value(button.link, _status.event.player);
-					})
-					.forResultLinks();
-
-				const [card] = links;
+					});
+				if (!result?.links?.length) {
+					continue;
+				}
+				const [card] = result.links;
 				if (card) {
 					current.gain(card, "gain2");
 					chooseableCards.remove(card);
@@ -6039,7 +6038,7 @@ const skills = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (let i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									dialog.buttons[i].querySelector(".info").innerHTML = name;
+									game.creatButtonCardsetion(name, dialog.buttons[i]);
 									break;
 								}
 							}
@@ -6048,16 +6047,7 @@ const skills = {
 					},
 					card,
 					videoId,
-					(function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(current),
+					current.getName(true),
 					capt
 				);
 			}

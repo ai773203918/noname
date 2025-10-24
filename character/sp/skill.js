@@ -20681,20 +20681,11 @@ const skills = {
 								return;
 							}
 							var button = ui.create.button(card, "card", dialog.buttonss[index]);
-							button.querySelector(".info").innerHTML = name + "|" + get.strNumber(card.number);
+							game.creatButtonCardsetion(name + get.strNumber(card.number), button);
 						},
 						event.videoId,
 						card,
-						(function (target) {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							var name = target.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						})(player),
+						player.getName(true),
 						index
 					);
 				}
@@ -20808,20 +20799,11 @@ const skills = {
 								return;
 							}
 							var button = ui.create.button(card, "card", dialog.buttonss[index]);
-							button.querySelector(".info").innerHTML = name + "|" + get.strNumber(card.number);
+							game.creatButtonCardsetion(name + get.strNumber(card.number), dialog.buttons[i]);
 						},
 						event.videoId,
 						card,
-						(function (target) {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							var name = target.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						})(game.me),
+						game.me.getName(true),
 						index
 					);
 				}

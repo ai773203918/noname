@@ -21262,7 +21262,7 @@ const skills = {
 				.set("complexCard", true)
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
-			if (result.bool && result.cards?.length > 0) {
+			if (result?.bool && result.cards?.length > 0) {
 				let cards = result.cards.slice().randomSort();
 				let targets = game.filterPlayer(current => current != player && !player.getStorage("jdmingxuan").includes(current)).sortBySeat(player);
 				const dialog = ui.create.dialog("瞑昡", cards, true);
@@ -21294,7 +21294,7 @@ const skills = {
 							return _status.event.cardFilter.includes(button.link);
 						})
 						.forResult();
-					if (resultx.bool) {
+					if (resultx?.bool && resultx.links?.length) {
 						const card = resultx.links[0];
 						if (card) {
 							cards.remove(card);
@@ -21306,7 +21306,7 @@ const skills = {
 										dialog.content.firstChild.innerHTML = capt;
 										for (let i = 0; i < dialog.buttons.length; i++) {
 											if (dialog.buttons[i].link == card) {
-												dialog.buttons[i].querySelector(".info").innerHTML = name;
+												game.creatButtonCardsetion(name, dialog.buttons[i]);
 												break;
 											}
 										}
@@ -21315,30 +21315,18 @@ const skills = {
 								},
 								card,
 								event.dialogID,
-								(target => {
-									if (target._tempTranslate) {
-										return target._tempTranslate;
-									}
-									const name = target.name;
-									if (lib.translate[name + "_ab"]) {
-										return lib.translate[name + "_ab"];
-									}
-									return get.translation(name);
-								})(target),
+								target.getName(true),
 								capt
 							);
 							await target.gain(card, player, "give");
 						}
 						const resulty = await target
-							.chooseToUse(
-								function (card, player, event) {
-									if (get.name(card) != "sha") {
-										return false;
-									}
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌"
-							)
+							.chooseToUse(function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							}, "对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("complexTarget", true)
@@ -21351,7 +21339,7 @@ const skills = {
 							.set("sourcex", player)
 							.set("addCount", false)
 							.forResult();
-						if (resulty.bool) {
+						if (resulty?.bool) {
 							player.markAuto("jdmingxuan", [target]);
 						} else {
 							await target.chooseToGive("he", true, player, "交给" + get.translation(player) + "一张牌");

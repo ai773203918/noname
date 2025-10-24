@@ -351,7 +351,7 @@ const skills = {
 							]),
 							(item, type, position, noclick, node) => {
 								node = ui.create.buttonPresets.card(item[0], type, position, noclick);
-								node.node.gaintag.innerHTML += item[1];
+								game.creatButtonCardsetion(item[1], node);
 								return node;
 							},
 						],
