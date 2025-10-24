@@ -26,9 +26,9 @@ jobs:  # 工作流作业
       # 检出代码
       - name: 检查代码是否在工作目录  # 步骤名称
         uses: actions/checkout@v4 # 使用 v4 版本的 checkout action
-        with:
-          # ⭐指定要检出的分支(当前构建相关文件在该分支中)
-          ref: build-tooling
+        # with:
+        #   # ⭐指定要检出的分支(当前构建相关文件在该分支中)
+        #   ref: build-tooling
 
       # 设置QEMU，用于构建多平台镜像
       - name: 设置 QEMU  # 步骤名称
@@ -105,6 +105,14 @@ jobs:  # 工作流作业
             ${{ env.TAG_LATEST }}
             ${{ env.GHCR_TAG }}
             ${{ env.GHCR_TAG_LATEST }}
+
+      # Ghcr.io 自动公开化步骤(也可手动操作)
+      - name: 将 Ghcr.io 包设置为公开
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          gh package edit noname --repo ${{ github.repository }} --visibility public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
 
       # # 镜像打包为tar包
       # - name: 镜像打包为tar包  # 步骤名称
