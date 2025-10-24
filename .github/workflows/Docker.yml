@@ -7,8 +7,8 @@ on:
   # 2. 允许在 GitHub Actions 页面上手动触发工作流
   workflow_dispatch:
     # 手动触发时，可以提供输入参数
-    tag:
-      tag_name:
+    inputs:  # 输入的参数
+      tag:  # 输入的标签
         description: '发布的标签名称(例如 v0.0.0)' # 参数描述
         required: true # 是否为必填项
         default: 'v0.0.0' # 默认值
