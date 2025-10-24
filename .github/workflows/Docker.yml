@@ -6,7 +6,7 @@ on:
       - 'v*'
   workflow_dispatch:
     inputs:  # 输入的参数
-      tag:  # 输入的标签
+      tags:  # 输入的标签
         description: '构建的版本号'  # 手动触发时输入的标签描述
         required: true  # 必须输入
         default: 'test'  # 默认标签为'test'
