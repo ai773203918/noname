@@ -34,7 +34,7 @@ const skills = {
 				target.addTip(`${skill}_${current.playerid}`, `撼国 ${get.translation(current)}`);
 			});
 			target.addTempSkill(skill, "roundEnd");
-			const cards = target.getCards("h");
+			const cards = target.getCards("he");
 			if (!cards.length) {
 				return;
 			}
@@ -780,7 +780,7 @@ const skills = {
 			if (gains.length) {
 				await player.gainMultiple(gains, "h");
 			}
-			await player.showHandcards();
+			await player.showHandcards(`${get.translation(player)}发动了【怀兵】`);
 			const num = event.targets.reduce((sum, current) => sum + current.getHp(), 0) / 2,
 				current = event.targets.find(current => current.getHp() < num);
 			if (!current) {
@@ -789,7 +789,8 @@ const skills = {
 			const red = player.countCards("h", { color: "red" });
 			for (const key of ["Draw", "Use", "Discard"]) {
 				current.addTempSkill(`${event.name}_${key}`, { player: `phase${key}After` });
-				current.setStorage(`${event.name}_${key}`, red, true);
+				current.setStorage(`${event.name}_${key}`, red);
+				current.markSkill(`${event.name}_${key}`)
 			}
 		},
 		subSkill: {
@@ -804,14 +805,14 @@ const skills = {
 					player: "phaseDrawBegin2",
 				},
 				filter(event, player) {
-					const storage = player.getStorage("sxrmhuaibing_Draw");
+					const storage = player.getStorage("sxrmhuaibing_Draw", 0);
 					return !event.numFixed && typeof storage == "number";
 				},
 				firstDo: true,
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					trigger.num = player.getStorage(event.name);
+					trigger.num = player.getStorage(event.name, 0);
 					trigger.numFixed = true;
 				},
 			},
@@ -826,7 +827,7 @@ const skills = {
 					player: "phaseUseBegin",
 				},
 				filter(event, player) {
-					const storage = player.getStorage("sxrmhuaibing_Use");
+					const storage = player.getStorage("sxrmhuaibing_Use", 0);
 					return typeof storage == "number";
 				},
 				firstDo: true,
@@ -839,7 +840,7 @@ const skills = {
 						.assign({
 							mod: {
 								cardUsable(card, player, num) {
-									const storage = player.getStorage("sxrmhuaibing_Use");
+									const storage = player.getStorage("sxrmhuaibing_Use", 0);
 									if (typeof storage != "number" || card.name != "sha") {
 										return;
 									}
@@ -860,7 +861,7 @@ const skills = {
 					player: "phaseDiscardBegin",
 				},
 				filter(event, player) {
-					const storage = player.getStorage("sxrmhuaibing_Discard");
+					const storage = player.getStorage("sxrmhuaibing_Discard", 0);
 					return typeof storage == "number";
 				},
 				firstDo: true,
@@ -873,7 +874,7 @@ const skills = {
 						.assign({
 							mod: {
 								maxHandcardFinal(player, num) {
-									const storage = player.getStorage("sxrmhuaibing_Discard");
+									const storage = player.getStorage("sxrmhuaibing_Discard", 0);
 									if (typeof storage != "number") {
 										return;
 									}

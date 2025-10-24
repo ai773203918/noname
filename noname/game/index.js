@@ -1497,7 +1497,7 @@ export class Game extends GameCompatible {
 			next[bool] = true;
 		} else if (bool === false) {
 			next.notrigger = true;
-		} 
+		}
 		next.setContent("cardsGotoSpecial");
 		return next;
 	}
@@ -2416,7 +2416,7 @@ export class Game extends GameCompatible {
 				: {
 						path: args.filter(arg => typeof arg === "string" || typeof arg === "number").join("/"),
 						onError: args.find(arg => typeof arg === "function"),
-				  };
+					};
 
 		const {
 			path = "",
@@ -6016,10 +6016,13 @@ export class Game extends GameCompatible {
 					div.style.transform += " translateX(" + -(Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2) + "px)";
 					div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) scaleX(1)";
 				}, 50);
-				setTimeout(function () {
-					div2.style.transition = "all " + (timeS * 2) / 3 + "s";
-					div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
-				}, 50 + ((timeS * 4) / 3) * 1000);
+				setTimeout(
+					function () {
+						div2.style.transition = "all " + (timeS * 2) / 3 + "s";
+						div2.style.transform = "rotate(" + getAngle(x0, y0, x1, y1) + "deg) translateX(" + (Math.pow(Math.pow(x1 - x0, 2) + Math.pow(y1 - y0, 2), 0.5) + 2 - Math.pow(Math.pow(div.offsetHeight / 2, 2) + Math.pow(div.offsetWidth / 2, 2), 0.5)) + "px) scaleX(0.01)";
+					},
+					50 + ((timeS * 4) / 3) * 1000
+				);
 				node.appendChild(div2);
 			}
 			if (animation.time <= 100000) {
@@ -7994,10 +7997,10 @@ export class Game extends GameCompatible {
 			let exports;
 			let isESM = true;
 			try {
-				exports = await import(/* @vite-ignore */`../../mode/${name}/index.js`);
+				exports = await import(/* @vite-ignore */ `../../mode/${name}/index.js`);
 			} catch (e1) {
 				try {
-					exports = await import(/* @vite-ignore */`../../mode/${name}.js`);
+					exports = await import(/* @vite-ignore */ `../../mode/${name}.js`);
 				} catch (e2) {
 					isESM = false;
 					await lib.init.promises.js(`${lib.assetURL}mode`, name);
@@ -8327,7 +8330,7 @@ export class Game extends GameCompatible {
 		next.config = config;
 		next.list = list;
 		next.setContent([
-			(event) => {
+			event => {
 				event.nodes = [];
 				event.avatars = [];
 				event.friend = [];
@@ -8636,7 +8639,7 @@ export class Game extends GameCompatible {
 					ui.window.appendChild(event.nodes[i]);
 				}
 			},
-			(event) => {
+			event => {
 				let rand1 = event.config.first;
 				if (rand1 == "rand") {
 					rand1 = Math.random() < 0.5;
@@ -8674,7 +8677,7 @@ export class Game extends GameCompatible {
 				game.delay();
 				lib.init.onfree();
 			},
-			(event) => {
+			event => {
 				if (event.checkredo()) {
 					return;
 				}
@@ -8695,7 +8698,7 @@ export class Game extends GameCompatible {
 					game.delay();
 				}
 			},
-			(event) => {
+			event => {
 				if (typeof event.fast == "number" && get.time() - event.fast <= 1000) {
 					event.fast = true;
 				} else {
@@ -8733,7 +8736,7 @@ export class Game extends GameCompatible {
 					}
 				}
 			},
-			(event) => {
+			event => {
 				if (event.checkredo()) {
 					return;
 				}
@@ -8763,7 +8766,7 @@ export class Game extends GameCompatible {
 				}
 				game.delay();
 			},
-			(event) => {
+			event => {
 				event.prompt("选择" + get.cnNumber(event.config.num) + "名出场武将");
 				event.enemylist = [];
 				for (let i = 0; i < event.avatars.length; i++) {
@@ -8794,7 +8797,7 @@ export class Game extends GameCompatible {
 				}
 				game.pause();
 			},
-			(event) => {
+			event => {
 				event.promptbar.delete();
 				if (ui.cardPileButton) {
 					ui.cardPileButton.style.display = "";
@@ -8813,7 +8816,7 @@ export class Game extends GameCompatible {
 					event.result.friend[i] = event.friendlist[i].link;
 					event.result.enemy[i] = event.enemylist[i].link;
 				}
-			}
+			},
 		]);
 	}
 	updateRoundNumber() {
@@ -9709,7 +9712,7 @@ export class Game extends GameCompatible {
 							game.reload2();
 							resolve(result);
 						};
-				  }
+					}
 				: (resolve, reject) => {
 						lib.status.reload++;
 						const idbRequest = lib.db.transaction([storeName], "readwrite").objectStore(storeName).openCursor(),
@@ -9739,7 +9742,7 @@ export class Game extends GameCompatible {
 							game.reload2();
 							resolve(object);
 						};
-				  }
+					}
 		);
 	}
 	/**
@@ -9803,7 +9806,7 @@ export class Game extends GameCompatible {
 						game.reload2();
 						resolve(event);
 					};
-			  })
+				})
 			: game.getDB(storeName).then(object => {
 					const keys = Object.keys(object);
 					lib.status.reload += keys.length;
@@ -9824,7 +9827,7 @@ export class Game extends GameCompatible {
 								})
 						)
 					);
-			  });
+				});
 	}
 	/**
 	 * @param { string } key
@@ -10722,7 +10725,7 @@ export class Game extends GameCompatible {
 		}
 		const addPlayer = function (id, target, character, character2, isNext) {
 			const players = game.players.concat(game.dead);
-			ui.arena.setNumber(players.length + 1);
+			ui.arena.setNumber(parseInt(players.length) - 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
 				position = players.length;
@@ -10753,7 +10756,8 @@ export class Game extends GameCompatible {
 		const player = addPlayer(id, target, character, character2, isNext);
 		const firstSeat = players.find(value => value.getSeatNum() == 1);
 		if (firstSeat) {
-			let seatNum = !isNext ? target.getSeatNum() : target.getSeatNum() + 1;
+			const targetSeat = target.getSeatNum();
+			let seatNum = !isNext ? (targetSeat == 1 ? players.length + 1 : targetSeat - 1) : targetSeat + 1;
 			player.setSeatNum(seatNum);
 			players.forEach(value => {
 				if (seatNum && value.getSeatNum() >= seatNum) {
@@ -10819,7 +10823,7 @@ export class Game extends GameCompatible {
 			player.delete();
 			game.players.remove(player);
 			game.dead.remove(player);
-			ui.arena.setNumber(players.length - 1);
+			ui.arena.setNumber(parseInt(players.length) - 1);
 			player.removed = true;
 			if (player == game.me) {
 				ui.me.hide();

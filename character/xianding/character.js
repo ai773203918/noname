@@ -23,12 +23,6 @@ const characters = {
 		group: "wei",
 		skills: ["dcfuhui", "dcmohua"],
 	},
-	v_sunce: {
-		sex: "male",
-		group: "wu",
-		hp: 4,
-		skills: ["dczhifeng", "dcweijing"],
-	},
 	v_caocao: {
 		sex: "male",
 		group: "wei",

@@ -244,6 +244,7 @@ const characters = {
 		hp: 3,
 		skills: ["twshelie", "twgongxin"],
 		groupInGuozhan: "wu",
+		dieAudios: ["shen_lvmeng"],
 	},
 	shen_zhangjiao: {
 		sex: "male",

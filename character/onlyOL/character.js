@@ -1,4 +1,22 @@
 const characters = {
+	dm_sunquan: {
+        sex: "male",
+        group: "wu",
+        hp: 4,
+        skills: ["olquanyu", "oltianen", "olqiangang"],
+    },
+    ol_sb_guojia: {
+        sex: "male",
+        group: "wei",
+        hp: 3,
+        skills: ["olsbdinglun", "olsbjieli"],
+    },
+	ol_reyujin: {
+		sex:"male",
+		group:"wei",
+		hp:4,
+		skills:["ol_zhenjun","ol_yizhong"],
+	},
 	ol_jsrg_zhangliao: {
 		sex: "male",
 		group: "qun",

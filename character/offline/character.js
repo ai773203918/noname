@@ -1,11 +1,35 @@
 const characters = {
-	scl_jiaxu: {
+	zc26_lusu: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["zc26_haoshi", "zc26_dimeng"],
+	},
+	zc26_zhanghe: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["zc26_qiaobian"],
+	},
+	zc26_taishici: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["zc26_tianyi", "zc26_dangmo"],
+	},
+	zc26_jiaxu:{
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["sclwansha", "reluanwu", "reweimu"],
-		dieAudios: ["re_jiaxu"],
+		skills:["zc26_wansha", "zc26_weimu","luanwu"],
 	},
+	scl_jiaxu: {
+        sex: "male",
+        group: "qun",
+        hp: 3,
+        skills: ["sclwansha", "reluanwu", "reweimu"],
+        dieAudios: ["re_jiaxu"],
+    },
 	pe_guozhao: {
 		sex: "female",
 		group: "wei",
