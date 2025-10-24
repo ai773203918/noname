@@ -30,6 +30,15 @@ jobs:  # 工作流作业
         #   # 指定要检出的分支(当前构建镜像的分支使用的是master主分支)
         #   ref: build-tooling
 
+      # 👇 新增步骤：清理 Runner 磁盘空间(防止多架构构建时磁盘空间不足)
+      - name: 清理磁盘空间
+        # 删除所有未使用的镜像;强制执行无需确认;同时清理未使用的卷
+        run: |
+          echo "🧹 清理旧的 Docker 镜像和缓存..."
+          docker system prune -af --volumes
+          echo "✅ 清理完成"
+          df -h
+
       # 设置QEMU，用于构建多平台镜像
       - name: 设置 QEMU  # 步骤名称
         uses: docker/setup-qemu-action@v3  # 引用流程
@@ -96,6 +105,9 @@ jobs:  # 工作流作业
             ${{ env.TAG_LATEST }}
             ${{ env.GHCR_TAG }}
             ${{ env.GHCR_TAG_LATEST }}
+          # 👇 新增：配置 GitHub Actions 缓存(防止多架构构建时空间不足)
+          cache-from: type=gha  # 构建前尝试从 GitHub Actions 缓存中拉取之前的缓存
+          cache-to: type=gha,mode=max  # 构建成功后将新的缓存层推送到 GitHub Actions 缓存服务;会缓存尽可能多的层，最大化缓存效果
 
       # Ghcr.io 自动公开化步骤(也可手动操作)
       - name: 将 Ghcr.io 包设置为公开
