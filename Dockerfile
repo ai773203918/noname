@@ -5,7 +5,7 @@ FROM node:20-alpine
 # ENV PATH=$PNPM_HOME:$PATH
 
 # 使用 npm 安装生产依赖
-RUN npm install --omit=dev express@4.18.2 minimist ws --no-audit --no-fund
+RUN npm install --omit=dev express@4.18.2 minimist ws
 
 WORKDIR /app
 
