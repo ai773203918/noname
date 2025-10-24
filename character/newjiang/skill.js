@@ -312,11 +312,11 @@ const skills = {
 			return true;
 		},
 		filter(event, player) {
-			if (get.type(event.card) != "equip" || get.subtypes(event.card) == "equip5") {
+			if (get.type(event.card) != "equip" || get.subtype(event.card) == "equip5") {
 				return false;
 			}
 			const subtypes = player.getStorage("yj_sp_shenduan_used");
-			return !subtypes.includes(get.subtype(event.card));
+			return !get.subtypes(event.card).every(type => subtypes.includes(type));
 		},
 		async content(event, trigger, player) {
 			const types = get.subtypes(trigger.card);
