@@ -3,6 +3,126 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//威孙尚香
+	dcshuren: {
+		audio: 2,
+		usable: 1,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasEnabledSlot();
+		},
+		async content(event, trigger, player) {
+			const control = await player.chooseToDisable().forResultControl();
+			if (!control) {
+				return;
+			}
+			const restore = player.hasHistory("lose", evt => {
+				let num = 1,
+					list = ["loseToDiscardpile", "disableEquip", "chooseToDisable"];
+				while (num < 3) {
+					const evtx = evt.getParent(num);
+					if (evtx?.name != list[num - 1] || evtx?.player != player) {
+						return false;
+					}
+					num++;
+				}
+				return evt.getParent(4) == event;
+			});
+			const targets = await player
+				.chooseTarget("淑任：请选择一名其他角色", true, lib.filter.notMe)
+				.set("ai", target => {
+					return get.attitude(get.player(), target) * (20 - target.countCards("h"));
+				})
+				.forResultTargets();
+			if (targets?.length) {
+				const cards = get.cards(3, true);
+				await player.showCards(cards, `${get.translation(player)}发动了【淑任】`, true).set("clearArena", false);
+				const players = [player, targets[0]];
+				while (players.length) {
+					const target = players.shift();
+					if (!target?.isIn()) {
+						continue;
+					}
+					const links = await target
+						.chooseCardButton(cards, true, "淑任：请选择要获得的牌")
+						.set("ai", button => {
+							return get.value(button.link, get.player());
+						})
+						.forResultLinks();
+					if (links?.length) {
+						cards.removeArray(links);
+						await target.gain(links, "gain2");
+					}
+				}
+				game.broadcastAll(ui.clear);
+				if (restore) {
+					if (player.getStat("skill")[event.name]) {
+						delete player.getStat("skill")[event.name];
+					}
+					await player.recover(1);
+				}
+			}
+		},
+		ai: {
+			order: 1,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	dcsaran: {
+		audio: 2,
+		locked: false,
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.name == "sha") {
+					let es = player.countCards("e");
+					return num + es;
+				}
+			},
+		},
+		trigger: {
+			source: "damageSource",
+			player: "damageEnd",
+		},
+		getIndex(event) {
+			return event.num;
+		},
+		filter(event, player) {
+			for (let i = 0; i < 5; i++) {
+				if (player.hasEquipableSlot(i)) {
+					return true;
+				}
+			}
+			return false;
+		},
+		frequent: "check",
+		check(event, player) {
+			return true;
+		},
+		async content(event, trigger, player) {
+			let card = get.cardPile2(card => get.type(card, null, false) == "equip", "random");
+			if (!card) {
+				card = get.discardPile(ard => get.type(card, null, false) == "equip", "random");
+			}
+			if (!card) {
+				return;
+			}
+			if (player.canUse(card, player)) {
+				await player.chooseUseTarget(card, true);
+			}
+			if (!player.hasDisabledSlot()) {
+				return;
+			}
+			const bool = await player
+				.chooseBool("飒然：是否恢复一个废弃装备栏？")
+				.set("ai", () => true)
+				.forResultBool();
+			if (bool) {
+				await player.chooseToEnable();
+			}
+		},
+	},
 	//郭缇萦
 	dckanyu: {
 		audio: 2,

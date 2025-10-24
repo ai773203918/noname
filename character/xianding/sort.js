@@ -24,6 +24,7 @@ const characterSort = {
 	sp2_boyan: ["dc_sb_huangquan", "dc_sb_luotong", "dc_sb_xusheng"],
 	sp2_weizhen: ["v_zhangliao", "v_lvbu", "v_dongzhuo", "v_machao"],
 	sp2_junwei: ["v_caopi", "v_sunquan", "v_caocao"],
+	sp2_pianyu: ["v_sunshangxiang"],
 	sp2_waitingforsort: [],
 };
 
@@ -53,6 +54,7 @@ const characterSortTranslate = {
 	sp2_boyan: "伯言绽火",
 	sp2_weizhen: "威震天下",
 	sp2_junwei: "君威盖世",
+	sp2_pianyu: "片羽威风",
 	sp2_waitingforsort: "等待分包",
 };
 

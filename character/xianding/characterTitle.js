@@ -150,7 +150,7 @@ export default {
 	dc_sb_hulie: "暗舆平叛",
 	dc_sb_dengai: "奇锋厄川",
 	dc_sb_huangquan: "智答魏诏",
-	dc_sb_luotong: "知寒始北", 
+	dc_sb_luotong: "知寒始北",
 	v_zhangliao: "威锐镇西风",
 	v_lvbu: "虓虎叱北地",
 	v_dongzhuo: "魔震西凉",
@@ -160,4 +160,5 @@ export default {
 	v_caocao: "山海归心",
 	v_sunce: "勇冠三江势",
 	x_dc_zhangqiying: "九州春回",
+	v_sunshangxiang: "巽荷绽情",
 };
