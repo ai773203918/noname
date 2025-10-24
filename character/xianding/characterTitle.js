@@ -160,5 +160,6 @@ export default {
 	v_caocao: "山海归心",
 	v_sunce: "勇冠三江势",
 	x_dc_zhangqiying: "九州春回",
+	dc_sb_zhuran: "孤城镇岳",
 	v_sunshangxiang: "巽荷绽情",
 };

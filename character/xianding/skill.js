@@ -3,6 +3,158 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋朱然
+	dcsbzhenyu: {
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			if (!game.hasPlayer(current => !current.isLinked())) {
+				return false;
+			}
+			for (let name of ["sha", "shan"]) {
+				let card = get.autoViewAs({ name }, []);
+				if (event.filterCard(card, player, event)) {
+					return true;
+				}
+			}
+			return false;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				let list = ["sha", "shan"].filter(name => event.filterCard(get.autoViewAs({ name }, []), player, event)).map(name => ["basic", "", name]);
+				return ui.create.dialog("镇御", [list, "vcard"]);
+			},
+			check() {
+				return 1;
+			},
+			backup(links, player) {
+				return {
+					audio: "dcsbzhenyu",
+					viewAs: {
+						name: links[0][2],
+					},
+					selectCard: -1,
+					filterCard: () => false,
+					log: false,
+					async precontent(event, trigger, player) {
+						if (!game.hasPlayer(current => !current.isLinked())) {
+							event.getParent().goto(0);
+							return;
+						}
+						const targets = await player
+							.chooseTarget("镇御：请横置一名角色", true, (_, player, target) => !target.isLinked())
+							.set("ai", target => {
+								return get.effect(target, { name: "tiesuo" }, get.player(), get.player());
+							})
+							.forResultTargets();
+						if (targets?.length) {
+							await player.logSkill("dcsbzhenyu");
+							await targets[0].link(true);
+						}
+					},
+				};
+			},
+		},
+		subSkill: {
+			backup: {},
+			disable: {
+				charlotte: true,
+				init(player, skill) {
+					player.disableSkill(skill, "dcsbzhenyu");
+				},
+				onremove(player, skill) {
+					player.enableSkill(skill);
+				},
+				trigger: { player: "useCard" },
+				filter(event, player) {
+					if (!["sha", "shan"].includes(event.card.name)) {
+						return false;
+					}
+					return player.hasHistory("lose", evt => {
+						const evtx = evt.relatedEvent || evt.getParent();
+						if (evtx != event) {
+							return false;
+						}
+						return evt.getl(player)?.hs?.length;
+					});
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+				},
+			},
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			order: 15,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	dcsbjielu: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => current.isLinked());
+		},
+		filterTarget(card, player, target) {
+			return target.isLinked();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			await target.link(false);
+			if (target.countDiscardableCards(player, "he")) {
+				const links = await player.discardPlayerCard(target, true, "he").forResultLinks();
+				if (links?.length) {
+					const number = get.number(links[0]);
+					if (typeof number == "number") {
+						player.setStorage("dcsbjielu_effect", [target, number], true);
+						player.addTempSkill("dcsbjielu_effect");
+					}
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				init(player, skill) {
+					const [target, num] = player.getStorage(skill);
+					if (target) {
+						player.markSkillCharacter(skill, target, "截路", `若下一张进入弃牌堆的牌点数大于${num}，你对${get.translation(target)}造成1点伤害`);
+					}
+				},
+				onremove: true,
+				trigger: {
+					global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter"],
+				},
+				filter(event, player) {
+					return event.getd()?.length;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const number = get.number(trigger.getd()[0]);
+					if (typeof number == "number") {
+						const [target, num] = player.getStorage(event.name);
+						if (target?.isIn() && typeof num == "number" && number > num) {
+							await player.logSkill("dcsbjielu", target);
+							await target.damage(player);
+						}
+					}
+					player.removeSkill(event.name);
+				},
+			},
+		},
+		ai: {
+			order: 10,
+			player: {
+				target: -1,
+			},
+		},
+	},
 	//威孙尚香
 	dcshuren: {
 		audio: 2,
