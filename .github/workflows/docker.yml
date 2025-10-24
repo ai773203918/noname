@@ -5,11 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:  # 输入的参数
-      tags:  # 输入的标签
-        description: '构建的版本号'  # 手动触发时输入的标签描述
-        required: true  # 必须输入
-        default: 'test'  # 默认标签为'test'
+    inputs:
+      tag_name:
+        description: '版本的标签名称（例如，v0.0.0）'
+        required: true
+        default: 'v0.0.0'
 
 jobs:
   build-and-release:
@@ -43,20 +43,22 @@ jobs:
     # # 构建生产环境 Docker 镜像
     # - name: Build Docker image
     #   run: |
-    #     docker build -t noname-server:${{ github.ref_name }} -f ./.github/workflows/Dockerfile .
+    #     docker build -t noname-server:${{ github.event.inputs.tag_name || github.ref_name }} -f ./.github/workflows/Dockerfile .
     
     # - name: Save Docker image
     #   run: |
-    #     docker save noname-server:${{ github.ref_name }} | gzip > noname-server-${{ github.ref_name }}.tar.gz
+    #     docker save noname-server:${{ github.event.inputs.tag_name || github.ref_name }} | gzip > noname-server-${{ github.event.inputs.tag_name || github.ref_name }}.tar.gz
     
     # 创建发布
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
+        # 使用手动输入的标签名，或者使用推送的标签名
+        tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
         files: |
           noname-*.zip
-          noname-server-${{ github.ref_name }}.tar.gz
+          noname-server-${{ github.event.inputs.tag_name || github.ref_name }}.tar.gz
         draft: false
         prerelease: false
       env:
