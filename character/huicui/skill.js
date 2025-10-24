@@ -11274,7 +11274,7 @@ const skills = {
 				.chooseButton(
 					2,
 					[
-						`###${str}对你发动了【化归】，选择展示或弃置一张牌###<div class="text center">若所有人都选择了仅展示，则${str}获得这张牌</div>`,
+						`###${str}对你发动了【化归】，选择展示或交给其一张牌###<div class="text center">若所有人都选择了仅展示，则${str}获得这张牌</div>`,
 						player.getCards("he"),
 						[
 							["仅展示一张牌", `将一张牌交给${str}`].map((item, i) => {
