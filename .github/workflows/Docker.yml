@@ -71,7 +71,7 @@ jobs:  # 工作流作业
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}  # 修正为正确的token名称
+          password: ${{ secrets.GITHUBTOKEN }}  # 修正为正确的token名称
 
       # 准备镜像标签
       - name: 设置 Image Tags  # 步骤名称
@@ -103,7 +103,7 @@ jobs:  # 工作流作业
         run: |
           gh package edit noname --repo ${{ github.repository }} --visibility public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 修正为正确的token名称
+          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}  # 修正为正确的token名称
 
       # # 镜像打包为tar包
       # - name: 镜像打包为tar包  # 步骤名称
