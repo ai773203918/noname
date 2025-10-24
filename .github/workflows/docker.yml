@@ -62,7 +62,7 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
     
     # # 推送 Docker 镜像到 Docker Hub (可选)
     # - name: Log in to Docker Hub
