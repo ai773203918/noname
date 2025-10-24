@@ -3,6 +3,101 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//陶璜
+	dczhijue: {
+		audio: 2,
+		mod: {
+			globalFrom(from, to, distance) {
+				return distance - 2;
+			},
+		},
+		trigger: { source: "damageSource" },
+		forced: true,
+		async content(event, trigger, player) {
+			player.tempBanSkill(event.name);
+		},
+	},
+	dcweiwei: {
+		audio: 2,
+		usable: 1,
+		trigger: { target: "useCardToTargeted" },
+		filter(event, player) {
+			return event.player != player;
+		},
+		check(event, player) {
+			return true;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const targets = [player, trigger.player];
+			await game.asyncDraw(targets, 2);
+			if (!trigger.player.countCards("h") || !player.countCards("h")) {
+				return;
+			}
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseCard, [targets, player]).forResult();
+			let card1, card2;
+			for (let target of targets) {
+				if (target == player) {
+					card1 = map.get(target).cards[0];
+				} else {
+					card2 = map.get(target).cards[0];
+				}
+			}
+			await player.swapHandcards(trigger.player, [card1], [card2]);
+			trigger.player.addGaintag([card1], "dcweiwei");
+			player.setStorage("dcweiwei_effect", [trigger.player, card1], true);
+			player.addTempSkill("dcweiwei_effect");
+			if (player.hasUseTarget(card2)) {
+				await player.chooseUseTarget(card2, true);
+			}
+		},
+		chooseCard(player, targets, source, eventId) {
+			const target = targets[0] == player ? targets[1] : targets[0];
+			return player
+				.chooseCard("h")
+				.set("prompt", `维卫：请选择一张要与${get.translation(target)}交换的手牌`)
+				.set("ai", card => {
+					const { player, target, source, att } = get.event();
+					if (att > 0) {
+						return target.getUseValue(card);
+					}
+					if (player == source) {
+						return target.getUseValue(card) == 0;
+					}
+					return 6 - get.value(card, player);
+				})
+				.set("target", target)
+				.set("source", source)
+				.set("att", get.attitude(player, target))
+				.set("id", eventId)
+				.set("_global_waiting", true);
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					const [target, card] = player.getStorage(skill);
+					if (target && card) {
+						target.removeGaintag(skill, [card]);
+					}
+				},
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					return event.player == player.getStorage("dcweiwei_effect")[0];
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const [target, card] = player.getStorage(event.name);
+					player.removeSkill(event.name);
+					if (target.hasCard(cardx => cardx == card, "h")) {
+						await player.logSkill("dcweiwei", target);
+						await target.damage(player);
+					}
+				},
+			},
+		},
+	},
 	//谋朱然
 	dcsbzhenyu: {
 		audio: 2,
