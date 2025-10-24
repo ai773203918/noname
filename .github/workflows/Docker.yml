@@ -10,8 +10,8 @@ on:
     inputs:  # 输入的参数
       tag:  # 输入的标签
         description: '发布的标签名称(例如 v0.0.0)' # 参数描述
-        required: true # 是否为必填项
-        default: 'v0.0.0' # 默认值
+        required: false # 是否为必填项，改为false以允许为空
+        default: '' # 默认值改为空
 
 # 可以有多个工作流,多个工作流依次运行
 # 一个工作流运行由一个或多个作业组成，这些作业可以顺序或并行运行
@@ -27,7 +27,7 @@ jobs:  # 工作流作业
       - name: 检查代码是否在工作目录  # 步骤名称
         uses: actions/checkout@v4 # 使用 v4 版本的 checkout action
         # with:
-        #   # ⭐指定要检出的分支(当前构建相关文件在该分支中)
+        #   # 指定要检出的分支(当前构建镜像的分支使用的是master主分支)
         #   ref: build-tooling
 
       # 设置QEMU，用于构建多平台镜像
@@ -46,14 +46,15 @@ jobs:  # 工作流作业
 
       # 获取镜像标签名称
       - name: 获取 Image Tag  # 步骤名称
-        # 注意 | 后注释会有问题故放在这
-        # x${{ github.event.inputs.tag }} == x""，-z "${{ github.event.inputs.tag }}"，-n "${{ github.event.inputs.tag }}" 均为判断是否为空
-        # 如果提供了标签，则使用提供的标签
-        # 否则使用当前日期作为标签
         run: |
-          if [ x${{ github.event.inputs.tag }} == x"" ]; then
+          if [ "${{ github.event_name }}" == "push" ]; then
+            # 如果是push触发，使用标签名
             echo "TAG_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          elif [ -n "${{ github.event.inputs.tag }}" ]; then
+            # 如果是手动触发且填写了标签，使用填写的标签
+            echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
           else
+            # 如果是手动触发且没有填写标签，使用当前日期
             echo "TAG_NAME=${{ steps.get-date.outputs.date }}" >> $GITHUB_ENV
           fi
 
@@ -70,13 +71,10 @@ jobs:  # 工作流作业
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUBTOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}  # 修正为正确的token名称
 
       # 准备镜像标签
       - name: 设置 Image Tags  # 步骤名称
-        # 注意 | 后注释会有问题故放在这
-        # 设置引用的Dockerfile路径(不需要,构建镜像时会定义标签) echo "DOCKERFILE_PATH=Dockerfile" >> $GITHUB_ENV
-        # 设置构建的镜像标签:版本号+latest(注意tag全小写)
         run: |
           echo "TAG=${{ secrets.DOCKERHUB_USERNAME }}/noname:${{ env.TAG_NAME }}" >> $GITHUB_ENV
           echo "TAG_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/noname:latest" >> $GITHUB_ENV
@@ -93,13 +91,6 @@ jobs:  # 工作流作业
           platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
           # platforms: linux/amd64,linux/386,linux/arm64/v8,linux/arm/v7,linux/arm/v6,linux/ppc64le,linux/riscv64,linux/s390x  # 构建的平台(正式构建,按需保留)
           push: true  # 推送到仓库
-          # load: true  # 加载到本地(多构建平台不支持;若其它也需调用镜像则必须加载,如打包导出)
-          # 注意 | 后注释会有问题故放在这
-          # 传递构建参数(覆盖 ARG noname_VERSION=3.5.0 配置参数)
-          # build-args: |
-          #   noname_VERSION=${{ env.TAG_NAME }}
-          # 注意 | 后注释会有问题故放在这
-          # 推送的镜像标签(版本标签+latest)
           tags: |
             ${{ env.TAG }}
             ${{ env.TAG_LATEST }}
@@ -112,12 +103,10 @@ jobs:  # 工作流作业
         run: |
           gh package edit noname --repo ${{ github.repository }} --visibility public
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 修正为正确的token名称
 
       # # 镜像打包为tar包
       # - name: 镜像打包为tar包  # 步骤名称
-      #   # 注意 | 后注释会有问题故放在这
-      #   # 运行的具体指令,每行指令依次运行
       #   run: |
       #     docker save -o noname.tar ${{ secrets.DOCKERHUB_USERNAME }}/noname:latest
 
