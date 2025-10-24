@@ -52,7 +52,7 @@ const skills = {
 					}
 					if (targets?.length) {
 						const min = targets[0];
-						if (max.countGainableCards(min, "h")) {
+						if (max.countGainableCards(min, "h") && Math.floor(max.countCards("h") / 2)) {
 							await max.chooseToGive(true, min, Math.floor(max.countCards("h") / 2));
 						}
 					}
@@ -243,6 +243,7 @@ const skills = {
 							return 7 - get.value(card);
 						})
 						.set("check", check)
+						.set("chooseonly", true)
 						.setHiddenSkill(event.skill)
 						.forResult();
 				},
@@ -480,7 +481,6 @@ const skills = {
 		subSkill: {
 			effect: {
 				enable: "chooseToUse",
-				usable: 1,
 				viewAs: {
 					name: "jiedao",
 				},

@@ -14,10 +14,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const result = await player.judge().forResult();
-			if (result.color == "red") {
+			if (result?.color == "red") {
 				const card = get.cardPile(card => get.type(card) == "equip", "cradPile");
 				await player.gain(card, "gain2");
-			} else if (result.color == "black") {
+			} else if (result?.color == "black") {
 				const card = get.cardPile(card => get.type(card) == "equip", "discradPile");
 				await player.gain(card, "gain2");
 			} else {
@@ -152,6 +152,7 @@ const skills = {
 				])
 				.set("forced", true)
 				.set("filterButton", button => {
+					const trigger = get.event().getTrigger();
 					if (button.link == "discard") {
 						return trigger.target.countCards("he") > 0;
 					}
@@ -245,7 +246,7 @@ const skills = {
 				.forResult();
 			const name = get.bingzhu(card).randomGet();
 			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !result1.targets[0].hasSkill(skill, null, false, false)).randomGets(3);
-			if (!skills.length) {
+			if (!skills?.length) {
 				player.chat("没有技能喵");
 			} else {
 				const result2 = await player
@@ -315,7 +316,7 @@ const skills = {
 				return false;
 			}
 			const subtypes = player.getStorage("yj_sp_shenduan_used");
-			return !subtypes.some(type => get.subtypes(event.card).includes(type));
+			return !subtypes.includes(get.subtype(event.card));
 		},
 		async content(event, trigger, player) {
 			const types = get.subtypes(trigger.card);
