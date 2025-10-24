@@ -43,9 +43,18 @@ jobs:  # 工作流作业
       - name: 设置 QEMU  # 步骤名称
         uses: docker/setup-qemu-action@v3  # 引用流程
 
-      # 设置Docker Buildx，用于构建和推送多平台镜像
+      # 设置Docker Buildx，用于构建和推送多平台镜像，显式创建并使用多平台 builder
       - name: 设置 Docker Buildx  # 步骤名称
         uses: docker/setup-buildx-action@v3  # 引用流程
+        with:
+          # 指定 builder 的名称，方便后续引用
+          builder-name: multiarch-builder
+          # 使用 docker-container 驱动，这是进行多平台构建最可靠的驱动
+          driver: docker-container
+          # 确保 builder 是可用的
+          use: true
+          # 启动时自动构建
+          buildkitd-flags: --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host
 
       # 获取当前日期（格式：年月日,如 20251009）
       - name: 获取当前日期
@@ -117,6 +126,7 @@ jobs:  # 工作流作业
           file: ./Dockerfile
           platforms: linux/amd64 # 👈 只指定一个平台
           push: true
+          builder: multiarch-builder
           tags: |
             ${{ env.TAG }}
             ${{ env.TAG_LATEST }}
@@ -131,6 +141,7 @@ jobs:  # 工作流作业
           file: ./Dockerfile
           platforms: linux/arm64/v8 # 👈 只指定一个平台
           push: true
+          builder: multiarch-builder
           tags: |
             ${{ env.TAG }}
             ${{ env.TAG_LATEST }}
@@ -145,6 +156,7 @@ jobs:  # 工作流作业
           file: ./Dockerfile
           platforms: linux/arm/v7 # 👈 只指定一个平台
           push: true
+          builder: multiarch-builder
           tags: |
             ${{ env.TAG }}
             ${{ env.TAG_LATEST }}
