@@ -98,7 +98,7 @@ jobs:  # 工作流作业
       #     context: .  # 构建上下文
       #     file: ./Dockerfile  # 指定的Dockerfile
       #     # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
-      #     platforms: linux/amd64,linux/arm64/v8,linux/arm/v7  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
+      #     platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm/v6  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
       #     push: true  # 推送到仓库
       #     tags: |
       #       ${{ env.TAG }}
@@ -123,15 +123,13 @@ jobs:  # 工作流作业
             ${{ env.GHCR_TAG }}
             ${{ env.GHCR_TAG_LATEST }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       # 依次构建
       - name: 编译并推送 noname镜像
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/arm64/v8 # 👈 只指定另一个平台
+          platforms: linux/arm64/v8 # 👈 只指定一个平台
           push: true
           tags: |
             ${{ env.TAG }}
@@ -139,7 +137,20 @@ jobs:  # 工作流作业
             ${{ env.GHCR_TAG }}
             ${{ env.GHCR_TAG_LATEST }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # 依次构建
+      - name: 编译并推送 noname镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/arm/v7 # 👈 只指定一个平台
+          push: true
+          tags: |
+            ${{ env.TAG }}
+            ${{ env.TAG_LATEST }}
+            ${{ env.GHCR_TAG }}
+            ${{ env.GHCR_TAG_LATEST }}
+          cache-from: type=gha
 
       # Ghcr.io 自动公开化步骤(也可手动操作)
       - name: 将 Ghcr.io 包设置为公开
