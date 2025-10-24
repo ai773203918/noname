@@ -3417,7 +3417,7 @@ export class Click {
 			// 样式二
 			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
 				var nameinfo = get.character(name);
-				intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
+				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", get.characterIntro(name), uiintro);
 				if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
 					var charactername = get.rawName2(name);
 					var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
@@ -3520,7 +3520,7 @@ export class Click {
 					}
 				}
 
-				var intro2 = ui.create.div(".characterintro.intro2", uiintro);
+				var intro2 = uiintro.querySelector(".intro2") || ui.create.div(".characterintro.intro2", uiintro);
 				list.addArray(get.character(name, 3) || []);
 				if (lib.config.touchscreen) {
 					lib.setScroll(intro);
@@ -3617,7 +3617,7 @@ export class Click {
 				//TODO: 这里的数据也暂时没有改成新格式，需要后续的修改
 				const nameInfo = get.character(name),
 					showCharacterNamePinyin = lib.config.show_characternamepinyin;
-				intro = ui.create.div(".characterintro", uiintro);
+				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", uiintro);
 				if (showCharacterNamePinyin != "doNotShow") {
 					const characterIntroTable = ui.create.div(".character-intro-table", intro),
 						span = document.createElement("span");
@@ -3838,7 +3838,7 @@ export class Click {
 					}
 				}
 
-				const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
+				const introduction2 = uiintro.querySelector(".intro2") || ui.create.div(".characterintro.intro2", uiintro);
 				list.addArray(get.character(name).skills || []);
 				if (lib.config.touchscreen) {
 					lib.setScroll(intro);
@@ -3957,7 +3957,7 @@ export class Click {
 						});
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
-								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
@@ -4072,7 +4072,7 @@ export class Click {
 							for (let i = 0; i < skillButtons.length; i++) {
 								delete skillButtons[i].playAudio;
 							}
-							// refreshIntro();
+							refreshIntro();
 							game.callHook("refreshSkin", [list[0], this.name]);
 						});
 						let iSTemp = false;

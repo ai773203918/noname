@@ -1952,9 +1952,9 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				if (!storage) {
-					return `转换技，若你成为牌的目标，此牌结算后你可摸一张牌并选择一张手牌，此牌视为无次数限制的火【杀】。`;
+					return `一张牌结算结束后，若此牌的目标包括你，你可以摸一张牌并选择一张手牌，此牌视为无次数限制的火【杀】。`;
 				}
-				return `转换技，若你成为牌的目标，此牌结算后你可摸一张牌并选择一张手牌，重铸此牌并横置一名角色。`;
+				return `一张牌结算结束后，若此牌的目标包括你，你可以摸一张牌并选择一张手牌，重铸此牌并横置一名角色。`;
 			},
 		},
 		trigger: {
@@ -3458,9 +3458,9 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				if (!storage) {
-					return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}可对自己造成1点伤害并摸已损失体力值数张牌。`;
+					return `当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}可对自己造成1点伤害并摸已损失体力值数张牌。`;
 				}
-				return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}可令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
+				return `当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}可令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
 			},
 		},
 		trigger: {
