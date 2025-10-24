@@ -52,7 +52,7 @@ const skills = {
 					}
 					if (targets?.length) {
 						const min = targets[0];
-						if (max.countGainableCards(min, "h")) {
+						if (max.countGainableCards(min, "h") && Math.floor(max.countCards("h") / 2)) {
 							await max.chooseToGive(true, min, Math.floor(max.countCards("h") / 2));
 						}
 					}
@@ -243,10 +243,13 @@ const skills = {
 							return 7 - get.value(card);
 						})
 						.set("check", check)
+						.set("chooseonly", true)
 						.setHiddenSkill(event.skill)
 						.forResult();
 				},
 				async content(event, trigger, player) {
+					const { result, logSkill } = event.cost_data;
+					await player.useResult(result, event);
 					trigger.cancel();
 					game.log(trigger.player, "跳过了", "#y" + ["判定", "摸牌", "出牌", "弃牌"][get.info(event.name).trigger.global.indexOf(event.triggername)] + "阶段");
 					if (trigger.name == "phaseUse") {
@@ -480,7 +483,6 @@ const skills = {
 		subSkill: {
 			effect: {
 				enable: "chooseToUse",
-				usable: 1,
 				viewAs: {
 					name: "jiedao",
 				},
@@ -490,81 +492,6 @@ const skills = {
 				position: "hes",
 				check(card) {
 					return 4.5 - get.value(card);
-				},
-				ai: {
-					wuxie(target, card, player, viewer) {
-						if (player === game.me && get.attitude(viewer, player._trueMe || player) > 0) {
-							return 0;
-						}
-					},
-					basic: {
-						order: 8,
-						value: 2,
-						useful: 1,
-					},
-					result: {
-						player: (player, target) => {
-							if (!target.hasSkillTag("noe") && get.attitude(player, target) > 0) {
-								return 0;
-							}
-							return (
-								(player.hasSkillTag("noe") ? 0.32 : 0.15) *
-								target.getEquips(1).reduce((num, i) => {
-									return num + get.value(i, player);
-								}, 0)
-							);
-						},
-						target: (player, target, card) => {
-							let targets = ui.selected.targets.slice();
-							if (_status.event.preTarget) {
-								targets.add(_status.event.preTarget);
-							}
-							if (targets.length) {
-								let preTarget = targets.at(-1),
-									pre = _status.event.getTempCache("jiedao_result", preTarget.playerid);
-								if (pre && pre.target && pre.target.isIn() && pre.card === ai.getCacheKey(card, true)) {
-									return target === pre.target ? pre.res : 0;
-								}
-								return (get.effect(target, { name: "sha" }, preTarget, target) / get.attitude(target, target)) * preTarget.mayHaveSha(player, "use", null, "odds");
-							}
-							let odds = target.mayHaveSha(player, "use", null, "odds"),
-								addTar = null,
-								sha = game
-									.filterPlayer(cur => {
-										return get.info({ name: "jiedao" }).filterAddedTarget(null, player, cur, target);
-									})
-									.reduce((num, current) => {
-										let eff = get.effect(current, { name: "sha" }, target, player);
-										if (eff < num) {
-											return num;
-										}
-										addTar = current;
-										return eff;
-									}, -Infinity);
-							if (addTar) {
-								sha = get.effect(addTar, { name: "sha" }, target, target) / 10;
-							}
-							let res =
-								target.getEquips(1).reduce((num, i) => {
-									return num + get.value(i, target);
-								}, 0) / (target.hasSkillTag("noe") ? -2 : -4);
-							if (odds > 0.06 && sha > res) {
-								res += (sha - res) * odds;
-							}
-							_status.event.putTempCache("jiedao_result", target.playerid, {
-								target: addTar,
-								card: ai.getCacheKey(card, true),
-								res: res,
-							});
-							return res;
-						},
-					},
-					tag: {
-						gain: 1,
-						use: 1,
-						useSha: 1,
-						loseCard: 1,
-					},
 				},
 			},
 		},

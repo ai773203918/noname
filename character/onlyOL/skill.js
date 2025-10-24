@@ -1420,6 +1420,10 @@ const skills = {
 						control.close();
 						return dialog._close(...args);
 					};
+					if (_status.olsbzhitian_clickable) {
+						_status.olsbzhitian_clickable.close();
+					}
+					_status.olsbzhitian_clickable = dialog;
 					dialog.open();
 				}
 				if (cards instanceof Promise) {
@@ -1495,11 +1499,16 @@ const skills = {
 					if (result?.links?.length) {
 						const cards = result.links;
 						event.result.bool = result.bool;
-						event.result.cards = result.links;
-						evt.done = game.cardsDiscard(cards);
-						player.$throw(cards, 1000);
-						player.logSkill(event.name.slice(4));
-						game.log(player, "弃置了", "#g牌堆", "的", cards);
+						event.result.cards = cards;
+						player.logSkill("olsbzhitian");
+						player
+							.when("discardBegin")
+							.filter(evtx => evtx.getParent() == evt)
+							.step(async (event, trigger, player) => {
+								player.$throw(cards, 1000);
+								game.log(player, "弃置了", "#g牌堆", "的", cards);
+								trigger.setContent("cardsDiscard");
+							});
 					} else {
 						evt.goto(0);
 					}
@@ -2968,9 +2977,9 @@ const skills = {
 						event.filterCard(
 							get.autoViewAs({
 								name: get.name(card, player),
-								//suit: get.suit(card, player),
+								suit: "none",
 								nature: get.nature(card, player),
-								//number: get.number(card, player),
+								number: null,
 								isCard: true,
 							}),
 							player,
@@ -2990,9 +2999,9 @@ const skills = {
 					event._backup.filterCard(
 						get.autoViewAs({
 							name: get.name(card, player),
-							//suit: get.suit(card, player),
+							suit: "none",
 							nature: get.nature(card, player),
-							//number: get.number(card, player),
+							number: null,
 							isCard: true,
 						}),
 						player,
@@ -3009,9 +3018,9 @@ const skills = {
 				const card = cards[0];
 				return {
 					name: get.name(card, player),
-					//suit: get.suit(card, player),
+					suit: "none",
 					nature: get.nature(card, player),
-					//number: get.number(card, player),
+					number: null,
 					isCard: true,
 				};
 			}
@@ -5483,7 +5492,7 @@ const skills = {
 				async cost(event, trigger, player) {
 					const target = trigger.player;
 					const next = player.chooseToUse();
-					next.set("prompt", `【狭勇】:是否对${get.translation(target)}使用一张【杀】？`);
+					next.set("prompt", `狭勇：是否对${get.translation(target)}使用一张【杀】？`);
 					next.set("targetx", target);
 					next.set("filterCard", function (card) {
 						return get.name(card) == "sha";
@@ -5506,18 +5515,9 @@ const skills = {
 					next.set("logSkill", event.name.slice(0, -5));
 					event.result = await next.forResult();
 				},
-				popup: false,
 				async content(event, trigger, player) {
-					const { ResultEvent, logSkill } = event.cost_data;
-					event.next.push(ResultEvent);
-					if (logSkill) {
-						if (typeof logSkill == "string") {
-							ResultEvent.player.logSkill(logSkill);
-						} else if (Array.isArray(logSkill)) {
-							ResultEvent.player.logSkill.call(ResultEvent.player, ...logSkill);
-						}
-					}
-					await ResultEvent;
+					const { result, logSkill } = event.cost_data;
+					await player.useResult(result, event);
 				},
 			},
 		},
@@ -5676,6 +5676,7 @@ const skills = {
 		group: ["olsblixian_addTrigger"],
 		subSkill: {
 			addTrigger: {
+				audio: "olsblixian",
 				forced: true,
 				locked: false,
 				trigger: { player: "useCardAfter" },
