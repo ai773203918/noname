@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:  # 输入的参数
+      tag:  # 输入的标签
+        description: '构建的版本号'  # 手动触发时输入的标签描述
+        required: true  # 必须输入
+        default: 'test'  # 默认标签为'test'
 
 jobs:
   build-and-release:
@@ -13,7 +18,10 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+      with:
+        # 指定要检出的分支
+        ref: build-tooling
+        
     - name: Setup pnpm
       uses: pnpm/action-setup@v2
       with:
@@ -52,7 +60,7 @@ jobs:
         draft: false
         prerelease: false
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
     # # 推送 Docker 镜像到 Docker Hub (可选)
     # - name: Log in to Docker Hub
