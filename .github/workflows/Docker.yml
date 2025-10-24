@@ -91,23 +91,55 @@ jobs:  # 工作流作业
           echo "GHCR_TAG=ghcr.io/${{ github.repository }}:${{ env.TAG_NAME }}" >> $GITHUB_ENV
           echo "GHCR_TAG_LATEST=ghcr.io/${{ github.repository }}:latest" >> $GITHUB_ENV
 
-      # 构建并推送镜像
-      - name: 编译并推送 noname镜像  # 步骤名称
-        uses: docker/build-push-action@v5  # 引用流程
-        with:  # 参数
-          context: .  # 构建上下文
-          file: ./Dockerfile  # 指定的Dockerfile
-          # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm/v6  # 构建的平台(正式构建,按需保留)
-          push: true  # 推送到仓库
+      # # 构建并推送镜像(多平台一次性构建爆内存了)
+      # - name: 编译并推送 noname镜像  # 步骤名称
+      #   uses: docker/build-push-action@v5  # 引用流程
+      #   with:  # 参数
+      #     context: .  # 构建上下文
+      #     file: ./Dockerfile  # 指定的Dockerfile
+      #     # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
+      #     platforms: linux/amd64,linux/arm64/v8,linux/arm/v7  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
+      #     push: true  # 推送到仓库
+      #     tags: |
+      #       ${{ env.TAG }}
+      #       ${{ env.TAG_LATEST }}
+      #       ${{ env.GHCR_TAG }}
+      #       ${{ env.GHCR_TAG_LATEST }}
+      #     # 配置 GitHub Actions 缓存(防止多架构构建时空间不足)
+      #     cache-from: type=gha  # 构建前尝试从 GitHub Actions 缓存中拉取之前的缓存
+      #     cache-to: type=gha,mode=max  # 构建成功后将新的缓存层推送到 GitHub Actions 缓存服务;会缓存尽可能多的层，最大化缓存效果
+
+      # 依次构建
+      - name: 编译并推送 noname镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64 # 👈 只指定一个平台
+          push: true
           tags: |
             ${{ env.TAG }}
             ${{ env.TAG_LATEST }}
             ${{ env.GHCR_TAG }}
             ${{ env.GHCR_TAG_LATEST }}
-          # 👇 新增：配置 GitHub Actions 缓存(防止多架构构建时空间不足)
-          cache-from: type=gha  # 构建前尝试从 GitHub Actions 缓存中拉取之前的缓存
-          cache-to: type=gha,mode=max  # 构建成功后将新的缓存层推送到 GitHub Actions 缓存服务;会缓存尽可能多的层，最大化缓存效果
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 依次构建
+      - name: 编译并推送 noname镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/arm64/v8 # 👈 只指定另一个平台
+          push: true
+          tags: |
+            ${{ env.TAG }}
+            ${{ env.TAG_LATEST }}
+            ${{ env.GHCR_TAG }}
+            ${{ env.GHCR_TAG_LATEST }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Ghcr.io 自动公开化步骤(也可手动操作)
       - name: 将 Ghcr.io 包设置为公开
