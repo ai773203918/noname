@@ -88,8 +88,8 @@ jobs:  # 工作流作业
         with:  # 参数
           context: .  # 构建上下文
           file: ./Dockerfile  # 指定的Dockerfile
-          platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
-          # platforms: linux/amd64,linux/386,linux/arm64/v8,linux/arm/v7,linux/arm/v6,linux/ppc64le,linux/riscv64,linux/s390x  # 构建的平台(正式构建,按需保留)
+          # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7,linux/arm/v6  # 构建的平台(正式构建,按需保留)
           push: true  # 推送到仓库
           tags: |
             ${{ env.TAG }}
