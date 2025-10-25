@@ -5039,7 +5039,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), "he", [1, player.maxHp], "chooseonly")
+				.chooseToDiscard(get.prompt2(event.skill), "he", [1, player.maxHp], "chooseonly", "allowChooseAll")
 				.set("ai", card => {
 					return 6 - get.value(card);
 				})
@@ -8668,7 +8668,7 @@ const skills = {
 			if (!targets.length) {
 				return;
 			}
-			const result =
+			let result =
 				targets.length > 2
 					? await player
 							.chooseTarget(
@@ -8684,50 +8684,74 @@ const skills = {
 							})
 							.forResult()
 					: { bool: true, targets: targets };
-			const list = [player, ...result.targets].toUniqued().sortBySeat(player),
-				cardMap = [],
-				nums = [];
+
+			let list = [player];
+			if (result?.targets?.length) {
+				list.addArray(result.targets);
+			}
+			list = list.toUniqued().sortBySeat(player);
+			let cardMap = [];
 			for (let i = 0; i < list.length; i++) {
 				let { cards } = await game.cardsGotoOrdering(get.cards());
 				await list[i].showCards(cards, get.translation(list[i]) + "发动了【摧袭】");
-				cardMap.addArray(cards);
-				nums.push(get.number(cards[0], false));
-			}
-
-			const videoId = lib.status.videoId++;
-			const func = (id, cards, list, num) => {
-				const dialog = ui.create.dialog(`【摧袭】：是否令你的点数+${num}？`, cards);
-				const getName = function (target) {
-					if (target._tempTranslate) {
-						return target._tempTranslate;
-					}
-					let name = target.name;
-					if (lib.translate[name + "_ab"]) {
-						return lib.translate[name + "_ab"];
-					}
-					return get.translation(name);
-				};
-				for (let i = 0; i < list.length; i++) {
-					dialog.buttons[i].node.gaintag.innerHTML = getName(list[i]);
+				cardMap.push([cards[0], get.number(cards[0], false), list[i]]);
+				if (player == list[i] && get.number(cards[0], false) == 1) {
+					player.chat("这河里吗？");
 				}
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (event.isMine()) {
-				func(videoId, cardMap, list, num);
-			} else if (player.isOnline2()) {
-				player.send(func, videoId, cardMap, list, num);
 			}
-			const result2 = await player.chooseBool().set("dialog", get.idDialog(videoId)).forResult();
-			game.broadcastAll("closeDialog", videoId);
-			if (result2.bool) {
-				nums[0] += num;
+			result = await player
+				.chooseBool()
+				.set("createDialog", [
+					`摧袭：是否令你的点数+${num}？`,
+					[
+						cardMap,
+						(item, type, position, noclick, node) => {
+							node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+							game.creatButtonCardsetion(item[2].getName(true) + item[1], node);
+							return node;
+						},
+					],
+				])
+				.set(
+					"choice",
+					(() => {
+						const max = cardMap.map(item => item[1]).maxBy(i => i);
+						let bool = false;
+						for (const [card, number, target] of cardMap) {
+							if (player == target && number <= max) {
+								bool = true;
+								break;
+							}
+						}
+						if (bool) {
+							return true;
+						}
+						const list = cardMap.map(item => item[2]);
+						if (list.remove(player).every(current => get.damageEffect(current, player, player) > 0)) {
+							return true;
+						}
+						return false;
+					})()
+				)
+				.forResult();
+			if (result?.bool) {
+				player.popup(num);
+				game.log(player, "选择作弊使其展示牌点数+", `#g${num}`);
+				cardMap = cardMap.map(item => {
+					let [card, number, target] = item;
+					if (player == target) {
+						return [card, number + num, target];
+					}
+					return item;
+				});
 			}
-			let max = nums.maxBy(i => i);
-			for (let i = 0; i < nums.length; i++) {
-				if (nums[i] < max) {
-					player.line(list[i], "green");
-					await list[i].damage(2);
+			const max = cardMap.map(item => item[1]).maxBy(i => i);
+			for (const [card, number, target] of cardMap) {
+				target.popup(number);
+				game.log(target, "本次展示牌点数为", `#g${number}`);
+				if (number < max) {
+					player.line(target, "green");
+					await target.damage(2);
 				}
 			}
 		},
@@ -16088,15 +16112,13 @@ const skills = {
 		},
 	},
 	xkjubian: {
-		trigger: {
-			player: "damageBegin3",
-		},
+		trigger: { player: "damageBegin4" },
 		filter(event, player) {
 			return player.countCards("h") > player.hp;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			await player.chooseToDiscard("h", true, player.countCards("h") - player.hp);
+			await player.chooseToDiscard("h", true, player.countCards("h") - player.hp, "allowChooseAll");
 			trigger.cancel();
 		},
 	},
@@ -21764,7 +21786,7 @@ const skills = {
 				.set("complexCard", true)
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
-			if (result.bool && result.cards?.length > 0) {
+			if (result?.bool && result.cards?.length > 0) {
 				let cards = result.cards.slice().randomSort();
 				let targets = game.filterPlayer(current => current != player && !player.getStorage("jdmingxuan").includes(current)).sortBySeat(player);
 				const dialog = ui.create.dialog("瞑昡", cards, true);
@@ -21796,7 +21818,7 @@ const skills = {
 							return _status.event.cardFilter.includes(button.link);
 						})
 						.forResult();
-					if (resultx.bool) {
+					if (resultx?.bool && resultx.links?.length) {
 						const card = resultx.links[0];
 						if (card) {
 							cards.remove(card);
@@ -21808,7 +21830,7 @@ const skills = {
 										dialog.content.firstChild.innerHTML = capt;
 										for (let i = 0; i < dialog.buttons.length; i++) {
 											if (dialog.buttons[i].link == card) {
-												dialog.buttons[i].querySelector(".info").innerHTML = name;
+												game.creatButtonCardsetion(name, dialog.buttons[i]);
 												break;
 											}
 										}
@@ -21817,30 +21839,18 @@ const skills = {
 								},
 								card,
 								event.dialogID,
-								(target => {
-									if (target._tempTranslate) {
-										return target._tempTranslate;
-									}
-									const name = target.name;
-									if (lib.translate[name + "_ab"]) {
-										return lib.translate[name + "_ab"];
-									}
-									return get.translation(name);
-								})(target),
+								target.getName(true),
 								capt
 							);
 							await target.gain(card, player, "give");
 						}
 						const resulty = await target
-							.chooseToUse(
-								function (card, player, event) {
-									if (get.name(card) != "sha") {
-										return false;
-									}
-									return lib.filter.filterCard.apply(this, arguments);
-								},
-								"对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌"
-							)
+							.chooseToUse(function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							}, "对" + get.translation(player) + "使用一张杀，否则交给其一张牌且其摸一张牌")
 							.set("targetRequired", true)
 							.set("complexSelect", true)
 							.set("complexTarget", true)
@@ -21853,7 +21863,7 @@ const skills = {
 							.set("sourcex", player)
 							.set("addCount", false)
 							.forResult();
-						if (resulty.bool) {
+						if (resulty?.bool) {
 							player.markAuto("jdmingxuan", [target]);
 						} else {
 							await target.chooseToGive("he", true, player, "交给" + get.translation(player) + "一张牌");
@@ -28943,7 +28953,7 @@ const skills = {
 				content() {
 					"step 0";
 					var num = Math.min(player.getStorage("zyshilu").length, player.countCards("he"));
-					player.chooseToDiscard("he", get.prompt("zyshilu"), "弃置至多" + get.cnNumber(num) + "张牌并摸等量的牌", [1, num]).logSkill = "zyshilu_zhiheng";
+					player.chooseToDiscard("he", get.prompt("zyshilu"), "弃置至多" + get.cnNumber(num) + "张牌并摸等量的牌", [1, num], "allowChooseAll").logSkill = "zyshilu_zhiheng";
 					"step 1";
 					if (result.bool && result.cards && result.cards.length) {
 						player.draw(result.cards.length);

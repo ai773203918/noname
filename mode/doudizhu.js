@@ -3528,7 +3528,7 @@ export default () => {
 					if (result.index + event.addIndex == 0) {
 						target.drawTo(event.num1);
 					} else {
-						target.chooseToDiscard(true, "h", target.countCards("h") - event.num2);
+						target.chooseToDiscard(true, "h", target.countCards("h") - event.num2, "allowChooseAll");
 					}
 				},
 				ai: {

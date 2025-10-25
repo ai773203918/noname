@@ -3377,6 +3377,37 @@ export class Click {
 			list = [],
 			clickSkill;
 		let skills = ui.create.div(".characterskill", uiintro);
+		let btnIntro = ui.create.div(".menubutton.large.introButton", uiintro, "简介", function () {
+			applyViewMode("intro");
+		});
+		let btnSkill = ui.create.div(".menubutton.large.skillButton", uiintro, "技能", function () {
+			applyViewMode("skill");
+		});
+		const applyViewMode = function (viewMode = "intro") {
+			// 控制显示的区域
+			const intro2Node = uiintro.querySelector(".intro2");
+			if (viewMode === "intro") {
+				if (intro) intro.style.display = "";
+				if (intro2Node) intro2Node.style.display = "none";
+				if (skills) skills.style.display = "none";
+			} else {
+				if (intro) intro.style.display = "none";
+				if (intro2Node) intro2Node.style.display = "";
+				if (skills) {
+					skills.style.display = "";
+					// 若尚未选中技能，则初始化第一个技能
+					const first = skills.firstChild;
+					if (first && !skills.querySelector(".active") && typeof clickSkill === "function") {
+						clickSkill.call(first, "init");
+						first.classList.add("active");
+					}
+				}
+			}
+			if (btnIntro && btnSkill) {
+				btnIntro.classList.toggle("active", viewMode === "intro");
+				btnSkill.classList.toggle("active", viewMode === "skill");
+			}
+		};
 		const refreshIntro = function () {
 			if (intro?.firstChild) {
 				while (intro.firstChild) {
@@ -3386,7 +3417,7 @@ export class Click {
 			// 样式二
 			if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") {
 				var nameinfo = get.character(name);
-				intro = ui.create.div(".characterintro", get.characterIntro(name), uiintro);
+				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", get.characterIntro(name), uiintro);
 				if (lib.config.show_characternamepinyin == "showPinyin2" || lib.config.show_characternamepinyin == "showCodeIdentifier2") {
 					var charactername = get.rawName2(name);
 					var characterpinyin = lib.config.show_characternamepinyin == "showCodeIdentifier2" ? name : get.pinyin(charactername);
@@ -3489,7 +3520,7 @@ export class Click {
 					}
 				}
 
-				var intro2 = ui.create.div(".characterintro.intro2", uiintro);
+				var intro2 = uiintro.querySelector(".intro2") || ui.create.div(".characterintro.intro2", uiintro);
 				list.addArray(get.character(name, 3) || []);
 				if (lib.config.touchscreen) {
 					lib.setScroll(intro);
@@ -3586,7 +3617,7 @@ export class Click {
 				//TODO: 这里的数据也暂时没有改成新格式，需要后续的修改
 				const nameInfo = get.character(name),
 					showCharacterNamePinyin = lib.config.show_characternamepinyin;
-				intro = ui.create.div(".characterintro", uiintro);
+				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", uiintro);
 				if (showCharacterNamePinyin != "doNotShow") {
 					const characterIntroTable = ui.create.div(".character-intro-table", intro),
 						span = document.createElement("span");
@@ -3807,7 +3838,7 @@ export class Click {
 					}
 				}
 
-				const introduction2 = ui.create.div(".characterintro.intro2", uiintro);
+				const introduction2 = uiintro.querySelector(".intro2") || ui.create.div(".characterintro.intro2", uiintro);
 				list.addArray(get.character(name).skills || []);
 				if (lib.config.touchscreen) {
 					lib.setScroll(intro);
@@ -3926,7 +3957,7 @@ export class Click {
 						});
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
-								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: name } } }).fileList;
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
@@ -3942,6 +3973,8 @@ export class Click {
 			}
 		};
 		refreshIntro();
+		// 默认显示人物简介
+		applyViewMode("intro");
 
 		var initskill = false;
 		let deri = [];

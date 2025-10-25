@@ -2556,7 +2556,7 @@ const skills = {
 			var num1 = player.countCards("h"),
 				num2 = player.storage.fengjie2.hp;
 			if (num1 > num2) {
-				player.chooseToDiscard("h", true, num1 - num2);
+				player.chooseToDiscard("h", true, num1 - num2, "allowChooseAll");
 			} else {
 				player.drawTo(Math.min(4, num2));
 			}

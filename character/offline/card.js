@@ -282,16 +282,8 @@ const cards = {
 			for (var i = 0; i < dialog.buttons.length; i++) {
 				if (dialog.buttons[i].link == card) {
 					button = dialog.buttons[i];
-					button.querySelector(".info").innerHTML = (function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(target);
+					const innerHTML = target.getName(true);
+					game.creatButtonCardsetion(innerHTML, button);
 					dialog.buttons.remove(button);
 					break;
 				}
@@ -307,7 +299,7 @@ const cards = {
 							dialog.content.firstChild.innerHTML = capt;
 							for (var i = 0; i < dialog.buttons.length; i++) {
 								if (dialog.buttons[i].link == card) {
-									dialog.buttons[i].querySelector(".info").innerHTML = name;
+									game.creatButtonCardsetion(name, dialog.buttons[i]);
 									dialog.buttons.splice(i--, 1);
 									break;
 								}
@@ -316,16 +308,7 @@ const cards = {
 					},
 					card,
 					dialog.videoId,
-					(function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						var name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					})(target),
+					target.getName(true),
 					capt
 				);
 			}

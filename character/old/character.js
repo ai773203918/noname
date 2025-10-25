@@ -1,4 +1,10 @@
 const characters = {
+	two_yj_puyuan: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["huanling", "pyshenduan"],
+	},
 	x_dc_zhangqiying: {
 		sex: "female",
 		group: "qun",
@@ -13,7 +19,7 @@ const characters = {
 		skills: ["yao_yaoyi", "yao_chenwei"],
 		dieAudios: ["yao_yuanshu"],
 		img: "image/character/yao_yuanshu.jpg",
-  },
+	},
 	fx_baosanniang: {
 		sex: "female",
 		group: "shu",
