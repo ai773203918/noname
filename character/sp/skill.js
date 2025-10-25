@@ -1288,6 +1288,9 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						isCard: true,
+						suit: "none",
+						number: null,
+						isCard: true,
 					},
 					position: "h",
 					ignoreMod: true,
@@ -1323,6 +1326,15 @@ const skills = {
 			name: "卸尾（饵）",
 			markcount: "expansion",
 			content: "expansion",
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: "sha" }, player) - 0.1;
+			},
+			result: {
+				player: 1,
+			},
 		},
 	},
 	olyouque: {
