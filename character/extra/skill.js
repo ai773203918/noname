@@ -2971,168 +2971,90 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.player;
-			await Promise.all(event.next);
-			event.videoId = lib.status.videoId++;
 			let list = Object.keys(lib.skill[event.skill].positions);
 			if (
 				!player.hasHistory("useSkill", evt => {
-					return evt.skill == event.name.slice(0, -5) && evt?.targets.includes(target);
+					return evt.skill == event.skill && evt.targets?.includes(target);
 				})
 			) {
 				list.remove("head");
 			}
-			if (!list?.length) {
+			if (!list.length) {
 				event.result = { bool: false };
 				return;
 			}
-			const switchToAuto = function () {
-				_status.imchoosing = false;
-				if (event.dialog) {
-					event.dialog.close();
-				}
-				if (event.control) {
-					event.control.close();
-				}
-				game.resume();
-				if (get.attitude(player, target) > 0) {
-					event._result = { bool: false };
-				} else {
-					event._result = {
-						bool: true,
-						position: list.includes("head") ? "head" : "abdomen",
-					};
-				}
-				return Promise.resolve(event._result);
-			};
-			const choosePosition = function (player, target, list) {
-				const { promise, resolve } = Promise.withResolvers();
-				const event = _status.event;
-				event.switchToAuto = function () {
-					_status.imchoosing = false;
+			const { result } = await player
+				.chooseButton([
+					[
+						dialog => {
+							dialog.forcebutton = true;
+							dialog.classList.add("forcebutton");
+							dialog.listen(() => {
+								let allpos = dialog.querySelectorAll(".position");
+								allpos.forEach(pos => pos.classList.remove("selected_cp"));
+							});
+							dialog.classList.add("dclieqiong", "fixed", "fullheight");
+							const { target, list } = get.event();
+							dialog.style.backgroundImage = `url(${lib.assetURL}image/card/yiwu_${target.hasSex("male") ? "male" : "female"}.png)`;
+							const title = ui.create.div(".title", dialog);
+							title.innerHTML = `裂穹：是否击伤${get.translation(target)}的一个部位？`;
+							//添加部位
+							for (let pos of list) {
+								let position = lib.skill.new_dclieqiong.positions[pos];
+								let div = ui.create.div(".position", dialog, e => {
+									e.stopPropagation();
+									let allPosDiv = Array.from(dialog.querySelectorAll(".position"));
+									allPosDiv.forEach(p => p.classList.remove("selected_cp"));
+									div.classList.add("selected_cp");
+									ui.selected.buttons = [div];
+									ui.create.confirm("oc");
+								});
+								div.link = pos;
+								let sex = target.hasSex("male") ? "male" : "female";
+								div.css(position[`css_${sex}`] || {});
+								div.setNodeIntro(position.name, position.info);
+								div.style.setProperty("--info", `"【${position.name}】:${position.info}"`);
+							}
+						},
+						"handle",
+					],
+				])
+				.set("target", target)
+				.set("list", list)
+				.set("processAI", () => {
+					const { player, target, list } = get.event();
 					if (get.attitude(player, target) > 0) {
-						event._result = { bool: false };
+						return { bool: false };
 					} else {
-						event._result = {
+						return {
 							bool: true,
-							position: list.includes("head") ? "head" : "abdomen",
+							links: list.includes("head") ? ["head"] : ["abdomen"],
 						};
 					}
-					resolve(event._result);
-					if (event.dialog) {
-						event.dialog.close();
-					}
-					if (event.control_cancel) {
-						event.control_cancel.close();
-					}
-					if (event.control_ok) {
-						event.control_ok.close();
-					}
-				};
-				event.control_ok = ui.create.control("ok", function (link) {
-					event.dialog.close();
-					event.control_cancel.close();
-					event.control_ok.close();
-					game.resume();
-					_status.imchoosing = false;
-					event._result = {
-						bool: true,
-						position: event.selectedPos,
-					};
-					resolve(event._result);
+				})
+				.set("switchToAuto", () => {
+					_status.event.result = "ai";
+					_status.event.dialog?.close();
+					ui.confirm?.close();
 				});
-				event.control_ok.classList.add("disabled");
-				event.control_cancel = ui.create.control("cancel2", function (link) {
-					event.dialog.close();
-					event.control_cancel.close();
-					if (event.control_ok) {
-						event.control_ok.close();
-					}
-					game.resume();
-					_status.imchoosing = false;
-					event._result = { bool: false };
-					resolve(event._result);
-				});
-				//创建对话框
-				const dialog = ui.create.dialog("forcebutton", "hidden");
-				dialog.listen(() => {
-					let allpos = dialog.querySelectorAll(".position");
-					allpos.forEach(pos => pos.classList.remove("selected_cp"));
-					event.selectedPos = null;
-					event.control_ok.classList.add("disabled");
-				});
-				event.dialog = dialog;
-				dialog.classList.add("dclieqiong", "fixed", "fullheight");
-				dialog.style.backgroundImage = "url(" + lib.assetURL + "image/card/yiwu_" + (target.hasSex("male") ? "male" : "female") + ".png)";
-				const title = ui.create.div(".title", dialog);
-				title.innerHTML = `裂穹：是否击伤${get.translation(target)}的一个部位？`;
-				//添加部位
-				for (let pos of list) {
-					let position = lib.skill.new_dclieqiong.positions[pos];
-					let div = ui.create.div(".position", dialog, e => {
-						e.stopPropagation();
-						let allPosDiv = Array.from(dialog.querySelectorAll(".position"));
-						allPosDiv.forEach(p => p.classList.remove("selected_cp"));
-						div.classList.add("selected_cp");
-						event.selectedPos = pos;
-						if (allPosDiv.some(p => p.classList.contains("selected_cp")) && event.selectedPos) {
-							event.control_ok.classList.remove("disabled");
-						} else {
-							event.control_ok.classList.add("disabled");
-						}
-					});
-					let sex = target.hasSex("male") ? "male" : "female";
-					div.css(position["css_" + sex] || {});
-
-					div.setNodeIntro(position.name, position.info);
-					div.style.setProperty("--info", `"【${position.name}】:${position.info}"`);
-				}
-				dialog.open();
-				game.pause();
-				game.countChoose();
-				return promise;
-			};
-			/** @type {Promise<{bool:boolean,position:string}>} */
-			let next;
-			if (event.isMine()) {
-				next = choosePosition(player, target, list);
-			} else if (event.isOnline()) {
-				const { promise, resolve } = Promise.withResolvers();
-				event.player.send(choosePosition, player, target, list);
-				event.player.wait(async result => {
-					if (result == "ai") {
-						result = await switchToAuto();
-					}
-					resolve(result);
-				});
-				game.pause();
-				next = promise;
-			} else {
-				next = switchToAuto();
-			}
-
-			const result = await next;
-			if (event.control2) {
-				event.control2.close();
-			}
-			game.resume();
 			event.result = {
 				bool: result.bool,
 				targets: [target],
-				cost_data: {
-					position: result.position,
-					target: target,
-				},
+				cost_data: result.links,
 			};
 		},
 		async content(event, trigger, player) {
-			const { target, position } = event.cost_data;
+			const {
+				targets: [target],
+				cost_data: [position],
+			} = event;
 			game.broadcastAll(function (position) {
 				if (lib.config.background_speak) {
 					game.playAudio("skill", "dclieqiong_" + position);
 				}
 			}, position);
 			const positionObj = lib.skill[event.name].positions[position];
-			let next = game.createEvent(event.name + "effect", false);
+			let next = game.createEvent(event.name + "_effect", false);
 			next.setContent(positionObj.content);
 			next.set("target", target);
 			next.set("player", player);
