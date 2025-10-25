@@ -189,9 +189,7 @@ const skills = {
 		},
 	},
 	yj_sp_huanling: {
-		trigger: {
-			player: ["phaseUseBegin", "damageEnd"],
-		},
+		trigger: { player: ["phaseUseBegin", "damageEnd"] },
 		filter(event, player) {
 			return player.countCards("hes") > 0;
 		},
@@ -199,32 +197,34 @@ const skills = {
 			return true;
 		},
 		init(player, skill) {
-			const bingzhuSkill = {};
-			lib.inpile
-				.filter(name => get.type(name) == "equip" && lib.card[name].bingzhu)
-				.map(name => lib.card[name].bingzhu)
-				.flat()
-				.forEach(name => (bingzhuSkill[name] = []));
-			if (!_status.characterlist) {
-				game.initCharacterList();
-			}
-			_status.characterlist.map(character => {
-				const name = get.rawName(character);
-				if (bingzhuSkill[name]) {
-					bingzhuSkill[name].push(get.character(character, 3));
-				}
-			});
-			for (let name in bingzhuSkill) {
-				bingzhuSkill[name] = bingzhuSkill[name]
+			if (!_status.bingzhuSkill) {
+				const bingzhuSkill = {};
+				lib.inpile
+					.filter(name => get.type(name) == "equip" && lib.card[name].bingzhu)
+					.map(name => lib.card[name].bingzhu)
 					.flat()
-					.unique()
-					.sort(() => Math.random() - 0.5);
+					.forEach(name => (bingzhuSkill[name] = []));
+				if (!_status.characterlist) {
+					game.initCharacterList();
+				}
+				_status.characterlist.map(character => {
+					const name = get.rawName(character);
+					if (bingzhuSkill[name]) {
+						bingzhuSkill[name].push(get.character(character, 3));
+					}
+				});
+				for (let name in bingzhuSkill) {
+					bingzhuSkill[name] = bingzhuSkill[name]
+						.flat()
+						.unique()
+						.sort(() => Math.random() - 0.5);
+				}
+				game.broadcastAll(bingzhuSkill => (_status.bingzhuSkill = bingzhuSkill), new Map(Object.entries(bingzhuSkill)));
 			}
-			_status.bingzhuSkill = new Map(Object.entries(bingzhuSkill));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard("重铸一张牌，然后获得场上、弃牌堆或牌堆一张花色相同的装备牌，并随机出现该装备的三个兵主技能选择其中一个令一名角色获得。若该角色不为你，你摸X张牌。(X为其技能数)", "hes")
+				.chooseCard(get.prompt2(event.skill), lib.filter.cardRecastable, "he")
 				.set("ai", card => 10 - get.value(card))
 				.forResult();
 		},
@@ -237,30 +237,34 @@ const skills = {
 				return;
 			}
 			await player.gain(card, "gain2");
-			const result1 = await player
+			const { result } = await player
 				.chooseTarget("选择一名角色获得技能")
 				.set("ai", target => {
 					const player = get.player();
 					return get.attitude(player, target);
 				})
-				.set("forced", true)
-				.forResult();
+				.set("forced", true);
 			const name = get.bingzhu(card).randomGet();
-			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !result1.targets[0].hasSkill(skill, null, false, false)).randomGets(3);
-			if (!skills?.length) {
+			if (!result?.targets?.length) {
+				return;
+			}
+			const [target] = result.targets;
+			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !target.hasSkill(skill, null, false, false)).randomGets(3);
+			if (!skills.length) {
 				player.chat("没有技能喵");
 			} else {
-				const result2 = await player
-					.chooseButton([`选择一个技能令${get.translation(result1.targets[0])}`, [skills, "skill"]])
+				const { result } = await player
+					.chooseButton([`选择一个技能令${get.translation(target)}获得`, [skills, "skill"]])
 					.set("ai", button => {
 						return get.priority(button.link);
 					})
-					.set("forced", true)
-					.forResult();
-				await result1.targets[0].addSkills(result2.links[0]);
+					.set("forced", true);
+				if (result?.links?.length) {
+					await target.addSkills(result.links[0]);
+				}
 			}
-			if (result1.targets[0] != player) {
-				await player.draw(result1.targets[0].getSkills(null, false, false).length);
+			if (target != player) {
+				await player.draw(target.getSkills(null, false, false).length);
 			}
 		},
 	},
@@ -5224,6 +5228,7 @@ const skills = {
 		delay: false,
 		discard: false,
 		lose: false,
+		allowChooseAll: true,
 		content() {
 			var bool = cards && cards.length > 0;
 			player.addTempSkill("xinxhzhiyan_used", "phaseUseEnd");

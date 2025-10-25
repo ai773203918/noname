@@ -202,7 +202,7 @@ window.noname_character_replace = {
 	panshu: ["panshu", "re_panshu"],
 	panzhangmazhong: ["panzhangmazhong", "re_panzhangmazhong", "xin_panzhangmazhong"],
 	peixiu: ["ol_peixiu", "fj_peixiu", "xj_peixiu", "peixiu", "scl_peixiu", "std_peixiu"],
-	puyuan: ["ol_puyuan", "puyuan", "sp_puyuan_y", "sp_puyuan_x"],
+	puyuan: ["ol_puyuan", "puyuan", "two_sp_puyuan", "sp_puyuan"],
 	qianzhao: ["ol_qianzhao", "qianzhao"],
 	qiaogong: ["ol_qiaogong", "qiaogong", "tw_qiaogong"],
 	qiaorui: ["qiaorui", "tw_qiaorui"],
