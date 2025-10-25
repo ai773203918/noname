@@ -229,6 +229,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
+			await player.recast(event.cards);
 			const suitx = get.suit(event.cards[0]);
 			const card = get.cardPile(card => get.suit(card) == suitx && get.type(card) == "equip", "field");
 			if (!card) {
