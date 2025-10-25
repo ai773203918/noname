@@ -414,6 +414,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["赵云"],
 				distance: { attackFrom: -2 },
 				skills: ["yajiaoqiang_skill"],
 				ai: {
@@ -586,6 +587,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip2",
+				bingzhu: ["司马懿", "诸葛亮"],
 				filterTarget(card, player, target) {
 					if (player == target) {
 						return false;

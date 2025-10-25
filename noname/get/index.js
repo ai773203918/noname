@@ -1217,12 +1217,13 @@ export class Get extends GetCompatible {
 			list.addArray(lib.cardBingzhu[name]);
 		}
 		if (info.derivation) {
-			list.addArray(info.derivation);
+			const names = get.characterSurname(info.derivation).map(list => list.join(""));
+			list.addArray(names);
 		}
 		if (info.bingzhu) {
 			list.addArray(info.bingzhu);
 		}
-		return list;
+		return list.filter(surname => surname !== "某");
 	}
 	/**
 	 * @overload

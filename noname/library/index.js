@@ -153,7 +153,7 @@ export class Library {
 			},
 		}
 	);
-	cardBingzhu={};
+	cardBingzhu = {};
 	cardPackInfo = {};
 	/**
 	 * @type { SMap<number> }
