@@ -138,6 +138,7 @@ jobs:  # 工作流作业
 
       # 设置Docker Buildx，用于构建和推送多平台镜像
       - name: 设置 Docker Buildx  # 步骤名称
+        uses: docker/setup-buildx-action@v3  # 引用流程
 
       # 获取镜像标签名称
       - name: 获取 Image Tag  # 步骤名称
