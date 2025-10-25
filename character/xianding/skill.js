@@ -344,14 +344,6 @@ const skills = {
 		getIndex(event) {
 			return event.num;
 		},
-		filter(event, player) {
-			for (let i = 0; i < 5; i++) {
-				if (player.hasEquipableSlot(i)) {
-					return true;
-				}
-			}
-			return false;
-		},
 		frequent: "check",
 		check(event, player) {
 			return true;
