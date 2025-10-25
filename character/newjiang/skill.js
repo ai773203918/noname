@@ -117,15 +117,15 @@ const skills = {
 		},
 	},
 	yj_sp_shenfeng: {
-		trigger: {
-			player: ["useCardToPlayered"],
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return get.name(event.card) == "sha" && player.countCards("he", card => get.type(card) == "equip") > 0;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt(event.skill), "he")
+				.chooseToDiscard(get.prompt2(event.skill), "he", card => {
+					return get.type(card) == "equip";
+				})
 				.set("ai", card => {
 					const player = get.player();
 					if (get.name(card) == "muniu" && player.countCards("h") > 3) {
@@ -138,9 +138,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.discard(event.cards);
-			const result = await player
+			const { result } = await player
 				.chooseButton([
-					"选择一项",
+					"神锋：请选择一项",
 					[
 						[
 							["damage", "此【杀】伤害+1"],
@@ -152,34 +152,39 @@ const skills = {
 				])
 				.set("forced", true)
 				.set("filterButton", button => {
-					const trigger = get.event().getTrigger();
+					const { target, evt } = get.event();
 					if (button.link == "discard") {
-						return trigger.target.countCards("he") > 0;
+						return target.countCards("he") > 0;
 					}
 					if (button.link == "losehp") {
-						return !trigger.yjspshenfeng;
+						return !evt.yjspshenfeng;
 					}
 					return true;
 				})
-				.set("ai", button => Math.random())
-				.forResult();
-			if (result.links[0] == "damge") {
-				trigger.baseDamage++;
+				.set("target", trigger.target)
+				.set("evt", trigger.getParent())
+				.set("ai", button => Math.random());
+			if (!result?.links?.length) {
+				return;
+			}
+			if (result.links[0] == "damage") {
+				trigger.getParent().baseDamage++;
 			} else if (result.links[0] == "losehp") {
-				trigger.yjspshenfeng = true;
+				trigger.getParent().yjspshenfeng = true;
+				if (!player.hasSkill("yj_sp_shenfeng_effect", null, false, false)) {
+					player.addTempSkill("yj_sp_shenfeng_effect");
+				}
 			} else {
 				await trigger.target.chooseToDiscard(2, "he", true);
 			}
 		},
 		subSkill: {
 			effect: {
-				trigger: {
-					source: ["damageBegin"],
-				},
+				trigger: { source: "damageBefore" },
 				charlotte: true,
 				forced: true,
 				filter(event, player) {
-					return event.yjspshenfeng;
+					return event.getParent(2).yjspshenfeng;
 				},
 				async content(event, trigger, player) {
 					trigger.cancel();
@@ -200,8 +205,8 @@ const skills = {
 			if (!_status.bingzhuSkill) {
 				const bingzhuSkill = {};
 				lib.inpile
-					.filter(name => get.type(name) == "equip" && lib.card[name].bingzhu)
-					.map(name => lib.card[name].bingzhu)
+					.filter(name => get.type(name) == "equip" && get.bingzhu(name))
+					.map(name => get.bingzhu(name))
 					.flat()
 					.forEach(name => (bingzhuSkill[name] = []));
 				if (!_status.characterlist) {
@@ -211,6 +216,8 @@ const skills = {
 					const name = get.rawName(character);
 					if (bingzhuSkill[name]) {
 						bingzhuSkill[name].push(get.character(character, 3));
+					} else if (bingzhuSkill[character]) {
+						bingzhuSkill[character].push(get.character(character, 3));
 					}
 				});
 				for (let name in bingzhuSkill) {
@@ -249,7 +256,12 @@ const skills = {
 				return;
 			}
 			const [target] = result.targets;
-			const skills = (_status.bingzhuSkill.get(name) || []).filter(skill => !target.hasSkill(skill, null, false, false)).randomGets(3);
+			const skills = get
+				.bingzhu(card)
+				.map(name => _status.bingzhuSkill.get(name))
+				.flat()
+				.filter(skill => !target.hasSkill(skill, null, false, false))
+				.randomGets(3);
 			if (!skills.length) {
 				player.chat("没有技能喵");
 			} else {
