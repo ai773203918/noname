@@ -9966,7 +9966,7 @@ const skills = {
 			if (num > 0) {
 				player.draw(num);
 			} else {
-				player.chooseToDiscard("h", true, -num);
+				player.chooseToDiscard("h", true, -num, "allowChooseAll");
 			}
 		},
 		ai: {

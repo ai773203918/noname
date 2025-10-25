@@ -4789,7 +4789,7 @@ const skills = {
 			}
 			const delta = 5 - target.countCards("h");
 			if (delta != 0) {
-				yield target[delta > 0 ? "draw" : "chooseToDiscard"](Math.abs(delta), true);
+				yield target[delta > 0 ? "draw" : "chooseToDiscard"](Math.abs(delta), true, "allowChooseAll");
 			}
 			target.showHandcards();
 			const hs = target.getCards("h");
@@ -5100,7 +5100,7 @@ const skills = {
 			if (delt == 0) {
 				event.finish();
 			} else if (index == 0) {
-				target[delt > 0 ? "draw" : "chooseToDiscard"](Math.abs(delt), true);
+				target[delt > 0 ? "draw" : "chooseToDiscard"](Math.abs(delt), true, "allowChooseAll");
 			} else {
 				target[delt > 0 ? "recover" : "loseHp"](Math.abs(delt));
 			}
@@ -9426,7 +9426,7 @@ const skills = {
 				});
 			} else if (del < 0) {
 				player
-					.chooseToDiscard(get.prompt("dchaochong"), "弃置" + get.cnNumber(-del) + "张手牌，然后令你的手牌上限+1", -del)
+					.chooseToDiscard(get.prompt("dchaochong"), "弃置" + get.cnNumber(-del) + "张手牌，然后令你的手牌上限+1", -del, "allowChooseAll")
 					.set("ai", card => {
 						var player = _status.event.player;
 						if (player.isPhaseUsing() && player.hasCard(cardx => player.hasValueTarget(cardx), "hs")) {
@@ -9517,7 +9517,7 @@ const skills = {
 			game.log(player, "重置了手牌上限");
 			if (trigger.source && trigger.source.isIn()) {
 				trigger.source
-					.chooseToDiscard(get.translation(player) + "对你发动了【矜谨】", "弃置至多" + get.cnNumber(del) + "张牌，然后" + get.translation(player) + "摸" + del + "-X张牌（X为你弃置的牌数）。", [1, del], "he")
+					.chooseToDiscard(get.translation(player) + "对你发动了【矜谨】", "弃置至多" + get.cnNumber(del) + "张牌，然后" + get.translation(player) + "摸" + del + "-X张牌（X为你弃置的牌数）。", [1, del], "he", "allowChooseAll")
 					.set("ai", card => {
 						if (_status.event.goon) {
 							return 5.5 - get.value(card);
@@ -15739,7 +15739,7 @@ const skills = {
 			}
 			"step 2";
 			if (result.index + event.addIndex == 0) {
-				target.chooseToDiscard(num, true, "h");
+				target.chooseToDiscard(num, true, "h", "allowChooseAll");
 			} else {
 				target.loseHp(target.hp - player.hp);
 			}

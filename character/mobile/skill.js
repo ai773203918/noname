@@ -4525,7 +4525,7 @@ const skills = {
 						return cards.slice(0, select).reduce((s, c) => s + get.value(c), 0) + effect > 0 && cards.includes(card) ? 1 : 0;
 					})
 					.set("prompt2", "将手牌数弃至" + get.cnNumber(num) + "张，视为对" + get.translation(target) + "使用【决斗】")
-					.set("onlychoose", true)
+					.set("chooseonly", true)
 					.forResult();
 			} else {
 				let str = `视为对${get.translation(target)}使用【决斗】`;

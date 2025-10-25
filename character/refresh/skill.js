@@ -2963,7 +2963,7 @@ const skills = {
 			await target.draw(Math.min(5, target.maxHp));
 			let num = target.countCards("h") - Math.min(5, target.maxHp);
 			if (num > 0) {
-				await target.chooseToDiscard("h", true, num);
+				await target.chooseToDiscard("h", true, num, "allowChooseAll");
 			}
 		},
 		ai: {

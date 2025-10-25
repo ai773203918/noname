@@ -2904,41 +2904,46 @@ const skills = {
 	huirong: {
 		audio: 2,
 		trigger: { player: "showCharacterAfter" },
-		forced: true,
 		filter(event, player) {
 			return (
 				event.toShow?.some(i => get.character(i).skills?.includes("huirong")) &&
-				game.hasPlayer(function (target) {
-					var num = target.countCards("h");
+				game.hasPlayer(target => {
+					const num = target.countCards("h");
 					return num > target.hp || num < Math.min(5, target.hp);
 				})
 			);
 		},
 		hiddenSkill: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget("请选择【慧容】的目标", "令一名角色将手牌数摸至/弃置至与其体力值相同（至多摸至五张）", true, function (card, player, target) {
-					var num = target.countCards("h");
-					return num > target.hp || num < Math.min(5, target.hp);
-				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					var num = target.countCards("h");
+		locked: true,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(
+					"请选择【慧容】的目标",
+					"令一名角色将手牌数摸至/弃置至与其体力值相同（至多摸至五张）",
+					(card, player, target) => {
+						const num = target.countCards("h");
+						return num > target.hp || num < Math.min(5, target.hp);
+					},
+					true
+				)
+				.set("ai", target => {
+					const att = get.attitude(get.player(), target);
+					const num = target.countCards("h");
 					if (num > target.hp) {
 						return -att * (num - target.hp);
 					}
 					return att * Math.max(0, Math.min(5, target.hp) - target.countCards("h"));
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				if (target.countCards("h") < target.hp) {
-					target.drawTo(Math.min(5, target.hp));
-				} else {
-					target.chooseToDiscard("h", true, target.countCards("h") - target.hp);
-				}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			if (target.countCards("h") < target.hp) {
+				await target.drawTo(Math.min(5, target.hp));
+			} else if (target.countCards("h") > target.hp) {
+				await target.chooseToDiscard("h", true, target.countCards("h") - target.hp, "allowChooseAll");
 			}
 		},
 	},

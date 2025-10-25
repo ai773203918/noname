@@ -1,9 +1,9 @@
 const characters = {
-	two_sp_puyuan: {
+	two_yj_puyuan: {
 		sex: "male",
 		group: "shu",
 		hp: 3,
-		skills: ["yj_sp_huanling", "yj_sp_shenduan"],
+		skills: ["huanling", "pyshenduan"],
 	},
 	x_dc_zhangqiying: {
 		sex: "female",

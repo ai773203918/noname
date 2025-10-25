@@ -6995,7 +6995,7 @@ const skills = {
 			player.markAuto("jsrgqingxi_used", [target]);
 			var num = player.countCards("h") - target.countCards("h");
 			if (num > 0) {
-				player.chooseToDiscard(num, true, "轻袭：弃置" + get.cnNumber(num) + "张手牌");
+				player.chooseToDiscard(num, true, "轻袭：弃置" + get.cnNumber(num) + "张手牌", "allowChooseAll");
 			}
 			"step 1";
 			var card = {
@@ -7096,7 +7096,7 @@ const skills = {
 					var del = target.countCards("h") - player.countCards("h");
 					if (del > 0) {
 						player.line(target);
-						player.discardPlayerCard(target, "h", true, del);
+						player.discardPlayerCard(target, "h", true, del, "allowChooseAll");
 					}
 					// else if(del<0){
 					// 	player.line(target);
@@ -12744,9 +12744,7 @@ const skills = {
 	},
 	jsrgcuibing: {
 		audio: 5,
-		trigger: {
-			player: "phaseUseEnd",
-		},
+		trigger: { player: "phaseUseEnd" },
 		forced: true,
 		logAudio(event, player) {
 			const num = Math.min(
@@ -12769,7 +12767,7 @@ const skills = {
 				),
 				numx = player.countCards("h");
 			if (numx > num) {
-				await player.chooseToDiscard("h", numx - num, true);
+				await player.chooseToDiscard("h", numx - num, true, "allowChooseAll");
 				let discard = numx - num,
 					i = 0;
 				while (game.hasPlayer(current => current.countCards("ej")) && i < discard) {
@@ -12788,7 +12786,7 @@ const skills = {
 							return 0;
 						})
 						.forResult();
-					if (result.bool) {
+					if (result?.bool) {
 						const result2 = await player.discardPlayerCard(result.targets[0], "ej", [1, discard - i]).forResult();
 						if (result2?.bool && result2?.links?.length) {
 							i += result2.links.length;

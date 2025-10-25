@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	yj_sp_biancai: {
+	biancai: {
 		trigger: {
 			player: ["phaseBegin"],
 		},
@@ -25,7 +25,7 @@ const skills = {
 			}
 		},
 	},
-	yj_sp_cuiren: {
+	cuiren: {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: () => false,
@@ -46,13 +46,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const type = get.subtype(event.cards[0]);
 			if (type == "equip1") {
-				player.addTempSkill("yj_sp_cuiren_effect1", { player: "phaseBegin" });
+				player.addTempSkill("cuiren_effect1", { player: "phaseBegin" });
 			} else if (type == "equip2") {
-				player.addTempSkill("yj_sp_cuiren_effect2", { player: "phaseBegin" });
+				player.addTempSkill("cuiren_effect2", { player: "phaseBegin" });
 			} else if (parseInt(type.slice(-1)) > 4) {
 				player.popup("杯具");
 			} else {
-				player.addTempSkill("yj_sp_cuiren_effect3", { player: "phaseBegin" });
+				player.addTempSkill("cuiren_effect3", { player: "phaseBegin" });
 			}
 		},
 		subSkill: {
@@ -116,7 +116,7 @@ const skills = {
 			},
 		},
 	},
-	yj_sp_shenfeng: {
+	shenfeng: {
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return get.name(event.card) == "sha" && player.countCards("he", card => get.type(card) == "equip") > 0;
@@ -171,8 +171,8 @@ const skills = {
 				trigger.getParent().baseDamage++;
 			} else if (result.links[0] == "losehp") {
 				trigger.getParent().yjspshenfeng = true;
-				if (!player.hasSkill("yj_sp_shenfeng_effect", null, false, false)) {
-					player.addTempSkill("yj_sp_shenfeng_effect");
+				if (!player.hasSkill("shenfeng_effect", null, false, false)) {
+					player.addTempSkill("shenfeng_effect");
 				}
 			} else {
 				await trigger.target.chooseToDiscard(2, "he", true);
@@ -183,6 +183,7 @@ const skills = {
 				trigger: { source: "damageBefore" },
 				charlotte: true,
 				forced: true,
+				popup: false,
 				filter(event, player) {
 					return event.getParent(2).yjspshenfeng;
 				},
@@ -193,7 +194,7 @@ const skills = {
 			},
 		},
 	},
-	yj_sp_huanling: {
+	huanling: {
 		trigger: { player: ["phaseUseBegin", "damageEnd"] },
 		filter(event, player) {
 			return player.countCards("hes") > 0;
@@ -280,12 +281,12 @@ const skills = {
 			}
 		},
 	},
-	yj_sp_shenduan: {
+	pyshenduan: {
 		trigger: {
 			player: "useCardAfter",
 		},
 		init(player, skill) {
-			player.storage.yj_sp_shenduan_effect = new Map([
+			player.storage.pyshenduan_effect = new Map([
 				[
 					"equip1",
 					async player => {
@@ -307,7 +308,7 @@ const skills = {
 					"equip3",
 					async player => {
 						await player.draw();
-						player.addMark("yj_sp_shenduan_max", 1, false);
+						player.addMark("pyshenduan_max", 1, false);
 					},
 				],
 				[
@@ -320,7 +321,7 @@ const skills = {
 					},
 				],
 			]);
-			player.addSkill("yj_sp_shenduan_max");
+			player.addSkill("pyshenduan_max");
 		},
 		check(event, player) {
 			if (get.subtypes(event.card) == "equip4" && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
@@ -332,18 +333,18 @@ const skills = {
 			if (get.type(event.card) != "equip" || get.subtype(event.card) == "equip5") {
 				return false;
 			}
-			const subtypes = player.getStorage("yj_sp_shenduan_used");
+			const subtypes = player.getStorage("pyshenduan_used");
 			return !get.subtypes(event.card).every(type => subtypes.includes(type));
 		},
 		async content(event, trigger, player) {
 			const types = get.subtypes(trigger.card);
-			const subtypes = (player.getStorage("yj_sp_shenduan_used") || []).addArray(types);
-			player.markAuto("yj_sp_shenduan_used", subtypes);
-			if (!player.hasSkill("yj_sp_shenduan_used", null, false, false)) {
-				player.addTempSkill("yj_sp_shenduan_used");
+			const subtypes = (player.getStorage("pyshenduan_used") || []).addArray(types);
+			player.markAuto("pyshenduan_used", subtypes);
+			if (!player.hasSkill("pyshenduan_used", null, false, false)) {
+				player.addTempSkill("pyshenduan_used");
 			}
 			for (let type of types) {
-				await player.storage.yj_sp_shenduan_effect.get(type)(player);
+				await player.storage.pyshenduan_effect.get(type)(player);
 			}
 		},
 		subSkill: {
@@ -363,7 +364,7 @@ const skills = {
 				},
 				mod: {
 					maxHandcard: function (player, num) {
-						return num + player.countMark("yj_sp_shenduan_max");
+						return num + player.countMark("pyshenduan_max");
 					},
 				},
 			},

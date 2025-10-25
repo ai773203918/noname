@@ -5039,7 +5039,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), "he", [1, player.maxHp], "chooseonly")
+				.chooseToDiscard(get.prompt2(event.skill), "he", [1, player.maxHp], "chooseonly", "allowChooseAll")
 				.set("ai", card => {
 					return 6 - get.value(card);
 				})
@@ -16088,15 +16088,13 @@ const skills = {
 		},
 	},
 	xkjubian: {
-		trigger: {
-			player: "damageBegin3",
-		},
+		trigger: { player: "damageBegin4" },
 		filter(event, player) {
 			return player.countCards("h") > player.hp;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			await player.chooseToDiscard("h", true, player.countCards("h") - player.hp);
+			await player.chooseToDiscard("h", true, player.countCards("h") - player.hp, "allowChooseAll");
 			trigger.cancel();
 		},
 	},
@@ -28931,7 +28929,7 @@ const skills = {
 				content() {
 					"step 0";
 					var num = Math.min(player.getStorage("zyshilu").length, player.countCards("he"));
-					player.chooseToDiscard("he", get.prompt("zyshilu"), "弃置至多" + get.cnNumber(num) + "张牌并摸等量的牌", [1, num]).logSkill = "zyshilu_zhiheng";
+					player.chooseToDiscard("he", get.prompt("zyshilu"), "弃置至多" + get.cnNumber(num) + "张牌并摸等量的牌", [1, num], "allowChooseAll").logSkill = "zyshilu_zhiheng";
 					"step 1";
 					if (result.bool && result.cards && result.cards.length) {
 						player.draw(result.cards.length);

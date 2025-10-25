@@ -15931,7 +15931,7 @@ const skills = {
 				player.logSkill("twliechi", trigger.source);
 				game.log(player, "选择了", "#g【烈斥】", "的", "#y" + result.control);
 				if (result.control != "选项二") {
-					trigger.source.chooseToDiscard("h", num, true);
+					trigger.source.chooseToDiscard("h", num, true, "allowChooseAll");
 				}
 				if (result.control != "选项一") {
 					player.discardPlayerCard(trigger.source, "he", true);
@@ -26123,7 +26123,7 @@ const skills = {
 					target.draw(num);
 				}
 			} else {
-				player.discardPlayerCard(target, "h", true, target.countCards("h") - target.hp);
+				player.discardPlayerCard(target, "h", true, target.countCards("h") - target.hp, "allowChooseAll");
 			}
 		},
 	},

@@ -393,7 +393,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), [1, 4])
+				.chooseToDiscard(get.prompt2(event.skill), [1, 4], "allowChooseAll")
 				.set("ai", card => {
 					return 1 / (get.value(card) || 0.5);
 				})
@@ -9674,13 +9674,14 @@ const skills = {
 			},
 		},
 		filterTarget: lib.filter.notMe,
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			const target = event.target;
 			player.changeZhuanhuanji(event.name);
 			if (player.storage.dcsbkongwu) {
 				const num = Math.min(event.cards.length, target.countCards("he"));
 				if (num > 0) {
-					await player.discardPlayerCard("he", target, true, num);
+					await player.discardPlayerCard("he", target, true, num, "allowChooseAll");
 				}
 			} else {
 				let used = 0,
@@ -14758,7 +14759,7 @@ const skills = {
 					}
 				}
 				if (discard && player.countCards("h") < source.countCards("h")) {
-					await source.chooseToDiscard(source.countCards("h") - player.countCards("h"), "h", true);
+					await source.chooseToDiscard(source.countCards("h") - player.countCards("h"), "h", true, "allowChooseAll");
 				}
 			} else {
 				if (player.countCards("h") < target.countCards("h")) {
@@ -25458,6 +25459,7 @@ const skills = {
 			}
 			return 0;
 		},
+		allowChooseAll: true,
 		content() {
 			player.changeZhuanhuanji("dckaiji");
 			if (!cards.length) {

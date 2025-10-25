@@ -163,8 +163,8 @@ const translates = {
 	fx_baosanniang_prefix: "手杀|牢",
 	x_dc_zhangqiying: "新杀牢张琪瑛",
 	x_dc_zhangqiying_prefix: "新杀|牢",
-	two_sp_puyuan: "牢SP蒲元",
-	two_sp_puyuan_prefix: "牢|SP",
+	two_yj_puyuan: "牢SP蒲元",
+	two_yj_puyuan_prefix: "牢|SP",
 };
 
 export default translates;

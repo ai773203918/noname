@@ -6128,20 +6128,22 @@ player.removeVirtualEquip(card);
 				event.dialog.close();
 			}
 			if (!game.online && event.result.bool) {
-				if (event.logSkill && event.result.bool && !game.online && !event.chooseonly) {
+				if (event.logSkill) {
 					if (typeof event.logSkill == "string") {
 						player.logSkill(event.logSkill);
 					} else if (Array.isArray(event.logSkill)) {
 						player.logSkill.apply(player, event.logSkill);
 					}
 				}
-				const next = player.discard(event.result.cards);
-				if (typeof event.delay == "boolean") {
-					next.delay = event.delay;
+				if (!event.chooseonly) {
+					const next = player.discard(event.result.cards);
+					if (typeof event.delay == "boolean") {
+						next.delay = event.delay;
+					}
+					next.discarder = player;
+					event.done = next;
+					await next;
 				}
-				next.discarder = player;
-				event.done = next;
-				await next;
 			} else if (event._sendskill) {
 				event.result._sendskill = event._sendskill;
 			}

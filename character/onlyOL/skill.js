@@ -562,7 +562,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { result } = await player.discardPlayerCard(Math.max(true, target, "he", target.countCards("h") - target.hp, 1), "allowChooseAll");
+			const { result } = await player.discardPlayerCard(Math.max(true, target, "he", target.countCards("h") - target.hp, 1), "allowChooseAll", target);
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.reduce((sum, card) => (sum + get.type(card) != "equip" ? 1 : 0), 0);
 				if (num == 0) {
@@ -572,7 +572,7 @@ const skills = {
 				if (num > player.countDiscardableCards(player, "he")) {
 					resultx = { bool: false, cards: [] };
 				} else {
-					let prompt = `弃置${get.cnNumber(event.num)}张牌，或令${get.translation(target)}于你结束阶段摸${get.cnNumber(num)}张牌`;
+					let prompt = `弃置${get.cnNumber(num)}张牌，或令${get.translation(target)}于你结束阶段摸${get.cnNumber(num)}张牌`;
 					resultx = await player
 						.chooseToDiscard(prompt, num, "he", "allowChooseAll")
 						.set("ai", card => {

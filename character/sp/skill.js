@@ -11260,7 +11260,7 @@ const skills = {
 					} = event;
 					await target.draw(3);
 					if (target.countCards("h") > target.maxHp) {
-						await target.chooseToDiscard("h", target.countCards("h") - target.maxHp, true);
+						await target.chooseToDiscard("h", target.countCards("h") - target.maxHp, true, "allowChooseAll");
 					}
 				},
 				ai: {
@@ -15322,7 +15322,7 @@ const skills = {
 			} else if (del > 0) {
 				player.draw(Math.min(5, del));
 			} else {
-				player.chooseToDiscard("险诐：弃置" + get.cnNumber(-del) + "张手牌", -del, "h", true);
+				player.chooseToDiscard("险诐：弃置" + get.cnNumber(-del) + "张手牌", -del, "h", true, "allowChooseAll");
 				player.addTempSkill("olxianbi_gain");
 			}
 		},
@@ -18491,7 +18491,7 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseToDiscard("he", [1, player.maxHp], get.prompt("olhuanfu"), "通过弃牌，预测" + (player == trigger.player ? "你" : get.translation(trigger.player)) + "使用的" + get.translation(trigger.card) + "能造成多少伤害。如果弃置的牌数等于总伤害，则你摸两倍的牌。")
+				.chooseToDiscard("he", [1, player.maxHp], get.prompt("olhuanfu"), "通过弃牌，预测" + (player == trigger.player ? "你" : get.translation(trigger.player)) + "使用的" + get.translation(trigger.card) + "能造成多少伤害。如果弃置的牌数等于总伤害，则你摸两倍的牌。", "allowChooseAll")
 				.set(
 					"predict",
 					(function () {
@@ -33433,7 +33433,7 @@ const skills = {
 					return evt.qizhi == true;
 				}).length;
 			if (dh > 0) {
-				player.chooseToDiscard(dh, true);
+				player.chooseToDiscard(dh, true, "allowChooseAll");
 			}
 		},
 		ai: { combo: "qizhi" },

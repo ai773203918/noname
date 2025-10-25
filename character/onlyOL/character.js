@@ -11,7 +11,7 @@ const characters = {
         hp: 3,
         skills: ["olsbdinglun", "olsbjieli"],
     },
-	ol_reyujin: {
+	ol_re_yujin: {
 		sex:"male",
 		group:"wei",
 		hp:4,
