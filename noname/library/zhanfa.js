@@ -1956,7 +1956,7 @@ const _zhanfa = {
 			filter(event, player) {
 				return event.player.hujia > 0;
 			},
-			num: (event, trigger, player) => Math.floor(trigger.player.hujia / 2),
+			num: (event, trigger, player) => Math.min(Math.floor(trigger.player.hujia / 2), trigger.num),
 		},
 	},
 	//体魄
@@ -2301,10 +2301,10 @@ const _zhanfa = {
 					.filter(evt => evt == trigger)
 					.step(async (event, trigger, player) => {
 						if (trigger.result?.cards?.length) {
-							const {cards} = trigger.result;
-							await  player.showCards(cards, `${get.translation(player)}【火攻】展示的牌`);
+							const { cards } = trigger.result;
+							await player.showCards(cards, `${get.translation(player)}【火攻】展示的牌`);
 						}
-					})
+					});
 				/*const result = await player
 					.chooseCard(trigger.filterCard, () => true)
 					.set("prompt", false)
@@ -2486,11 +2486,7 @@ const _zhanfa = {
 			forced: true,
 			trigger: { player: "recoverBegin" },
 			filter(event, player) {
-				return (
-					game
-						.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
-						.indexOf(event) == 0
-				);
+				return game.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player).indexOf(event) == 0;
 			},
 			num: 1,
 			async content(event, trigger, player) {
@@ -2526,9 +2522,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_yaoli",
 			filter(event, player) {
-				const index = game
-					.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player)
-					.indexOf(event);
+				const index = game.getGlobalHistory("everything", evt => evt.name == "recover" && evt.player == player).indexOf(event);
 				return index >= 0 && index < 3;
 			},
 		},

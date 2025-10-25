@@ -51,6 +51,7 @@ const skills = {
 								_status.zc26_cangqiao.remove(info);
 							}, info);
 							card = game.createCard2(name, info.suit, info.number);
+							card.addCardtag("gifts");
 							cards.add(card);
 						}
 					}
@@ -210,7 +211,7 @@ const skills = {
 						lib.translate[`${name}_info`] = lib.translate[`${map[name]}_info`];
 						_status.zc26_huaxiu ??= {};
 						_status.zc26_huaxiu[name] ??= [];
-						_status.zc26_huaxiu[name].push(player);
+						_status.zc26_huaxiu[name].add(player);
 					},
 					name,
 					player,

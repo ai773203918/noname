@@ -153,6 +153,7 @@ export class Library {
 			},
 		}
 	);
+	cardBingzhu={};
 	cardPackInfo = {};
 	/**
 	 * @type { SMap<number> }
@@ -498,7 +499,7 @@ export class Library {
 						yingbianZhuzhan.yingbianZhuzhanAI = evt.yingbianZhuzhanAI;
 						yingbianZhuzhan.afterYingbianZhuzhan = evt.afterYingbianZhuzhan;
 						yingbianZhuzhan.setContent([
-							async (event) => {
+							async event => {
 								event._global_waiting = true;
 								event.send = (player, card, source, targets, id, id2, yingbianZhuzhanAI, skillState) => {
 									if (skillState) {
@@ -532,7 +533,7 @@ export class Library {
 															return 0;
 														}
 														return 5 - get.value(cardx);
-												},
+													},
 									});
 									if (!game.online) {
 										return;
@@ -555,7 +556,7 @@ export class Library {
 									event.send((event.current = event.list.shift()), event.card, player, trigger.targets, event.id, trigger.parent.id, trigger.yingbianZhuzhanAI);
 								}
 							},
-							async (event) => {
+							async event => {
 								if (event._result.bool) {
 									event.zhuzhanresult = event.current;
 									event.zhuzhanresult2 = event._result;
@@ -615,7 +616,7 @@ export class Library {
 								}
 								event.withol = withol;
 							},
-							async (event) => {
+							async event => {
 								if (!event._result || !event._result.bool || event.zhuzhanresult) {
 									return;
 								}
@@ -623,12 +624,12 @@ export class Library {
 								event.zhuzhanresult = game.me;
 								event.zhuzhanresult2 = event._result;
 							},
-							async (event) => {
+							async event => {
 								if (event.withol && !event.resultOL) {
 									game.pause();
 								}
 							},
-							async (event) => {
+							async event => {
 								game.players.forEach(value => value.hideTimer());
 							},
 							async (event, trigger, player) => {
@@ -652,7 +653,8 @@ export class Library {
 										bool: false,
 									};
 								}
-						}]);
+							},
+						]);
 						yingbianZhuzhan._args = Array.from(arguments);
 						return yingbianZhuzhan;
 					},
@@ -790,7 +792,7 @@ export class Library {
 					event.player
 						.when("useCard")
 						.filter(evt => evt == event)
-						.step(async (event, trigger,player) => {
+						.step(async (event, trigger, player) => {
 							trigger.getParent(2).decrease("shanRequired", 1);
 						});
 				},
@@ -9176,7 +9178,7 @@ export class Library {
 					for (const content of item) {
 						yield content;
 					}
-			  })()
+				})()
 			: Promise.resolve(item);
 	}
 	gnc = {
@@ -12213,16 +12215,14 @@ export class Library {
 	 * 	[key: string]: Skill;
 	 * }}
 	 */
-	skill = new Proxy(skills,
-		{
-			set(target, prop, newValue) {
-				if (typeof prop === "string" && typeof newValue === "object") {
-					newValue.skill_id ??= prop;
-				}
-				return Reflect.set(target, prop, newValue);
-			},
-		}
-	);
+	skill = new Proxy(skills, {
+		set(target, prop, newValue) {
+			if (typeof prop === "string" && typeof newValue === "object") {
+				newValue.skill_id ??= prop;
+			}
+			return Reflect.set(target, prop, newValue);
+		},
+	});
 	/** @type {Object<string, import("./element/character.js").Character>} */
 	character = new Proxy(
 		{},
