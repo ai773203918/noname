@@ -384,7 +384,7 @@ const skills = {
 						continue;
 					}
 					await current.viewHandcards(trigger.target);
-					const cards = trigger.target.getCards("h", card => lib.filter.cardRecastable(card, player, player));
+					const cards = trigger.target.getCards("h", card => lib.filter.cardRecastable(card, trigger.target, trigger.target));
 					if (!cards.length) {
 						return;
 					}
