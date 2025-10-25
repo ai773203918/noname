@@ -44,7 +44,7 @@ const skills = {
 				}
 			}
 			await player.swapHandcards(trigger.player, [card1], [card2]);
-			trigger.player.addGaintag([card1], "dcweiwei");
+			trigger.player.addGaintag([card1], "eternal_dcweiwei_effect");
 			player.setStorage("dcweiwei_effect", [trigger.player, card1], true);
 			player.addTempSkill("dcweiwei_effect");
 			if (player.hasUseTarget(card2)) {
@@ -58,13 +58,20 @@ const skills = {
 				.set("prompt", `维卫：请选择一张要与${get.translation(target)}交换的手牌`)
 				.set("ai", card => {
 					const { player, target, source, att } = get.event();
-					if (att > 0) {
-						return target.getUseValue(card);
-					}
+					const useValue = target.getUseValue(card);
 					if (player == source) {
-						return target.getUseValue(card) == 0;
+						if (att > 0) {
+							return useValue;
+						}
+						return 6 - get.value(card);
 					}
-					return 6 - get.value(card, player);
+					if (att > 0) {
+						return (8 - get.value(card)) * useValue;
+					}
+					if (useValue == 0) {
+						return 114514;
+					}
+					return 6 - get.value(card);
 				})
 				.set("target", target)
 				.set("source", source)
@@ -77,8 +84,8 @@ const skills = {
 				charlotte: true,
 				onremove(player, skill) {
 					const [target, card] = player.getStorage(skill);
-					if (target && card) {
-						target.removeGaintag(skill, [card]);
+					if (card) {
+						card.removeGaintag(`eternal_${skill}`);
 					}
 				},
 				trigger: { global: "phaseEnd" },
@@ -144,7 +151,9 @@ const skills = {
 							.forResultTargets();
 						if (targets?.length) {
 							await player.logSkill("dcsbzhenyu");
+							player.line(targets[0]);
 							await targets[0].link(true);
+							player.addSkill("dcsbzhenyu_disable");
 						}
 					},
 				};
@@ -245,7 +254,7 @@ const skills = {
 		},
 		ai: {
 			order: 10,
-			player: {
+			result: {
 				target: -1,
 			},
 		},
