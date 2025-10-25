@@ -12,12 +12,101 @@ on:
         description: '发布的标签名称(例如 v0.0.0)' # 参数描述
         required: false # 是否为必填项，改为false以允许为空
         default: '' # 默认值改为空
+jobs:  # 工作流作业，支持多个作业，每个作业可以独立运行
+  server-image:
+    name: 构建 单后端 Docker 镜像  # 工作流作业名称
+    runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
+    # needs: image  # 等待主镜像作业完成,确保空间足够
+    permissions:
+      contents: read
+      packages: write  # 添加权限以推送到GitHub Container Registry
+    steps:
+      # 检出代码
+      - name: 检查代码是否在工作目录  # 步骤名称
+        uses: actions/checkout@v4 # 使用 v4 版本的 checkout action
+        # with:
+        #   # 指定要检出的分支(当前构建镜像的分支使用的是master主分支)
+        #   ref: build-tooling
 
-# 可以有多个工作流,多个工作流依次运行
-# 一个工作流运行由一个或多个作业组成，这些作业可以顺序或并行运行
-jobs:  # 工作流作业
+      # 清理 Runner 磁盘空间(防止多架构构建时磁盘空间不足)
+      - name: 清理磁盘空间
+        # 删除所有未使用的镜像;强制执行无需确认;同时清理未使用的卷
+        run: |
+          echo "🧹 清理旧的 Docker 镜像和缓存..."
+          docker system prune -af --volumes
+          echo "✅ 清理完成"
+          df -h
+
+      # 设置QEMU，用于构建多平台镜像
+      - name: 设置 QEMU  # 步骤名称
+        uses: docker/setup-qemu-action@v3  # 引用流程
+
+      # 设置Docker Buildx，用于构建和推送多平台镜像
+      - name: 设置 Docker Buildx  # 步骤名称
+        uses: docker/setup-buildx-action@v3  # 引用流程
+
+      # 获取当前日期（格式：年月日,如 20251009）
+      - name: 获取当前日期
+        id: get-date
+        run: echo "date=$(date +%Y%m%d)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      # 获取镜像标签名称
+      - name: 获取 Image Tag  # 步骤名称
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            # 如果是push触发，使用标签名
+            echo "TAG_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+          elif [ -n "${{ github.event.inputs.tag }}" ]; then
+            # 如果是手动触发且填写了标签，使用填写的标签
+            echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          else
+            # 如果是手动触发且没有填写标签，使用当前日期
+            echo "TAG_NAME=${{ steps.get-date.outputs.date }}" >> $GITHUB_ENV
+          fi
+
+      # 登录到Docker Hub
+      - name: 登录 DockerHub  # 步骤名称
+        uses: docker/login-action@v3  # 引用流程
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}  # Docker Hub 用户名(需在secrets中配置)
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}  # Docker Hub Token(需在secrets中配置)
+
+      # 登录到GitHub Container Registry
+      - name: 登录 GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUBTOKEN }}  # 修正为正确的token名称
+
+      # 准备镜像标签
+      - name: 设置 Server 镜像标签
+        run: |
+          echo "SERVER_TAG=${{ secrets.DOCKERHUB_USERNAME }}/noname:server-${{ env.TAG_NAME }}" >> $GITHUB_ENV
+          echo "SERVER_TAG_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/noname:server-latest" >> $GITHUB_ENV
+          # 添加GitHub Container Registry标签
+          echo "SERVER_GHCR_TAG=ghcr.io/${{ github.repository }}:server-${{ env.TAG_NAME }}" >> $GITHUB_ENV
+          echo "SERVER_GHCR_TAG_LATEST=ghcr.io/${{ github.repository }}:server-latest" >> $GITHUB_ENV
+
+      # 构建并推送镜像(多平台一次性构建爆内存了)
+      - name: 编译并推送 noname镜像  # 步骤名称
+        uses: docker/build-push-action@v5  # 引用流程
+        with:  # 参数
+          context: .  # 构建上下文
+          file: ./Dockerfile_Server  # 指定Server的Dockerfile
+          # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
+          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
+          push: true  # 推送到仓库
+          tags: |
+            ${{ env.TAG }}
+            ${{ env.TAG_LATEST }}
+            ${{ env.GHCR_TAG }}
+            ${{ env.GHCR_TAG_LATEST }}
+          # 配置 GitHub Actions 缓存(防止多架构构建时空间不足)
+          cache-from: type=gha  # 构建前尝试从 GitHub Actions 缓存中拉取之前的缓存
   image:  # 作业名称,唯一标识
-    name: 前后端二合一 Docker 镜像  # 工作流作业名称
+    name: 构建 前后端二合一 Docker 镜像  # 工作流作业名称
     runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
     permissions:
       contents: read
@@ -97,93 +186,6 @@ jobs:  # 工作流作业
         with:  # 参数
           context: .  # 构建上下文
           file: ./Dockerfile  # 指定的Dockerfile
-          # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
-          platforms: linux/amd64,linux/arm64/v8,linux/arm/v7  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
-          push: true  # 推送到仓库
-          tags: |
-            ${{ env.TAG }}
-            ${{ env.TAG_LATEST }}
-            ${{ env.GHCR_TAG }}
-            ${{ env.GHCR_TAG_LATEST }}
-          # 配置 GitHub Actions 缓存(防止多架构构建时空间不足)
-          cache-from: type=gha  # 构建前尝试从 GitHub Actions 缓存中拉取之前的缓存
-# 第二个作业,等待第一个作业完成后再执行
-  server-image:
-    name: 构建 单后端 Docker 镜像  # 工作流作业名称
-    runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
-    needs: image  # 等待主镜像作业完成,确保空间足够
-    permissions:
-      contents: read
-      packages: write  # 添加权限以推送到GitHub Container Registry
-    steps:
-      # 检出代码
-      - name: 检查代码是否在工作目录  # 步骤名称
-        uses: actions/checkout@v4 # 使用 v4 版本的 checkout action
-        # with:
-        #   # 指定要检出的分支(当前构建镜像的分支使用的是master主分支)
-        #   ref: build-tooling
-
-      # 清理 Runner 磁盘空间(防止多架构构建时磁盘空间不足)
-      - name: 清理磁盘空间
-        # 删除所有未使用的镜像;强制执行无需确认;同时清理未使用的卷
-        run: |
-          echo "🧹 清理旧的 Docker 镜像和缓存..."
-          docker system prune -af --volumes
-          echo "✅ 清理完成"
-          df -h
-
-      # 设置QEMU，用于构建多平台镜像
-      - name: 设置 QEMU  # 步骤名称
-        uses: docker/setup-qemu-action@v3  # 引用流程
-
-      # 设置Docker Buildx，用于构建和推送多平台镜像
-      - name: 设置 Docker Buildx  # 步骤名称
-        uses: docker/setup-buildx-action@v3  # 引用流程
-
-      # 获取镜像标签名称
-      - name: 获取 Image Tag  # 步骤名称
-        run: |
-          if [ "${{ github.event_name }}" == "push" ]; then
-            # 如果是push触发，使用标签名
-            echo "TAG_NAME=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-          elif [ -n "${{ github.event.inputs.tag }}" ]; then
-            # 如果是手动触发且填写了标签，使用填写的标签
-            echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
-          else
-            # 如果是手动触发且没有填写标签，使用当前日期
-            echo "TAG_NAME=${{ steps.get-date.outputs.date }}" >> $GITHUB_ENV
-          fi
-
-      # 登录到Docker Hub
-      - name: 登录 DockerHub  # 步骤名称
-        uses: docker/login-action@v3  # 引用流程
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}  # Docker Hub 用户名(需在secrets中配置)
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}  # Docker Hub Token(需在secrets中配置)
-
-      # 登录到GitHub Container Registry
-      - name: 登录 GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUBTOKEN }}  # 修正为正确的token名称
-
-      # 准备镜像标签
-      - name: 设置 Server 镜像标签
-        run: |
-          echo "SERVER_TAG=${{ secrets.DOCKERHUB_USERNAME }}/noname:server-${{ env.TAG_NAME }}" >> $GITHUB_ENV
-          echo "SERVER_TAG_LATEST=${{ secrets.DOCKERHUB_USERNAME }}/noname:server-latest" >> $GITHUB_ENV
-          # 添加GitHub Container Registry标签
-          echo "SERVER_GHCR_TAG=ghcr.io/${{ github.repository }}:server-${{ env.TAG_NAME }}" >> $GITHUB_ENV
-          echo "SERVER_GHCR_TAG_LATEST=ghcr.io/${{ github.repository }}:server-latest" >> $GITHUB_ENV
-
-      # 构建并推送镜像(多平台一次性构建爆内存了)
-      - name: 编译并推送 noname镜像  # 步骤名称
-        uses: docker/build-push-action@v5  # 引用流程
-        with:  # 参数
-          context: .  # 构建上下文
-          file: ./Dockerfile_Server  # 指定Server的Dockerfile
           # platforms: linux/amd64  # 构建的平台(测试构建,少一些快一点),多架构一般取决于使用的基础镜像支持架构
           platforms: linux/amd64,linux/arm64/v8,linux/arm/v7  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
           push: true  # 推送到仓库
