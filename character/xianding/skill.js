@@ -13123,7 +13123,7 @@ const skills = {
 		forced: true,
 		group: ["dczhimin_mark", "dczhimin_draw"],
 		async content(event, trigger, player) {
-			const targets = await player
+			const { result } = await player
 				.chooseTarget(
 					`置民：请选择至多${get.cnNumber(player.getHp())}名其他角色`,
 					"你获得这些角色各自手牌中的随机一张点数最小的牌",
@@ -13136,12 +13136,11 @@ const skills = {
 				.set("ai", target => {
 					const player = get.player();
 					return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) + 0.1;
-				})
-				.forResultTargets();
-			if (!targets || !targets.length) {
+				});
+			if (!result?.targets?.length) {
 				return;
 			}
-			targets.sortBySeat(trigger.player);
+			const targets = result.targets.sortBySeat();
 			player.line(targets, "thunder");
 			const toGain = [];
 			for (const target of targets) {
@@ -13159,9 +13158,7 @@ const skills = {
 			}
 			await game.delayx();
 		},
-		ai: {
-			threaten: 5.8,
-		},
+		ai: { threaten: 5.8 },
 		mod: {
 			aiOrder(player, card, num) {
 				if (
@@ -13206,17 +13203,13 @@ const skills = {
 				forced: true,
 				filter(event, player) {
 					const evt = event.getl(player);
-					if (!evt.hs.length) {
+					if (!evt.hs.length || player.maxHp <= player.countCards("h")) {
 						return false;
 					}
 					return Object.values(evt.gaintag_map).flat().includes("dczhimin_tag");
 				},
 				async content(event, trigger, player) {
-					const count = player.maxHp - player.countCards("h");
-					if (count <= 0) {
-						return;
-					}
-					await player.draw(count);
+					await player.drawTo(player.maxHp);
 				},
 			},
 		},

@@ -8668,7 +8668,7 @@ const skills = {
 			if (!targets.length) {
 				return;
 			}
-			const result =
+			let result =
 				targets.length > 2
 					? await player
 							.chooseTarget(
@@ -8684,50 +8684,74 @@ const skills = {
 							})
 							.forResult()
 					: { bool: true, targets: targets };
-			const list = [player, ...result.targets].toUniqued().sortBySeat(player),
-				cardMap = [],
-				nums = [];
+
+			let list = [player];
+			if (result?.targets?.length) {
+				list.addArray(result.targets);
+			}
+			list = list.toUniqued().sortBySeat(player);
+			let cardMap = [];
 			for (let i = 0; i < list.length; i++) {
 				let { cards } = await game.cardsGotoOrdering(get.cards());
 				await list[i].showCards(cards, get.translation(list[i]) + "发动了【摧袭】");
-				cardMap.addArray(cards);
-				nums.push(get.number(cards[0], false));
-			}
-
-			const videoId = lib.status.videoId++;
-			const func = (id, cards, list, num) => {
-				const dialog = ui.create.dialog(`【摧袭】：是否令你的点数+${num}？`, cards);
-				const getName = function (target) {
-					if (target._tempTranslate) {
-						return target._tempTranslate;
-					}
-					let name = target.name;
-					if (lib.translate[name + "_ab"]) {
-						return lib.translate[name + "_ab"];
-					}
-					return get.translation(name);
-				};
-				for (let i = 0; i < list.length; i++) {
-					dialog.buttons[i].node.gaintag.innerHTML = getName(list[i]);
+				cardMap.push([cards[0], get.number(cards[0], false), list[i]]);
+				if (player == list[i] && get.number(cards[0], false) == 1) {
+					player.chat("这河里吗？");
 				}
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (event.isMine()) {
-				func(videoId, cardMap, list, num);
-			} else if (player.isOnline2()) {
-				player.send(func, videoId, cardMap, list, num);
 			}
-			const result2 = await player.chooseBool().set("dialog", get.idDialog(videoId)).forResult();
-			game.broadcastAll("closeDialog", videoId);
-			if (result2.bool) {
-				nums[0] += num;
+			result = await player
+				.chooseBool()
+				.set("createDialog", [
+					`摧袭：是否令你的点数+${num}？`,
+					[
+						cardMap,
+						(item, type, position, noclick, node) => {
+							node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+							game.creatButtonCardsetion(item[2].getName(true) + item[1], node);
+							return node;
+						},
+					],
+				])
+				.set(
+					"choice",
+					(() => {
+						const max = cardMap.map(item => item[1]).maxBy(i => i);
+						let bool = false;
+						for (const [card, number, target] of cardMap) {
+							if (player == target && number <= max) {
+								bool = true;
+								break;
+							}
+						}
+						if (bool) {
+							return true;
+						}
+						const list = cardMap.map(item => item[2]);
+						if (list.remove(player).every(current => get.damageEffect(current, player, player) > 0)) {
+							return true;
+						}
+						return false;
+					})()
+				)
+				.forResult();
+			if (result?.bool) {
+				player.popup(num);
+				game.log(player, "选择作弊使其展示牌点数+", `#g${num}`);
+				cardMap = cardMap.map(item => {
+					let [card, number, target] = item;
+					if (player == target) {
+						return [card, number + num, target];
+					}
+					return item;
+				});
 			}
-			let max = nums.maxBy(i => i);
-			for (let i = 0; i < nums.length; i++) {
-				if (nums[i] < max) {
-					player.line(list[i], "green");
-					await list[i].damage(2);
+			const max = cardMap.map(item => item[1]).maxBy(i => i);
+			for (const [card, number, target] of cardMap) {
+				target.popup(number);
+				game.log(target, "本次展示牌点数为", `#g${number}`);
+				if (number < max) {
+					player.line(target, "green");
+					await target.damage(2);
 				}
 			}
 		},
