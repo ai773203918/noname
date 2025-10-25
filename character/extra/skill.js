@@ -10556,118 +10556,98 @@ const skills = {
 	},
 	olduorui: {
 		audio: "drlt_duorui",
-		trigger: {
-			source: "damageSource",
-		},
+		trigger: { source: "damageSource" },
 		filter(event, player) {
-			if (!player.isPhaseUsing() || event.player.isDead()) {
+			const target = event.player;
+			if (!player.isPhaseUsing() || target.isDead()) {
 				return false;
 			}
-			for (var i in event.player.disabledSkills) {
-				if (event.player.disabledSkills[i].includes("olduorui2")) {
-					return false;
-				}
+			if (Object.keys(target.disabledSkills).some(key => target.disabledSkills[key].includes("olduorui_effect"))) {
+				return false;
 			}
-			var list = [];
-			var listm = [];
-			var listv = [];
-			if (event.player.name1 != undefined) {
-				listm = lib.character[event.player.name1][3];
-			} else {
-				listm = lib.character[event.player.name][3];
-			}
-			if (event.player.name2 != undefined) {
-				listv = lib.character[event.player.name2][3];
-			}
-			listm = listm.concat(listv);
-			var func = function (skill) {
-				var info = get.info(skill);
-				if (!info || info.charlotte || info.persevereSkill) {
-					return false;
-				}
-				return true;
-			};
-			for (var i = 0; i < listm.length; i++) {
-				if (func(listm[i])) {
-					list.add(listm[i]);
-				}
-			}
-			return list.length > 0;
+			const skills = target.getStockSkills(false, true).filter(skill => {
+				const info = get.info(skill);
+				return !info.charlotte || !info.persevereSkill;
+			});
+			return skills.length > 0;
 		},
 		check(event, player) {
-			if (get.attitude(_status.event.player, event.player) >= 0) {
+			if (get.attitude(player, event.player) >= 0) {
 				return false;
 			}
 			if (event.getParent("phaseUse").skipped) {
 				return true;
 			}
-			var nd = player.needsToDiscard();
+			const nd = player.needsToDiscard();
 			return (
 				player.countCards("h", function (card) {
 					return player.getUseValue(card, null, true) > 0 && (nd ? true : get.tag(card, "damage") > 0);
 				}) == 0
 			);
 		},
-		logTarget: "player",
-		content() {
-			"step 0";
-			var list = [];
-			var listm = [];
-			var listv = [];
-			if (trigger.player.name1 != undefined) {
-				listm = lib.character[trigger.player.name1][3];
-			} else {
-				listm = lib.character[trigger.player.name][3];
-			}
-			if (trigger.player.name2 != undefined) {
-				listv = lib.character[trigger.player.name2][3];
-			}
-			listm = listm.concat(listv);
-			var func = function (skill) {
-				var info = get.info(skill);
-				if (!info || info.charlotte || info.persevereSkill) {
-					return false;
-				}
-				return true;
+		async cost(event, trigger, player) {
+			const target = trigger.player;
+			const skills = target.getStockSkills(false, true).filter(skill => {
+				const info = get.info(skill);
+				return !info.charlotte || !info.persevereSkill;
+			});
+			const list = skills.map(skill => [
+				skill,
+				`<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">${(() => {
+					let str = get.translation(skill);
+					if (!lib.skill[skill]?.nobracket) {
+						str = `【${str}】`;
+					}
+					return str;
+				})()}</div><div>${get.translation(skill, "info")}</div></div>`,
+			]);
+			const { result } = await player
+				.chooseButton([`选择${get.translation(target)}武将牌上的一个技能并令其失效`, [list, "textbutton"]])
+				.set("ai", button => {
+					if (!get.event("check")) {
+						return 0;
+					}
+					const { link } = button;
+					return get.skillRank(link, "inout");
+				})
+				.set("displayIndex", false)
+				.set("check", get.info(event.skill).check(trigger, player));
+			event.result = {
+				bool: result?.bool,
+				cost_data: result?.links,
 			};
-			for (var i = 0; i < listm.length; i++) {
-				if (func(listm[i])) {
-					list.add(listm[i]);
-				}
-			}
-			event.skills = list;
-			player.chooseControl(list).set("prompt", "选择" + get.translation(trigger.player) + "武将牌上的一个技能并令其失效");
-			"step 1";
-			trigger.player.disableSkill("olduorui2", result.control);
-			trigger.player.addTempSkill("olduorui2", { player: "phaseAfter" });
-			game.log(player, "选择了", trigger.player, "的技能", "#g【" + get.translation(result.control) + "】");
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: [skill],
+			} = event;
+			target.disableSkill(event.name + "_effect", skill);
+			target.addTempSkill(event.name + "_effect", { player: "phaseAfter" });
+			game.log(player, "选择了", target, "的技能", `#g【${get.translation(skill)}】`);
 			event.getParent("phaseUse").skipped = true;
 		},
-	},
-	olduorui2: {
-		onremove(player, skill) {
-			player.enableSkill(skill);
-		},
-		locked: true,
-		mark: true,
-		charlotte: true,
-		intro: {
-			content(storage, player, skill) {
-				var list = [];
-				for (var i in player.disabledSkills) {
-					if (player.disabledSkills[i].includes(skill)) {
-						list.push(i);
-					}
-				}
-				if (list.length) {
-					var str = "失效技能：";
-					for (var i = 0; i < list.length; i++) {
-						if (lib.translate[list[i] + "_info"]) {
-							str += get.translation(list[i]) + "、";
+		subSkill: {
+			effect: {
+				onremove(player, skill) {
+					player.enableSkill(skill);
+				},
+				locked: true,
+				mark: true,
+				charlotte: true,
+				intro: {
+					content(storage, player, skill) {
+						const list = Object.keys(player.disabledSkills)
+							.filter(key => player.disabledSkills[key].includes(skill))
+							.flatMap(key => {
+								return lib.translate[key + "_info"] ? [get.translation(key)] : [];
+							});
+						if (list.length) {
+							return `失效技能：${list.join("、")}`;
 						}
-					}
-					return str.slice(0, str.length - 1);
-				}
+					},
+				},
 			},
 		},
 	},
