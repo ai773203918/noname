@@ -1,6 +1,7 @@
 window.noname_character_rank = {
-	s: ["sp_puyuan_y", "x_yao_yuanshu", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["v_sunshangxiang", "sp_puyuan_y", "x_yao_yuanshu", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
+		"dc_sb_zhuran",
 		"tw_jsrg_sunjian",
 		"zj_liuyuan",
 		"zj_zhonghui",
@@ -1027,6 +1028,7 @@ window.noname_character_rank = {
 		"pot_huanjie",
 	],
 	b: [
+		"taohuang",
 		"ol_reyujin",
 		"dc_sb_xusheng",
 		"xy_xunyu",
@@ -2176,6 +2178,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"v_sunshangxiang",
 			"zc26_shen_huangyueying",
 			"scl_jiaxu",
 			"x_yao_yuanshu",
@@ -2482,6 +2485,7 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"dc_sb_zhuran",
 			"xy_xunyu",
 			"you_zhugeliang",
 			"bigsb_dengai",
@@ -2967,6 +2971,7 @@ window.noname_character_rank = {
 			"guotiying",
 		],
 		rare: [
+			"taohuang",
 			"std_huangwudie",
 			"std_qinghegongzhu",
 			"std_quyi",
