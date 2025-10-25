@@ -16,7 +16,6 @@ jobs:  # 工作流作业，支持多个作业，每个作业可以独立运行
   server-image:
     name: 构建 单后端 Docker 镜像  # 工作流作业名称
     runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
-    # needs: image  # 等待主镜像作业完成,确保空间足够
     permissions:
       contents: read
       packages: write  # 添加权限以推送到GitHub Container Registry
@@ -99,15 +98,16 @@ jobs:  # 工作流作业，支持多个作业，每个作业可以独立运行
           platforms: linux/amd64,linux/arm64/v8,linux/arm/v7  # 构建的平台(正式构建,按需保留,镜像过大多了会爆内存)
           push: true  # 推送到仓库
           tags: |
-            ${{ env.TAG }}
-            ${{ env.TAG_LATEST }}
-            ${{ env.GHCR_TAG }}
-            ${{ env.GHCR_TAG_LATEST }}
+            ${{ env.SERVER_TAG  }}
+            ${{ env.SERVER_TAG_LATEST }}
+            ${{ env.SERVER_GHCR_TAG }}
+            ${{ env.SERVER_GHCR_TAG_LATEST }}
           # 配置 GitHub Actions 缓存(防止多架构构建时空间不足)
           cache-from: type=gha  # 构建前尝试从 GitHub Actions 缓存中拉取之前的缓存
   image:  # 作业名称,唯一标识
     name: 构建 前后端二合一 Docker 镜像  # 工作流作业名称
     runs-on: ubuntu-latest  # 在最新的Ubuntu环境中运行
+    # needs: server-image  # 等待前面作业完成,确保空间足够
     permissions:
       contents: read
       packages: write  # 添加权限以推送到GitHub Container Registry
