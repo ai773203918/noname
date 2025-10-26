@@ -3439,7 +3439,7 @@ export class Click {
 					var charactertitle = lib.characterTitle[name] || "";
 					var titleHtml = "";
 					if (charactertitle) {
-						titleHtml = '<div class="character-title">' + charactertitle + '</div>';
+						titleHtml = '<div class="character-title">' + get.colorspan(charactertitle) + '</div>';
 					}
 					intro.innerHTML = titleHtml + '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
 
@@ -3597,7 +3597,7 @@ export class Click {
 				if (lib.characterTitle[name]) {
 					const titleDiv = document.createElement("div");
 					titleDiv.className = "character-title";
-					titleDiv.textContent = lib.characterTitle[name];
+					titleDiv.innerHTML = get.colorspan(lib.characterTitle[name]);
 					intro.appendChild(titleDiv);
 					// 添加分隔线
 					const hr = document.createElement("hr");
