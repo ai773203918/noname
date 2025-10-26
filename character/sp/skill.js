@@ -1290,7 +1290,6 @@ const skills = {
 						isCard: true,
 						suit: "none",
 						number: null,
-						isCard: true,
 					},
 					position: "h",
 					ignoreMod: true,

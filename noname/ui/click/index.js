@@ -754,6 +754,11 @@ export class Click {
 				if (_status.forceKey) {
 					list.key = "键";
 				}
+				for (let i in list) {
+					if (_status.bannedGroup.slice(6) == i) {
+						delete list[i];
+					}
+				}
 			}
 			var list2 = get.copy(list);
 			if (game.getIdentityList2) {

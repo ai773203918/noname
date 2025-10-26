@@ -19113,7 +19113,7 @@ export default {
 			}
 			const groups = ["wei", "shu", "wu", "qun", "jin"];
 			if (_status.bannedGroup) {
-				groups.remove(_status.bannedGroup);
+				groups.remove(_status.bannedGroup.slice(6));
 			}
 			const willBeYe = groups.filter(group => {
 				if (_status.yeidentity && _status.yeidentity.includes(group)) {
