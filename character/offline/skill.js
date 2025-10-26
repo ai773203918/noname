@@ -148,7 +148,7 @@ const skills = {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
 		},
-		markimage: "image/card/charge.png",
+		markimage: "image/card/magic.png",
 		intro: {
 			name: "魔力·董绾",
 			content(storage, player) {
@@ -395,7 +395,7 @@ const skills = {
 			global: "phaseBefore",
 			source: "damageBegin1",
 		},
-		markimage: "image/card/charge.png",
+		markimage: "image/card/magic.png",
 		intro: {
 			name: "魔力·吕玲绮",
 			content(storage, player) {
@@ -719,7 +719,7 @@ const skills = {
 			global: "phaseBefore",
 			source: "damageBegin1",
 		},
-		markimage: "image/card/charge.png",
+		markimage: "image/card/magic.png",
 		intro: {
 			name: "魔力·芮姬",
 			content(storage, player) {
@@ -959,7 +959,7 @@ const skills = {
 			player: "enterGame",
 			global: ["phaseBefore", "loseAfter", "loseAsyncAfter", "gainAfter", "addToExpansionAfter", "addJudgeAfter", "equipAfter"],
 		},
-		markimage: "image/card/charge.png",
+		markimage: "image/card/magic.png",
 		intro: {
 			name: "魔力·吴国太",
 			content(storage, player) {
@@ -1381,7 +1381,7 @@ const skills = {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
 		},
-		markimage: "image/card/charge.png",
+		markimage: "image/card/magic.png",
 		intro: {
 			name: "魔力·甄宓",
 			content(storage, player) {
@@ -1574,6 +1574,24 @@ const skills = {
 						}
 					});
 			}
+		},
+		group: "shinin_jinghong_limit",
+		subSkill: {
+			limit: {
+				trigger: { player: "useCard1" },
+				filter(event, player) {
+					return get.color(event.card) == "black" && event.addCount !== false;
+				},
+				firstDo: true,
+				async cost(event, trigger, player) {
+					trigger.addCount = false;
+					const stat = player.getStat().card,
+						name = trigger.card.name;
+					if (typeof stat[name] == "number") {
+						stat[name]--;
+					}
+				},
+			},
 		},
 		mod: {
 			cardUsable(card, player, num) {
