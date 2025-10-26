@@ -10590,7 +10590,14 @@ export class Game extends GameCompatible {
 			cards = [cards];
 		}
 		const cardsx = cards.map(card => {
+			while (card.rcardSymbol) {
+				//好孩子不玩嵌套
+				card = card[card.rcardSymbol];
+			}
 			const cardx = ui.create.card();
+			const rcardSymbol = Symbol("card");
+			cardx.rcardSymbol = rcardSymbol;
+			cardx[rcardSymbol] = card;
 			cardx.isFake = true;
 			cardx._cardid = card.cardid;
 			if (isBlank) {
@@ -10617,9 +10624,9 @@ export class Game extends GameCompatible {
 		if (!Array.isArray(cards)) {
 			cards = [cards];
 		}
-		const fake = cards.filter(card => card.isFake && card._cardid),
+		const fake = cards.filter(card => card.isFake && card.rcardSymbol && card._cardid),
 			other = cards.removeArray(fake),
-			wild = [],
+			wild = [],//野生的假牌
 			map = {};
 		fake.forEach(card => {
 			const owner = get.owner(card);
@@ -10627,9 +10634,7 @@ export class Game extends GameCompatible {
 				wild.push(card);
 				return;
 			}
-			if (!map[owner.playerid]) {
-				map[owner.playerid] = [];
-			}
+			map[owner.playerid] ??= [];
 			map[owner.playerid].push(card);
 		});
 		wild.forEach(i => i.delete());
@@ -10690,7 +10695,7 @@ export class Game extends GameCompatible {
 		let evt = event;
 		do {
 			evt = evt.parent;
-			let name = evt?.name;
+			let name = evt?.skill || evt?.name;
 			if (!name) {
 				break;
 			}
@@ -10704,11 +10709,14 @@ export class Game extends GameCompatible {
 			}
 			skill = get.sourceSkillFor(name);
 			const info = lib.skill[skill];
-			if (!info || !Object.keys(info).length || (!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
+			if (!info || !Object.keys(info).length) {
 				continue;
 			}
+			if ((!includeCharlotteSkill && info.charlotte) || (!includeEquipSkill && info.equipSkill) || (!includeGlobalSkill && lib.skill.global.includes(skill))) {
+				return null;
+			}
 			return skill;
-		} while (++count < 10);
+		} while (++count < 5);
 		return null;
 	}
 	/**
@@ -10725,7 +10733,7 @@ export class Game extends GameCompatible {
 		}
 		const addPlayer = function (id, target, character, character2, isNext) {
 			const players = game.players.concat(game.dead);
-			ui.arena.setNumber(parseInt(players.length) - 1);
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) + 1);
 			let position = !isNext ? parseInt(target.dataset.position) : parseInt(target.dataset.position) + 1;
 			if (position == 0) {
 				position = players.length;
@@ -10823,7 +10831,7 @@ export class Game extends GameCompatible {
 			player.delete();
 			game.players.remove(player);
 			game.dead.remove(player);
-			ui.arena.setNumber(parseInt(players.length) - 1);
+			ui.arena.setNumber(parseInt(ui.arena.dataset.number) - 1);
 			player.removed = true;
 			if (player == game.me) {
 				ui.me.hide();
