@@ -4789,7 +4789,7 @@ const skills = {
 			}
 			const delta = 5 - target.countCards("h");
 			if (delta != 0) {
-				yield target[delta > 0 ? "draw" : "chooseToDiscard"](Math.abs(delta), true);
+				yield target[delta > 0 ? "draw" : "chooseToDiscard"](Math.abs(delta), true, "allowChooseAll");
 			}
 			target.showHandcards();
 			const hs = target.getCards("h");
@@ -5100,7 +5100,7 @@ const skills = {
 			if (delt == 0) {
 				event.finish();
 			} else if (index == 0) {
-				target[delt > 0 ? "draw" : "chooseToDiscard"](Math.abs(delt), true);
+				target[delt > 0 ? "draw" : "chooseToDiscard"](Math.abs(delt), true, "allowChooseAll");
 			} else {
 				target[delt > 0 ? "recover" : "loseHp"](Math.abs(delt));
 			}
@@ -9426,7 +9426,7 @@ const skills = {
 				});
 			} else if (del < 0) {
 				player
-					.chooseToDiscard(get.prompt("dchaochong"), "弃置" + get.cnNumber(-del) + "张手牌，然后令你的手牌上限+1", -del)
+					.chooseToDiscard(get.prompt("dchaochong"), "弃置" + get.cnNumber(-del) + "张手牌，然后令你的手牌上限+1", -del, "allowChooseAll")
 					.set("ai", card => {
 						var player = _status.event.player;
 						if (player.isPhaseUsing() && player.hasCard(cardx => player.hasValueTarget(cardx), "hs")) {
@@ -9517,7 +9517,7 @@ const skills = {
 			game.log(player, "重置了手牌上限");
 			if (trigger.source && trigger.source.isIn()) {
 				trigger.source
-					.chooseToDiscard(get.translation(player) + "对你发动了【矜谨】", "弃置至多" + get.cnNumber(del) + "张牌，然后" + get.translation(player) + "摸" + del + "-X张牌（X为你弃置的牌数）。", [1, del], "he")
+					.chooseToDiscard(get.translation(player) + "对你发动了【矜谨】", "弃置至多" + get.cnNumber(del) + "张牌，然后" + get.translation(player) + "摸" + del + "-X张牌（X为你弃置的牌数）。", [1, del], "he", "allowChooseAll")
 					.set("ai", card => {
 						if (_status.event.goon) {
 							return 5.5 - get.value(card);
@@ -11167,144 +11167,67 @@ const skills = {
 	dchuagui: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
-		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current != player && current.countCards("he") > 0;
-			});
-		},
-		content() {
-			"step 0";
-			var min = Math.max.apply(
+		async cost(event, trigger, player) {
+			const min = Math.max.apply(
 				Math,
-				game.filterPlayer().map(function (current) {
-					return 1 + current.getFriends().length;
-				})
+				game.filterPlayer().map(current => 1 + current.getFriends().length)
 			);
-			var max = Math.min(
+			const max = Math.min(
 				min,
-				game.countPlayer(function (current) {
-					return current != player && current.countCards("he") > 0;
-				})
+				game.countPlayer(current => current != player && current.countCards("he") > 0)
 			);
-			player
-				.chooseTarget(get.prompt("dchuagui"), "令至多" + get.cnNumber(max) + "名角色进行囚徒困境选择", [1, max], function (card, player, target) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `令至多${get.cnNumber(max)}名角色进行囚徒困境选择`, [1, max], (card, player, target) => {
 					return target != player && target.countCards("he") > 0;
 				})
 				.set("animate", false)
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dchuagui");
-				event.players = result.targets.slice(0);
-				event._global_waiting = true;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var send = function (source) {
-				var next = game.createEvent("dchuagui_choose", false);
-				next.player = game.me;
-				next.source = source;
-				next.setContent(lib.skill.dchuagui.contentx);
-				game.resume();
-			};
-			var sendback = function (result, player) {
-				if (!Array.isArray(result)) {
-					result = [Math.random() < 0.5 ? "仅展示牌" : "交出牌", player.getCards("he").randomGet()];
-				}
-				event.results.push([player, result]);
-			};
-			event.ai_targets = [];
-			event.results = [];
-			var players = game
-				.filterPlayer(function (current) {
-					return current != player;
+				.set("ai", target => {
+					return -get.attitude(get.player(), target);
 				})
-				.sortBySeat();
-			var time = 10000;
-			if (lib.configOL && lib.configOL.choose_timeout) {
-				time = parseInt(lib.configOL.choose_timeout) * 1000;
-			}
-			for (var i = 0; i < players.length; i++) {
-				players[i].showTimer(time);
-				if (!event.players.includes(players[i])) {
-					continue;
-				}
-				if (players[i].isOnline()) {
-					event.withol = true;
-					players[i].send(send, player);
-					players[i].wait(sendback);
-				} else if (players[i] == game.me) {
-					event.withme = true;
-					var next = game.createEvent("dchuagui_choose", false);
-					next.player = game.me;
-					next.source = player;
-					next.setContent(lib.skill.dchuagui.contentx);
-					if (_status.connectMode) {
-						game.me.wait(sendback);
-					}
+				.forResult();
+		},
+		logLine: false,
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			const shown = [],
+				given = [];
+			const map = await game.chooseAnyOL(targets, get.info(event.name).chooseButton, [player]).forResult();
+			for (const target of targets) {
+				target.addExpose(0.05);
+				const { links } = map.get(target);
+				let choice;
+				if (links[0] == 0) {
+					choice = "仅展示牌";
+					shown.push([links[1], target, choice]);
 				} else {
-					event.ai_targets.push(players[i]);
+					choice = "交给牌";
+					given.push([links[1], target, choice]);
 				}
+				target.popup(choice);
+				game.log(target, "选择了", "#y" + choice);
 			}
-			if (event.ai_targets.length) {
-				event.ai_targets.randomSort();
-				setTimeout(function () {
-					event.interval = setInterval(
-						function () {
-							var target = event.ai_targets.shift();
-							var att = get.attitude(target, player),
-								hs = target.getCards("he");
-							hs.sort((b, a) => get.value(b, target) - get.value(a, target));
-							var choice = "仅展示牌",
-								card = hs[0];
-							if (att < -2 && Math.random() > (get.value(card, target) - 3) / 5) {
-								choice = "交出牌";
-							}
-							sendback([choice, card], target);
-							if (!event.ai_targets.length) {
-								clearInterval(event.interval);
-								if (event.withai) {
-									game.resume();
-								}
-							}
-						},
-						_status.connectMove ? 750 : 75
+			if (shown.length) {
+				await player
+					.showCards(
+						shown.flatMap(item => item[0]),
+						get.translation(player) + "发动了【化归】"
+					)
+					.set("customButton", button => {
+						const target = get.owner(button.link);
+						if (target) {
+							game.creatButtonCardsetion(target.getName(true), button);
+						}
+					})
+					.set("delay_time", 4)
+					.set(
+						"showers",
+						shown.flatMap(item => item[1])
 					);
-				}, 500);
-			}
-			"step 3";
-			if (event.withme) {
-				if (_status.connectMode) {
-					game.me.unwait(result, game.me);
-				} else {
-					if (!Array.isArray(result)) {
-						result = [Math.random() < 0.5 ? "仅展示牌" : "交出牌", player.getCards("he").randomGet()];
-					}
-					event.results.push([player, result]);
-				}
-			}
-			"step 4";
-			if (event.withol && !event.resultOL) {
-				game.pause();
-			}
-			"step 5";
-			if (event.ai_targets.length > 0) {
-				event.withai = true;
-				game.pause();
-			}
-			"step 6";
-			delete event._global_waiting;
-			for (var i of game.players) {
-				i.hideTimer();
 			}
 			event.videoId = lib.status.videoId++;
 			game.broadcastAll(
-				function (name, id, results) {
-					var dialog = ui.create.dialog(name + "发动了技能【化归】", "hidden", "forcebutton");
+				(name, id, results) => {
+					const dialog = ui.create.dialog(name + "发动了【化归】", "hidden", "forcebutton");
 					dialog.videoId = id;
 					dialog.classList.add("scroll1");
 					dialog.classList.add("scroll2");
@@ -11312,31 +11235,22 @@ const skills = {
 					dialog.classList.add("fullheight");
 					dialog.buttonss = [];
 
-					var list = ["仅展示牌的玩家", "交出牌的玩家"];
-					for (var i = 0; i < list.length; i++) {
+					const list = ["仅展示牌的玩家", "交出牌的玩家"];
+					for (let i = 0; i < list.length; i++) {
 						dialog.add('<div class="text center">' + list[i] + "</div>");
-						var buttons = ui.create.div(".buttons", dialog.content);
+						const buttons = ui.create.div(".buttons", dialog.content);
 						dialog.buttonss.push(buttons);
 						buttons.classList.add("popup");
 						buttons.classList.add("guanxing");
 					}
 					dialog.open();
 
-					var getx = function () {
-						var item = results.shift();
-						var card = item[1][1],
-							index = item[1][0] == "仅展示牌" ? 0 : 1;
-						var button = ui.create.button(card, "card", dialog.buttonss[index]);
-						button.querySelector(".info").innerHTML = (function (target) {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							var name = target.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						})(item[0]);
+					const getx = function () {
+						const item = results.shift();
+						const card = item[0],
+							index = item[2] == "仅展示牌" ? 0 : 1;
+						const button = ui.create.button(card, "card", dialog.buttonss[index]);
+						game.creatButtonCardsetion(item[1].getName(true), button);
 						if (results.length > 0) {
 							setTimeout(getx, 500);
 						}
@@ -11345,43 +11259,61 @@ const skills = {
 				},
 				get.translation(player),
 				event.videoId,
-				event.results.slice(0)
+				shown.concat(given)
 			);
-			game.delay(0, 2000 + event.results.length * 500);
-			"step 7";
+			await game.delay(0, 2000 + (shown.length + given.length) * 500);
 			game.broadcastAll("closeDialog", event.videoId);
-			var shown = [],
-				given = [];
-			for (var i of event.results) {
-				(i[1][0] == "仅展示牌" ? shown : given).push(i);
-			}
-			var list = given.length > 0 ? given : shown;
-			var cards = [],
-				targets = [];
-			for (var i of list) {
-				cards.push(i[1][1]);
-				targets.push(i[0]);
-				//i[0].$give(i[1][1],player);
-			}
-			player.line(targets);
-			player.gain(cards, "give");
-			//step 8
-			//game.delayx();
+			const list = given.length > 0 ? given : shown;
+			const cards = list.flatMap(item => item[0]);
+			player.line(list.map(item => item[1]));
+			await player.gain(cards, "give");
 		},
-		contentx() {
-			"step 0";
-			event._global_waiting = true;
-			event.result = ["仅展示牌", player.getCards("he").randomGet()];
-			var str = get.translation(source);
-			player
-				.chooseControl("仅展示牌", "交出牌")
-				.set("choiceList", ["仅展示一张牌。但如果所有人都选择了仅展示，则" + str + "获得这张牌", "将一张牌交给" + str])
-				.set("_global_waiting", true);
-			"step 1";
-			event.result[0] = result.control;
-			player.chooseCard("he", true).set("_global_waiting", true);
-			"step 2";
-			event.result[1] = result.cards[0];
+		chooseButton(player, source, eventId) {
+			const str = get.translation(source);
+			return player
+				.chooseButton(
+					2,
+					[
+						`###${str}对你发动了【化归】，选择展示或交给其一张牌###<div class="text center">若所有人都选择了仅展示，则${str}获得这张牌</div>`,
+						player.getCards("he"),
+						[
+							["仅展示一张牌", `将一张牌交给${str}`].map((item, i) => {
+								return [i, item];
+							}),
+							"textbutton",
+						],
+					],
+					true
+				)
+				.set("filterButton", button => {
+					const { link } = button;
+					if (!ui.selected.buttons.length) return typeof link == "number";
+					return get.itemtype(link) == "card";
+				})
+				.set("source", source)
+				.set("id", eventId)
+				.set("_global_waiting", true)
+				.set("ai", button => {
+					const { player, source } = get.event();
+					const { link } = button;
+					const att = get.attitude(player, source),
+						hs = player.getCards("he");
+					hs.sort((b, a) => get.value(b, player) - get.value(a, player));
+					if (!ui.selected.buttons.length) {
+						if (att < -2 && Math.random() > (get.value(hs[0], player) - 3) / 5 && link == 1) {
+							return 2;
+						}
+						if (link == 0) {
+							return 1;
+						}
+					} else {
+						const choice = ui.selected.buttons[0].link;
+						if (choice == 0) {
+							return 6 - get.value(link);
+						}
+						return 6 + (att > 0 ? 1.5 : 0) - get.value(link);
+					}
+				});
 		},
 	},
 	//陈珪
@@ -15807,7 +15739,7 @@ const skills = {
 			}
 			"step 2";
 			if (result.index + event.addIndex == 0) {
-				target.chooseToDiscard(num, true, "h");
+				target.chooseToDiscard(num, true, "h", "allowChooseAll");
 			} else {
 				target.loseHp(target.hp - player.hp);
 			}

@@ -139,6 +139,19 @@ export class Game extends GameCompatible {
 		}
 	})();
 	/**
+	 * 在指定按钮（button）内部创建一个卡片内容区域（.cardsetion），并根据当前结构设置按钮状态，用于五谷此类须多人选择的牌的执行过程中显示每张卡牌对应的选择角色
+	 * @param {string} innerHTML 要插入到.cardsetion中的HTML内容
+	 * @param {HTMLElement} button 目标节点
+	 */
+	creatButtonCardsetion(innerHTML, button) {
+		const next = ui.create.div(".cardsetion", innerHTML, button);
+		next.style.setProperty("display", "block", "important");
+		if (!button.querySelector(".info")) {
+			button.classList.add("infoflip");
+			button.classList.add("infohidden");
+		}
+	}
+	/**
 	 * 初始化角色列表
 	 *
 	 * 仅无参时修改_status.characterlist

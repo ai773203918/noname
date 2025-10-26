@@ -1428,16 +1428,6 @@ player.removeVirtualEquip(card);
 				dialog.classList.add("scroll1");
 				dialog.classList.add("scroll2");
 				dialog.classList.add("fullwidth");
-				var func = function (target) {
-					if (target._tempTranslate) {
-						return target._tempTranslate;
-					}
-					var name = target.name;
-					if (lib.translate[name + "_ab"]) {
-						return lib.translate[name + "_ab"];
-					}
-					return get.translation(name);
-				};
 				if (event.opinions.includes("others")) {
 					if (event.others.length > 2) {
 						dialog.classList.add("fullheight");
@@ -1459,7 +1449,7 @@ player.removeVirtualEquip(card);
 										element = new lib.element.VCard(game.createCard("debate_" + element, " ", " "));
 									}
 									element._custom = button => {
-										button.querySelector(".info").innerHTML = func(list[0]);
+										game.creatButtonCardsetion(list[0].getName(true), button);
 									};
 									return element;
 								}),
@@ -1482,7 +1472,7 @@ player.removeVirtualEquip(card);
 							} else {
 								button = ui.create.button(list[1], "card", dialog.buttonss[0]);
 							}
-							button.querySelector(".info").innerHTML = func(list[0]);
+							game.creatButtonCardsetion(list[0].getName(true), button);
 						}
 					}
 				}
@@ -6138,20 +6128,22 @@ player.removeVirtualEquip(card);
 				event.dialog.close();
 			}
 			if (!game.online && event.result.bool) {
-				if (event.logSkill && event.result.bool && !game.online && !event.chooseonly) {
+				if (event.logSkill) {
 					if (typeof event.logSkill == "string") {
 						player.logSkill(event.logSkill);
 					} else if (Array.isArray(event.logSkill)) {
 						player.logSkill.apply(player, event.logSkill);
 					}
 				}
-				const next = player.discard(event.result.cards);
-				if (typeof event.delay == "boolean") {
-					next.delay = event.delay;
+				if (!event.chooseonly) {
+					const next = player.discard(event.result.cards);
+					if (typeof event.delay == "boolean") {
+						next.delay = event.delay;
+					}
+					next.discarder = player;
+					event.done = next;
+					await next;
 				}
-				next.discarder = player;
-				event.done = next;
-				await next;
 			} else if (event._sendskill) {
 				event.result._sendskill = event._sendskill;
 			}

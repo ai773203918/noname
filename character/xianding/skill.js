@@ -761,7 +761,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill), [1, 4])
+				.chooseToDiscard(get.prompt2(event.skill), [1, 4], "allowChooseAll")
 				.set("ai", card => {
 					return 1 / (get.value(card) || 0.5);
 				})
@@ -2320,9 +2320,9 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				if (!storage) {
-					return `转换技，若你成为牌的目标，此牌结算后你可摸一张牌并选择一张手牌，此牌视为无次数限制的火【杀】。`;
+					return `一张牌结算结束后，若此牌的目标包括你，你可以摸一张牌并选择一张手牌，此牌视为无次数限制的火【杀】。`;
 				}
-				return `转换技，若你成为牌的目标，此牌结算后你可摸一张牌并选择一张手牌，重铸此牌并横置一名角色。`;
+				return `一张牌结算结束后，若此牌的目标包括你，你可以摸一张牌并选择一张手牌，重铸此牌并横置一名角色。`;
 			},
 		},
 		trigger: {
@@ -3826,9 +3826,9 @@ const skills = {
 		intro: {
 			content(storage, player) {
 				if (!storage) {
-					return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}可对自己造成1点伤害并摸已损失体力值数张牌。`;
+					return `当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}可对自己造成1点伤害并摸已损失体力值数张牌。`;
 				}
-				return `转换技，你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始和结束时，" : ""}可令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
+				return `当你使用锦囊牌时，${player.storage.dcsbjuemou_rewrite ? "或回合开始/结束时，" : ""}可令一名角色弃置另一名角色一张牌并受到其造成的1点伤害。`;
 			},
 		},
 		trigger: {
@@ -10042,13 +10042,14 @@ const skills = {
 			},
 		},
 		filterTarget: lib.filter.notMe,
+		allowChooseAll: true,
 		async content(event, trigger, player) {
 			const target = event.target;
 			player.changeZhuanhuanji(event.name);
 			if (player.storage.dcsbkongwu) {
 				const num = Math.min(event.cards.length, target.countCards("he"));
 				if (num > 0) {
-					await player.discardPlayerCard("he", target, true, num);
+					await player.discardPlayerCard("he", target, true, num, "allowChooseAll");
 				}
 			} else {
 				let used = 0,
@@ -13490,7 +13491,7 @@ const skills = {
 		forced: true,
 		group: ["dczhimin_mark", "dczhimin_draw"],
 		async content(event, trigger, player) {
-			const targets = await player
+			const { result } = await player
 				.chooseTarget(
 					`置民：请选择至多${get.cnNumber(player.getHp())}名其他角色`,
 					"你获得这些角色各自手牌中的随机一张点数最小的牌",
@@ -13503,12 +13504,11 @@ const skills = {
 				.set("ai", target => {
 					const player = get.player();
 					return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) + 0.1;
-				})
-				.forResultTargets();
-			if (!targets || !targets.length) {
+				});
+			if (!result?.targets?.length) {
 				return;
 			}
-			targets.sortBySeat(trigger.player);
+			const targets = result.targets.sortBySeat();
 			player.line(targets, "thunder");
 			const toGain = [];
 			for (const target of targets) {
@@ -13526,9 +13526,7 @@ const skills = {
 			}
 			await game.delayx();
 		},
-		ai: {
-			threaten: 5.8,
-		},
+		ai: { threaten: 5.8 },
 		mod: {
 			aiOrder(player, card, num) {
 				if (
@@ -13573,17 +13571,13 @@ const skills = {
 				forced: true,
 				filter(event, player) {
 					const evt = event.getl(player);
-					if (!evt.hs.length) {
+					if (!evt.hs.length || player.maxHp <= player.countCards("h")) {
 						return false;
 					}
 					return Object.values(evt.gaintag_map).flat().includes("dczhimin_tag");
 				},
 				async content(event, trigger, player) {
-					const count = player.maxHp - player.countCards("h");
-					if (count <= 0) {
-						return;
-					}
-					await player.draw(count);
+					await player.drawTo(player.maxHp);
 				},
 			},
 		},
@@ -15126,7 +15120,7 @@ const skills = {
 					}
 				}
 				if (discard && player.countCards("h") < source.countCards("h")) {
-					await source.chooseToDiscard(source.countCards("h") - player.countCards("h"), "h", true);
+					await source.chooseToDiscard(source.countCards("h") - player.countCards("h"), "h", true, "allowChooseAll");
 				}
 			} else {
 				if (player.countCards("h") < target.countCards("h")) {
@@ -25826,6 +25820,7 @@ const skills = {
 			}
 			return 0;
 		},
+		allowChooseAll: true,
 		content() {
 			player.changeZhuanhuanji("dckaiji");
 			if (!cards.length) {

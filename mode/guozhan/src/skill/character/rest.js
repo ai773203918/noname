@@ -667,7 +667,7 @@ export default {
 					return evt.gzqizhi == true;
 				}).length;
 			if (dh > 0) {
-				await player.chooseToDiscard(dh, true);
+				await player.chooseToDiscard(dh, true, "allowChooseAll");
 			}
 		},
 		ai: { combo: "gzqizhi" },

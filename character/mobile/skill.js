@@ -2971,9 +2971,7 @@ const skills = {
 		logAudio() {
 			return ["mbfeijing1.mp3", "mbfeijing3.mp3"];
 		},
-		trigger: {
-			player: "useCardToPlayer",
-		},
+		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
 			if (event.card.name != "sha" || !event.isFirstTarget) {
 				return false;
@@ -3072,18 +3070,8 @@ const skills = {
 					(targets, cards, id, player) => {
 						const dialog = ui.create.dialog(get.translation(player) + "发动了【飞径】", cards);
 						dialog.videoId = id;
-						const getName = function (target) {
-							if (target._tempTranslate) {
-								return target._tempTranslate;
-							}
-							let name = target.name;
-							if (lib.translate[name + "_ab"]) {
-								return lib.translate[name + "_ab"];
-							}
-							return get.translation(name);
-						};
 						for (let i = 0; i < targets.length; i++) {
-							dialog.buttons[i].querySelector(".info").innerHTML = getName(targets[i]) + get.translation(cards[i].suit);
+							game.creatButtonCardsetion(`${targets[i].getName(true)}${get.translation(cards[i].suit)}`, dialog.buttons[i]);
 						}
 					},
 					targets,
@@ -3126,13 +3114,12 @@ const skills = {
 						return eff;
 					})
 					.forResult();
-				if (result2.bool) {
+				if (result2?.bool && result2.links?.length) {
 					const targetx = result2.links[0].filter(target => lib.filter.targetEnabled2(trigger.card, player, target));
 					if (targetx.length) {
+						player.line(targetx);
 						trigger.targets.addArray(targetx);
-						if (!trigger.getParent().feijingExtra) {
-							trigger.getParent().feijingExtra = [];
-						}
+						trigger.getParent().feijingExtra ??= [];
 						trigger.getParent().feijingExtra.addArray(targetx);
 					}
 				}
@@ -4538,7 +4525,7 @@ const skills = {
 						return cards.slice(0, select).reduce((s, c) => s + get.value(c), 0) + effect > 0 && cards.includes(card) ? 1 : 0;
 					})
 					.set("prompt2", "将手牌数弃至" + get.cnNumber(num) + "张，视为对" + get.translation(target) + "使用【决斗】")
-					.set("onlychoose", true)
+					.set("chooseonly", true)
 					.forResult();
 			} else {
 				let str = `视为对${get.translation(target)}使用【决斗】`;

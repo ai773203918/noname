@@ -2297,7 +2297,7 @@ const skills = {
 					.chooseUseTarget(`###${get.prompt("starminghui")}###视为使用一张无距离限制的【杀】`, card, false, "nodistance")
 					.set("logSkill", "starminghui")
 					.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					logged = true;
 				}
 			}
@@ -2319,7 +2319,7 @@ const skills = {
 				const leastDiscardNum = num - maxNum + 1;
 				const prompt = logged ? `是否将手牌弃置至不为最多？` : get.prompt("starminghui");
 				const next = player
-					.chooseToDiscard(prompt, `弃置至少${get.cnNumber(leastDiscardNum)}张手牌，然后你令一名角色回复1点体力`)
+					.chooseToDiscard(prompt, `弃置至少${get.cnNumber(leastDiscardNum)}张手牌，然后你令一名角色回复1点体力`, "allowChooseAll")
 					.set("selectCard", [leastDiscardNum, Infinity])
 					.set(
 						"goon",
@@ -2341,20 +2341,23 @@ const skills = {
 					next.set("logSkill", "starminghui");
 				}
 				const result = await next.forResult();
-				if (!result.bool) {
+				if (!result?.bool) {
 					return;
 				}
 				if (!player.isUnderControl(true) && !player.isOnline()) {
 					await game.delayx();
 				}
-				const [bool, targets] = await player
-					.chooseTarget("令一名角色回复1点体力")
-					.set("ai", target => get.recoverEffect(target, get.player(), get.player()))
-					.forResult("bool", "targets");
-				if (bool) {
-					const target = targets[0];
-					player.line(target, "green");
-					await target.recover();
+				if (game.hasPlayer(current => current.isDamaged())) {
+					const { result } = await player
+						.chooseTarget("令一名角色回复1点体力", (card, player, target) => {
+							return target.isDamaged();
+						})
+						.set("ai", target => get.recoverEffect(target, get.player(), get.player()));
+					if (result?.targets?.length) {
+						const target = result.targets[0];
+						player.line(target, "green");
+						await target.recover();
+					}
 				}
 			}
 		},
@@ -7169,7 +7172,7 @@ const skills = {
 		content() {
 			var num = player.countCards("h") - 4;
 			if (num > 0) {
-				player.chooseToDiscard("h", num, true);
+				player.chooseToDiscard("h", num, true, "allowChooseAll");
 			} else {
 				player.draw(-num);
 			}

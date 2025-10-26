@@ -1269,8 +1269,8 @@ const skills = {
 	sxrmkuxin: {
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return game.hasPlayer(cur => {
-				return cur !== player && cur.countCards("h") > 0;
+			return game.hasPlayer(current => {
+				return current !== player && current.countCards("h") > 0;
 			});
 		},
 		check(event, player) {
@@ -1313,13 +1313,13 @@ const skills = {
 			return game.filterPlayer(current => current !== player).sortBySeat(_status.currentPhase);
 		},
 		async content(event, trigger, player) {
-			const targets = event.targets,
-				showcards = [];
+			const { targets } = event,
+				list = [];
 			for (const target of targets) {
 				if (!target.countCards("h")) {
 					continue;
 				}
-				const result = await target
+				const { result } = await target
 					.chooseCard("枯心：展示任意张手牌", "h", [1, Infinity], true, "allowChooseAll")
 					.set("targetx", player)
 					.set("ai", card => {
@@ -1338,99 +1338,154 @@ const skills = {
 							val = get.value(card, targetx) - val;
 						}
 						return val;
+					});
+				if (!result?.cards?.length) {
+					continue;
+				}
+				list.push([result.cards, target]);
+				await target.showCards(result.cards);
+				await game.delay();
+			}
+			let result,
+				gains = [];
+			if (list.length) {
+				result = await player
+					.chooseButtonTarget({
+						createDialog: [
+							"枯心：请选择一项执行",
+							[
+								list.flatMap(([cards, target]) => {
+									return cards.map(card => [card, target]);
+								}),
+								(item, type, position, noclick, node) => {
+									node = ui.create.buttonPresets.card(item[0], type, position, noclick);
+									game.creatButtonCardsetion(item[1].getName(true), node);
+									return node;
+								},
+							],
+							[
+								["获得所有角色的展示牌", "获得一名角色的未展示牌"].map((item, i) => {
+									return [i, item];
+								}),
+								"tdnodes",
+							],
+							[
+								dialog => {
+									dialog.css({ top: "25%" });
+									dialog.buttons
+										.filter(button => typeof button.link == "number")
+										.forEach(button => {
+											button.style.setProperty("width", "200px", "important");
+											button.style.setProperty("text-align", "left", "important");
+										});
+								},
+								"handle",
+							],
+						],
+						forced: true,
+						filterTarget: lib.filter.notMe,
+						selectTarget() {
+							if (ui.selected.buttons.length) {
+								const { link } = ui.selected.buttons[0];
+								if (link == 1) {
+									return 1;
+								}
+								return 0;
+							}
+							return 0;
+						},
+						filterOk() {
+							if (ui.selected.buttons.length) {
+								const { link } = ui.selected.buttons[0];
+								if (link == 1) {
+									return ui.selected.targets.length == 1;
+								}
+								return link == 0;
+							}
+							return false;
+						},
+						list,
+						ai1(button) {
+							const player = get.player();
+							const cards =
+								get
+									.event("list")
+									?.map(i => i[0])
+									.flat() || [];
+							const { num } = get.event().getTrigger();
+							const { link } = button;
+							if (typeof link !== "number") {
+								return 0;
+							}
+							if (link == 1) {
+								if (player.isTurnedOver() && cards.some(card => get.suit(card, false) === "heart")) {
+									return 2;
+								}
+								if (cards.length <= num * 2 && game.hasPlayer(current => current != player && current.countCards("h", cardx => !cards?.includes(cardx)) > cards.length && get.attitude(player, current) < 0)) {
+									return 2;
+								}
+							}
+							if (link == 0 && cards.some(card => get.suit(card, false) === "heart")) {
+								return 1;
+							}
+							return 1;
+						},
+						ai2(target) {
+							if (ui.selected.buttons[0].link == 0) {
+								return 1;
+							}
+							const player = get.player();
+							const cards = get
+								.event("list")
+								?.map(i => i[0])
+								.flat();
+							return -get.attitude(player, target) * target.countCards("h", cardx => !cards?.includes(cardx));
+						},
 					})
 					.forResult();
-				if (result.bool) {
-					showcards.addArray(result.cards);
-					await target.showCards(result.cards);
-					await game.delay();
+				if (!result?.links?.length) return;
+				const [link] = result.links;
+				if (link == 0) {
+					game.log(player, "选择了", "#g【枯心】", "的", "#y选项一");
+					gains = list.flatMap(([cards, target]) => {
+						return cards.filter(card => lib.filter.canBeGained(card, target, player));
+					});
+				} else if (link == 1 && result?.targets?.length) {
+					game.log(player, "选择了", "#g【枯心】", "的", "#y选项二");
+					const [target] = result.targets;
+					player.line(target);
+					gains = target.getCards("h", card => !list.flatMap(i => i[0]).includes(card) && lib.filter.canBeGained(card, target, player));
+				}
+			} else if (game.hasPlayer(target => target != player)) {
+				const targets = game.filterPlayer(target => target != player);
+				result =
+					targets.length == 1
+						? { bool: true, targets }
+						: await player
+								.chooseTarget("枯心：选择一名其他角色获得其未展示的手牌", true, lib.filter.notMe)
+								.set("ai", target => {
+									const player = get.player();
+									return -get.attitude(player, target) * target.countCards("h");
+								})
+								.forResult();
+				if (result?.targets?.length) {
+					game.log(player, "选择了", "#g【枯心】", "的", "#y选项二");
+					const [target] = result.targets;
+					player.line(target);
+					gains = target.getCards("h", card => lib.filter.canBeGained(card, target, player));
 				}
 			}
-			const videoId = lib.status.videoId++;
-			const func = (id, cards) => {
-				const dialog = ui.create.dialog("枯心：请选择获得的牌");
-				if (cards.length) {
-					dialog.add(cards);
-					const getName = function (target) {
-						if (target._tempTranslate) {
-							return target._tempTranslate;
-						}
-						let name = target.name;
-						if (lib.translate[name + "_ab"]) {
-							return lib.translate[name + "_ab"];
-						}
-						return get.translation(name);
-					};
-					for (let i = 0; i < cards.length; i++) {
-						dialog.buttons[i].node.gaintag.innerHTML = getName(get.owner(cards[i]));
-					}
-				} else {
-					dialog.add("没有角色展示牌");
-				}
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (event.isMine()) {
-				func(videoId, showcards);
-			} else if (player.isOnline2()) {
-				player.send(func, videoId, showcards);
+			if (gains.length) {
+				await player.gain(gains, "gain2");
+				await player.showCards(gains);
 			}
-			const next2 = player
-				.chooseControl("获得所有角色的展示牌", "获得一名角色的未展示牌")
-				.set("dialog", get.idDialog(videoId))
-				.set("ai", () => {
-					const { player, num, cards } = get.event();
-					if (player.isTurnedOver() && cards.some(card => get.suit(card, false) === "heart")) {
-						return 1;
-					}
-					if (cards.length <= num && game.hasPlayer(current => current != player && current.countCards("h", cardx => !cards.includes(cardx)) > cards.length && get.attitude(player, current) < 0)) {
-						return 1;
-					}
-					if (cards.length <= num) {
-						return get.rand(0, 1);
-					}
-					if (cards.some(card => get.suit(card, false) === "heart")) {
-						return 0;
-					}
-					return 1;
-				})
-				.set("cards", showcards)
-				.set("num", trigger.num * 2);
-			const result2 = await next2.forResult();
-			game.broadcastAll("closeDialog", videoId);
-			if (!result2?.control) {
-				return;
-			}
-			game.log(player, "选择了", "#g【枯心】", "的", "#y" + result2.control);
-			let gaincards = [];
-			if (result2.control == "获得一名角色的未展示牌") {
-				const result3 = await player
-					.chooseTarget("枯心：选择一名其他角色获得其未展示的手牌", true, lib.filter.notMe)
-					.set("ai", target => {
-						const { player, cards } = get.event();
-						return -get.attitude(player, target) * target.countCards("h", cardx => !cards.includes(cardx));
-					})
-					.set("cards", showcards)
-					.forResult();
-				gaincards = result3?.targets?.[0].getCards("h", cardx => !showcards.includes(cardx));
-			} else {
-				gaincards = showcards;
-			}
-			if (gaincards.length) {
-				await player.gain(gaincards, "give");
-				await player.showCards(gaincards);
-			}
-			if (!gaincards.some(card => get.suit(card, false) === "heart")) {
-				player.chat("孩子们，一张牌都拿不到力");
-				if (gaincards.length) {
-					await player.discard(gaincards);
+			if (!gains.some(card => get.suit(card, false) === "heart")) {
+				if (gains.length) {
+					await player.discard(gains);
 				}
 				await player.turnOver();
-			} else {
-				player.chat("保持富态");
 			}
 		},
-		//依旧归心改/.
 		ai: {
 			maixie: true,
 			maixie_hp: true,
