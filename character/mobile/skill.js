@@ -2933,8 +2933,9 @@ const skills = {
 			const result = await player
 				.chooseButton([get.prompt2(event.skill), trigger.getl(player).hs])
 				.set("filterButton", button => {
-					return get.position(button.link) == "d" && button.link.name == "sha";
+					return get.event("canGain").includes(button.link);
 				})
+				.set("canGain", trigger.getl(player).hs.filter(card => get.position(card, true) == "d" && card.name == "sha"))
 				.forResult();
 			event.result = {
 				bool: result.bool,
