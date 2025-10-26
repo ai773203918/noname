@@ -10435,11 +10435,15 @@ export class Player extends HTMLDivElement {
 	}
 	addEquipTrigger(card) {
 		if (card) {
-			var info = get.info(card, false);
+			/*var info = get.info(card, false);
 			if (info.skills) {
 				for (var j = 0; j < info.skills.length; j++) {
 					this.addSkillTrigger(info.skills[j]);
 				}
+			}*/
+			const skills = get.skillsFromEquips([card]);
+			if (skills?.length) {
+				skills.forEach(i => this.addSkillTrigger(i));
 			}
 		} else {
 			var es = this.getVCards("e");
@@ -14108,12 +14112,13 @@ export class Player extends HTMLDivElement {
 			return get.equipNum(a) - get.equipNum(b);
 		});
 		player.$addVirtualEquip(card, cards);
-		var info = get.info(card, false);
+		player.addEquipTrigger(card);
+		/*var info = get.info(card, false);
 		if (info.skills) {
 			for (var i = 0; i < info.skills.length; i++) {
 				player.addSkillTrigger(info.skills[i]);
 			}
-		}
+		}*/
 	}
 	$addVirtualEquip(card, cards) {
 		if (game.online) {
