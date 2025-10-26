@@ -12141,7 +12141,7 @@ const skills = {
 		logTarget(event, player) {
 			return game.dead
 				.filter(target => {
-					if (!target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) {
+					if (target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) {
 						return false;
 					}
 					return game.getGlobalHistory("everything", evt => evt.name === "die" && evt.player === target && evt.source === player).length > 0;
