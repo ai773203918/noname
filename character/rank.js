@@ -2489,6 +2489,10 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"zc26_lusu",
+			"zc26_zhanghe",
+			"zc26_taishici",
+			"zc26_jiaxu",
 			"xy_xunyu",
 			"you_zhugeliang",
 			"bigsb_dengai",

@@ -9,6 +9,8 @@ export default {
 	awaken_shinin_lvlingqi: "闪耀战姬",
 	shinin_dongwan: "蜜言如鸩",
 	awaken_shinin_dongwan: "闪耀战姬",
+	goblin: "残暴掳掠",
+	lord_goblin: "疑暴如麟",
 	zc26_lusu: "荷檐吐奇",
 	zc26_zhanghe: "无定的水虺",
 	zc26_taishici: "剑鸣太平",

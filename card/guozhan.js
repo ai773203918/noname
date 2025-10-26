@@ -2173,6 +2173,7 @@ game.import("card", function () {
 			xietianzi: {
 				forced: true,
 				popup: false,
+				nopop: true,
 				filter(event, player) {
 					return player.countCards("h") > 0;
 				},
