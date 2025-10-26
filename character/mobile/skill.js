@@ -25913,7 +25913,10 @@ const skills = {
 		},
 	},
 	//表演测试
-	qiaosi_map: { charlotte: true },
+	qiaosi_map: {
+		charlotte: true,
+		nopop: true,
+	},
 	qiaosi: {
 		audio: 2,
 		derivation: "qiaosi_map",
