@@ -892,6 +892,27 @@ export class Get extends GetCompatible {
 		return names;
 	}
 	/**
+	 * 获取角色称号，默认返回纯文本
+	 * @param {Player|string} name 玩家对象或角色名
+	 * @param {boolean} [name2=false] 是否返回玩家副将的称号
+	 * @param {boolean} [plainText=true] 是否返回纯文本
+	 * @returns {string} 称号
+	 */
+	characterTitle(player, name2 = false, plainText = true) {
+		if (get.itemtype(player) == "player") {
+			player = name2 ? player.name2 : player.name;
+		}
+		let characterTitle = lib.characterTitle[player] || "";
+		if (plainText) {
+			// 排除掉本体的几个颜色样式标记，如#r、#p、#g、#b
+			if (characterTitle.startsWith("#")) {
+				characterTitle = characterTitle.slice(2);
+			}
+			return get.plainText(characterTitle);
+		}
+		return characterTitle;
+	}
+	/**
 	 * 返回角色对应的原角色
 	 * @param { string } str
 	 * @returns { string }
