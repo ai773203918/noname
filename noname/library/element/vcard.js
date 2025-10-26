@@ -44,6 +44,10 @@ export class VCard {
 			 * @type {Record<string, any>}
 			 */
 			this.storage = get.copy(suitOrCard.storage);
+			//复制初始实体牌的skills
+			if (Array.isArray(suitOrCard.skills)) {
+				this.skills = suitOrCard.skills.slice();
+			}
 			if (Array.isArray(numberOrCards)) {
 				this.cards = numberOrCards.slice();
 			} else {

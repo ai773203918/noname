@@ -5100,19 +5100,22 @@ const skills = {
 					}
 					return 0;
 				});
-			event.result = {
-				bool: result?.bool,
-				cost_data: result?.links,
-				cards: player.getCards("h").filter(card => result.links.includes(get.suit(card, player))),
-			};
+			if (result?.bool && result?.links?.length) {
+				event.result = {
+					bool: result?.bool,
+					cost_data: result?.links,
+					cards: player.getCards("h").filter(card => result?.links?.includes(get.suit(card, player))),
+				};
+			}
 		},
 		async content(event, trigger, player) {
 			const cards = event.cards;
 			const suit = get.suit(cards[0], player);
 			//官方结算是对比弃牌前的
 			const es = player.countCards("e");
-			await player.modedDiscard(cards);
-			const card = get.cardPile(card => get.type(card) == "equip" && get.suit(card) == suit);
+			const next = player.modedDiscard(cards);
+			await next;
+			const card = get.cardPile2(card => get.type(card) == "equip" && get.suit(card) == suit);
 			if (!card) {
 				player.chat(`孩子们，牌堆没有${get.translation(suit)}装备牌了`);
 				return;
@@ -5121,12 +5124,7 @@ const skills = {
 			if (player.hasCard(cardx => cardx == card, "h")) {
 				await player.chooseUseTarget(card, true);
 			}
-			let num = 0;
-			player.checkHistory("lose", evt => {
-				if (evt.type == "discard" && evt.getParent(2) == event) {
-					num += evt.cards.length;
-				}
-			});
+			const num = next.cards.length;
 			player.logSkill("mbzhuji", null, null, null, [num >= es ? get.rand(1, 2) : get.rand(3, 4)]);
 			if (num >= es) {
 				const result = await player

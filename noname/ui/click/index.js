@@ -3435,90 +3435,20 @@ export class Click {
 					if (charactername.length > 3) {
 						spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
 					}
-					intro.innerHTML = '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
+					// 获取武将称号
+					var charactertitle = lib.characterTitle[name] || "";
+					var titleHtml = "";
+					if (charactertitle) {
+						titleHtml = '<div class="character-title">' + get.colorspan(charactertitle) + '</div>';
+					}
+					intro.innerHTML = titleHtml + '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
+
+					// 添加角色append
+					if (lib.characterAppend[name]) {
+						intro.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>' + lib.characterAppend[name];
+					}
 				}
 
-				// 添加台词部分
-				let skinName = bg.tempSkin || audioName;
-				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: skinName }, tempname: [skinName] } })
-					.audioList.map(i => i.text)
-					.filter(Boolean);
-				const skillAudioMap = new Map();
-				nameinfo.skills.forEach(skill => {
-					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
-					if (voiceMap.length) {
-						skillAudioMap.set(skill, voiceMap);
-					}
-				});
-				const derivationSkillAudioMap = new Map();
-				nameinfo.skills.forEach(skill => {
-					var info = get.info(skill);
-					if (info.derivation) {
-						var derivation = info.derivation;
-						if (typeof derivation == "string") {
-							derivation = [derivation];
-						}
-						for (var i = 0; i < derivation.length; i++) {
-							if (derivation[i].indexOf("_faq") != -1) {
-								continue;
-							}
-							if (nameinfo.skills.includes(derivation[i])) {
-								continue;
-							}
-							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
-							if (derivationVoiceMap.length) {
-								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
-							}
-						}
-					}
-				});
-				if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
-					const eleHr = document.createElement("hr");
-					eleHr.style.marginTop = "11px";
-					intro.appendChild(eleHr);
-					if (skillAudioMap.size > 0) {
-						const skillNameSpan = document.createElement("span");
-						skillNameSpan.style.lineHeight = "1.7";
-						skillNameSpan.innerHTML = `• 技能台词<br>`;
-						intro.appendChild(skillNameSpan);
-						skillAudioMap.forEach((texts, skill) => {
-							const skillNameSpan1 = document.createElement("span"),
-								skillNameSpanStyle1 = skillNameSpan1.style;
-							skillNameSpanStyle1.fontWeight = "bold";
-							skillNameSpanStyle1.fontSize = "15.7px";
-							skillNameSpanStyle1.lineHeight = "1.4";
-							skillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
-							intro.appendChild(skillNameSpan1);
-							texts.forEach((text, index) => {
-								const skillTextSpan = document.createElement("span");
-								skillTextSpan.style.fontSize = "15.2px";
-								skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-								intro.appendChild(skillTextSpan);
-							});
-						});
-					}
-					if (derivationSkillAudioMap.size > 0) {
-						const derivationSkillNameSpan = document.createElement("span");
-						derivationSkillNameSpan.style.lineHeight = "1.7";
-						derivationSkillNameSpan.innerHTML = `• 衍生技能台词<br>`;
-						intro.appendChild(derivationSkillNameSpan);
-						derivationSkillAudioMap.forEach((texts, skill) => {
-							const derivationSkillNameSpan1 = document.createElement("span"),
-								derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
-							derivationSkillNameSpanStyle1.fontWeight = "bold";
-							derivationSkillNameSpanStyle1.fontSize = "15.7px";
-							derivationSkillNameSpanStyle1.lineHeight = "1.4";
-							derivationSkillNameSpan1.innerHTML = `${get.translation(skill)}<br>`;
-							intro.appendChild(derivationSkillNameSpan1);
-							texts.forEach((text, index) => {
-								const derivationSkillTextSpan = document.createElement("span");
-								derivationSkillTextSpan.style.fontSize = "15.2px";
-								derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-								intro.appendChild(derivationSkillTextSpan);
-							});
-						});
-					}
-				}
 
 				var intro2 = uiintro.querySelector(".intro2") || ui.create.div(".characterintro.intro2", uiintro);
 				list.addArray(get.character(name, 3) || []);
@@ -3572,6 +3502,53 @@ export class Click {
 							}
 						}
 
+						// 添加技能append
+						if (lib.translate[this.link + "_append"]) {
+							intro2.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>';
+							const appendDiv = document.createElement("div");
+							appendDiv.style.fontSize = "15.2px";
+							appendDiv.innerHTML = lib.translate[this.link + "_append"];
+							intro2.appendChild(appendDiv);
+						}
+
+						// 添加技能台词
+						let skillVoiceMap = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName }, tempname: [skinName] } }).textList;
+						if (skillVoiceMap.length > 0) {
+							intro2.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">技能台词</span>';
+							skillVoiceMap.forEach((text, index) => {
+								const skillTextSpan = document.createElement("span");
+								skillTextSpan.style.fontSize = "15.2px";
+								skillTextSpan.innerHTML = `<br>${skillVoiceMap.length > 1 ? `${index + 1}. ` : ""}${text}`;
+								intro2.appendChild(skillTextSpan);
+							});
+						}
+
+						// 添加衍生技能台词
+						if (info.derivation) {
+							var derivation = info.derivation;
+							if (typeof derivation == "string") {
+								derivation = [derivation];
+							}
+							for (var i = 0; i < derivation.length; i++) {
+								if (derivation[i].indexOf("_faq") != -1) {
+									continue;
+								}
+								if (nameinfo.skills.includes(derivation[i])) {
+									continue;
+								}
+								let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: playername, skin: { name: skinName }, tempname: [skinName] } }).textList;
+								if (derivationVoiceMap.length > 0) {
+									intro2.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">' + get.translation(derivation[i]) + '台词</span>';
+									derivationVoiceMap.forEach((text, index) => {
+										const derivationTextSpan = document.createElement("span");
+										derivationTextSpan.style.fontSize = "15.2px";
+										derivationTextSpan.innerHTML = `<br>${derivationVoiceMap.length > 1 ? `${index + 1}. ` : ""}${text}`;
+										intro2.appendChild(derivationTextSpan);
+									});
+								}
+							}
+						}
+
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
 								const audioList = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
@@ -3586,20 +3563,18 @@ export class Click {
 							this.playAudio();
 						}
 					} else {
-						let skinName = bg.tempSkin || this.linkname;
-						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } })
-							.audioList.map(i => i.text)
-							.filter(Boolean);
+						let skinName2 = bg.tempSkin || this.linkname;
+						let dieAudios3 = get.Audio.die({ player: { name: this.playername, skin: { name: skinName2 }, tempname: [skinName2] } }).audioList.map((i3) => i3.text).filter(Boolean);
 						intro2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
-						dieAudios.forEach((text, index) => {
+						dieAudios3.forEach((text, index) => {
 							const dieTextSpan = document.createElement("span");
 							dieTextSpan.style.fontSize = "15.2px";
-							dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
+							dieTextSpan.innerHTML = `<br>${dieAudios3.length > 1 ? `${index + 1}. ` : ""}${text}`;
 							intro2.appendChild(dieTextSpan);
 						});
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
-								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName2 }, tempname: [skinName2] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
@@ -3618,6 +3593,18 @@ export class Click {
 				const nameInfo = get.character(name),
 					showCharacterNamePinyin = lib.config.show_characternamepinyin;
 				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", uiintro);
+				// 添加武将称号
+				if (lib.characterTitle[name]) {
+					const titleDiv = document.createElement("div");
+					titleDiv.className = "character-title";
+					titleDiv.innerHTML = get.colorspan(lib.characterTitle[name]);
+					intro.appendChild(titleDiv);
+					// 添加分隔线
+					const hr = document.createElement("hr");
+					hr.style.marginTop = "5px";
+					hr.style.marginBottom = "5px";
+					intro.appendChild(hr);
+				}
 				if (showCharacterNamePinyin != "doNotShow") {
 					const characterIntroTable = ui.create.div(".character-intro-table", intro),
 						span = document.createElement("span");
@@ -3763,80 +3750,11 @@ export class Click {
 				htmlParser.innerHTML = get.characterIntro(name);
 				Array.from(htmlParser.childNodes).forEach(value => intro.appendChild(value));
 
-				// 添加台词部分
-				let skinName = bg.tempSkin || audioName;
-				let dieAudios = get.Audio.die({ player: { name: name, skin: { name: skinName }, tempname: [skinName] } })
-					.audioList.map(i => i.text)
-					.filter(Boolean);
-				const skillAudioMap = new Map();
-				nameInfo.skills.forEach(skill => {
-					let voiceMap = get.Audio.skill({ skill, player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
-					if (voiceMap.length) {
-						skillAudioMap.set(skill, voiceMap);
-					}
-				});
-				const derivationSkillAudioMap = new Map();
-				nameInfo.skills.forEach(skill => {
-					var info = get.info(skill);
-					if (info.derivation) {
-						var derivation = info.derivation;
-						if (typeof derivation == "string") {
-							derivation = [derivation];
-						}
-						for (var i = 0; i < derivation.length; i++) {
-							if (derivation[i].indexOf("_faq") != -1) {
-								continue;
-							}
-							if (nameInfo.skills.includes(derivation[i])) {
-								continue;
-							}
-							let derivationVoiceMap = get.Audio.skill({ skill: derivation[i], player: { name: name, skin: { name: skinName }, tempname: [skinName] } }).textList;
-							if (derivationVoiceMap.length) {
-								derivationSkillAudioMap.set(derivation[i], derivationVoiceMap);
-							}
-						}
-					}
-				});
-				if (dieAudios.length || skillAudioMap.size > 0 || derivationSkillAudioMap.size > 0) {
-					intro.appendChild(document.createElement("hr"));
-
-					if (skillAudioMap.size > 0) {
-						const skillNameSpan = document.createElement("span");
-						skillNameSpan.innerHTML = `技能台词<br>`;
-						intro.appendChild(skillNameSpan);
-
-						skillAudioMap.forEach((texts, skill) => {
-							const skillNameSpan = document.createElement("span"),
-								skillNameSpanStyle = skillNameSpan.style;
-							skillNameSpanStyle.fontWeight = "bold";
-							skillNameSpan.innerHTML = `<br>${get.translation(skill)}<br>`;
-							intro.appendChild(skillNameSpan);
-							texts.forEach((text, index) => {
-								const skillTextSpan = document.createElement("span");
-								skillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-								intro.appendChild(skillTextSpan);
-							});
-						});
-					}
-
-					if (derivationSkillAudioMap.size > 0) {
-						const derivationSkillNameSpan = document.createElement("span");
-						derivationSkillNameSpan.innerHTML = `<br>衍生技能台词<br>`;
-						intro.appendChild(derivationSkillNameSpan);
-						derivationSkillAudioMap.forEach((texts, skill) => {
-							const derivationSkillNameSpan1 = document.createElement("span"),
-								derivationSkillNameSpanStyle1 = derivationSkillNameSpan1.style;
-							derivationSkillNameSpanStyle1.fontWeight = "bold";
-							derivationSkillNameSpan1.innerHTML = `<br>${get.translation(skill)}<br>`;
-							intro.appendChild(derivationSkillNameSpan1);
-							texts.forEach((text, index) => {
-								const derivationSkillTextSpan = document.createElement("span");
-								derivationSkillTextSpan.innerHTML = `${texts.length > 1 ? `${index + 1}. ` : ""}${text}<br>`;
-								intro.appendChild(derivationSkillTextSpan);
-							});
-						});
-					}
+				// 添加角色append
+				if (lib.characterAppend[name]) {
+					intro.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>' + lib.characterAppend[name];
 				}
+
 
 				const introduction2 = uiintro.querySelector(".intro2") || ui.create.div(".characterintro.intro2", uiintro);
 				list.addArray(get.character(name).skills || []);
@@ -3853,17 +3771,15 @@ export class Click {
 					while (introduction2.firstChild) {
 						introduction2.removeChild(introduction2.lastChild);
 					}
-					var current = this.parentNode.querySelector(".active");
-					if (current) {
-						current.classList.remove("active");
+					var current2 = this.parentNode.querySelector(".active");
+					if (current2) {
+						current2.classList.remove("active");
 					}
 					this.classList.add("active");
 					if (this.link != "dieAudios") {
-						const skillNameSpan = document.createElement("span"),
-							skillNameSpanStyle = skillNameSpan.style;
+						const skillNameSpan = document.createElement("span"), skillNameSpanStyle = skillNameSpan.style;
 						skillNameSpanStyle.fontWeight = "bold";
-						const link = this.link,
-							skillName = get.translation(link);
+						const link = this.link, skillName = get.translation(link);
 						skillNameSpan.innerHTML = skillName;
 						const showSkillNamePinyin = lib.config.show_skillnamepinyin;
 						if (showSkillNamePinyin != "doNotShow" && skillName != "阵亡") {
@@ -3886,23 +3802,22 @@ export class Click {
 							introduction2.appendChild(skillNameSpan);
 						}
 						htmlParser.innerHTML = get.skillInfoTranslation(this.link, null, false);
-						Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
+						Array.from(htmlParser.childNodes).forEach((childNode) => introduction2.appendChild(childNode));
 						var info = get.info(this.link);
 						var skill = this.link;
 						var playername = this.linkname;
-						let audioName = this.linkAudioName;
-						let skinName = bg.tempSkin || audioName;
+						let audioName2 = this.linkAudioName;
+						let skinName2 = bg.tempSkin || audioName2;
 						var skillnode = this;
 						let derivations = info.derivation;
 						if (derivations) {
 							if (typeof derivations == "string") {
 								derivations = [derivations];
 							}
-							derivations.forEach(derivation => {
+							derivations.forEach((derivation) => {
 								introduction2.appendChild(document.createElement("br"));
 								introduction2.appendChild(document.createElement("br"));
-								const derivationNameSpan = document.createElement("span"),
-									derivationNameSpanStyle = derivationNameSpan.style;
+								const derivationNameSpan = document.createElement("span"), derivationNameSpanStyle = derivationNameSpan.style;
 								derivationNameSpanStyle.fontWeight = "bold";
 								const derivationName = get.translation(derivation);
 								derivationNameSpan.innerHTML = derivationName;
@@ -3926,43 +3841,88 @@ export class Click {
 									introduction2.appendChild(derivationNameSpan);
 								}
 								htmlParser.innerHTML = get.skillInfoTranslation(derivation, null, false);
-								Array.from(htmlParser.childNodes).forEach(childNode => introduction2.appendChild(childNode));
+								Array.from(htmlParser.childNodes).forEach((childNode) => introduction2.appendChild(childNode));
 							});
+						}
+
+						// 添加技能append
+						if (lib.translate[this.link + "_append"]) {
+							introduction2.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>';
+							const appendDiv = document.createElement("div");
+							appendDiv.style.fontSize = "15.2px";
+							appendDiv.innerHTML = lib.translate[this.link + "_append"];
+							introduction2.appendChild(appendDiv);
+						}
+
+						// 添加技能台词
+						let skillVoiceMap = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName2 }, tempname: [skinName2] } }).textList;
+						if (skillVoiceMap.length > 0) {
+							introduction2.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">技能台词</span>';
+							skillVoiceMap.forEach((text, index) => {
+								const skillTextSpan = document.createElement("span");
+								skillTextSpan.style.fontSize = "15.2px";
+								skillTextSpan.innerHTML = `<br>${skillVoiceMap.length > 1 ? `${index + 1}. ` : ""}${text}`;
+								introduction2.appendChild(skillTextSpan);
+							});
+						}
+
+						// 添加衍生技能台词
+						if (info.derivation) {
+							var derivation = info.derivation;
+							if (typeof derivation == "string") {
+								derivation = [derivation];
+							}
+							for (var i2 = 0; i2 < derivation.length; i2++) {
+								if (derivation[i2].indexOf("_faq") != -1) {
+									continue;
+								}
+								if (nameInfo.skills.includes(derivation[i2])) {
+									continue;
+								}
+								let derivationVoiceMap = get.Audio.skill({ skill: derivation[i2], player: { name: playername, skin: { name: skinName2 }, tempname: [skinName2] } }).textList;
+								if (derivationVoiceMap.length > 0) {
+									introduction2.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">' + get.translation(derivation[i2]) + '台词</span>';
+									derivationVoiceMap.forEach((text, index) => {
+										const derivationTextSpan = document.createElement("span");
+										derivationTextSpan.style.fontSize = "15.2px";
+										derivationTextSpan.innerHTML = `<br>${derivationVoiceMap.length > 1 ? `${index + 1}. ` : ""}${text}`;
+										introduction2.appendChild(derivationTextSpan);
+									});
+								}
+							}
 						}
 
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
-								const audioList = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
+								const audioList = get.Audio.skill({ skill: this.link, player: { name: playername, skin: { name: skinName2 }, tempname: [skinName2] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
 									random: false,
-									autoplay: false,
+									autoplay: false
 								});
 								this.audioName = name;
 							}
 							this.playAudio();
 						}
 					} else {
-						let skinName = bg.tempSkin || this.linkname;
-						let dieAudios = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } })
-							.audioList.map(i => i.text)
-							.filter(Boolean);
+						let skinName2 = bg.tempSkin || this.linkname;
+						let dieAudios3 = get.Audio.die({ player: { name: this.playername, skin: { name: skinName2 }, tempname: [skinName2] } }).audioList.map((i2) => i2.text).filter(Boolean);
 						introduction2.innerHTML = '<span style="font-weight:bold;margin-right:5px">阵亡台词</span>';
-						dieAudios.forEach((text, index) => {
+						dieAudios3.forEach((text, index) => {
 							const dieTextSpan = document.createElement("span");
 							dieTextSpan.style.fontSize = "15.2px";
-							dieTextSpan.innerHTML = `<br>${dieAudios.length > 1 ? `${index + 1}. ` : ""}${text}`;
+							dieTextSpan.innerHTML = `<br>${dieAudios3.length > 1 ? `${index + 1}. ` : ""}${text}`;
 							introduction2.appendChild(dieTextSpan);
 						});
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {
-								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName }, tempname: [skinName] } }).fileList;
+								let audioList = get.Audio.die({ player: { name: this.playername, skin: { name: skinName2 }, tempname: [skinName2] } }).fileList;
 								this.playAudio = game.tryAudio({
 									audioList,
 									addVideo: false,
 									random: false,
-									autoplay: false,
+									autoplay: false
 								});
 								this.audioName = name;
 							}
