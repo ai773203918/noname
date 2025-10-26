@@ -892,9 +892,9 @@ export class Get extends GetCompatible {
 		return names;
 	}
 	/**
-	 * 获取一名角色的称号，默认返回纯文本
+	 * 获取角色称号，默认返回纯文本
 	 * @param {Player|string} name 玩家对象或角色名
-	 * @param {boolean} [name2=false] 是否查看玩家副将的称号
+	 * @param {boolean} [name2=false] 是否返回玩家副将的称号
 	 * @param {boolean} [plainText=true] 是否返回纯文本
 	 * @returns {string} 称号
 	 */
