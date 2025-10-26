@@ -194,7 +194,7 @@ const skills = {
 			},
 		},
 	},
-	huanling: {
+	pyhuanling: {
 		trigger: { player: ["phaseUseBegin", "damageEnd"] },
 		filter(event, player) {
 			return player.countCards("hes") > 0;
