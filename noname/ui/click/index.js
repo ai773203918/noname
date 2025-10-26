@@ -3444,8 +3444,8 @@ export class Click {
 					intro.innerHTML = titleHtml + '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
 
 					// 添加角色append
-					if (lib.translate[name + "_append"]) {
-						intro.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>' + lib.translate[name + "_append"];
+					if (lib.characterAppend[name]) {
+						intro.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>' + lib.characterAppend[name];
 					}
 				}
 
@@ -3751,8 +3751,8 @@ export class Click {
 				Array.from(htmlParser.childNodes).forEach(value => intro.appendChild(value));
 
 				// 添加角色append
-				if (lib.translate[name + "_append"]) {
-					intro.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>' + lib.translate[name + "_append"];
+				if (lib.characterAppend[name]) {
+					intro.innerHTML += '<br><br><span style="font-weight:bold;color:#ff6b6b;">引文</span><br>' + lib.characterAppend[name];
 				}
 
 
