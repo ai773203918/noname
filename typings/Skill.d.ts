@@ -1471,6 +1471,11 @@ declare interface Skill {
 	 * 持恒技
 	 */
 	persevereSkill?: boolean;
+	
+	/**
+	 * 变身技
+	 */
+	transformSkill?: boolean;
 
 	/**
 	 * 设置手动确认

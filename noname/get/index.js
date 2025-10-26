@@ -828,6 +828,9 @@ export class Get extends GetCompatible {
 		if (info.persevereSkill) {
 			list.add("持恒技");
 		}
+		if (info.transformSkill) {
+			list.add("变身技");
+		}
 		if (info.comboSkill) {
 			list.add("连招技");
 		}
