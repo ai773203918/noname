@@ -2933,7 +2933,7 @@ const skills = {
 			const result = await player
 				.chooseButton([get.prompt2(event.skill), trigger.getl(player).hs])
 				.set("filterButton", button => {
-					return get.position(button.link, true) == "d" && button.link.name == "sha";
+					return get.position(button.link) == "d" && button.link.name == "sha";
 				})
 				.forResult();
 			event.result = {

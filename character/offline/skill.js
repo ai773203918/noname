@@ -2891,11 +2891,20 @@ const skills = {
 			return get.effect(event.player, { name: "sha" }, player, player) > 0;
 		},
 		filter(event, player) {
-			return get.tag(event.card, "damage") && event.targets && event.targets.length == 1 && event.targets[0].group == "wei";
+			if (!get.tag(event.card, "damage") || event.targets?.length !== 1) {
+				return false;
+			}
+			if (event.targets[0].group !== "wei") {
+				return false;
+			}
+			const card = get.autoViewAs({ name: "sha", isCard: true });
+			return player.canUse(card, trigger.player, false);
 		},
 		async content(event, trigger, player) {
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
-			player.useCard(sha, trigger.player, false);
+			if (player.canUse(sha, trigger.player, false)) {
+				player.useCard(sha, trigger.player, false);
+			}
 		},
 	},
 	//程昱
@@ -5361,6 +5370,7 @@ const skills = {
 			damage: {
 				charlotte: true,
 				onremove: true,
+				firstDo: true,
 				trigger: {
 					source: "damageBegin1",
 					player: "useCardAfter",

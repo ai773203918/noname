@@ -8675,6 +8675,7 @@ const skills = {
 							"牌堆顶",
 							cards,
 							list => {
+								const { sum } = get.event();
 								const sum2 = list.reduce((num, card) => num + get.number(card, false), 0);
 								return "牌堆顶（现" + sum2 + { 0: "=", "-1": "<", 1: ">" }[get.sgn(sum2 - sum).toString()] + "原" + sum + "）";
 							},
@@ -8716,6 +8717,7 @@ const skills = {
 							return list;
 						}
 					})
+					.set("sum", sum)
 					.set("num", num);
 				if (bool) {
 					const puts = player.getCards("h", i => moved[0].includes(i));
