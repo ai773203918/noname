@@ -205,8 +205,8 @@ const skills = {
 		init(player, skill) {
 			if (!_status.bingzhuSkill) {
 				const bingzhuSkill = {};
-				lib.inpile
-					.filter(name => get.type(name) == "equip" && get.bingzhu(name))
+				Object.keys(lib.card)
+					.filter(name => get.type(name) == "equip" && get.bingzhu(name).length)
 					.map(name => get.bingzhu(name))
 					.flat()
 					.forEach(name => (bingzhuSkill[name] = []));
@@ -214,18 +214,16 @@ const skills = {
 					game.initCharacterList();
 				}
 				_status.characterlist.map(character => {
-					const name = get.rawName(character);
-					if (bingzhuSkill[name]) {
-						bingzhuSkill[name].push(get.character(character, 3));
-					} else if (bingzhuSkill[character]) {
-						bingzhuSkill[character].push(get.character(character, 3));
-					}
+					const names = get.characterSurname(character).map(info => info.join("")).concat([get.rawName(character)]),
+						skills = get.character(character, 3);
+					names.forEach(name => {
+						if (bingzhuSkill[name]) {
+							bingzhuSkill[name].addArray(skills);
+						}
+					});
 				});
 				for (let name in bingzhuSkill) {
-					bingzhuSkill[name] = bingzhuSkill[name]
-						.flat()
-						.unique()
-						.sort(() => Math.random() - 0.5);
+					bingzhuSkill[name] = bingzhuSkill[name].randomSort();
 				}
 				game.broadcastAll(bingzhuSkill => (_status.bingzhuSkill = bingzhuSkill), new Map(Object.entries(bingzhuSkill)));
 			}
@@ -277,7 +275,10 @@ const skills = {
 				}
 			}
 			if (target != player) {
-				await player.draw(target.getSkills(null, false, false).length);
+				await player.draw(target.getSkills(null, false, false).filter(skill => {
+					const info = get.info(skill);
+					return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
+				}).length);
 			}
 		},
 	},

@@ -362,13 +362,15 @@ const skills = {
 			if (!event.isMine() && !event.isOnline()) {
 				await game.delayx();
 			}
-			const { result } = await player
+			const nextx = player
 				.chooseCardOL(targets, "he", true, 1, "奋驽：弃置一张牌", (card, player, target) => {
 					return lib.filter.cardDiscardable(card, player, "clanfennu");
 				})
 				.set("ai", card => {
 					return 7 - get.value(card);
 				});
+				nextx._args.remove("glow_result");
+			const { result } = await nextx;
 			const lose_list = [],
 				cards = [];
 			for (let i = 0; i < result.length; i++) {

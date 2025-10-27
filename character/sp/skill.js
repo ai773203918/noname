@@ -1288,6 +1288,8 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						isCard: true,
+						suit: "none",
+						number: null,
 					},
 					position: "h",
 					ignoreMod: true,
@@ -1323,6 +1325,15 @@ const skills = {
 			name: "卸尾（饵）",
 			markcount: "expansion",
 			content: "expansion",
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: "sha" }, player) - 0.1;
+			},
+			result: {
+				player: 1,
+			},
 		},
 	},
 	olyouque: {
@@ -8664,6 +8675,7 @@ const skills = {
 							"牌堆顶",
 							cards,
 							list => {
+								const { sum } = get.event();
 								const sum2 = list.reduce((num, card) => num + get.number(card, false), 0);
 								return "牌堆顶（现" + sum2 + { 0: "=", "-1": "<", 1: ">" }[get.sgn(sum2 - sum).toString()] + "原" + sum + "）";
 							},
@@ -8705,6 +8717,7 @@ const skills = {
 							return list;
 						}
 					})
+					.set("sum", sum)
 					.set("num", num);
 				if (bool) {
 					const puts = player.getCards("h", i => moved[0].includes(i));

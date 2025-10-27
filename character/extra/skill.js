@@ -1014,6 +1014,7 @@ const skills = {
 			},
 			jun: {
 				markimage2: "image/card/chitu.png",
+				nopop: true,
 				intro: {
 					name: "骏",
 					content(storage, player) {
@@ -1028,6 +1029,7 @@ const skills = {
 			},
 			li: {
 				markimage2: "image/card/dilu.png",
+				nopop: true,
 				intro: {
 					name: "骊",
 					content(storage, player) {

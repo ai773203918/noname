@@ -1,7 +1,12 @@
 window.noname_character_rank = {
-	s: ["two_yj_puyuan", "x_yao_yuanshu", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
+	s: ["two_yj_puyuan", "x_yao_yuanshu", "lord_goblin", "pe_guozhao", "xia_caopi", "pe_jun_caopi", "wn_shen_machao", "pe_que", "hm_shen_huangfusong", "tw_jsrg_huangfusong", "key_shiki", "sp_xiahoushi", "ns_zhangwei", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "key_iriya", "ol_nanhualaoxian", "huzun", "dc_xujing", "ty_shen_zhangfei", "vtb_xiaole", "yj_zhonghui", "duosidawang", "re_sp_zhugeliang", "re_pangtong", "tw_wujing", "dengzhi", "xin_chengpu", "tw_dongzhao", "sunwukong", "ps_shen_machao", "pk_sp_duyu", "std_pengyang", "diy_liaohua", "drag_xusheng"],
 	ap: [
 		"tw_jsrg_sunjian",
+		"shinin_zhenji",
+		"shinin_wuguotai",
+		"shinin_ruiji",
+		"shinin_lvlingqi",
+		"shinin_dongwan",
 		"zj_liuyuan",
 		"zj_zhonghui",
 		"eu_kaisa",
@@ -1243,6 +1248,7 @@ window.noname_character_rank = {
 		"ol_lukai",
 		"ol_hanfu",
 		"huzhao",
+		"goblin",
 		"zhangfen",
 		"ol_dianwei",
 		"re_zhuhuan",
@@ -2177,6 +2183,7 @@ window.noname_character_rank = {
 	rarity: {
 		legend: [
 			"zc26_shen_huangyueying",
+			"lord_goblin",
 			"scl_jiaxu",
 			"x_yao_yuanshu",
 			"zj_liuyuan",
@@ -2482,6 +2489,10 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"zc26_lusu",
+			"zc26_zhanghe",
+			"zc26_taishici",
+			"zc26_jiaxu",
 			"xy_xunyu",
 			"you_zhugeliang",
 			"bigsb_dengai",
@@ -2964,9 +2975,15 @@ window.noname_character_rank = {
 			"ren_jiangwei",
 			"ren_dengai",
 			"ol_jsrg_zhangliao",
+			"shinin_zhenji",
+			"shinin_wuguotai",
+			"shinin_ruiji",
+			"shinin_lvlingqi",
+			"shinin_dongwan",
 			"guotiying",
 		],
 		rare: [
+			"goblin",
 			"std_huangwudie",
 			"std_qinghegongzhu",
 			"std_quyi",

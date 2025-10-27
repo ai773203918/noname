@@ -4559,36 +4559,34 @@ const skills = {
 				}
 				if (links.includes("debuff")) {
 					game.log(player, "选择了", "#y选项二");
-					if (!player.countCards("h")) {
-						return;
-					}
-					const resulty = await player
-						.chooseCard(`肃纲：请展示一张手牌`, true)
-						.set("num", num)
-						.set("ai", card => {
-							return -Math.abs(get.number(card, get.player()) - get.event().num);
-						})
-						.forResult();
-					if (!resulty?.cards) {
-						return;
-					}
-					const cardx = resulty.cards[0],
-						name = skill + "_debuff";
-					await player.showCards(cardx, `${get.translation(player)}发动【肃纲】展示的牌`);
-					const range = [num, get.number(cardx, player)].sort((a, b) => a - b);
-					player.line(game.filterPlayer(), "yellow");
-					for (const target of game.filterPlayer()) {
-						let storage = target.getStorage(name);
-						if (!storage.length) {
-							storage = range;
-						} else {
-							storage = storage
-								.concat(range)
-								.sort((a, b) => a - b)
-								.slice(1, 3);
+					if (player.countCards("h")) {
+						const resulty = await player
+							.chooseCard(`肃纲：请展示一张手牌`, true)
+							.set("num", num)
+							.set("ai", card => {
+								return -Math.abs(get.number(card, get.player()) - get.event().num);
+							})
+							.forResult();
+						if (resulty?.cards) {
+							const cardx = resulty.cards[0],
+								name = skill + "_debuff";
+							await player.showCards(cardx, `${get.translation(player)}发动【肃纲】展示的牌`);
+							const range = [num, get.number(cardx, player)].sort((a, b) => a - b);
+							player.line(game.filterPlayer(), "yellow");
+							for (const target of game.filterPlayer()) {
+								let storage = target.getStorage(name);
+								if (!storage.length) {
+									storage = range;
+								} else {
+									storage = storage
+										.concat(range)
+										.sort((a, b) => a - b)
+										.slice(1, 3);
+								}
+								target.setStorage(name, storage);
+								target.addTempSkill(name);
+							}
 						}
-						target.setStorage(name, storage);
-						target.addTempSkill(name);
 					}
 				}
 				if (links.includes("buff")) {
@@ -4671,6 +4669,9 @@ const skills = {
 					},
 				},
 				onremove: true,
+				ai: {
+					save: true,
+				},
 				mod: {
 					cardEnabled(card, player) {
 						const num = get.number(card, player),

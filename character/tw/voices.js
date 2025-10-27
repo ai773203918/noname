@@ -1,4 +1,9 @@
 export default {
+	"#huan_caochong:die": "骨肉至亲，何必至此……",
+	"#twfushu1": "常怀仁爱之心，天必不绝其路。",
+	"#twfushu2": "东风不吝回青意，当还病树万木春。",
+	"#twxiumu1": "你我共辅皇兄大业，大魏必享国万年！",
+	"#twxiumu2": "手足之情，岂能为权欲所动？",
 	"#twchenxun1": "待我上马，拔得头筹！",
 	"#twchenxun2": "阵斩敌将，名扬四海！",
 	"#huan_liufeng:die": "断臂之犬，焉能挡我？……呃啊！",

@@ -690,12 +690,12 @@ const skills = {
 		audio: "rekuangcai",
 		mod: {
 			cardUsable(card, player) {
-				if (get.event().stdkuangcai < 2) {
+				if (player.isPhaseUsing() && get.event().stdkuangcai < 2) {
 					return Infinity;
 				}
 			},
 			targetInRange(card, player) {
-				if (get.event().stdkuangcai < 2) {
+				if (player.isPhaseUsing() && get.event().stdkuangcai < 2) {
 					return true;
 				}
 			},
@@ -707,16 +707,32 @@ const skills = {
 				event.set("stdkuangcai", player.getHistory("useCard", evt => evt.getParent("phaseUse") == event.getParent("phaseUse")).length);
 			}
 		},
-		trigger: { player: "useCardAfter" },
+		trigger: { player: "useCard" },
 		filter(event, player) {
+			if (!player.isPhaseUsing()) {
+				return false;
+			}
 			return player.getHistory("useCard", evt => evt.getParent("phaseUse") == event.getParent("phaseUse")).indexOf(event) < 2;
 		},
 		async content(event, trigger, player) {
-			if (player.hasHistory("sourceDamage", evt => evt.card === trigger.card)) {
-				await player.draw();
-			} else {
-				await player.chooseToDiscard("he", true);
+			if (trigger.addCount !== false) {
+				trigger.addCount = false;
+				const stat = player.getStat().card,
+					name = trigger.card.name;
+				if (typeof stat[name] == "number") {
+					stat[name]--;
+				}
 			}
+			player
+				.when("useCardAfter")
+				.filter(evt => evt == trigger)
+				.step(async (event, trigger, player) => {
+					if (player.hasHistory("sourceDamage", evt => evt.card === trigger.card)) {
+						await player.draw();
+					} else {
+						await player.chooseToDiscard("he", true);
+					}
+				});
 		},
 	},
 	stdshejian: {

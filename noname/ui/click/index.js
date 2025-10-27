@@ -754,6 +754,11 @@ export class Click {
 				if (_status.forceKey) {
 					list.key = "键";
 				}
+				for (let i in list) {
+					if (_status.bannedGroup.slice(6) == i) {
+						delete list[i];
+					}
+				}
 			}
 			var list2 = get.copy(list);
 			if (game.getIdentityList2) {
@@ -3491,6 +3496,9 @@ export class Click {
 								derivation = [derivation];
 							}
 							for (var i = 0; i < derivation.length; i++) {
+								if (derivation[i].indexOf("_faq") == -1 && !get.info(derivation[i]).nopop) {
+									continue;
+								}
 								var derivationname = get.translation(derivation[i]);
 								var derivationtranslationinfo = get.skillInfoTranslation(derivation[i], null, false);
 								if ((lib.config.show_skillnamepinyin == "showPinyin2" || lib.config.show_skillnamepinyin == "showCodeIdentifier2") && derivationname.length <= 5 && derivation[i].indexOf("_faq") == -1) {
@@ -3530,6 +3538,9 @@ export class Click {
 								derivation = [derivation];
 							}
 							for (var i = 0; i < derivation.length; i++) {
+								if (!get.info(derivation[i]).nopop) {
+									continue;
+								}
 								if (derivation[i].indexOf("_faq") != -1) {
 									continue;
 								}
@@ -3815,6 +3826,9 @@ export class Click {
 								derivations = [derivations];
 							}
 							derivations.forEach((derivation) => {
+								if (derivation.indexOf("_faq") == -1 && !get.info(derivation).nopop) {
+									return false;
+								}
 								introduction2.appendChild(document.createElement("br"));
 								introduction2.appendChild(document.createElement("br"));
 								const derivationNameSpan = document.createElement("span"), derivationNameSpanStyle = derivationNameSpan.style;
@@ -3867,7 +3881,7 @@ export class Click {
 						}
 
 						// 添加衍生技能台词
-						if (info.derivation) {
+						/*if (info.derivation) {
 							var derivation = info.derivation;
 							if (typeof derivation == "string") {
 								derivation = [derivation];
@@ -3890,7 +3904,7 @@ export class Click {
 									});
 								}
 							}
-						}
+						}*/
 
 						if (lib.config.background_speak && e !== "init") {
 							if (!this.playAudio || name != this.audioName) {

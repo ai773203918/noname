@@ -670,7 +670,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip2",
-				bingzhu: ["马超", "五虎"],
+				bingzhu: ["马超"],
 				loseDelay: false,
 				onLose() {
 					player.addTempSkill("baiyin_skill_lose");

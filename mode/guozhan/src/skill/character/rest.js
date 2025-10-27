@@ -8,6 +8,89 @@ const get = cast(_get);
 
 /** @type {Record<string, Skill>} */
 export default {
+	//OL吴懿
+	gz_ol_benxi: {
+		audio: "benxi",
+		trigger: {
+			player: "useCard",
+		},
+		filter(event, player) {
+			return player == _status.currentPhase;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const name = `${event.name}_effect`;
+			player.addTempSkill(name);
+			player.addMark(name, 1, false);
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					markcount(storage, player) {
+						return -1 * (storage || 0);
+					},
+					content: "计算与其他角色距离-#",
+				},
+				mod: {
+					globalFrom(from, to, distance) {
+						return distance - from.countMark("gz_ol_benxi_effect");
+					},
+				},
+			},
+		},
+	},
+	gz_ol_zhuanzheng: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			if (player.countMark("gz_ol_zhuanzheng_used") > 1) {
+				return false;
+			}
+			return game.hasPlayer(current => player.isFriendOf(current));
+		},
+		filterTarget(card, player, target) {
+			return player.isFriendOf(target) && get.distance(player, target) <= 1;
+		},
+		async content(event, trigger, player) {
+			const { target } = event,
+				name = `${event.name}_used`;
+			player.addTempSkill(name, { global: "roundStart" });
+			player.addMark(name, 1, false);
+			let num = -1,
+				left = player,
+				right = player;
+			while (target?.isIn()) {
+				if (left == target || right == target) {
+					break;
+				}
+				left = left.getPrevious();
+				right = right.getNext();
+				num++;
+			}
+			await player.draw(Math.max(1, num));
+			const result =
+				target == player
+					? {
+							bool: false,
+					  }
+					: await target
+							.chooseBool(`是否与${get.translation(player)}交换副将？`)
+							.set("choice", Math.random() > 0.5)
+							.forResult();
+			if (result.bool) {
+				// @ts-expect-error 祖宗之法就是这么做的
+				await player.transCharacter(target);
+			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
 	//手杀陆逊
 	gz_mb_qianxun: {
 		audio: "sbqianxun",
@@ -207,7 +290,7 @@ export default {
 	},
 	//OL钟会
 	gz_ol_quanji: {
-		audio: 2,
+		audio: "quanji",
 		trigger: {
 			player: "damageEnd",
 		},
@@ -268,7 +351,7 @@ export default {
 		},
 	},
 	gz_ol_paiyi: {
-		audio: 2,
+		audio: "paiyi",
 		mainSkill: true,
 		init(player) {
 			if (player.checkMainSkill("gz_ol_paiyi")) {
@@ -19030,7 +19113,7 @@ export default {
 			}
 			const groups = ["wei", "shu", "wu", "qun", "jin"];
 			if (_status.bannedGroup) {
-				groups.remove(_status.bannedGroup);
+				groups.remove(_status.bannedGroup.slice(6));
 			}
 			const willBeYe = groups.filter(group => {
 				if (_status.yeidentity && _status.yeidentity.includes(group)) {
