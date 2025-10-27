@@ -1,4 +1,22 @@
 const characters = {
+	taohuang: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["dczhijue", "dcweiwei"],
+	},
+	dc_sb_zhuran: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["dcsbzhenyu", "dcsbjielu"],
+	},
+	v_sunshangxiang: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["dcshuren", "dcsaran"],
+	},
 	dc_sb_xusheng: {
 		sex: "male",
 		group: "wu",

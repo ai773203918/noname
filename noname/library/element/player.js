@@ -10474,7 +10474,7 @@ export class Player extends HTMLDivElement {
 		if (VCard.storage.equipEnable && VCard.cards?.some(card => get.type(card) == "equip")) {
 			const es = player.getVCards("e");
 			const equips = VCard.cards.filter(card => {
-				if (get.type(card) == "equip") {
+				if (get.type(card) != "equip") {
 					return false;
 				}
 				return !es.some(cardx => cardx.name == card.name);
