@@ -1,21 +1,21 @@
 const characters = {
 	dm_sunquan: {
-        sex: "male",
-        group: "wu",
-        hp: 4,
-        skills: ["olquanyu", "oltianen", "olqiangang"],
-    },
-    ol_sb_guojia: {
-        sex: "male",
-        group: "wei",
-        hp: 3,
-        skills: ["olsbdinglun", "olsbjieli"],
-    },
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["olquanyu", "oltianen", "olqiangang"],
+	},
+	ol_sb_guojia: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["olsbdinglun", "olsbjieli"],
+	},
 	ol_re_yujin: {
-		sex:"male",
-		group:"wei",
-		hp:4,
-		skills:["ol_zhenjun","ol_yizhong"],
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["ol_zhenjun", "ol_yizhong"],
 	},
 	ol_jsrg_zhangliao: {
 		sex: "male",
@@ -23,7 +23,6 @@ const characters = {
 		hp: 4,
 		skills: ["olzhengbing", "jsrgtuwei"],
 		doubleGroup: ["wei", "qun"],
-		img: "image/character/jsrg_zhangliao.jpg",
 		dieAudios: ["jsrg_zhangliao"],
 	},
 	ol_sb_xuyou: {
