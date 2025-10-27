@@ -2931,7 +2931,7 @@ const _zhanfa = {
 			async cost(event, trigger, player) {
 				const { select } = get.info(event.skill);
 				event.result = await player
-					.chooseCard(get.prompt2(event.skill), select, (card, player) => player.canRecast(card))
+					.chooseCard(get.prompt2(event.skill), select, (card, player) => player.canRecast(card), "he")
 					.set("ai", card => 6 - get.value(card))
 					.forResult();
 			},

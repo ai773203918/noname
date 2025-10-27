@@ -29186,7 +29186,7 @@ const skills = {
 		},
 		audio: 6,
 		async cost(event, trigger, player) {
-			const result = await player
+			event.result = await player
 				.chooseTarget("请选择【先辅】的目标", lib.translate.xianfu_info, true, function (card, player, target) {
 					return target != player && (!player.storage.xianfu2 || !player.storage.xianfu2.includes(target));
 				})
@@ -29202,24 +29202,16 @@ const skills = {
 				})
 				.set("animate", false)
 				.forResult();
-			event.result = {
-				bool: true,
-				cost_data: result.targets[0],
-			};
 		},
 		logAudio: () => 2,
+		logLine: false,
 		async content(event, trigger, player) {
-			let target = event.cost_data;
-			if (!player.storage.xianfu2) {
-				player.storage.xianfu2 = [];
-			}
+			let [target] = event.targets;
+			player.storage.xianfu2 ??= [];
 			player.storage.xianfu2.push(target);
 			player.addSkill("xianfu2");
-
 			const func = (player, target) => {
-				if (!target.storage.xianfu_mark) {
-					target.storage.xianfu_mark = [];
-				}
+				target.storage.xianfu_mark ??= [];
 				target.storage.xianfu_mark.add(player);
 				target.storage.xianfu_mark.sortBySeat();
 				target.markSkill("xianfu_mark", null, null, true);
@@ -30365,53 +30357,45 @@ const skills = {
 	kuanshi: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("kuanshi")).set("ai", function (target) {
-				if (get.attitude(_status.event.player, target) > 0) {
-					return 1 / Math.sqrt(target.hp + 1);
-				}
-				return 0;
-			}).animate = false;
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("kuanshi");
-				target.storage.kuanshi2 = player;
-				target.addSkill("kuanshi2");
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					if (get.attitude(get.player(), target) > 0) {
+						return 1 / Math.sqrt(target.hp + 1);
+					}
+					return 0;
+				})
+				.set("animate", false)
+				.forResult();
 		},
-	},
-	kuanshi2: {
-		/*mark:'character',
-		intro:{
-			content:'下一次受到超过1点的伤害时，防止此伤害，然后$跳过下个回合的摸牌阶段'
-		},*/
-		trigger: { player: "damageBegin4" },
-		forced: true,
-		sourceSkill: "kuanshi",
-		filter(event, player) {
-			return event.num > 1;
+		logLine: false,
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.addSkill(event.name + "_effect", { player: "phaseBegin" });
+			player.markAuto(event.name + "_effect", [target]);
 		},
-		//priority:-11,
-		content() {
-			trigger.cancel();
-			player.storage.kuanshi2.skip("phaseDraw");
-			player.removeSkill("kuanshi2");
-		},
-		group: "kuanshi2_remove",
-		onremove: true,
 		subSkill: {
-			remove: {
-				trigger: { global: ["phaseZhunbeiBegin", "dieAfter"] },
+			effect: {
+				charlotte: true,
+				onremove: true,
+				audio: "kuanshi",
+				trigger: { global: "damageBegin4" },
 				forced: true,
-				popup: false,
 				filter(event, player) {
-					return event.player == player.storage.kuanshi2;
+					return event.num > 1 && player.getStorage("kuanshi_effect").includes(event.player);
 				},
-				content() {
-					player.removeSkill("kuanshi2");
+				logtarget: "player",
+				async content(event, trigger, player) {
+					const target = trigger.player;
+					if (player.getStorage(event.name).includes(target)) {
+						player.getStorage(event.name).remove(target);
+					}
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
+					trigger.cancel();
+					player.skip("phaseDraw");
 				},
 			},
 		},

@@ -33873,7 +33873,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const num = Math.min(trigger.target.hp, trigger.target.countCards("he"));
 			event.result = await player
-				.choosePlayerCard(trigger.target, "he", [1, num], get.prompt(event.skill, trigger.target))
+				.choosePlayerCard(trigger.target, "he", [1, num], get.prompt(event.skill, trigger.target), "allowChooseAll")
 				.set("ai", button => {
 					if (!_status.event.goon) {
 						return 0;
