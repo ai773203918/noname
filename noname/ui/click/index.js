@@ -755,7 +755,7 @@ export class Click {
 					list.key = "键";
 				}
 				for (let i in list) {
-					if (_status.bannedGroup.slice(6) == i) {
+					if (_status.bannedGroup?.slice(6) == i) {
 						delete list[i];
 					}
 				}
