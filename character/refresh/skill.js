@@ -9825,7 +9825,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("decadepojun", trigger.target));
+			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("decadepojun", trigger.target), "allowChooseAll");
 			next.set("ai", function (button) {
 				if (!_status.event.goon) {
 					return 0;
@@ -11723,7 +11723,7 @@ const skills = {
 		preHidden: true,
 		content() {
 			"step 0";
-			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("repojun", trigger.target));
+			var next = player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.hp, trigger.target.countCards("he"))], get.prompt("repojun", trigger.target), "allowChooseAll");
 			next.set("ai", function (button) {
 				if (!_status.event.goon) {
 					return 0;

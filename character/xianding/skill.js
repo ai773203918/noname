@@ -27097,52 +27097,56 @@ const skills = {
 		audio: 2,
 		// derivation: "refenyin",
 		trigger: { global: "roundStart" },
-		forced: true,
-		locked: false,
 		derivation: "iwasawa_refenyin",
-		content() {
-			"step 0";
-			var next = player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseTarget("请选择【预言】的目标", true)
-				.set("animate", false)
-				.set("ai", function () {
+				.set("ai", target => {
 					return Math.random();
-				});
-			"step 1";
-			if (result.bool) {
-				player.storage.wfyuyan = result.targets[0];
-				player.addSkill("wfyuyan_dying");
-				player.addSkill("wfyuyan_damage");
-			}
+				})
+				.set("animate", false)
+				.forResult();
+		},
+		logLine: false,
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.addTempSkill(event.name + "_dying", "roundEnd");
+			player.markAuto(event.name + "_dying", [target]);
+			player.addTempSkill(event.name + "_damage", "roundEnd");
+			player.markAuto(event.name + "_damage", [target]);
 		},
 		subSkill: {
 			dying: {
 				trigger: { global: "dying" },
-				forced: true,
 				charlotte: true,
+				onremove: true,
+				forced: true,
 				popup: false,
-				content() {
-					if (trigger.player == player.storage.wfyuyan) {
+				async content(event, trigger, player) {
+					const storage = player.getStorage(event.name);
+					player.removeSkill(event.name);
+					if (storage.includes(trigger.player)) {
 						player.logSkill("wfyuyan", trigger.player);
-						player.addTempSkills("iwasawa_refenyin", { player: "phaseEnd" });
+						await player.addTempSkills("iwasawa_refenyin", { player: "phaseEnd" });
 					}
-					player.removeSkill("wfyuyan_dying");
 				},
 			},
 			damage: {
 				trigger: { global: "damageSource" },
+				charlotte: true,
+				onremove: true,
 				forced: true,
 				popup: false,
-				charlotte: true,
 				filter(event, player) {
-					return event.source && event.source.isIn();
+					return event.source;
 				},
-				content() {
-					if (trigger.source == player.storage.wfyuyan) {
+				async content(event, trigger, player) {
+					const storage = player.getStorage(event.name);
+					player.removeSkill(event.name);
+					if (storage.includes(trigger.source)) {
 						player.logSkill("wfyuyan", trigger.source);
-						player.draw(2);
+						await player.draw(2);
 					}
-					player.removeSkill("wfyuyan_damage");
 				},
 			},
 		},
@@ -28231,20 +28235,11 @@ const skills = {
 	zhuihuan: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return !current.hasSkill("zhuihuan2_new");
-			});
-		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("zhuihuan"), "令一名角色获得“追还”效果", function (card, player, target) {
-					return !target.hasSkill("zhuihuan2_new");
-				})
-				.set("ai", function (target) {
-					var player = _status.event.player,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "令一名角色获得“追还”效果")
+				.set("ai", target => {
+					let player = get.player(),
 						att = get.attitude(player, target);
 					if (target.hasSkill("maixie") || target.hasSkill("maixie_defend")) {
 						att /= 3;
@@ -28252,16 +28247,58 @@ const skills = {
 					if (target != player) {
 						att /= Math.pow(game.players.length - get.distance(player, target, "absolute"), 0.7);
 					}
+					if (!target.hasSkill("zhuihuan_effect")) {
+						att *= 1.5;
+					}
 					return att;
 				})
-				.set("animate", false);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("zhuihuan");
-				target.addTempSkill("zhuihuan2_new", { player: "phaseZhunbei" });
-				game.delayx();
-			}
+				.set("animate", false)
+				.forResult();
+		},
+		logLine: false,
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			target.addTempSkill(event.name + "_effect", { player: "phaseZhunbei" });
+			await game.delayx();
+		},
+		subSkill: {
+			effect: {
+				trigger: { player: "phaseZhunbeiBegin" },
+				charlotte: true,
+				forced: true,
+				onremove: true,
+				getIndex(event, player) {
+					return player.getStorage("zhuihuan_effect").sortBySeat();
+				},
+				filter(event, player, name, target) {
+					return target?.isIn();
+				},
+				logTarget(event, player, triggername, target) {
+					return target;
+				},
+				async content(event, trigger, player) {
+					const [target] = event.targets;
+					if (target.hp > player.hp) {
+						await target.damage(2);
+					} else if (target.countCards("h")) {
+						await target.randomDiscard(2, "h");
+					}
+				},
+				group: "zhuihuan_record",
+			},
+			record: {
+				trigger: { player: "damageEnd" },
+				forced: true,
+				silent: true,
+				popup: false,
+				charlotte: true,
+				filter(event, player) {
+					return get.itemtype(event.source) == "player";
+				},
+				async content(event, trigger, player) {
+					player.markAuto("zhuihuan_effect", [trigger.source]);
+				},
+			},
 		},
 	},
 	zhuihuan2_new: {
