@@ -2933,8 +2933,9 @@ const skills = {
 			const result = await player
 				.chooseButton([get.prompt2(event.skill), trigger.getl(player).hs])
 				.set("filterButton", button => {
-					return get.position(button.link, true) == "d" && button.link.name == "sha";
+					return get.event("canGain").includes(button.link);
 				})
+				.set("canGain", trigger.getl(player).hs.filter(card => get.position(card, true) == "d" && card.name == "sha"))
 				.forResult();
 			event.result = {
 				bool: result.bool,
@@ -4005,7 +4006,7 @@ const skills = {
 		trigger: { global: "damageBegin4" },
 		usable: 1,
 		filter(event, player) {
-			return get.distance(player, event.player) <= 1 && player != event.player;
+			return get.distance(event.player, player) <= 1 && player != event.player;
 		},
 		popup: false,
 		logTarget: "player",
@@ -25913,7 +25914,10 @@ const skills = {
 		},
 	},
 	//表演测试
-	qiaosi_map: { charlotte: true },
+	qiaosi_map: {
+		charlotte: true,
+		nopop: true,
+	},
 	qiaosi: {
 		audio: 2,
 		derivation: "qiaosi_map",

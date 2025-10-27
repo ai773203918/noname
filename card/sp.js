@@ -207,6 +207,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["曹操", "王允", "董卓"],
 				skills: ["qibaodao", "qibaodao2"],
 				distance: { attackFrom: -1 },
 				ai: {
@@ -230,6 +231,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["周泰"],
 				skills: ["zhungangshuo"],
 				distance: { attackFrom: -2 },
 				ai: {
@@ -250,6 +252,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["赵云"],
 				distance: { attackFrom: -2 },
 				ai: {
 					basic: {

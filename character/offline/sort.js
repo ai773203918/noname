@@ -30,6 +30,7 @@ const characterSort = {
 	offline_fengyun: ["ps_caocao", "ps_liubei", "ps_sunquan"],
 	offline_xy: ["xy_caocao", "xy_chengyu", "xy_xunyu", "xy_chengong", "xy_zhangkai", "xy_lvbu", "xy_zhangmiao", "xy_caosong"],
 	offline_zc26: ["zc26_lusu", "zc26_jiaxu", "zc26_zhanghe", "zc26_taishici"],
+	offline_shiningGrils: ["shinin_zhenji", "shinin_wuguotai", "shinin_ruiji", "shinin_lvlingqi", "shinin_dongwan", "goblin", "lord_goblin"],
 	//offline_others: [],
 };
 
@@ -68,6 +69,7 @@ const characterSortTranslate = {
 	offline_Europe: "风云志·欧陆风云",
 	offline_xy: "徐兖纵横",
 	offline_zc26: "26珍藏",
+	offline_shiningGrils: "闪耀战姬",
 };
 
 export { characterSort, characterSortTranslate };

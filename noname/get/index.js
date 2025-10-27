@@ -828,6 +828,9 @@ export class Get extends GetCompatible {
 		if (info.persevereSkill) {
 			list.add("持恒技");
 		}
+		if (info.transformSkill) {
+			list.add("变身技");
+		}
 		if (info.comboSkill) {
 			list.add("连招技");
 		}
@@ -1217,12 +1220,13 @@ export class Get extends GetCompatible {
 			list.addArray(lib.cardBingzhu[name]);
 		}
 		if (info.derivation) {
-			list.addArray(info.derivation);
+			const names = get.characterSurname(info.derivation).map(list => list.join(""));
+			list.addArray(names);
 		}
 		if (info.bingzhu) {
 			list.addArray(info.bingzhu);
 		}
-		return list;
+		return list.filter(surname => surname !== "某");
 	}
 	/**
 	 * @overload

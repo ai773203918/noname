@@ -24,6 +24,11 @@ game.import("character", function () {
 		characterTitle: { ...characterTitles },
 		characterSubstitute: {
 			jd_sb_sp_zhugeliang: [["sb_zhugeliang", []]],
+			shinin_zhenji: [["awaken_shinin_zhenji", []]],
+			shinin_wuguotai: [["awaken_shinin_wuguotai", []]],
+			shinin_ruiji: [["awaken_shinin_ruiji", []]],
+			shinin_lvlingqi: [["awaken_shinin_lvlingqi", []]],
+			shinin_dongwan: [["awaken_shinin_dongwan", []]],
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },

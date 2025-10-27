@@ -847,7 +847,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip4",
-				bingzhu: ["吕布", "关羽", "五虎"],
+				bingzhu: ["吕布", "关羽"],
 				distance: { globalFrom: -1 },
 			},
 			dawan: {
@@ -926,7 +926,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
-				bingzhu: ["赵云", "曹操", "五虎"],
+				bingzhu: ["赵云", "曹操"],
 				distance: { attackFrom: -1 },
 				ai: {
 					basic: {
@@ -939,7 +939,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
-				bingzhu: ["关羽", "关兴张苞", "关兴", "张苞", "关银屏", "五虎"],
+				bingzhu: ["关羽", "关兴", "张苞", "关银屏"],
 				distance: { attackFrom: -2 },
 				ai: {
 					equipValue(card, player) {
@@ -955,7 +955,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
-				bingzhu: ["张飞", "关兴张苞", "关兴", "张苞", "张星彩", "五虎"],
+				bingzhu: ["张飞", "关兴", "张苞", "张星彩"],
 				distance: { attackFrom: -2 },
 				ai: {
 					equipValue(card, player) {

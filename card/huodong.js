@@ -11,6 +11,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip5",
+				bingzhu: ["华佗"],
 				skills: ["mb_qingnangshu_skill"],
 				maxNum: 3,
 				onEquip() {
@@ -51,6 +52,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip5",
+				bingzhu: ["刘宏", "袁术", "司马炎"],
 				skills: ["mb_chuanguoyuxi_skill"],
 				ai: {
 					equipValue: 9,

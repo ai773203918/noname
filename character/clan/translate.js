@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "../../noname.js";
+
 const translates = {
 	clan_wuxian_prefix: "族",
 	clan_wuban_prefix: "族",
@@ -117,7 +119,7 @@ const translates = {
 	clanbaichu: "百出",
 	clanbaichu_new: "新组合",
 	clanbaichu_trick: "已记录",
-	clanbaichu_info: "锁定技，当你使用一张牌结算完毕后，若你：未记录过此牌的花色和类型组合，则你记录此组合并记录一个普通锦囊牌名，否则你于本轮获得技能〖奇策〗；已记录此牌牌名，你回复1点体力或摸一张牌。",
+	clanbaichu_info: `锁定技，当你使用一张牌结算完毕后，若你：未记录过此牌的花色和类型组合，则你记录此组合并记录一个普通锦囊牌名，否则你于本轮获得技能${get.poptip("qice")}；已记录此牌牌名，你回复1点体力或摸一张牌。`,
 	clan_wuqiao: "族吴乔",
 	clanqiajue: "跒倔",
 	clanqiajue_info: "摸牌阶段开始时，你可以弃置一张黑色牌。若如此做，此阶段结束时，你展示手牌，若这些牌的点数和大于30，你的手牌上限-2，否则你执行一个额外的摸牌阶段。",
@@ -189,7 +191,7 @@ const translates = {
 	clan_luji: "族陆绩",
 	clan_luji_prefix: "族",
 	clangailan: "该览",
-	clangailan_info: "锁定技，游戏开始时，你将四张【浑天仪】洗入牌堆。回合开始时，你将牌堆或弃牌堆中的一张【浑天仪】置入装备区。",
+	clangailan_info: `锁定技，游戏开始时，你将四张${get.poptip("huntianyi")}洗入牌堆。回合开始时，你将牌堆或弃牌堆中的一张${get.poptip("huntianyi")}置入装备区。`,
 	huntianyi: "浑天仪",
 	huntianyi_info: "锁定技，你从装备区失去此牌时，从牌堆中随机获得两张与此牌点数相同的锦囊牌。你受到伤害时，销毁此牌并防止之。",
 	huntianyi_skill: "浑天仪",
