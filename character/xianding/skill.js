@@ -356,7 +356,7 @@ const skills = {
 			if (!card) {
 				return;
 			}
-			if (player.canUse(card, player)) {
+			if (player.hasUseTarget(card)) {
 				await player.chooseUseTarget(card, true);
 			}
 			if (!player.hasDisabledSlot()) {
