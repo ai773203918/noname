@@ -285,6 +285,7 @@ game.import("card", function () {
 				cardimage: "feilongduofeng",
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["刘备"],
 				distance: { attackFrom: -1 },
 				ai: { basic: { equipValue: 2 } },
 				skills: ["ty_feilongduofeng_skill"],
@@ -298,6 +299,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["陆逊"],
 				distance: { attackFrom: -1 },
 				ai: {
 					basic: {
@@ -310,6 +312,7 @@ game.import("card", function () {
 				fullskin: true,
 				type: "equip",
 				subtype: "equip1",
+				bingzhu: ["孙权"],
 				distance: { attackFrom: -2 },
 				ai: {
 					basic: {

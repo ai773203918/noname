@@ -10256,21 +10256,17 @@ const skills = {
 			player: "enterGame",
 			global: "phaseBefore",
 		},
-		forced: true,
-		locked: false,
-		direct: true,
 		onremove: ["dcsilve", "dcsilve_self"],
 		filter(event, player) {
-			return game.hasPlayer(current => current != player) && (event.name != "phase" || game.phaseNumber == 0);
+			return game.hasPlayer(current => current != player && !player.getStorage("dcsilve").includes(current)) && (event.name != "phase" || game.phaseNumber == 0);
 		},
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseTarget("私掠：请选择一名其他角色", "选择一名其他角色（暂时仅你可见），称为“私掠”角色，且你获得后续效果", true, (card, player, target) => {
 					return target != player && !player.getStorage("dcsilve").includes(target);
 				})
 				.set("ai", target => {
-					var att = get.attitude(_status.event.player, target);
+					const att = get.attitude(get.player(), target);
 					if (att > 0) {
 						return att + 1;
 					}
@@ -10279,20 +10275,18 @@ const skills = {
 					}
 					return att;
 				})
-				.set("animate", false);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dcsilve");
-				player.markAuto("dcsilve", [target]);
-				player.addSkill("dcsilve_rob");
-				player.addSkill("dcsilve_revenge");
-				target.addSkill("dcsilve_target");
-				if (!target.storage.dcsilve_target) {
-					target.storage.dcsilve_target = [];
-				}
-				target.storage.dcsilve_target.push(player);
-			}
+				.set("animate", false)
+				.forResult();
+		},
+		logLine: false,
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.markAuto(event.name, [target]);
+			player.addSkill(event.name + "_rob");
+			player.addSkill(event.name + "_revenge");
+			target.addSkill(event.name + "_target");
+			target.storage[event.name + "_target"] ??= [];
+			target.storage[event.name + "_target"].push(player);
 		},
 		subSkill: {
 			rob: {
@@ -10315,12 +10309,13 @@ const skills = {
 					return "获得" + get.translation(event.player) + "一张牌";
 				},
 				logTarget: "player",
-				content() {
+				async content(event, trigger, player) {
+					const [target] = event.targets;
 					player.addTempSkill("dcsilve_robbed");
-					player.markAuto("dcsilve_self", [trigger.player]);
-					if (trigger.player.countGainableCards(player, "he") > 0) {
-						player.markAuto("dcsilve_robbed", [trigger.player]);
-						player.gainPlayerCard(trigger.player, "he", true);
+					player.markAuto("dcsilve_self", [target]);
+					if (target.countGainableCards(player, "he") > 0) {
+						player.markAuto("dcsilve_robbed", [target]);
+						await player.gainPlayerCard(target, "he", true);
 					}
 					if (trigger.source && trigger.source != player) {
 						trigger.source.markSkill("dcsilve_target");
@@ -10334,23 +10329,20 @@ const skills = {
 					if (!player.getStorage("dcsilve").includes(event.player)) {
 						return false;
 					}
-					if (!event.player.isIn() || !event.source || !event.source.isIn() || event.source == player) {
+					if (!event.player.isIn() || !event.source?.isIn() || event.source == player) {
 						return false;
 					}
 					return true;
 				},
-				forced: true,
-				locked: false,
 				charlotte: true,
 				direct: true,
 				clearTime: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					if (trigger.player && trigger.player != player) {
 						trigger.player.markSkill("dcsilve_target");
 					}
 					player.markAuto("dcsilve_self", [trigger.player]);
-					player
+					const { result } = await player
 						.chooseToUse("私掠：对" + get.translation(trigger.source) + "使用一张【杀】，或弃置一张手牌", function (card, player, event) {
 							if (get.name(card) != "sha") {
 								return false;
@@ -10367,11 +10359,10 @@ const skills = {
 							return lib.filter.targetEnabled.apply(this, arguments);
 						})
 						.set("source", trigger.source)
-						.set("logSkill", "dcsilve_revenge");
-					"step 1";
-					if (!result.bool) {
+						.set("logSkill", event.name);
+					if (!result?.bool) {
 						if (player.countCards("h") > 0) {
-							player.chooseToDiscard("h", true).set("logSkill", "dcsilve_revenge");
+							await player.chooseToDiscard("h", true).set("logSkill", event.name);
 						}
 					}
 				},
@@ -10381,7 +10372,7 @@ const skills = {
 				intro: {
 					name: "私掠",
 					content(storage, player) {
-						if (!storage || !storage.length) {
+						if (!storage?.length) {
 							return "没有打劫对象";
 						}
 						if (storage[0] == player) {
@@ -16502,52 +16493,49 @@ const skills = {
 	rekuanshi: {
 		audio: "kuanshi",
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("rekuanshi"))
-				.set("animate", false)
-				.set("ai", function (target) {
-					var att = get.attitude(player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					let att = get.attitude(get.player(), target);
 					if (target.hp < 3) {
 						att /= 1.5;
 					}
 					return att;
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("rekuanshi");
-				player.addTempSkill("rekuanshi_effect", { player: "phaseBegin" });
-				player.storage.rekuanshi_effect = result.targets[0];
-				game.delayx();
-			}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const [target] = event.targets;
+			player.addSkill(event.name + "_effect", { player: "phaseBegin" });
+			player.markAuto(event.name + "_effect", [target]);
+			await game.delayx();
 		},
 		subSkill: {
 			effect: {
-				audio: "kuanshi",
-				mark: true,
-				intro: {
-					content: "每回合限一次，当$于一回合内受到第2点伤害后，其回复1点体力。",
-				},
-				trigger: { global: "damageEnd" },
-				forced: true,
 				charlotte: true,
-				logTarget: "player",
-				usable: 1,
+				audio: "kuanshi",
+				intro: { content: "每回合限一次，当$于一回合内受到第2点伤害后，其回复1点体力。" },
+				trigger: { global: "damageEnd" },
 				filter(event, player) {
-					if (event.player != player.storage.rekuanshi_effect || event.player.isHealthy()) {
+					if (!player.getStorage("rekuanshi_effect").includes(event.player) || event.player.isHealthy()) {
 						return false;
 					}
-					var history = event.player.getHistory("damage", null, event),
+					let history = event.player.getHistory("damage", null, event),
 						num = 0;
-					for (var i of history) {
-						num += i.num;
+					for (const evt of history) {
+						if (evt.rekuanshi) {
+							return false;
+						}
+						num += evt.num;
 					}
 					return num > 1 && num - event.num < 2;
 				},
-				content() {
-					trigger.player.recover();
+				forced: true,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					trigger.rekuanshi = true;
+					await trigger.player.recover();
 				},
 			},
 		},

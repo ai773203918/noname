@@ -5,9 +5,7 @@ const skills = {
 	//星蒋琬
 	starzhenting: {
 		audio: 2,
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		filter(event, player) {
 			return (
 				game.countPlayer2(current => {
@@ -16,46 +14,48 @@ const skills = {
 			);
 		},
 		async cost(event, trigger, player) {
-			const filter = (current, type) => {
-					return current.hasHistory(type);
-				},
-				choiceList = [
-					["damage", "令一名受到过伤害的角色回复1点体力并摸一张牌"],
-					["sourceDamage", "令一名造成过伤害的角色获得本回合进入弃牌堆的两张牌"],
-				],
-				target = game.players.maxBy(current => {
-					let eff = get.effect(current, { name: "draw" }, player, player),
-						eff1 = 0,
-						eff2 = 0;
-					if (filter(current, "damage")) {
-						eff1 = eff + get.recoverEffect(current, player, player);
-					}
-					if (filter(current, "sourceDamage")) {
-						eff2 = 3 * eff;
-					}
-					return Math.max(eff1, eff2);
-				});
-			const result = await player
+			const damage = game.filterPlayer(current => current.hasHistory("damage"));
+			const sourceDamage = game.filterPlayer(current => current.hasHistory("sourceDamage"));
+			const target = game.players.maxBy(current => {
+				let eff = get.effect(current, { name: "draw" }, player, player),
+					eff1 = 0,
+					eff2 = 0;
+				if (damage.includes(current)) {
+					eff1 = eff + get.recoverEffect(current, player, player);
+				}
+				if (sourceDamage.includes(current)) {
+					eff2 = 3 * eff;
+				}
+				return Math.max(eff1, eff2);
+			});
+			const { result } = await player
 				.chooseButtonTarget({
-					createDialog: [get.prompt(event.skill), [choiceList, "textbutton"]],
+					createDialog: [
+						get.prompt(event.skill),
+						[
+							[
+								["damage", "令一名受到过伤害的角色回复1点体力并摸一张牌"],
+								["sourceDamage", "令一名造成过伤害的角色获得本回合进入弃牌堆的两张牌"],
+							],
+							"textbutton",
+						],
+					],
 					filterButton(button) {
-						const { filter } = get.event();
-						return game.hasPlayer(current => filter(current, button.link));
+						return get.event()[button.link]?.length;
 					},
 					filterTarget(card, player, target) {
-						const type = ui.selected.buttons?.[0]?.link,
-							{ filter } = get.event();
+						const type = ui.selected.buttons?.[0]?.link;
 						if (!type) {
 							return false;
 						}
-						return filter(target, type);
+						return get.event()[type]?.includes(target);
 					},
 					ai1(button) {
-						const { filter, targetx } = get.event();
+						const { targetx } = get.event();
 						if (!targetx) {
 							return 0;
 						}
-						if (filter(targetx, button.link)) {
+						if (get.event()[button.link]?.includes(targetx)) {
 							return 1;
 						}
 						return 0;
@@ -69,16 +69,14 @@ const skills = {
 					},
 				})
 				.set("complexTarget", true)
-				.set("filter", filter)
-				.set("targetx", target)
-				.forResult();
-			if (result.bool) {
-				event.result = {
-					bool: true,
-					targets: result.targets,
-					cost_data: result.links[0],
-				};
-			}
+				.set("damage", damage)
+				.set("sourceDamage", sourceDamage)
+				.set("targetx", target);
+			event.result = {
+				bool: result?.bool,
+				targets: result?.targets,
+				cost_data: result?.links?.[0],
+			};
 		},
 		async content(event, trigger, player) {
 			const {
@@ -90,6 +88,9 @@ const skills = {
 				await target.draw();
 			} else {
 				const cards = get.discarded().filterInD("d");
+				if (!cards.length) {
+					return;
+				}
 				const { result } = await player
 					.chooseButton([`镇庭：选择令${get.translation(target)}获得的牌`, cards], true, Math.min(cards.length, 2))
 					.set("ai", button => {

@@ -9255,7 +9255,7 @@ const skills = {
 		audio: "pojun",
 		content() {
 			"step 0";
-			player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.countCards("he"), trigger.target.hp)], get.prompt("xinpojun", trigger.target)).set("forceAuto", true);
+			player.choosePlayerCard(trigger.target, "he", [1, Math.min(trigger.target.countCards("he"), trigger.target.hp)], get.prompt("xinpojun", trigger.target), "allowChooseAll").set("forceAuto", true);
 			"step 1";
 			if (result.bool && result.links.length) {
 				var target = trigger.target;

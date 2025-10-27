@@ -1650,7 +1650,7 @@ export default {
 		async cost(event, trigger, player) {
 			const groups = ["wei", "shu", "wu", "qun", "jin", "ye"];
 			if (_status.bannedGroup) {
-				groups.remove(_status.bannedGroup);
+				groups.remove(_status.bannedGroup.slice(6));
 			}
 			game.filterPlayer(current => {
 				if (current.identity != "unknown") {

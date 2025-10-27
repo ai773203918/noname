@@ -2760,6 +2760,7 @@ player.removeVirtualEquip(card);
 		if (!event.namelist) {
 			event.namelist = ["全军出击", "分兵围城", "奇袭粮道", "开城诱敌"];
 		}
+		event.translationList ??= ["若对方选择“开城诱敌”，你胜", "若对方选择“奇袭粮道”，你胜", "若对方选择“全军出击”，你胜", "若对方选择“分兵围城”，你胜"];
 		game.broadcastAll(
 			function (list, translationList = []) {
 				var list2 = ["db_atk1", "db_atk2", "db_def1", "db_def2"];
