@@ -359,7 +359,7 @@ const skills = {
 			const getTitles = current => {
 				return get
 					.nameList(current)
-					.map(name => lib.characterTitle[name] || "无")
+					.map(name => get.characterTitle(name))
 					.toUniqued();
 			};
 			return game.filterPlayer(current => getTitles(current).containsSome(...getTitles(player)));
@@ -925,7 +925,7 @@ const skills = {
 			const getTitles = current => {
 				return get
 					.nameList(current)
-					.map(name => lib.characterTitle[name] || "无")
+					.map(name => get.characterTitle(name))
 					.toUniqued();
 			};
 			return getTitles(event.source).containsSome(...getTitles(player));
@@ -1249,7 +1249,7 @@ const skills = {
 			const getTitles = current => {
 				return get
 					.nameList(current)
-					.map(name => lib.characterTitle[name] || "无")
+					.map(name => get.characterTitle(name))
 					.toUniqued();
 			};
 			return getTitles(event.player).containsSome(...getTitles(player));
@@ -1544,7 +1544,7 @@ const skills = {
 			const getTitles = current => {
 				return get
 					.nameList(current)
-					.map(name => lib.characterTitle[name] || "无")
+					.map(name => get.characterTitle(name))
 					.toUniqued();
 			};
 			return getTitles(target).containsSome(...getTitles(player));
@@ -1783,7 +1783,7 @@ const skills = {
 			const getTitles = current => {
 				return get
 					.nameList(current)
-					.map(name => lib.characterTitle[name] || "无")
+					.map(name => get.characterTitle(name))
 					.toUniqued();
 			};
 			return getTitles(event.target).containsSome(...getTitles(player));
