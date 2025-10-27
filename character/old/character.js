@@ -4,6 +4,8 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["pyhuanling", "pyshenduan"],
+		img: "image/character/yj_puyuan.jpg",
+		dieAudios: ["yj_puyuan"],
 	},
 	x_dc_zhangqiying: {
 		sex: "female",

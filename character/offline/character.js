@@ -63,7 +63,7 @@ const characters = {
 	},
 	awaken_shinin_dongwan: {
 		sex: "female",
-		group: "qu",
+		group: "qun",
 		hp: 4,
 		skills: ["shinin_shengyan", "shinin_gongming"],
 		isUnseen: true,
@@ -100,19 +100,19 @@ const characters = {
 		hp: 4,
 		skills: ["zc26_tianyi", "zc26_dangmo"],
 	},
-	zc26_jiaxu:{
+	zc26_jiaxu: {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills:["zc26_wansha", "zc26_weimu","luanwu"],
+		skills: ["zc26_wansha", "zc26_weimu", "luanwu"],
 	},
 	scl_jiaxu: {
-        sex: "male",
-        group: "qun",
-        hp: 3,
-        skills: ["sclwansha", "reluanwu", "reweimu"],
-        dieAudios: ["re_jiaxu"],
-    },
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["sclwansha", "reluanwu", "reweimu"],
+		dieAudios: ["re_jiaxu"],
+	},
 	pe_guozhao: {
 		sex: "female",
 		group: "wei",
