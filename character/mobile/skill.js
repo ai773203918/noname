@@ -1357,6 +1357,8 @@ const skills = {
 			);
 			await game.delay(3);
 			game.broadcastAll("closeDialog", videoId);
+			game.log(player, "展示了", playerCards);
+			game.log(target, "展示了", targetCards);
 			let sgn = playerCards.length - targetCards.length;
 			if (sgn > 0) {
 				target.addTempSkill(event.name + "_zhixi", { player: "phaseUseAfter" });
