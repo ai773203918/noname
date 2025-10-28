@@ -886,6 +886,9 @@ const skills = {
 		},
 		viewAs: {
 			name: "sha",
+			storage: {
+				shinin_shengcai: true,
+			},
 		},
 		check(card) {
 			if (ui.selected.cards.length) {
@@ -906,6 +909,19 @@ const skills = {
 					game.log(player, `消耗了${num}点`, "<span style='color: #d69dc8ff'>魔力</span>");
 				});
 			evt.addCount = false;
+		},
+		locked: true,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.shinin_shengcai) {
+					return Infinity;
+				}
+			},
+			targetInRange(card, player) {
+				if (card?.storage?.shinin_shengcai) {
+					return true;
+				}
+			},
 		},
 	},
 	shinin_guanghui: {

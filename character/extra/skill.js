@@ -2400,8 +2400,10 @@ const skills = {
 			}
 			await game.cardsGotoSpecial(card);
 			game.log(player, "将", card, "移出游戏");
-			trigger.cancel();
 			await player.recoverTo(1);
+			if (player.getHp() > 0) {
+				trigger.cancel();
+			}
 		},
 		group: "kunyu_debuff",
 		subSkill: {
