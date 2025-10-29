@@ -13945,7 +13945,7 @@ const skills = {
 						if (
 							player.hasMark("drlt_jieying_mark") &&
 							game.hasPlayer(current => {
-								return current.hasSkill("drlt_jieying") && get.attitude(player, current) <= 0;
+								return current.hasSkill("drlt_jieying") && current != player && get.attitude(player, current) <= 0;
 							})
 						) {
 							return Math.max(num, 0) + 1;
@@ -13958,7 +13958,7 @@ const skills = {
 						return (
 							player.hasMark("drlt_jieying_mark") &&
 							game.hasPlayer(current => {
-								return current.hasSkill("drlt_jieying") && get.attitude(player, current) <= 0;
+								return current.hasSkill("drlt_jieying") && current != player;
 							})
 						);
 					},
