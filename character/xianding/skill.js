@@ -3,6 +3,236 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//凌烈
+	dcshouhu: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		viewAs: {
+			name: "sha",
+			storage: {
+				dcshouhu: true,
+			},
+			isCard: true,
+		},
+		selectTarget: 1,
+		filterCard: () => false,
+		selectCard: -1,
+		async precontent(event, trigger, player) {
+			event.getParent().addCount = false;
+			const target = event.result.targets[0];
+			player
+				.when("useCardAfter")
+				.filter(evt => evt.getParent() == event.getParent())
+				.step(async (event, trigger, player) => {
+					if (target?.isIn()) {
+						player.addSkill("dcshouhu_distance");
+						const map = player.getStorage("dcshouhu_distance", new Map());
+						let num = (map.has(target) ? map.get(target) : 0) + 1;
+						map.set(target, num);
+						player.setStorage("dcshouhu_distance", map, true);
+					}
+					if (game.hasGlobalHistory("everything", evt => {
+						if (evt.name != "die" || evt.player != target || !evt.reason) {
+							return false;
+						}
+						return evt.reason.getParent(evtx => evtx == trigger, true);
+					}) && player.countCards("h") < player.maxHp) {
+						await player.drawTo(player.maxHp);
+					}
+				});
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player, num) {
+				if (card?.storage?.dcshouhu) {
+					return Infinity;
+				}
+ 			},
+		},
+		group: "dcshouhu_reset",
+		subSkill: {
+			reset: {
+				updateDistanceMap() {
+					const map = {};
+					game.countPlayer(current => {
+						map[current.playerid] ??= {};
+						game.countPlayer(current2 => {
+							map[current.playerid][current2.playerid] = current.inRange(current2);
+						})
+					})
+					game.broadcastAll(map => {
+						_status.shouhuDistanceMap = map;
+					}, map);
+					return _status.shouhuDistanceMap;
+				},
+				hasDistanceChanged(player) {
+					if (!_status.shouhuDistanceMap) {
+						get.info("dcshouhu_reset").updateDistanceMap();
+					}
+					const map = _status.shouhuDistanceMap[player.playerid];
+					const bool = game.findPlayer(current => {
+						return map[current.playerid] === false && player.inRange(current);
+					});
+					get.info("dcshouhu_reset").updateDistanceMap();
+					return bool;
+				},
+				init(player, skill) {
+					get.info(skill).updateDistanceMap();
+				},
+				trigger: {
+					player: "chooseToUseBegin",
+					global: ["logSkill", "useSkillAfter", "dieAfter", "changeHp", "equipAfter", "changeSkillsAfter"],
+				},
+				filter(event, player) {
+					if (event.name == "chooseToUse" && event.type != "phase") {
+						return false;
+					}
+					const stat = player.getStat("skill"),
+						skill = "dcshouhu";
+					if (typeof stat[skill] !== "number" || stat[skill] <= 0) {
+						return false;
+					}
+					return get.info("dcshouhu_reset").hasDistanceChanged(player);
+				},
+				async cost(event, trigger, player) {
+					delete player.getStat("skill")["dcshouhu"];
+					game.log(player, "重置了", "#g【狩虎】");
+				},
+			},
+			distance: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					markcount: () => null,
+					content(storage, player) {
+						const map = player.getStorage("dcshouhu_distance", new Map());
+						if (!map.size) {
+							return "无效果";
+						}
+						return Array.from(map.keys()).map(current => `计算与${get.translation(current)}的距离+${map.get(current)}`).join("<br>");
+					},
+				},
+				mod: {
+					globalFrom(from, to, num) {
+						const map = from.getStorage("dcshouhu_distance", new Map());
+						if (map.has(to)) {
+							return num + map.get(to);
+						}
+					},
+				},
+			},
+		},
+	},
+	dcningzhun: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			if (player.getStorage("dcningzhun_used").length > 2) {
+				return false;
+			}
+			return player.getHistory("useCard").indexOf(event) % 2 == 1;
+		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButton([
+					get.prompt(event.skill),
+					[
+						[
+							["decrease", "攻击范围-1"],
+							["increase", "攻击范围+1"],
+							["moveCard", "移动场上一张牌"],
+						],
+						"textbutton",
+					]
+				])
+				.set("filterButton", button => {
+					const player = get.player(),
+						list = player.getStorage("dcningzhun_used");
+					if (button.link == "moveCard" && !player.canMoveCard()) {
+						return false;
+					}
+					return !list.includes(button.link);
+				})
+				.set("ai", button => {
+					switch (button.link) {
+						case "decrease": {
+							if (player.getStorage("dcningzhun", 0) > 0) {
+								return 1.5;
+							}
+							return 0;
+						}
+						case "increase": {
+							if (game.hasPlayer(current => !player.inRange(current))) {
+								return 2;
+							}
+							return 1;
+						}
+						default: {
+							if (player.canMoveCard(true)) {
+								return 3;
+							}
+							return 0.5;
+						}
+					}
+				})
+				.forResult();
+			if (result?.bool) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const name = "dcningzhun_used";
+			player.addTempSkill(name);
+			player.markAuto(name, event.cost_data);
+			switch (event.cost_data) {
+				case "decrease": {
+					const count = player.getStorage(event.name, 0) - 1;
+					player.setStorage(event.name, count, true);
+					game.log(player, "令攻击范围-1");
+					break;
+				}
+				case "increase": {
+					const count = player.getStorage(event.name, 0) + 1;
+					player.setStorage(event.name, count, true);
+					game.log(player, "令攻击范围+1");
+					break;
+				}
+				default: {
+					if (player.canMoveCard()) {
+						await player.moveCard(true);
+					}
+					break;
+				}
+			}
+			if (player.getStorage(name).length > 2) {
+				player.removeSkill(name);
+				game.log(player, "重置了", "#g【凝准】");
+			}
+		},
+		intro: {
+			content(storage, player) {
+				return `攻击范围${storage >= 0 ? "+" : ""}${storage}`;
+			},
+		},
+		locked: false,
+		mod: {
+			attackRange(player, num) {
+				return num + player.getStorage("dcningzhun", 0);
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
 	//陶璜
 	dczhijue: {
 		audio: 2,

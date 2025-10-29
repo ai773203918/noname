@@ -95,6 +95,7 @@ window.noname_character_rank = {
 	a: [
 		"yj_puyuan",
 		"scl_jiaxu",
+		"linglie",
 		"dm_sunquan",
 		"ol_sb_guojia",
 		"zc26_shen_huangyueying",
@@ -2497,6 +2498,7 @@ window.noname_character_rank = {
 			"zc26_zhanghe",
 			"zc26_taishici",
 			"zc26_jiaxu",
+			"linglie",
 			"xy_xunyu",
 			"you_zhugeliang",
 			"bigsb_dengai",

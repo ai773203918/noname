@@ -41824,7 +41824,7 @@ const skills = {
 			await target.draw(2);
 			const evt = trigger.getParent("phase", true);
 			if (evt) {
-				evt.phaseList.splice(evt.num, 0, `phaseUse|${event.name}`);
+				evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`);
 			}
 		},
 		ai: { expose: 0.5 },

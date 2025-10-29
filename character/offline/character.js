@@ -4,6 +4,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["shinin_luoshen", "qingguo", "zhenji_moli"],
+		dieAudios: ["zhenji"],
 	},
 	awaken_shinin_zhenji: {
 		sex: "female",
@@ -17,6 +18,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["reganlu", "buyi", "wuguotai_moli"],
+		dieAudios: ["wuguotai"],
 		names: "丁|null",
 	},
 	awaken_shinin_wuguotai: {
@@ -32,6 +34,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["dcwangyuan", "dclingyin", "dcliying", "ruiji_moli"],
+		dieAudios: ["ruiji"],
 		names: "芮|null",
 	},
 	awaken_shinin_ruiji: {
@@ -47,12 +50,15 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["guowu", "zhuangrong", "lvlingqi_moli"],
+		tempname: ["lvlingqi"],
+		dieAudios: ["lvlingqi"],
 	},
 	awaken_shinin_lvlingqi: {
 		sex: "female",
 		group: "qun",
 		hp: 4,
 		skills: ["shinin_henghui", "shinin_moqi"],
+		tempname: ["lvlingqi"],
 		isUnseen: true,
 	},
 	shinin_dongwan: {
@@ -60,6 +66,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["dcshengdu", "dcjieling", "dongwan_moli"],
+		dieAudios: ["dongwan"],
 	},
 	awaken_shinin_dongwan: {
 		sex: "female",
