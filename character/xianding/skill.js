@@ -6973,7 +6973,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name === "useCard") {
-				return event.getParent(2).name !== "dcllqixin" && get.type(event.card) === "basic";
+				return event.getParent().name !== "dcllqixin" && get.type(event.card) === "basic";
 			}
 			if (event.name === "gain" && (event.getParent().name !== "draw" || event.getParent(2).name === "dcllqixin")) {
 				return false;
@@ -6984,31 +6984,32 @@ const skills = {
 			return event.getg(player).length === 2;
 		},
 		usable: 2,
-		direct: true,
-		clearTime: true,
 		frequent: true,
-		async content(event, trigger, player) {
-			let result;
-			if (trigger.name === "useCard") {
-				result = await player.chooseBool(get.prompt(event.name), "摸两张牌").set("frequentSkill", event.name).forResult();
-				if (result?.bool) {
-					player.logSkill(event.name);
-					await player.draw(2);
-				}
+		async cost(event, trigger, player) {
+			if (trigger.name == "useCard") {
+				event.result = await player
+					.chooseBool(get.prompt(event.skill), "摸两张牌")
+					.set("frequentSkill", event.skill)
+					.forResult();
 			} else {
-				result = await player
+				event.result = await player
 					.chooseToUse(function (card, player, event) {
 						if (get.type(card) !== "basic") {
 							return false;
 						}
 						return lib.filter.cardEnabled.apply(this, arguments);
-					}, get.translation(event.name) + "：是否使用一张基本牌？")
-					.set("logSkill", event.name)
+					}, `###${get.prompt(event.skill)}###使用一张基本牌`)
+					.set("chooseonly", true)
 					.set("addCount", false)
 					.forResult();
 			}
-			if (!result?.bool && player.storage.counttrigger?.[event.name] > 0) {
-				player.storage.counttrigger[event.name]--;
+		},
+		async content(event, trigger, player) {
+			if (trigger.name === "useCard") {
+				await player.draw(2);
+			} else {
+				const { result } = event.cost_data;
+				await player.useResult(result, event);
 			}
 		},
 	},

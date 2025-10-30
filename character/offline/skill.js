@@ -1956,7 +1956,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			await game.asyncDraw([player, ...event.targets].sortBySeat().unique());
+			await game.asyncDraw([player, ...event.targets].sortBySeat());
 			player.setStorage("zc26_qiaobian_effect", event.targets[0], true);
 			player.addTempSkill("zc26_qiaobian_effect", { global: "roundEnd" });
 		},
@@ -1986,9 +1986,7 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					let check,
-						str = "弃置一张手牌并跳过";
-					str += ["判定", "摸牌", "出牌", "弃牌"][get.info(event.skill).trigger.global.indexOf(event.triggername)];
-					str += "阶段";
+						str = `弃置一张手牌并跳过${get.translation(trigger.name)}`;
 					if (trigger.name == "phaseDraw") {
 						str += "，然后可以获得至多两名角色各一张手牌";
 					}
@@ -2062,7 +2060,7 @@ const skills = {
 				async content(event, trigger, player) {
 					await player.discard(event.cards);
 					trigger.cancel();
-					game.log(trigger.player, "跳过了", "#y" + ["判定", "摸牌", "出牌", "弃牌"][get.info(event.name).trigger.global.indexOf(event.triggername)] + "阶段");
+					game.log(trigger.player, "跳过了", `#y${get.translation(trigger.name)}`);
 					if (trigger.name == "phaseUse") {
 						if (trigger.player.canMoveCard()) {
 							await trigger.player.moveCard();
@@ -2150,8 +2148,8 @@ const skills = {
 				},
 				ai: {
 					effect: {
-						target(card, player, target) {
-							return get.attitude(player, target);
+						player_use(card, player, target) {
+							return [0, 0, 0, 2];
 						},
 					},
 				},
@@ -36267,9 +36265,9 @@ const skills = {
 			const target = trigger.target,
 				type = get.type2(trigger.card);
 			const evt = trigger.getParent();
-			evt.triggeredTargets2.remove(target);
-			evt.targets.remove(target);
-			evt.targets.push(player);
+				evt.triggeredTargets2.remove(target);
+				evt.targets.remove(target);
+				evt.targets.push(player);
 			if (type == "basic") {
 				await target.draw();
 			} else {
