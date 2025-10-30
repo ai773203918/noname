@@ -44,17 +44,20 @@ const skills = {
 		async cost(event, trigger, player) {
 			if (trigger.name == "phaseZhunbei") {
 				event.result = await player
-					.chooseTarget(get.prompt(event.skill), "令任意名已受伤的角色各摸一张牌", (card, player, target) => {
-						return target.isDamaged();
-					}, [1, Infinity])
+					.chooseTarget(
+						get.prompt(event.skill),
+						"令任意名已受伤的角色各摸一张牌",
+						(card, player, target) => {
+							return target.isDamaged();
+						},
+						[1, Infinity]
+					)
 					.set("ai", target => {
 						return get.attitude(get.player(), target);
 					})
 					.forResult();
 			} else {
-				event.result = await player
-					.chooseBool(get.prompt(event.skill), "回复1点体力")
-					.forResult();
+				event.result = await player.chooseBool(get.prompt(event.skill), "回复1点体力").forResult();
 			}
 		},
 		async content(event, trigger, player) {
@@ -289,12 +292,16 @@ const skills = {
 		discard: false,
 		check(card) {
 			const player = get.player();
-			return 2.5 * player.countCards("hs", cardx => {
-				if (get.type2(cardx) != get.type2(card) || cardx === card) {
-					return false;
-				}
-				return player.hasValueTarget(cardx);
-			}) - get.value(card);
+			return (
+				2.5 *
+					player.countCards("hs", cardx => {
+						if (get.type2(cardx) != get.type2(card) || cardx === card) {
+							return false;
+						}
+						return player.hasValueTarget(cardx);
+					}) -
+				get.value(card)
+			);
 		},
 		async content(event, trigger, player) {
 			await player.loseHp();
@@ -342,13 +349,15 @@ const skills = {
 			order: 8,
 			result: {
 				player(player) {
-					const info = get.info("wn_zhanyi")
-					if (player.countCards("h", card => {
-						if (!info.filterCard(card, player)) {
-							return false;
-						}
-						return info.check(card) > 0;
-					})) {
+					const info = get.info("wn_zhanyi");
+					if (
+						player.countCards("h", card => {
+							if (!info.filterCard(card, player)) {
+								return false;
+							}
+							return info.check(card) > 0;
+						})
+					) {
 						return 1;
 					}
 					return 0;
@@ -2539,7 +2548,7 @@ const skills = {
 			const index = evts.indexOf(event),
 				nows = event?.targets,
 				olds = evts[index - 1]?.targets;
-			if (!olds?.length || !nows?.length || olds.containsAll(...nows) && nows.containsAll(...olds)) {
+			if (!olds?.length || !nows?.length || (olds.containsAll(...nows) && nows.containsAll(...olds))) {
 				return [];
 			}
 			return olds.filter(current => current?.isIn() && nows.includes(current));
@@ -36619,9 +36628,9 @@ const skills = {
 			const target = trigger.target,
 				type = get.type2(trigger.card);
 			const evt = trigger.getParent();
-				evt.triggeredTargets2.remove(target);
-				evt.targets.remove(target);
-				evt.targets.push(player);
+			evt.triggeredTargets2.remove(target);
+			evt.targets.remove(target);
+			evt.targets.push(player);
 			if (type == "basic") {
 				await target.draw();
 			} else {
