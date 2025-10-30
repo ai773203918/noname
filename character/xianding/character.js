@@ -1,4 +1,10 @@
 const characters = {
+	linglie: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["dcshouhu", "dcningzhun"],
+	},
 	taohuang: {
 		sex: "male",
 		group: "wu",
