@@ -26,7 +26,7 @@ const skills = {
 				.filter(evt => evt.getParent() == event.getParent())
 				.step(async (event, trigger, player) => {
 					if (target?.isIn()) {
-						player.addSkill("dcshouhu_distance");
+						player.addTempSkill("dcshouhu_distance");
 						const map = player.getStorage("dcshouhu_distance", new Map());
 						let num = (map.has(target) ? map.get(target) : 0) + 1;
 						map.set(target, num);
