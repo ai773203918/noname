@@ -175,6 +175,31 @@ const characters = {
 		hp: 3,
 		skills: ["xy_lilu", "xy_yizheng"],
 	},
+	wn_zhuling: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["wn_zhanyi"],
+	},
+	zj_huangchong: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["zj_juxian", "zj_lijun"],
+		img: "image/character/std_huangchong.jpg",
+	},
+	zj_dingfeng: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		skills: ["zj_duanbing", "zj_fenxun"],
+	},
+	zj_liaohua: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["zj_dangxian", "zj_fuli"],
+	},
 	zj_zhanghu: {
 		sex: "male",
 		group: "wei",
@@ -394,7 +419,7 @@ const characters = {
 	wn_yangqiú: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["wn_qifeng"],
 	},
 	pe_jun_liubei: {
@@ -1473,7 +1498,7 @@ const characters = {
 	drag_lvchang: {
 		sex: "male",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["dragjuwu", "dragshouxiang"],
 	},
 	jsp_ganfuren: {
