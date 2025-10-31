@@ -579,9 +579,9 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			let card = get.cardPile2(card => get.type(card, null, false) == "equip", "random");
+			let card = get.cardPile2(cardx => get.type(cardx, null, false) == "equip", "random");
 			if (!card) {
-				card = get.discardPile(ard => get.type(card, null, false) == "equip", "random");
+				card = get.discardPile(cardx => get.type(cardx, null, false) == "equip", "random");
 			}
 			if (!card) {
 				return;
