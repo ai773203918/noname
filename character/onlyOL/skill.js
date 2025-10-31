@@ -54,7 +54,7 @@ const skills = {
 					if (cardsx.length) {
 						await player.gain(cardsx, "give");
 					}
-				})
+				});
 		},
 		subSkill: {
 			tag: {
