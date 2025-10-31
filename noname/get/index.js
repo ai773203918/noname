@@ -7268,6 +7268,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 * @overload
 	 * @param {object} poptip
+	 * @param {string} poptip.id 对应特殊名词id
+	 * @param {string} poptip.type 特殊名词的类型
 	 * @param {string} poptip.name 特殊名词
 	 * @param {string} poptip.info 对应解释
 	 * @returns {string}

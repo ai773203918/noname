@@ -886,6 +886,9 @@ const skills = {
 		},
 		viewAs: {
 			name: "sha",
+			storage: {
+				shinin_shengcai: true,
+			},
 		},
 		check(card) {
 			if (ui.selected.cards.length) {
@@ -906,6 +909,19 @@ const skills = {
 					game.log(player, `消耗了${num}点`, "<span style='color: #d69dc8ff'>魔力</span>");
 				});
 			evt.addCount = false;
+		},
+		locked: true,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.shinin_shengcai) {
+					return Infinity;
+				}
+			},
+			targetInRange(card, player) {
+				if (card?.storage?.shinin_shengcai) {
+					return true;
+				}
+			},
 		},
 	},
 	shinin_guanghui: {
@@ -2156,34 +2172,36 @@ const skills = {
 	zc26_dangmo: {
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			const his = player.getHistory("useCard");
-			if (his.length < 2) {
+			const evts = player.getHistory("useCard");
+			if (evts.length < 2) {
 				return false;
 			}
-			const old = his.at(-2);
-			return event.targets.some(target => !old.targets.includes(target));
+			const targets = get.info("zc26_dangmo").logTarget(event, player);
+			return targets?.length;
+		},
+		logTarget(event, player) {
+			const evts = player.getHistory("useCard");
+			if (evts.length < 2) {
+				return [];
+			}
+			const index = evts.indexOf(event),
+				nows = event?.targets,
+				olds = evts[index - 1]?.targets;
+			if (!olds?.length || !nows?.length || olds.containsAll(...nows) && nows.containsAll(...olds)) {
+				return [];
+			}
+			return olds.filter(current => current?.isIn() && nows.includes(current));
 		},
 		check(event, player) {
-			const his = player.getHistory("useCard");
-			if (his.length < 2) {
-				return false;
-			}
-			const old = his.at(-2);
-			const targets = event.targets.filter(target => old.targets.includes(target));
+			const targets = get.info("zc26_dangmo").logTarget(event, player);
 			return (
 				targets.reduce((total, target) => {
-					if (get.attitude(player, target) < 0) {
-						return total + get.damageEffect(target, player, player);
-					} else {
-						return total - get.damageEffect(target, player, player);
-					}
+					return total + get.damageEffect(target, player, player);
 				}, 0) > 0
 			);
 		},
 		async content(event, trigger, player) {
-			const old = player.getHistory("useCard").find((evt, i, his) => his[i + 1] == trigger);
-			const targets = trigger.targets.filter(target => old.targets.includes(target));
-			await game.doAsyncInOrder(targets, async target => await target.damage());
+			await game.doAsyncInOrder(event.targets, async target => await target.damage());
 		},
 		mod: {
 			aiOrder(player, card, num) {
@@ -2217,27 +2235,34 @@ const skills = {
 			const targets = game.filterPlayer(curr => curr != player);
 			targets.forEach(target => target.addTempSkill("zc26_wansha_effect"));
 		},
+		group: "zc26_wansha_draw",
 		subSkill: {
-			effect: {
-				trigger: { player: "useCard" },
+			draw: {
+				audio: "zc26_wansha",
+				trigger: { global: "useCard" },
 				filter(event, player) {
-					return event.modSkill == "zc26_wansha_effect";
+					return event.modSkill?.cardname == "zc26_wansha_effect";
 				},
+				logTarget: "player",
+				forced: true,
+				async content(event, trigger, player) {
+					await player.draw(2);
+				},
+			},
+			effect: {
 				mark: true,
 				marktext: "完杀",
 				intro: {
 					name: "完杀",
 					content: "本回合红色牌均视为杀",
 				},
+				charlotte: true,
 				mod: {
 					cardname(card, player, name) {
-						if (get.color(card) == "red") {
+						if (get.color(card) == "red" && lib.card[card.name].type == "basic") {
 							return "sha";
 						}
 					},
-				},
-				async content(event, trigger, player) {
-					await player.draw();
 				},
 			},
 		},
