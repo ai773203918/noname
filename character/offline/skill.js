@@ -175,7 +175,6 @@ const skills = {
 		audio: "fenxun",
 		enable: "phaseUse",
 		usable: 1,
-		position: "he",
 		filterTarget(card, player, target) {
 			return target != player;
 		},

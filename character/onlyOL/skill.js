@@ -13,7 +13,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { target } = trigger;
 			event.result = await player
-				.choosePlayerCard(target, "h", [1, player.maxHp], `分敌：展示${get.translation(target)}至多${get.cnNumber(player.maxHp, true)}张手牌`)
+				.choosePlayerCard(target, "h", [1, player.maxHp], `分敌：展示${get.translation(target)}至多${get.cnNumber(player.maxHp, true)}张手牌`, "allowChooseAll")
 				.set("ai", button => {
 					if (_status.event.all) {
 						return 1;
@@ -111,7 +111,7 @@ const skills = {
 			}
 			const hs = player.getCards("h"),
 				cards = event.getg(player).filter(i => hs.includes(i));
-			return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player, "jsrgjuxiang"));
+			return cards.length && cards.every(card => lib.filter.cardDiscardable(card, player, "ol_juxiang"));
 		},
 		check(event, player) {
 			const target = _status.currentPhase;
@@ -269,6 +269,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard(get.prompt(event.skill, trigger.target), `当你使用【杀】指定一名角色为目标后，你可以弃置至多${get.cnNumber(player.hp, true)}张牌，然后弃置其等量的牌`, [1, player.hp], "he")
+				.set("allowChooseAll", true)
 				.set("ai", card => {
 					if (ui.selected.cards.length >= _status.event.max) {
 						return 0;
