@@ -4696,7 +4696,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 		}
 		if (position !== "cardPile") {
 			let j = 0;
-			if (start !== "random") {
+			if (start === "random") {
 				j = get.rand(0, ui.discardPile.childNodes.length - 1);
 			}
 			for (let i = 0; i < ui.discardPile.childNodes.length; i++, j++) {

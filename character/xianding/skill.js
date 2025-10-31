@@ -2522,7 +2522,7 @@ const skills = {
 						[
 							[
 								["discard", `弃置其他角色共计至多${num}张牌`],
-								["damage", `对一名角色造成${num}点伤害，然后此技能本回合失效`],
+								["damage", `对一名其他角色造成${num}点伤害，然后此技能本回合失效`],
 							],
 							"textbutton",
 						],
@@ -2536,7 +2536,7 @@ const skills = {
 					},
 					filterTarget(card, player, target) {
 						const selected = ui.selected.buttons;
-						if (!selected.length) {
+						if (!selected.length || target == player) {
 							return false;
 						}
 						if (selected[0].link == "discard") {
