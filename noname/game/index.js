@@ -8968,7 +8968,7 @@ export class Game extends GameCompatible {
 				const iValue = `${i}_${value}`;
 				lib.skill[iValue] = info.subSkill[value];
 				lib.skill[iValue].sub = true;
-				if (info.subSkill[value].sourceSkill === null) {
+				if (info.subSkill[value].sourceSkill === undefined) {
 					lib.skill[iValue].sourceSkill = i;
 				}
 				if (info.subSkill[value].name) {
@@ -10765,7 +10765,7 @@ export class Game extends GameCompatible {
 		const firstSeat = players.find(value => value.getSeatNum() == 1);
 		if (firstSeat) {
 			const targetSeat = target.getSeatNum();
-			let seatNum = !isNext ? (targetSeat == 1 ? players.length + 1 : targetSeat - 1) : targetSeat + 1;
+			let seatNum = !isNext ? (targetSeat == 1 ? players.length + 1 : targetSeat) : targetSeat + 1;
 			player.setSeatNum(seatNum);
 			players.forEach(value => {
 				if (seatNum && value.getSeatNum() >= seatNum) {

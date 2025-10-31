@@ -4122,7 +4122,7 @@ player.removeVirtualEquip(card);
 								event.current = currentChoice;
 							} else {
 								const currentPlayer = currentChoice.player;
-								const next = currentPlayer.chooseControl(skillsToChoose);
+								const next = currentPlayer.chooseControl(skillsToChoose.map(skill => get.skillTranslation(skill, currentPlayer, true)));
 								next.set("prompt", "选择下一个触发的技能");
 								next.set("forceDie", true);
 								next.set("arrangeSkill", true);
@@ -4130,7 +4130,7 @@ player.removeVirtualEquip(card);
 								const { result } = await next;
 								//千里走单骑全责，把敌人打死可能会打断chooseControl
 								if (result) {
-									event.current = usableSkills.find(info => info.skill == result.control);
+									event.current = usableSkills.find(info => info.skill == skillsToChoose[result.index]);
 								} else {
 									event.current = usableSkills[0];
 								}
