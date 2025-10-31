@@ -3851,7 +3851,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return get.translation(str);
 		}
 		const name = lib.translate[str];
-		if (!player?.getSkills().some(skill => skill != str && lib.translate[skill] == name)) {
+		if (!player?.getSkills("invisible", null, false).some(skill => get.skillInfoTranslation(skill, player).length && skill != str && lib.translate[skill] == name)) {
 			return get.translation(str);
 		}
 		const info = get.info(str);
