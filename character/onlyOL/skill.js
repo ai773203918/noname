@@ -562,7 +562,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { result } = await player.discardPlayerCard(Math.max(true, target, "he", target.countCards("h") - target.hp, 1), "allowChooseAll", target);
+			const { result } = await player.discardPlayerCard(true, target, "he", Math.max(target.countCards("h") - target.hp, 1), "allowChooseAll");
 			if (result?.bool && result.cards?.length) {
 				const num = result.cards.reduce((sum, card) => (sum + get.type(card) != "equip" ? 1 : 0), 0);
 				if (num == 0) {
