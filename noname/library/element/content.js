@@ -13118,7 +13118,7 @@ player.removeVirtualEquip(card);
 	async chooseToGuanxing(event, trigger, player) {
 		const cards = get.cards(event.num);
 		await game.cardsGotoOrdering(cards);
-		const next = player.chooseToMove();
+		const next = player.chooseToMove("allowChooseAll");
 		next.set("forceDie", event.forceDie);
 		next.set("includeOut", event.includeOut);
 		next.set("list", [["牌堆顶", cards], ["牌堆底"]]);

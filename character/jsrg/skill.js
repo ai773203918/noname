@@ -1912,7 +1912,7 @@ const skills = {
 					}
 				}
 			}
-			const next = player.chooseToMove();
+			const next = player.chooseToMove("allowChooseAll");
 			next.set("list", [["牌堆顶", cards.filterInD()], ["牌堆底"]]);
 			next.set("prompt", "问天：点击或拖动将牌移动到牌堆顶或牌堆底");
 			next.processAI = list => {
@@ -2778,7 +2778,7 @@ const skills = {
 			const number = game.dead.length > 2 ? 5 : 3;
 			const cards = get.bottomCards(number);
 			game.cardsGotoOrdering(cards);
-			const next = player.chooseToMove();
+			const next = player.chooseToMove("allowChooseAll");
 			next.set("list", [["牌堆顶"], ["牌堆底", cards.reverse()]]);
 			next.set("prompt", "鹰眎：点击或拖动将牌移动到牌堆顶或牌堆底");
 			next.processAI = list => {
