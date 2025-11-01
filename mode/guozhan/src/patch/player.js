@@ -184,8 +184,8 @@ export class PlayerGuozhan extends Player {
 	/**
 	 * 判断是否“是”队友
 	 *
-	 * @param {Player} target 判断对象
-	 * @param {*} [shown] 考虑自身身份已明确的情况
+	 * @param { Player } target 判断对象
+	 * @param { boolean } [shown] 考虑自身身份已明确的情况
 	 * @returns { boolean }
 	 */
 	sameIdentityAs(target, shown) {
@@ -233,7 +233,7 @@ export class PlayerGuozhan extends Player {
 	/**
 	 * 重置玩家信息（主副将名称、身份）
 	 *
-	 * @param {*} info
+	 * @param { object } info
 	 */
 	setModeState(info) {
 		if (info.mode.unseen) {
