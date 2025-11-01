@@ -751,9 +751,25 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			let card = get.cardPile2(cardx => get.type(cardx, null, false) == "equip", "random");
+			const findEquipCard = (slot) => {
+				return get.cardPile2(cardx => get.type(cardx, null, false) == "equip" && 
+				(!slot || get.subtype(cardx) == slot), "random") || 
+				get.discardPile(cardx => get.type(cardx, null, false) == "equip" && 
+				(!slot || get.subtype(cardx) == slot), "random");
+			};
+			const emptySlots = Array.from({ length: 5 }, (_, i) => i + 1)
+				.filter(i => player.hasEmptySlot(i))
+				.map(i => "equip" + i);
+
+			let card = null;
+			if (emptySlots.length > 0) {
+				for (const slot of emptySlots) {
+					card = findEquipCard(slot);
+					if (card) break;
+				}
+			}
 			if (!card) {
-				card = get.discardPile(cardx => get.type(cardx, null, false) == "equip", "random");
+				card = findEquipCard();
 			}
 			if (!card) {
 				return;
