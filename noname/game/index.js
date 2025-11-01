@@ -143,7 +143,7 @@ export class Game extends GameCompatible {
 	 * @param {string} innerHTML 要插入到.cardsetion中的HTML内容
 	 * @param {HTMLElement} button 目标节点
 	 */
-	creatButtonCardsetion(innerHTML, button) {
+	createButtonCardsetion(innerHTML, button) {
 		const next = ui.create.div(".cardsetion", innerHTML, button);
 		next.style.setProperty("display", "block", "important");
 		if (!button.querySelector(".info")) {
