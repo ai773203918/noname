@@ -25835,8 +25835,8 @@ const skills = {
 					}
 				}
 			},
-			canBeDiscarded(card) {
-				if (card.name == "dagongche" && get.position(card) == "e") {
+			canBeDiscarded(card, player, target) {
+				if (card.name == "dagongche" && get.position(card) == "e" && player != target) {
 					for (var i = 1; i <= 3; i++) {
 						if (card.storage["大攻车选项" + get.cnNumber(i, true)]) {
 							return;

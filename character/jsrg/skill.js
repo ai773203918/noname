@@ -1701,7 +1701,7 @@ const skills = {
 					const dialog = ui.create.dialog(get.translation(player) + "发动了【执盟】", cards);
 					dialog.videoId = id;
 					for (let i = 0; i < targets.length; i++) {
-						game.creatButtonCardsetion(targets[i].getName(true) + get.translation(get.suit(cards[i], targets[i])), dialog.buttons[i]);
+						game.createButtonCardsetion(targets[i].getName(true) + get.translation(get.suit(cards[i], targets[i])), dialog.buttons[i]);
 					}
 				},
 				targets,
@@ -3791,7 +3791,7 @@ const skills = {
 					var dialog = ui.create.dialog(get.translation(player) + "发动了【浮海】", cards);
 					dialog.videoId = id;
 					for (let i = 0; i < targets.length; i++) {
-						game.creatButtonCardsetion(`${targets[i].getName(true)}${get.translation(get.strNumber(cards[i].number))}`, dialog.buttons[i]);
+						game.createButtonCardsetion(`${targets[i].getName(true)}${get.translation(get.strNumber(cards[i].number))}`, dialog.buttons[i]);
 					}
 				},
 				targets,

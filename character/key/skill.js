@@ -7607,8 +7607,8 @@ const skills = {
 			player.equip(game.createCard2("miki_binoculars", "diamond", 6));
 		},
 		mod: {
-			canBeDiscarded(card) {
-				if (get.position(card) == "e" && ["equip1", "equip5"].includes(get.subtype(card))) {
+			canBeDiscarded(card, player, target) {
+				if (get.position(card) == "e" && get.subtypes(card).some(subtype => ["equip1", "equip5"].includes(subtype)) && player != target) {
 					return false;
 				}
 			},

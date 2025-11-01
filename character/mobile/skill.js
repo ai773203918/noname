@@ -3074,7 +3074,7 @@ const skills = {
 						const dialog = ui.create.dialog(get.translation(player) + "发动了【飞径】", cards);
 						dialog.videoId = id;
 						for (let i = 0; i < targets.length; i++) {
-							game.creatButtonCardsetion(`${targets[i].getName(true)}${get.translation(cards[i].suit)}`, dialog.buttons[i]);
+							game.createButtonCardsetion(`${targets[i].getName(true)}${get.translation(cards[i].suit)}`, dialog.buttons[i]);
 						}
 					},
 					targets,
