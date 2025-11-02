@@ -105,7 +105,7 @@ export class PlayerGuozhan extends Player {
 	/**
 	 * 选择变更副将
 	 *
-	 * @param { boolean } [repeat] 是否强制变更，且当前变更副将技能不计入变更次数
+	 * @param { boolean } [repeat] 是否强制变更，且当前变更副将技能不计入变更记录
 	 * @param { "hidden" } [hidden] 是否暗置变更后的副将，若为`"hidden"`则暗置
 	 * @returns
 	 */
@@ -231,7 +231,7 @@ export class PlayerGuozhan extends Player {
 	}
 
 	/**
-	 * 重置玩家信息（主副将名称、身份）
+	 * 设置玩家信息（主副将名称、身份）
 	 *
 	 * @param { object } info
 	 */
@@ -563,7 +563,7 @@ export class PlayerGuozhan extends Player {
 		return this.name1.indexOf("gz_shibing") != 0;
 	}
 	/**
-	 * 玩家是否有副将将（不为士兵）
+	 * 玩家是否有副将（不为士兵）
 	 *
 	 * @returns { boolean }
 	 */
