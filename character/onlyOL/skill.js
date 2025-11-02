@@ -1247,8 +1247,8 @@ const skills = {
 			player.addTempSkill("olsbmengshi_effect", { player: "dieAfter" });
 			player.markAuto("olsbmengshi_effect", event.targets);
 			const list = target2.getHp() > target1.getHp() ? [num, -num] : [-num, num];
-			await target1.changeHp(list[0]).set("_triggered", null);
-			await target2.changeHp(list[1]).set("_triggered", null);
+			await target1[list[0] > 0 ? "recover" : "loseHp"](Math.abs(list[0]));
+			await target2[list[1] > 0 ? "recover" : "loseHp"](Math.abs(list[1]));
 		},
 		subSkill: {
 			effect: {
