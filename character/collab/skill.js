@@ -13,7 +13,9 @@ const skills = {
 			player.setStorage(`${skill}_current`, null);
 			game.broadcastAll(
 				(player, names) => {
-					player.tempname.removeArray(names);
+					if (Array.isArray(player.tempname)) {
+						player.tempname.removeArray(names);
+					}
 				},
 				player,
 				player.getStorage(`${skill}_current2`)
