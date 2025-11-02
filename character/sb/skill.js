@@ -1147,7 +1147,7 @@ const skills = {
 				target.addCharge();
 			}
 			if (cards.some(card => get.type(card) != "basic")) {
-				await target.draw();
+				await target.draw(2);
 			}
 		},
 		ai: {
