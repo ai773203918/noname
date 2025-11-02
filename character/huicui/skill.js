@@ -2009,6 +2009,9 @@ const skills = {
 			if (event.card.name != "sha" && get.type(event.card) != "trick") {
 				return false;
 			}
+			if (!event.isFirstTarget) {
+				return false;
+			}
 			return event.target != player;
 		},
 		logTarget: "target",
@@ -11278,7 +11281,7 @@ const skills = {
 				)
 				.set("filterButton", button => {
 					const { link } = button;
-					if (!ui.selected.buttons.length) return typeof link == "number";
+					if (!ui.selected.buttons.length) {return typeof link == "number";}
 					return get.itemtype(link) == "card";
 				})
 				.set("source", source)
@@ -15905,11 +15908,9 @@ const skills = {
 			let result;
 			if (!target.isIn()) {
 				return event.finish();
-			}
-			else if (!target.countDiscardableCards(player, "he")) {
+			} else if (!target.countDiscardableCards(player, "he")) {
 				result = { index: 1 };
-			}
-			else {
+			} else {
 				result = await player
 					.chooseControl()
 					.set("choiceList", ["弃置" + str + "的" + get.cnNumber(num) + "张牌", "对" + str + "造成1点伤害"])
