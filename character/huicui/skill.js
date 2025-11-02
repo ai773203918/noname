@@ -11281,7 +11281,9 @@ const skills = {
 				)
 				.set("filterButton", button => {
 					const { link } = button;
-					if (!ui.selected.buttons.length) {return typeof link == "number";}
+					if (!ui.selected.buttons.length) {
+						return typeof link == "number";
+					}
 					return get.itemtype(link) == "card";
 				})
 				.set("source", source)
