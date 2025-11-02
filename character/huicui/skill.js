@@ -15913,7 +15913,7 @@ const skills = {
 			} else {
 				result = await player
 					.chooseControl()
-					.set("choiceList", ["弃置" + str + "的" + get.cnNumber(num) + "张牌", "对" + str + "造成1点伤害"])
+					.set("choiceList", ["弃置" + get.translation(target) + "的" + get.cnNumber(num) + "张牌", "对" + get.translation(target) + "造成1点伤害"])
 					.set("ai", function () {
 						const player = _status.event.player;
 						const eff0 = get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(1.7, target.countCards("he"));
