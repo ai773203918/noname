@@ -1776,7 +1776,7 @@ const translates = {
 	awaken_shinin_dongwan: "闪耀战姬董绾",
 	awaken_shinin_dongwan_prefix: "闪耀战姬",
 	dongwan_moli: "魔力",
-	dongwan_moli_info: `${get.poptip("rule_bianshenji")}（0/5）游戏开始时或你于摸牌阶段外获得牌时，你获得1点魔力。结束阶段，你可${get.poptip("shinin_yinchang")}并${get.poptip("rule_bianshen")}。`,
+	dongwan_moli_info: `${get.poptip("rule_bianshenji")}（0/5）游戏开始时或你于你的摸牌阶段外获得牌时，你获得1点魔力。结束阶段，你可${get.poptip("shinin_yinchang")}并${get.poptip("rule_bianshen")}。`,
 	dongwan_moli_append: "<span style='font-family: yuanli'>马猴烧酒，很行！</span>",
 	shinin_shengyan: "圣焰",
 	shinin_shengyan_info: "锁定技，你使用牌额外结算一次，然后你消耗1点魔力或失去1点体力，对一名其他角色造成1点火焰伤害。",
