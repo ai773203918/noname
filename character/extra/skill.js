@@ -393,7 +393,7 @@ const skills = {
 						return;
 					}
 					const { result } = await current
-						.chooseCardButton(`请选择重铸${trigger.target}的一张手牌`, cards)
+						.chooseCardButton(`请选择重铸${get.translation(trigger.target)}的一张手牌`, cards)
 						.set("ai", ({ link }) => {
 							const { player, target } = get.event();
 							if (get.attitude(player, target) > 0) {
@@ -586,7 +586,7 @@ const skills = {
 				const targets = game.dead.slice();
 				const map = await game.chooseAnyOL(targets, get.info(event.name).chooseControl, [player, event.indexedData]).forResult();
 				for (const target of targets) {
-					let source = game.findPlayer(current => current.hasCards(card => card == event.indexedData, "ej")),
+					let source = game.findPlayer(current => current.hasCard(card => card == event.indexedData, "ej")),
 						aim;
 					const control = map.get(target).control;
 					if (control == "上家") {
