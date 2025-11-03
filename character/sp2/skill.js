@@ -931,7 +931,7 @@ const skills = {
 				if (!result?.bool) {
 					return;
 				}
-				player.addTempSkill("stardangchen_buff");
+				player.addTempSkill("stardangchen_buff", { player: "phaseUseEnd" });
 				player.addMark("stardangchen_buff", num, false);
 			}
 		},
