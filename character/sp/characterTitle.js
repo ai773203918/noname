@@ -1,4 +1,5 @@
 export default {
+	ol_lvlingqi: "无双虓姬",
 	zhangren: "索命神射",
 	zoushi: "惑心之魅",
 	zangba: "节度青徐",
