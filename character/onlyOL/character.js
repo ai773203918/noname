@@ -1,4 +1,10 @@
 const characters = {
+	ol_sb_xizhicai: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["olsbxinchuan", "olsbjinjin"],
+	},
 	dm_sunquan: {
 		sex: "male",
 		group: "wu",
