@@ -251,6 +251,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "starchiguo",
 				trigger: {
 					player: "useCard1",
 				},

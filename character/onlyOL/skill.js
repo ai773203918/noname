@@ -1048,6 +1048,7 @@ const skills = {
 		},
 		subSkill: {
 			dianjun: {
+				audio: "jsrgzhengbing",
 				charlotte: true,
 				trigger: { player: "phaseEnd" },
 				forced: true,
