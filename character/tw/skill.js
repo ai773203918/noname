@@ -9186,7 +9186,7 @@ const skills = {
 			if (!player.hasZhuSkill("twpolu")) {
 				return false;
 			}
-			if (!event.player != player && player.isDead()) {
+			if (event.player != player && player.isDead()) {
 				return false;
 			}
 			if (name == "dieAfter" && event.source && event.source.group == "wu") {
