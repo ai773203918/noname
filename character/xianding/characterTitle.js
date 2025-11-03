@@ -1,4 +1,5 @@
 export default {
+	dc_huanjie: "冰鉴丹心",
 	linglie: "烈虎千狩",
 	lvju: "仗钺征镇",
 	dc_zhangren: "索命神射",
