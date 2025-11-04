@@ -87,10 +87,7 @@ const skills = {
 					player.enableEquip(2);
 				},
 				filter(event, player) {
-					if (event.name == "expandEquip") {
-						return event.slots.includes("equip2");
-					}
-					return game.phaseNumber == 0 || event.name != "phase";
+					return event.slots.includes("equip2");
 				},
 				async content(event, trigger, player) {
 					trigger.slots.remove("equip2");
