@@ -1,4 +1,7 @@
 export default {
+	//ol_yangfeng: "忠勇半途", //暂无称号
+	//ol_caizhenji: "舍心顾复", //暂无称号
+	//sunyuan: "孙鸢", //暂无称号
 	ol_lvlingqi: "无双虓姬",
 	zhangren: "索命神射",
 	zoushi: "惑心之魅",
@@ -208,7 +211,6 @@ export default {
 	ol_liuzhang: "求仁失益",
 	sp_ol_liubei: "潜龙勿用",
 	ol_yuanhuan: "无愆垣下",
-	ol_yangfeng: "忠勇半途", //这个无称号，暂时使用别的称号
 	ol_wujing: "助吴征战",
 	ol_zhaozhong: "雌牡",
 	ol_peiyuanshao: "仰恶抑武",
@@ -217,13 +219,11 @@ export default {
 	ol_yangfu: "匪拯之正",
 	ol_guanhai: "缴尾伺飞虫",
 	ol_zhangmancheng: "蚁萃宛洛",
-	ol_caizhenji: "舍心顾复", //这下面几个没称号，暂时使用别的形态称号
 	ol_qiaoxuan: "泛爱博容",
 	ol_qiaogong: "高风硕望",
 	ol_fanyufeng: "红鸾寡宿",
 	wangyan: "玄虚陆沉",
 	huanshujun: "环佩解君",
-	sunyuan: "孙鸢", //暂无称号
 	ol_hanfu: "挈瓶之知",
 	wangkuang: "任侠纵横",
 	caoyu: "燕王",

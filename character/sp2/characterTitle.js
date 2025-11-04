@@ -1,4 +1,7 @@
 export default {
+	//cuilie: "",
+	//star_jiangwan: "",
+	//star_yanliang: "",
 	lijue: "奸谋恶勇",
 	zhangji: "武威雄豪",
 	fanchou: "庸生变难",

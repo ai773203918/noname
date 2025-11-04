@@ -1,4 +1,6 @@
 export default {
+	//yj_puyuan: "",
+	//yao_yuanshu: "",
 	yj_zhanghe: "宁国中郎将",
 	yj_zhangliao: "蹈锋饮血",
 	yj_xuhuang: "沉详性严",
