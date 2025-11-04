@@ -65,7 +65,7 @@ const skills = {
 			return event.hasNature("fire");
 		},
 		async content(event, trigger, player) {
-			if (event.hasNature("fire")) {
+			if (trigger.hasNature("fire")) {
 				trigger.num++;
 			} else {
 				trigger.num--;
