@@ -78,13 +78,13 @@ const skills = {
 		group: ["yj_renjia_gain"],
 		subSkill: {
 			gain: {
-				trigger: {
-					player: ["expandEquipBegin", "enterGame"],
-					global: ["phaseBefore"],
-				},
+				trigger: { player: ["expandEquipBegin"] },
 				forced: true,
 				init(player, skill) {
-					player.addSkill("yj_renjiaLose");
+					player.disableEquip(2);
+				},
+				onremove(player, skill) {
+					player.enableEquip(2);
 				},
 				filter(event, player) {
 					if (event.name == "expandEquip") {
@@ -93,13 +93,9 @@ const skills = {
 					return game.phaseNumber == 0 || event.name != "phase";
 				},
 				async content(event, trigger, player) {
-					if (trigger.name == "expandEquip") {
-						trigger.slots.remove("equip2");
-						if (trigger.slots.length == 0) {
-							trigger.cancel();
-						}
-					} else {
-						await player.disableEquip(2);
+					trigger.slots.remove("equip2");
+					if (trigger.slots.length == 0) {
+						trigger.cancel();
 					}
 				},
 			},
@@ -123,21 +119,6 @@ const skills = {
 					}
 				},
 			},
-		},
-	},
-	yj_renjaiLose: {
-		trigger: { player: ["changeSkillsAfter"] },
-		forced: true,
-		charlotte: true,
-		filter(event, player) {
-			return event.removeSkill.includes("yj_renjia") || event.addSkill.includes("yj_renjia");
-		},
-		async content(event, trigger, player) {
-			if (event.addSkill.includes("yj_renjia")) {
-				await player.disableEquip(2);
-			} else {
-				await player.enableEquip(2);
-			}
 		},
 	},
 	yj_yanyu: {
