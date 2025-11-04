@@ -183,7 +183,7 @@ const skills = {
 						if (!evt.es?.length) {
 							return false;
 						}
-						const historys = game.getAllGlobalHistory("everything", evtx => ["lose", "equip"].includes(evtx.name), evt).reverse();
+						const historys = game.getAllGlobalHistory("everything", evtx => ["lose", "equip"].includes(evtx.name) && evtx.player == player, evt).reverse();
 						if (!historys.length) {
 							return false;
 						}
@@ -196,10 +196,11 @@ const skills = {
 								if (evtx.name == "lose" && evtx.es?.includes(card)) {
 									return false;
 								}
-								if (evtx.name == "equip" && evtx.getParent().name == "olzhuangrong") {
+								if (evtx.name == "equip" && evtx.cards?.includes(card) && evtx.getParent().name == "olzhuangrong") {
 									return true;
 								}
 							}
+							return false;
 						});
 					});
 					const loseEvt = evt => (event.name == "lose" ? evt : evt.getParent());
