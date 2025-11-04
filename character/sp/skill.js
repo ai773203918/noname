@@ -30,7 +30,7 @@ const skills = {
 			}
 			return player.hasSkill("olzhuangrong_awaken") || !get.tag(card, "damage");
 		},
-		selectCard: [1, 3],
+		selectCard: [1, Infinity],
 		check(card) {
 			if (ui.selected.cards.every(cardx => get.type2(card) != get.type2(cardx))) {
 				return 6 - get.value(card);
@@ -71,9 +71,19 @@ const skills = {
 							allCards = [...allCards, ...result.cards];
 						}
 						if (allCards?.some(card => card.name == "shan")) {
-							const gains = allCards.filter(card => card.name == "shan" && get.position(card) == "d");
-							if (gains.length) {
-								await player.gain(gains, "gain2");
+							if (player.hasSkill("olzhuangrong_awaken")) {
+								const gains = result?.cards?.filterInD("od");
+								if (gains?.length) {
+									await player.gain(gains, "gain2");
+								}
+							} else {
+								player.addTempSkill("olqiwu_effect");
+								const gains = allCards.filter(card => card.name == "shan" && get.position(card) == "d");
+								if (gains.length) {
+									const next = player.gain(gains, "gain2");
+									next.gaintag.add("olqiwu");
+									await next;
+								}
 							}
 						} else {
 							trigger.directHit.addArray(game.players);
@@ -89,6 +99,24 @@ const skills = {
 			},
 		},
 		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					player.removeGaintag("olqiwu");
+				},
+				mod: {
+					ignoredHandcard(card) {
+						if (card.hasGaintag("olqiwu")) {
+							return true;
+						}
+					},
+					cardDiscardable(card, player, name) {
+						if (name === "phaseDiscard" && card.hasGaintag("olqiwu")) {
+							return false;
+						}
+					},
+				},
+			},
 			rewrite: {},
 		},
 	},
