@@ -1105,6 +1105,15 @@ export const Content = {
 			}
 			return;
 		}
+		//准备上装备时的处理
+		let cardInfo = get.info(event.card, false);
+		if (cardInfo.prepareEquip && (!cardInfo.filterEquip || cardInfo.filterEquip(event.card, player))) {
+			const next = game.createEvent("prepare_" + event.card.name);
+			next.setContent(cardInfo.prepareEquip);
+			next.player = player;
+			next.card = event.card;
+			await next;
+		}
 		//同时播放所有装备牌的装备动画
 		if (event.cards.length) {
 			if (event.draw) {

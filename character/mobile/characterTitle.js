@@ -1,4 +1,5 @@
 export default {
+	//pot_dengai: "",
 	mb_sunluyu: "舍身饲虎",
 	mb_caohong: "福将",
 	mb_guanyinping: "武姬",

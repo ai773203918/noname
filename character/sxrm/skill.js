@@ -1074,6 +1074,21 @@ const skills = {
 				}
 			},
 		},
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (!target.isDamaged()) {
+						return;
+					}
+					if (get.type(card) == "trick") {
+						return "zeroplayertarget";
+					}
+					if (get.name(card) == "sha") {
+						return 0.3;
+					}
+				}
+			},
+		},
 	},
 	sxrmbizha: {
 		audio: 2,

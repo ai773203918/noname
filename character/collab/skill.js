@@ -13,7 +13,9 @@ const skills = {
 			player.setStorage(`${skill}_current`, null);
 			game.broadcastAll(
 				(player, names) => {
-					player.tempname.removeArray(names);
+					if (Array.isArray(player.tempname)) {
+						player.tempname.removeArray(names);
+					}
 				},
 				player,
 				player.getStorage(`${skill}_current2`)
@@ -296,6 +298,7 @@ const skills = {
 			const result = await player
 				.chooseButton([`###${get.prompt("dcyingyou")}###选择一项并摸一张牌`, [list, "textbutton"]])
 				.set("filterButton", ({ link }) => {
+					const player = get.player();
 					return link != "card" || (player.hasEquipableSlot(1) && !player.getEquip("real_zhuge"));
 				})
 				.set("ai", ({ link }) => {

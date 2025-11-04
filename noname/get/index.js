@@ -1318,7 +1318,7 @@ export class Get extends GetCompatible {
 	 *
 	 * 获取一个技能或事件的某个属性的源技能
 	 * @param { string | Object } skill - 传入的技能或事件
-	 * @param { string } text - 要获取的属性（不填写默认获取sourceSkill）
+	 * @param { string } [text] - 要获取的属性（不填写默认获取sourceSkill）
 	 * @returns { string }
 	 */
 	sourceSkillFor(skill, text) {
@@ -3851,7 +3851,12 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			return get.translation(str);
 		}
 		const name = lib.translate[str];
-		if (!player?.getSkills("invisible", null, false).some(skill => get.skillInfoTranslation(skill, player).length && skill != str && lib.translate[skill] == name)) {
+		if (!player?.getSkills("invisible", null, false).some(skill => {
+			if (!get.skillInfoTranslation(skill, player).length || lib.translate[skill] !== name) {
+				return false;
+			}
+			return skill != str && get.sourceSkillFor(skill) != get.sourceSkillFor(str);
+		})) {
 			return get.translation(str);
 		}
 		const info = get.info(str);

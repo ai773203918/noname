@@ -6197,7 +6197,7 @@ const skills = {
 						if (!storage) {
 							return "无效果";
 						}
-						return `你每回合使用第一张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`;
+						return `你每回合使用的前三张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`;
 					},
 				},
 				/*intro: {
@@ -6221,7 +6221,7 @@ const skills = {
 				audio: "mbzengou",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
-					if (player.getHistory("useCard").indexOf(event) !== 0) {
+					if (player.getHistory("useCard").indexOf(event) > 2) {
 						return false;
 					}
 					return player.getStorage("mbzengou_debuff") == event.card.name;
@@ -6356,7 +6356,7 @@ const skills = {
 						return (item === "弃牌" && goon1) || (item === "移标记" && goon2);
 					})
 				)
-				.set("choiceList", ["弃置两张牌并防止此伤害", "移去" + str + "的“诬”标记并防止此伤害，然后你摸两张牌，本局游戏你不能再对其发动〖谮构〗"])
+				.set("choiceList", ["弃置两张牌并防止此伤害", "移去" + str + "的“诬”标记并防止此伤害，然后你摸四张牌，本局游戏你不能再对其发动〖谮构〗"])
 				.set("ai", () => {
 					const { player, controls } = get.event();
 					const trigger = get.event().getTrigger();
@@ -6387,7 +6387,7 @@ const skills = {
 			if (event.targets?.length) {
 				const [target] = event.targets;
 				target.removeSkill("mbzengou_debuff");
-				await player.draw(2);
+				await player.draw(4);
 				player.addSkill("mbfeili_effect");
 				player.markAuto("mbfeili_effect", [target]);
 			}

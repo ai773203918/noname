@@ -816,7 +816,7 @@ export default {
 			}
 			const result = await player
 				.chooseTarget(
-					"宴席：展示并获得一名角色被你选择的牌",
+					"宴戏：展示并获得一名角色被你选择的牌",
 					(card, player, target) => {
 						return get.event("targetx").includes(target);
 					},
@@ -4087,6 +4087,10 @@ export default {
 				trigger: { player: "damageBegin4" },
 				filter(event, player) {
 					if (!player.getStockSkills(true, true, true).includes("fakeshiren")) {
+						return false;
+					}
+					const bool = get.character(player.name1, 3).includes("fakeshiren") ? player.isUnseen(0) : player.isUnseen(1);
+					if (!bool) {
 						return false;
 					}
 					return !game.getAllGlobalHistory("everything", evt => {

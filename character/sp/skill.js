@@ -2,6 +2,224 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//吕玲绮
+	olqiwu: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		position: "he",
+		filter(event, player) {
+			if (!player.countCards("he", card => get.info("olqiwu").filterCard(card, player))) {
+				return false;
+			}
+			const card = new lib.element.VCard({ name: "sha", storage: { olqiwu: true }, isCard: true });
+			return player.hasUseTarget(card);
+		},
+		viewAs: {
+			name: "sha",
+			storage: {
+				olquwu: true,
+			},
+			suit: "none",
+			number: null,
+			isCard: true,
+		},
+		filterCard(card, player) {
+			if (!lib.filter.cardDiscardable(card, player, "olqiwu")) {
+				return false;
+			}
+			return player.hasSkill("olzhuangrong_awaken") || !get.tag(card, "damage");
+		},
+		selectCard: [1, Infinity],
+		check(card) {
+			if (ui.selected.cards.every(cardx => get.type2(card) != get.type2(cardx))) {
+				return 6 - get.value(card);
+			}
+			return 0;
+		},
+		log: false,
+		ignoreMod: true,
+		locked: false,
+		mod: {
+			targetInRange(card, player) {
+				if (card?.storage?.olqiwu) {
+					return true;
+				}
+			},
+		},
+		async precontent(event, trigger, player) {
+			const cards = event.result.cards;
+			player.logSkill("olqiwu");
+			await player.modedDiscard(cards);
+			event.result.card = get.autoViewAs({ name: "sha", storage: { olqiwu: true }, isCard: true });
+			event.result.cards = [];
+			player
+				.when("useCard1")
+				.filter(evt => evt.getParent() == event.getParent())
+				.step(async (event, trigger, player) => {
+					const num = cards?.map(card => get.type2(card)).toUniqued().length;
+					const func = async target => {
+						const numx = Math.min(num, target.countDiscardableCards(target, "he"));
+						let allCards = cards;
+						const result =
+							numx > 0
+								? await target.chooseToDiscard("he", numx, true).forResult()
+								: {
+										bool: false,
+									};
+						if (result?.bool && result.cards?.length) {
+							allCards = [...allCards, ...result.cards];
+						}
+						if (allCards?.some(card => card.name == "shan")) {
+							if (player.hasSkill("olzhuangrong_awaken")) {
+								const gains = result?.cards?.filterInD("od");
+								if (gains?.length) {
+									await player.gain(gains, "gain2");
+								}
+							} else {
+								player.addTempSkill("olqiwu_effect");
+								const gains = allCards.filter(card => card.name == "shan" && get.position(card) == "d");
+								if (gains.length) {
+									const next = player.gain(gains, "gain2");
+									next.gaintag.add("olqiwu");
+									await next;
+								}
+							}
+						} else {
+							trigger.directHit.addArray(game.players);
+						}
+					};
+					await game.doAsyncInOrder(trigger.targets, func);
+				});
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: "sha" }, player) + 0.1;
+			},
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					player.removeGaintag("olqiwu");
+				},
+				mod: {
+					ignoredHandcard(card) {
+						if (card.hasGaintag("olqiwu")) {
+							return true;
+						}
+					},
+					cardDiscardable(card, player, name) {
+						if (name === "phaseDiscard" && card.hasGaintag("olqiwu")) {
+							return false;
+						}
+					},
+				},
+			},
+			rewrite: {},
+		},
+	},
+	olzhuangrong: {
+		audio: 2,
+		trigger: {
+			player: "phaseBegin",
+		},
+		forced: true,
+		getNames: ["shufazijinguan", "linglongshimandai", "hongmianbaihuapao", "wushuangfangtianji"],
+		init(player, skill) {
+			const map = `${skill}_map`;
+			_status[map] ??= new Map();
+			if (!_status[map].has(player)) {
+				_status[map].set(player, get.info(skill).getNames);
+			}
+			game.broadcastAll(
+				(map, list) => {
+					_status[map] = list;
+				},
+				map,
+				_status[map]
+			);
+		},
+		filter(event, player) {
+			if (!_status.olzhuangrong_map?.has(player)) {
+				get.info("olzhuangrong").init(player, "olzhuangrong");
+			}
+			return _status.olzhuangrong_map.get(player)?.some(name => player.canEquip(name));
+		},
+		async content(event, trigger, player) {
+			const list = _status.olzhuangrong_map.get(player);
+			if (list.length && list.some(name => player.canEquip(name))) {
+				const name = list.filter(name => player.canEquip(name)).randomGet();
+				const card = game.createCard2(name, lib.suit.randomGet(), get.rand(1, 13));
+				game.broadcastAll(
+					(player, list) => {
+						_status.olzhuangrong_map.set(player, list);
+					},
+					player,
+					list.remove(name)
+				);
+				if (card) {
+					player.$gain2(card);
+					await player.equip(card);
+					await game.delayx();
+				}
+			}
+		},
+		group: "olzhuangrong_awake",
+		subSkill: {
+			awake: {
+				trigger: {
+					player: ["loseAfter"],
+					global: ["loseAsyncAfter", "gainAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
+				},
+				filter(event, player) {
+					if (event.name == "equip" && event.player == player) {
+						if (event.getParent().name == "olzhuangrong" && !_status.olzhuangrong_map?.get(player)?.length) {
+							return true;
+						}
+					}
+					const evts = player.getAllHistory("lose", evt => {
+						if (!evt.es?.length) {
+							return false;
+						}
+						const historys = game.getAllGlobalHistory("everything", evtx => ["lose", "equip"].includes(evtx.name) && evtx.player == player, evt).reverse();
+						if (!historys.length) {
+							return false;
+						}
+						return evt.es.some(card => {
+							for (let i = 0; i < historys.length; i++) {
+								const evtx = historys[i];
+								if (evtx == evt) {
+									continue;
+								}
+								if (evtx.name == "lose" && evtx.es?.includes(card)) {
+									return false;
+								}
+								if (evtx.name == "equip" && evtx.cards?.includes(card) && evtx.getParent().name == "olzhuangrong") {
+									return true;
+								}
+							}
+							return false;
+						});
+					});
+					const loseEvt = evt => (event.name == "lose" ? evt : evt.getParent());
+					return evts.map(loseEvt).indexOf(event) == 1;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.removeSkills("olzhuangrong");
+					player.addSkill("olzhuangrong_awaken");
+					await player.gainMaxHp();
+					await player.recover();
+				},
+			},
+			awaken: {
+				charlotte: true,
+			},
+		},
+		derivation: "olqiwu_rewrite",
+	},
 	//环淑君
 	olhuanpei: {
 		audio: 2,
