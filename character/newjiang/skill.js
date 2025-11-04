@@ -136,7 +136,7 @@ const skills = {
 			if (event.addSkill.includes("yj_renjia")) {
 				await player.disableEquip(2);
 			} else {
-				await player.expandEquip(2);
+				await player.enableEquip(2);
 			}
 		},
 	},
