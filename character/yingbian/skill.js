@@ -3823,14 +3823,16 @@ const skills = {
 			"step 0";
 			player.choosePlayerCard(target, "h", true);
 			"step 1";
-			player.showCards(result.cards, get.translation(player) + "对" + get.translation(target) + "发动了【筹伐】");
-			var type = get.type2(result.cards[0], target),
-				hs = target.getCards("h", function (card) {
-					return card != result.cards[0] && get.type2(card, target) != type;
-				});
-			if (hs.length) {
-				target.addGaintag(hs, "xinchoufa");
-				target.addTempSkill("xinchoufa2", { player: "phaseAfter" });
+			if (result?.bool && result.cards?.length) {
+				player.showCards(result.cards, get.translation(player) + "对" + get.translation(target) + "发动了【筹伐】");
+				var type = get.type2(result.cards[0], target),
+					hs = target.getCards("h", function (card) {
+						return card != result.cards[0] && get.type2(card, target) != type;
+					});
+				if (hs.length) {
+					target.addGaintag(hs, "xinchoufa");
+					target.addTempSkill("xinchoufa2", { player: "phaseAfter" });
+				}
 			}
 		},
 	},
