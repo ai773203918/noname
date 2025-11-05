@@ -1762,7 +1762,8 @@ const skills = {
 					if ((evt.relatedEvent || evt.getParent()) != trigger) {
 						return false;
 					}
-					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && !get.owner(card)));
+					//还原下OL神必结算
+					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && ["e","o","d"].includes(get.position(card))));
 				});
 				if (cards.length > 3 - player.getExpansions(event.skill).length) {
 					const num = 3 - player.getExpansions(event.skill).length;
