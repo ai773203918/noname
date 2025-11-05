@@ -1460,12 +1460,12 @@ const skills = {
 					game.broadcastAll(
 						function (cards) {
 							cards.forEach(card => card.addGaintag("olleishi"));
-							player.when({ global: "phaseAfter" }).then(() => {
-								player.removeGaintag("olleishi");
-							});
 						},
 						trigger.cards.filter(i => get.owner(i) == player)
 					);
+					player.when({ global: "phaseAfter" }).then(() => {
+						player.removeGaintag("olleishi");
+					});
 				},
 			},
 		},
