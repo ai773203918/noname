@@ -3290,7 +3290,7 @@ const skills = {
 				return false;
 			}
 			const card = get.autoViewAs({ name: "sha", isCard: true });
-			return player.canUse(card, trigger.player, false);
+			return player.canUse(card, event.player, false);
 		},
 		async content(event, trigger, player) {
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
