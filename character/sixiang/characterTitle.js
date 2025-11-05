@@ -1,4 +1,11 @@
 export default {
+	//std_simahui: "",
+	//std_zhengxuan: "",
+	//std_miheng: "",
+	//std_majun: "",
+	//std_zhangfen: "",
+	//std_zhaoyan: "",
+	//std_liuli: "",
 	std_huangwudie: "刀弓双绝",
 	std_qinghegongzhu: "冀不推实",
 	std_quyi: "名门的骁将",

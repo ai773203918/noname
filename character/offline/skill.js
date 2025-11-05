@@ -507,8 +507,8 @@ const skills = {
 	dongwan_moli: {
 		transformSkill: true,
 		trigger: {
-			player: "gainAfter",
-			global: "loseAsyncAfter",
+			player: ["enterGame", "gainAfter"],
+			global: ["phaseBefore", "loseAsyncAfter"],
 		},
 		markimage: "image/card/magic.png",
 		intro: {
@@ -517,8 +517,15 @@ const skills = {
 				return `当前魔力：${storage}/5`;
 			},
 		},
-		filter(event, player) {
-			if (event.getParent("phaseDraw", true)) {
+		filter(event, player, name) {
+			if (name == "enterGame") {
+				return true;
+			}
+			if (event.name == "phase") {
+				return game.phaseNumber == 0;
+			}
+			const evt = event.getParent("phaseDraw", true);
+			if (evt?.player == player) {
 				return false;
 			}
 			return event.getg?.(player)?.length;

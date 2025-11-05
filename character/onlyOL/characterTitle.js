@@ -1,18 +1,24 @@
 export default {
+	//dm_sunquan: "",
+	//ol_sb_yl_luzhi: "国之桢干", //暂无称号，先取别的称号顶替一下
+	//ol_sunxiu: "弥殇的景君", //暂无称号，先取别的称号顶替一下
+	//ol_sb_zhaoyun: "七进七出", //暂无称号，先取别的称号顶替一下
+	//ol_sb_zhangfei: "义付桃园", //暂无称号，先取别的称号顶替一下
+	//ol_sb_jushou: "忠不逢时", //暂无称号，先取别的称号顶替一下
+	//ol_re_yujin: "",
+	ol_jsrg_zhujun: "征无遗虑",
+	ol_jsrg_sunjian: "拔定烈志",
+	ol_sb_xizhicai: "薪火相传",
+	ol_sb_guojia: "纵才扬军",
 	ol_re_yujing: "征战沙场",
 	ol_sb_xuyou: "帷幄擎炬",
 	ol_sb_lusu: "渊谟肇石城",
 	ol_sb_zhugeliang: "武侯",
 	ol_madai: "临危受命",
-	ol_sb_yl_luzhi: "国之桢干", //暂无称号，先取别的称号顶替一下
 	ol_guanzhang: "父魂子魄",
-	ol_sunxiu: "弥殇的景君", //暂无称号，先取别的称号顶替一下
 	ol_sb_zhangxiu: "枪啸风吟",
-	ol_sb_zhaoyun: "七进七出", //暂无称号，先取别的称号顶替一下
-	ol_sb_zhangfei: "义付桃园", //暂无称号，先取别的称号顶替一下
 	ol_liaohua: "果敢刚直",
 	ol_sb_huangyueying: "才惠双绝",
-	ol_sb_jushou: "忠不逢时", //暂无称号，先取别的称号顶替一下
 	ol_lingtong: "豪情烈胆",
 	ol_jianyong: "悠游风议",
 	ol_caozhang: "黄须儿",

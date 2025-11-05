@@ -1,4 +1,10 @@
 const translates = {
+	ol_sb_xizhicai: "OL谋戏志才",
+	ol_sb_xizhicai_prefix: "OL谋",
+	olsbxinchuan: "薪传",
+	olsbxinchuan_info: "你使用的锦囊牌进入弃牌堆后，你可以令一名角色依次执行X次摸一张牌和X次弃置一张牌（X为本回合未进入弃牌堆的花色数），然后若其手牌数变为体力值，令其下家执行剩余流程。",
+	olsbjinjin: "金烬",
+	olsbjinjin_info: "你需要使用普通锦囊牌时，可以将本回合进入弃牌堆的任意张花色各不相同的牌移出游戏并失去〖金烬〗，视为使用之；然后你于下次受到伤害的回合结束时令一名角色获得移出游戏的牌和〖金烬〗。",
 	ol_jsrg_zhujun: "闪朱儁",
 	ol_jsrg_zhujun_prefix: "闪",
 	ol_fendi: "分敌",

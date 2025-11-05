@@ -11,7 +11,7 @@ const characterSort = {
 	onlyOL_sb_fenwu: ["ol_sb_yl_luzhi", "ol_sb_gongsunzan", "ol_sb_zhangxiu", "ol_sb_dengai", "ol_sb_taishici", "ol_sb_yuanshao", "ol_sb_sunjian", "ol_sb_huaxiong", "ol_sb_wenchou"],
 	onlyOL_sb_shiren: ["ol_sb_kongrong"],
 	onlyOL_sb_daquan: ["ol_sb_xuyou", "ol_sb_jushou", "ol_sb_yuanshu", "ol_sb_zhangrang", "ol_sb_guojia"],
-	onlyOL_sb_jichu: ["ol_sb_huangyueying"],
+	onlyOL_sb_jichu: ["ol_sb_huangyueying", "ol_sb_xizhicai"],
 	onlyOL_sb_huahao: ["ol_sb_xiaoqiao"],
 	onlyOL_demonized: ["dm_simayi", "dm_diaochan", "dm_lvbu", "dm_sunquan"],
 	onlyOL_waitingforsort: [],
