@@ -2,33 +2,19 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	yj_bingling: {
-		trigger: { player: ["useCardToPlayered"] },
+	bingling: {
+		trigger: { player: ["useCardToPlayer"] },
 		filter(event, player) {
-			return get.name(event.card) == "sha";
+			return get.name(event.card) == "sha" && event.target.countDiscardableCards("hej") > 0;
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
-			event.result = await player
-				.discardPlayerCard(target, "hej", get.prompt2("yj_bingling"), [0, 2])
-				.set("filterOk", () => {
-					const target = get.event().target;
-					if (target.getDiscardableCards().length < 2 && ui.selected.buttons.length < 2) {
-						return true;
-					}
-					return ui.selected.buttons.length == 2;
-				})
-				.set("ai", card => {
-					const player = get.player(),
-						target = get.event().target;
-					return -get.attitude(player, target);
-				})
-				.set("chooseonly", true)
-				.set("target", target)
-				.forResult();
+			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("yj_bingling"), 2).set("chooseonly", true).forResult();
 		},
 		async content(event, trigger, player) {
-			trigger.target.discard(event.cards);
+			const next = trigger.target.discard(event.cards);
+			next.set("discarder", player);
+			await next;
 			if (event.cards.length > 1) {
 				const card = event.cards[0],
 					cardx = event.cards[1];
@@ -55,30 +41,33 @@ const skills = {
 			}
 		},
 	},
-	yj_renjia: {
-		trigger: { player: ["damageBegin3"] },
+	renjia: {
+		trigger: {
+			player: ["damageBegin3", "damageAfter"],
+			source: ["damageSource"],
+		},
 		forced: true,
 		filter(event, player) {
 			if (!event.hasNature()) {
-				return player.countMark("yj_renjia_used") < 2;
+				return player.getRoundHistory("damage", evt => evt.hasNature()).length < 2;
 			}
-			return event.hasNature("fire");
+			return event.hasNature();
 		},
 		async content(event, trigger, player) {
-			if (trigger.hasNature("fire")) {
-				trigger.num++;
-			} else {
-				trigger.num--;
-				player.addMark("yj_renjia_used", 1, false);
-				if (player.hasSkill("yj_renjia_used")) {
-					player.addTempSkill("yj_renjia_used", { global: ["roundStart"] });
+			if (event.triggername == "damageBegin3") {
+				if (trigger.hasNature("fire")) {
+					trigger.num++;
+				} else {
+					trigger.num--;
 				}
+			} else if (trigger.hasNature()) {
+				await player.draw();
 			}
 		},
-		group: ["yj_renjia_gain"],
+		group: ["renjia_gain"],
 		subSkill: {
 			gain: {
-				trigger: { player: ["expandEquipBegin"] },
+				trigger: { player: ["expandEquipBegin", "enableEquipBegin"] },
 				forced: true,
 				init(player, skill) {
 					player.disableEquip(2);
@@ -96,14 +85,6 @@ const skills = {
 					}
 				},
 			},
-			used: {
-				marktext: "甲",
-				intro: {
-					name: "韧甲",
-					content: "mark",
-				},
-				onremove: true,
-			},
 		},
 		ai: {
 			effect: {
@@ -111,8 +92,8 @@ const skills = {
 					if (get.tag(card, "fireDamage")) {
 						return [1, 0, 1, -3];
 					}
-					if (!get.natureList(card).length) {
-						return [1, -3];
+					if (!get.natureList(card).length && target.getRoundHistory("damage", evt => evt.hasNature()).length < 2) {
+						return [1, -1];
 					}
 				},
 			},
@@ -132,60 +113,75 @@ const skills = {
 		},
 		filterCard: () => true,
 		filter(event, player) {
-			if (player.countCards("h") < 2) {
-				return false;
-			}
-			return game.hasPlayer(curr => curr.canEquip("tengjia", true));
+			return player.countCards("h") >= 2;
 		},
 		filterTarget(card, player, target) {
-			return target.canEquip("tengjia", true);
+			return target != player;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			await player.showCards(event.cards);
 			const card = get.cardPile2("tengjia"),
 				suits = event.cards.map(card => get.suit(card));
-			if (!card) {
-				player.popup("杯具");
-			} else {
+			if (card && event.targets[0].canEquip("tengjia", true)) {
 				await event.targets[0].equip(card);
+			} else {
+				player.popup("杯具");
 			}
+			player.addSkill("yj_yanyu_use");
 			const targets = game.filterPlayer(curr => curr != event.targets[0]);
 			targets.forEach(curr => {
 				curr.markAuto("yj_yanyu_fire", suits);
+				const list = curr.getStorage("yj_yanyu_source");
+				list.add(player);
+				curr.setStorage("yj_yanyu_source", list);
 				curr.addSkill("yj_yanyu_fire");
 			});
 		},
 		subSkill: {
+			use: {
+				forced: true,
+				charlotte: true,
+				trigger: { global: ["useCardAfter"] },
+				filter(event, player) {
+					if (!player.getStorage("yj_yanyu_source").includes(player)) {
+						return false;
+					}
+					return Object.values(event.modSkill).includes("yj_yanyu_fire");
+				},
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+			},
 			fire: {
 				marktext: "焰",
 				intro: {
 					name: "焰狱",
 					mark(dialog, storage, player) {
-						const str = get.translation(storage).split("、");
-						console.log(str);
-						dialog.addText(`${str}花色的手牌遵循:基本牌:火杀,锦囊牌:火攻,装备牌:铁索连环`);
+						const str = get.translation(storage).split("、"),
+							sources = get.translation(player.getStorage("yj_yanyu_source")).split("、");
+						dialog.addText(`${str}花色的手牌遵循:基本牌:火杀,锦囊牌:火攻,装备牌:铁索连环且使用后${sources}摸一张牌`);
 					},
 				},
 				mod: {
 					cardname(card, player, name) {
 						const suits = player.getStorage("yj_yanyu_fire"),
 							suit = get.suit(card);
-						if (!suits.includes(suit)) {
+						if (!suits.includes(suit, false)) {
 							return;
 						}
-						if (get.type(name) == "basic") {
+						if (get.type(name, null, false) == "basic") {
 							return "sha";
-						} else if (get.type2(name) == "trick") {
+						} else if (get.type2(name, false) == "trick") {
 							return "huogong";
-						} else if (get.type(name) == "equip") {
+						} else if (get.type(name, null, false) == "equip") {
 							return "tiesuo";
 						}
 					},
 					cardnature(card, player) {
 						const suits = player.getStorage("yj_yanyu_fire"),
-							suit = get.suit(card);
-						if (suits.includes(suit) && get.type(card) == "basic") {
+							suit = get.suit(card, false);
+						if (suits.includes(suit) && get.type(card, null, false) == "basic") {
 							return "fire";
 						}
 					},
