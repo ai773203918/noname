@@ -5,7 +5,7 @@ const skills = {
 	bingling: {
 		trigger: { player: ["useCardToPlayer"] },
 		filter(event, player) {
-			return get.name(event.card) == "sha" && event.target.countDiscardableCards("hej") > 0;
+			return get.name(event.card) == "sha" && event.target.countDiscardableCards("hej") >= 2;
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
