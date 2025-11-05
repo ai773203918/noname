@@ -3868,10 +3868,12 @@ const skills = {
 			"step 0";
 			player.choosePlayerCard(target, "h", true);
 			"step 1";
-			player.showCards(result.cards);
-			var type = get.type2(result.cards[0], target);
-			target.storage.choufa2 = type;
-			target.addTempSkill("choufa2", { player: "phaseAfter" });
+			if (result?.bool && result.cards?.length) {
+				player.showCards(result.cards);
+				var type = get.type2(result.cards[0], target);
+				target.storage.choufa2 = type;
+				target.addTempSkill("choufa2", { player: "phaseAfter" });
+			}
 		},
 		ai: {
 			order: 9,
