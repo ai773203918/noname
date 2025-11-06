@@ -5,7 +5,7 @@ export default {
 	"#potqingshi2": "在职思其所司，在义思其所立。",
 	"#potqingshi3": "会在事纵恣，非持久处下之道。",
 	"#potqingshi4": "智多而肆，吾畏其有他志。",
-	"#pot_xinxianying:die": "汝若依言行之。必可全身而退",
+	"#pot_xinxianying:die": "汝若依言行之，必可全身而退。",
 	"#mbquanchong1": "这等小事，何劳陛下过问？",
 	"#mbquanchong2": "陛下万般恩宠，臣常思竭诚相报。",
 	"#mbquanchong3": "大胆庞宏，竟敢瞧我不起？",
