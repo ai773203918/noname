@@ -3842,7 +3842,9 @@ const skills = {
 				.set("ai", () => get.event("choice"))
 				.set("choice", clock > anticlock ? 0 : 1)
 				.forResult();
-			if (typeof result?.index !== "number") return;
+			if (typeof result?.index !== "number") {
+				return;
+			}
 			await player.draw(result.index == 0 ? clock : anticlock);
 		},
 		ai: {
