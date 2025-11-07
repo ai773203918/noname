@@ -13,7 +13,7 @@ game.import("card", function () {
 				subtype: "equip5",
 				bingzhu: ["华佗"],
 				skills: ["mb_qingnangshu_skill"],
-				maxNum: 1,
+				maxNum: 3,
 				async onEquip(event, trigger, player) {
 					let card, vcard;
 					if (get.itemtype(event.card) == "vcard") {
@@ -42,7 +42,7 @@ game.import("card", function () {
 						card.storage ??= {};
 						card.storage.mb_qingnangshu_skill = lib.card["mb_qingnangshu"].maxNum;
 					}
-					return `锁定技，准备阶段，你加1点体力上限并恢复一点体力（剩余${get.cnNumber(card.storage.mb_qingnangshu_skill)}次）`;
+					return `锁定技，准备阶段，你加1点体力上限并恢复1点体力（剩余${get.cnNumber(card.storage.mb_qingnangshu_skill)}次）`;
 				},
 				getCards(player) {
 					const es = player.getCards("e", { name: "mb_qingnangshu" }).filter(card => card[card.cardSymbol].storage?.mb_qingnangshu_skill > 0),
