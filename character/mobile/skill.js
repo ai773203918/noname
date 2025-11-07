@@ -818,7 +818,19 @@ const skills = {
 		},
 	},
 	potqingshi: {
-		audio: 2,
+		audio: 4,
+		logAudio(event, player, triggername, _, costResult) {
+			let target;
+			if (event.name == "useSkill") {
+				target = event.targets[0];
+			} else {
+				target = costResult.targets[0];
+			}
+			if (player.getFriends(true).includes(target)) {
+				return ["potqingshi1.mp3", "potqingshi2.mp3"];
+			}
+			return ["potqingshi3.mp3", "potqingshi4.mp3"];
+		},
 		trigger: {
 			player: "damageEnd",
 		},

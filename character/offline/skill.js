@@ -3290,7 +3290,7 @@ const skills = {
 				return false;
 			}
 			const card = get.autoViewAs({ name: "sha", isCard: true });
-			return player.canUse(card, trigger.player, false);
+			return player.canUse(card, event.player, false);
 		},
 		async content(event, trigger, player) {
 			const sha = get.autoViewAs({ name: "sha", isCard: true });
@@ -16789,20 +16789,20 @@ const skills = {
 	},
 	//波才
 	hm_kunjun: {
-		trigger: {
-			player: "useCard",
-			target: "useCardToTargeted",
-		},
-		forced: true,
-		filter(event, player, triggername) {
+		trigger: { global: "useCard" },
+		filter(event, player) {
+			if (get.type(event.card) != "trick" && (get.type(event.card) != "basic" || ["shan", "tao", "jiu", "du"].includes(event.card.name))) {
+				return false;
+			}
 			if (event.player == player) {
-				return event.targets.some(c => player.countCards("h") > c.countCards("h"));
+				return game.hasPlayer(current => player.countCards("h") > current.countCards("h"));
 			}
 			return event.player.countCards("h") > player.countCards("h");
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			if (trigger.player == player) {
-				trigger.directHit.addArray(trigger.targets.filter(c => player.countCards("h") > c.countCards("h")));
+				trigger.directHit.addArray(game.filterPlayer(current => player.countCards("h") > current.countCards("h")));
 			} else {
 				trigger.directHit.add(player);
 			}

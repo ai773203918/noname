@@ -1460,12 +1460,12 @@ const skills = {
 					game.broadcastAll(
 						function (cards) {
 							cards.forEach(card => card.addGaintag("olleishi"));
-							player.when({ global: "phaseAfter" }).then(() => {
-								player.removeGaintag("olleishi");
-							});
 						},
 						trigger.cards.filter(i => get.owner(i) == player)
 					);
+					player.when({ global: "phaseAfter" }).then(() => {
+						player.removeGaintag("olleishi");
+					});
 				},
 			},
 		},
@@ -1762,7 +1762,8 @@ const skills = {
 					if ((evt.relatedEvent || evt.getParent()) != trigger) {
 						return false;
 					}
-					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && !get.owner(card)));
+					//还原下OL神必结算
+					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && ["e", "o", "d"].includes(get.position(card))));
 				});
 				if (cards.length > 3 - player.getExpansions(event.skill).length) {
 					const num = 3 - player.getExpansions(event.skill).length;
@@ -13156,41 +13157,32 @@ const skills = {
 	olmouzhu: {
 		audio: "mouzhu",
 		inherit: "mouzhu",
-		content() {
-			"step 0";
-			target.chooseCard("h", "交给" + get.translation(player) + "一张手牌", true);
-			"step 1";
-			if (result.bool) {
-				target.give(result.cards, player);
-			}
-			"step 2";
-			if (player.countCards("h") <= target.countCards("h")) {
-				event.finish();
+		async content(event, trigger, player) {
+			const target = event.target;
+			if (!player.isIn() || !target.countGainableCards(player, "h")) {
 				return;
 			}
-			var list = [];
-			if (target.hasUseTarget({ name: "sha" })) {
-				list.push("sha");
+			await target.chooseToGive(player, "h", true);
+			if (!player.isIn() || player.countCards("h") <= target.countCards("h")) {
+				return;
 			}
-			if (target.hasUseTarget({ name: "sha" })) {
-				list.push("juedou");
-			}
+			let list = ["sha", "juedou"].filter(name => target.hasUseTarget(get.autoViewAs({ name }, []))),
+				result;
 			if (!list.length) {
-				event.finish();
+				return;
 			} else if (list.length == 1) {
-				event._result = { control: list[0] };
+				result = { control: list[0] };
 			} else {
-				target
+				result = await target
 					.chooseControl(list)
-					.set("prompt", "谋诛：视为使用一张【杀】或【决斗】")
-					.set("ai", function () {
-						var player = _status.event.player;
-						return player.getUseValue({ name: "sha" }) > player.getUseValue({ name: "juedou" }) ? "sha" : "juedou";
-					});
+					.set("prompt", "谋诛：视为使用一张【杀】或【决斗】。")
+					.set("ai", function (event, player) {
+						return player.getUseValue(get.autoViewAs({ name: "sha" }, [])) >= player.getUseValue(get.autoViewAs({ name: "juedou" }, [])) ? "sha" : "juedou";
+					})
+					.forResult();
 			}
-			"step 3";
-			if (result.control) {
-				target.chooseUseTarget({ name: result.control }, true);
+			if (result?.control) {
+				await target.chooseUseTarget({ name: result.control, isCard: true }, true);
 			}
 		},
 		ai: {
@@ -26488,36 +26480,34 @@ const skills = {
 			return player != target && (target.hp == player.hp || get.distance(player, target) == 1);
 		},
 		selectTarget: [1, Infinity],
-		content() {
-			"step 0";
-			target.chooseCard("h", "交给" + get.translation(player) + "一张牌", true);
-			"step 1";
-			if (result.bool) {
-				target.give(result.cards, player);
-			}
-			"step 2";
-			if (player.countCards("h") <= target.countCards("h")) {
-				event.finish();
+		async content(event, trigger, player) {
+			const target = event.target;
+			if (!player.isIn() || !target.countGainableCards(player, "h")) {
 				return;
 			}
-			var list = [];
-			if (target.canUse("sha", player, false)) {
-				list.push("sha");
+			await target.chooseToGive(player, "h", true);
+			if (!player.isIn() || player.countCards("h") <= target.countCards("h")) {
+				return;
 			}
-			if (target.canUse("juedou", player, false)) {
-				list.push("juedou");
-			}
+			let list = ["sha", "juedou"].filter(name => target.canUse(get.autoViewAs({ name }, []), player, false)),
+				result;
 			if (!list.length) {
-				event.finish();
+				return;
 			} else if (list.length == 1) {
-				event._result = { control: list[0] };
+				result = { control: list[0] };
 			} else {
-				target.chooseControl(list).set("prompt", "对" + get.translation(player) + "使用一张【杀】或【决斗】。").ai = function () {
-					return get.effect(player, { name: "sha" }, target, target) >= get.effect(player, { name: "juedou" }, target, target) ? "sha" : "juedou";
-				};
+				result = await target
+					.chooseControl(list)
+					.set("prompt", "对" + get.translation(player) + "使用一张【杀】或【决斗】。")
+					.set("ai", function (event, player) {
+						const target = event.player;
+						return get.effect(player, { name: "sha" }, target, target) >= get.effect(player, { name: "juedou" }, target, target) ? "sha" : "juedou";
+					})
+					.forResult();
 			}
-			"step 3";
-			target.useCard({ name: result.control, isCard: true }, player, "noai");
+			if (result?.control) {
+				await target.useCard({ name: result.control, isCard: true }, player, "noai");
+			}
 		},
 		ai: {
 			order: 7,
@@ -27843,36 +27833,34 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player && target.countCards("h") > 0;
 		},
-		content() {
-			"step 0";
-			target.chooseCard("h", "交给" + get.translation(player) + "一张手牌", true);
-			"step 1";
-			if (result.bool) {
-				target.give(result.cards, player);
-			}
-			"step 2";
-			if (player.countCards("h") <= target.countCards("h")) {
-				event.finish();
+		async content(event, trigger, player) {
+			const target = event.target;
+			if (!player.isIn() || !target.countGainableCards(player, "h")) {
 				return;
 			}
-			var list = [];
-			if (target.canUse("sha", player, false)) {
-				list.push("sha");
+			await target.chooseToGive(player, "h", true);
+			if (!player.isIn() || player.countCards("h") <= target.countCards("h")) {
+				return;
 			}
-			if (target.canUse("juedou", player, false)) {
-				list.push("juedou");
-			}
+			let list = ["sha", "juedou"].filter(name => target.canUse(get.autoViewAs({ name }, []), player, false)),
+				result;
 			if (!list.length) {
-				event.finish();
+				return;
 			} else if (list.length == 1) {
-				event._result = { control: list[0] };
+				result = { control: list[0] };
 			} else {
-				target.chooseControl(list).set("prompt", "对" + get.translation(player) + "使用一张【杀】或【决斗】。").ai = function () {
-					return get.effect(player, { name: "sha" }, target, target) >= get.effect(player, { name: "juedou" }, target, target) ? "sha" : "juedou";
-				};
+				result = await target
+					.chooseControl(list)
+					.set("prompt", "对" + get.translation(player) + "使用一张【杀】或【决斗】。")
+					.set("ai", function (event, player) {
+						const target = event.player;
+						return get.effect(player, { name: "sha" }, target, target) >= get.effect(player, { name: "juedou" }, target, target) ? "sha" : "juedou";
+					})
+					.forResult();
 			}
-			"step 3";
-			target.useCard({ name: result.control, isCard: true }, player, "noai");
+			if (result?.control) {
+				await target.useCard({ name: result.control, isCard: true }, player, "noai");
+			}
 		},
 		ai: {
 			order: 7,
