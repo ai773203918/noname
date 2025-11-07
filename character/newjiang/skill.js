@@ -7,6 +7,9 @@ const skills = {
 		filter(event, player) {
 			return get.name(event.card) == "sha" && event.target.countDiscardableCards("hej") >= 2;
 		},
+		logTarget(event,player) {
+			return event?.target;
+		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
 			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("yj_bingling"), 2).set("chooseonly", true).forResult();
