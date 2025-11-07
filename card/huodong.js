@@ -42,7 +42,7 @@ game.import("card", function () {
 						card.storage ??= {};
 						card.storage.mb_qingnangshu_skill = lib.card["mb_qingnangshu"].maxNum;
 					}
-					return `锁定技，准备阶段，你加1点体力上限并恢复1点体力（剩余${get.cnNumber(card.storage.mb_qingnangshu_skill)}次）`;
+					return `锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余${get.cnNumber(card.storage.mb_qingnangshu_skill)}次）`;
 				},
 				getCards(player) {
 					const es = player.getCards("e", { name: "mb_qingnangshu" }).filter(card => card[card.cardSymbol].storage?.mb_qingnangshu_skill > 0),
