@@ -13,33 +13,44 @@ game.import("card", function () {
 				subtype: "equip5",
 				bingzhu: ["华佗"],
 				skills: ["mb_qingnangshu_skill"],
-				maxNum: 3,
-				onEquip() {
-					if (!card.storage || typeof card.storage.mb_qingnangshu_skill != "number") {
-						card.storage ??= {};
-						card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
-						lib.skill.mb_qingnangshu_skill.broadcast(card, null, player);
+				maxNum: 1,
+				async onEquip(event, trigger, player) {
+					let card, vcard;
+					if (get.itemtype(event.card) == "vcard") {
+						card = null;
+						vcard = event.card;
+					} else {
+						card = event.card;
+						vcard = card[card.cardSymbol];
 					}
-					if (player.getVCards("e", i => i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0).length) {
+					await lib.skill.mb_qingnangshu_skill.broadcast(card, vcard, player);
+					let cards = lib.card["mb_qingnangshu"].getCards(player);
+					if (cards.length) {
 						player.markSkill("mb_qingnangshu_skill");
 					}
 				},
-				onLose() {
-					if (!player.getVCards("e", i => i.name == "mb_qingnangshu" && i.storage?.mb_qingnangshu_skill > 0).length) {
+				async onLose(event, trigger, player) {
+					let cards = lib.card["mb_qingnangshu"].getCards(player);
+					if (!cards.length) {
 						player.unmarkSkill("mb_qingnangshu_skill");
 					} else {
 						player.markSkill("mb_qingnangshu_skill");
 					}
 				},
 				cardPrompt(card, player) {
-					if (!card.storage || typeof card.storage.mb_qingnangshu_skill != "number") {
-						if (!card.storage) {
-							card.storage = {};
-						}
-						card.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
-						lib.skill.mb_qingnangshu_skill.broadcast(card, player);
+					if (typeof card.storage?.mb_qingnangshu_skill != "number") {
+						card.storage ??= {};
+						card.storage.mb_qingnangshu_skill = lib.card["mb_qingnangshu"].maxNum;
 					}
-					return "锁定技，准备阶段，你加1点体力上限并回复1点体力（剩余" + parseFloat(card.storage.mb_qingnangshu_skill) + "次）。";
+					return `锁定技，准备阶段，你加1点体力上限并恢复一点体力（剩余${get.cnNumber(card.storage.mb_qingnangshu_skill)}次）`;
+				},
+				getCards(player) {
+					const es = player.getCards("e", { name: "mb_qingnangshu" }).filter(card => card[card.cardSymbol].storage?.mb_qingnangshu_skill > 0),
+						js = player
+							.getVCards("j", card => card.storage?.equipEnable)
+							.flatMap(card => card.cards.filter(card => card.name == "mb_qingnangshu"))
+							.filter(card => card.storage?.mb_qingnangshu_skill > 0 || typeof card.storage?.mb_qingnangshu_skill != "number");
+					return es.concat(js);
 				},
 				ai: {
 					equipValue: 9,
@@ -1730,72 +1741,84 @@ game.import("card", function () {
 			//青囊书
 			mb_qingnangshu_skill: {
 				equipSkill: true,
-				onremove(player) {
-					player.unmarkSkill("mb_qingnangshu_skill");
+				onremove(player, skill) {
+					player.unmarkSkill(skill);
 				},
 				//mark: true,
 				marktext: "书",
 				intro: {
 					markcount(_, player) {
-						let cards = player.getVCards("e", i => i.name == "mb_qingnangshu");
-						if (!cards.length) {
-							return "∞";
+						let cards = lib.card["mb_qingnangshu"].getCards(player);
+						let num = cards.reduce((sum, card) => {
+							if (get.position(card) == "e") {
+								return sum + card[card.cardSymbol].storage.mb_qingnangshu_skill;
+							}
+							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNUm);
+						}, 0);
+						if (!num) {
+							return "0";
 						}
-						cards = cards.filter(card => card.storage?.mb_qingnangshu_skill > 0);
-						let num = cards.reduce((sum, card) => sum + card.storage.mb_qingnangshu_skill, 0);
 						return `${num}/${lib.card.mb_qingnangshu.maxNum}`;
 					},
 					content(_, player) {
-						let num = "",
-							cards = player.getVCards("e", i => i.name == "mb_qingnangshu");
-						if (!cards.length) {
-							num = "∞";
-						} else {
-							cards = cards.filter(card => card.storage?.mb_qingnangshu_skill > 0);
-							num = cards.reduce((sum, card) => sum + card.storage.mb_qingnangshu_skill, 0);
-						}
+						let cards = lib.card["mb_qingnangshu"].getCards(player);
+						let num = cards.reduce((sum, card) => {
+							if (get.position(card) == "e") {
+								return sum + card[card.cardSymbol].storage.mb_qingnangshu_skill;
+							}
+							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNUm);
+						}, 0);
 						return `<li>剩余可用${num}次<br><li>锁定技，准备阶段，你加1点体力上限并回复1点体力。`;
 					},
 				},
 				audio: "zhaohan1.mp3",
 				trigger: { player: "phaseZhunbeiBegin" },
 				getIndex(event, player) {
-					let cards = player.getCards("e", card => card.name == "mb_qingnangshu");
-					if (!cards.length) {
-						return 1;
-					}
-					return cards;
-				},
-				filter(event, player, triggername, indexedData) {
-					if (get.itemtype(indexedData) != "card") {
-						return indexedData;
-					}
-					let vcard = indexedData[indexedData["cardSymbol"]];
-					return vcard.storage?.mb_qingnangshu_skill > 0;
+					return lib.card["mb_qingnangshu"].getCards(player);
 				},
 				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
-					/*player.flashAvatar(event.name, "yangbiao");
-											player.chat("天道昭昭，再兴如光武亦可期！");*/
-					const card = event.indexedData;
-					if (get.itemtype(card) == "card") {
-						const vcard = card[card["cardSymbol"]];
-						vcard.storage.mb_qingnangshu_skill--;
-						game.log(vcard, "减少了", "#y1点", "#g耐久值");
-						await lib.skill.mb_qingnangshu_skill.broadcast(vcard, card, get.owner(card));
+					if (!lib.card["mb_qingnangshu"].getCards(player).includes(event.indexedData)) {
+						return;
 					}
+					await player.logSkill(event.name);
+					//player.flashAvatar(event.name, "yangbiao");
+					//player.chat("天道昭昭，再兴如光武亦可期！");
+					let card, vcard;
+					if (get.position(event.indexedData) == "e") {
+						card = event.indexedData;
+						vcard = card[card.cardSymbol];
+					} else {
+						card = player.getCards("j", card => {
+							let vcard = card[card.cardSymbol];
+							return vcard?.storage?.equipEnable && vcard.cards.some(c => c == event.indexedData);
+						})[0];
+						vcard = event.indexedData;
+					}
+					if (typeof vcard.storage?.mb_qingnangshu_skill != "number") {
+						vcard.storage ??= {};
+						vcard.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
+					}
+					vcard.storage.mb_qingnangshu_skill--;
+					game.log(vcard, "减少了", "#y1点", "#g耐久值");
+					await lib.skill.mb_qingnangshu_skill.broadcast(card, vcard, player, get.position(event.indexedData) != "e");
 					await player.gainMaxHp();
 					await player.recover();
 				},
-				async broadcast(vcard, card, player) {
+				async broadcast(card, vcard, player, inJudge) {
+					if (typeof vcard.storage?.mb_qingnangshu_skill != "number") {
+						vcard.storage ??= {};
+						vcard.storage.mb_qingnangshu_skill = lib.card.mb_qingnangshu.maxNum;
+					}
 					game.broadcast(
-						(vcard, storage) => {
+						function (vcard, storage) {
 							vcard.storage = storage;
 						},
 						vcard,
 						vcard.storage
 					);
-					if (get.is.ordinaryCard(vcard)) {
+					if (!inJudge && get.is.ordinaryCard(vcard)) {
 						game.broadcastAll(
 							(vcard, num) => {
 								vcard.cards[0].storage.mb_qingnangshu_skill = num;
@@ -1808,18 +1831,25 @@ game.import("card", function () {
 						player.markSkill("mb_qingnangshu_skill");
 					}
 					if (vcard.storage.mb_qingnangshu_skill <= 0) {
+						let cardx = inJudge ? vcard : card;
 						if (player) {
-							if (card) {
-								await player.lose(card, ui.special);
-								player.$throw(card, 1000);
+							if (cardx) {
+								if (inJudge) {
+									await player.loseToDiscardpile(card);
+								}
+								await player.lose(cardx, ui.special);
+								player.$throw(cardx, 1000);
 							}
-							if (!player.getVCards("e", i => i.name == "mb_qingnangshu" && i != vcard && i.storage?.mb_qingnangshu_skill > 0).length) {
+							let cards = lib.card["mb_qingnangshu"].getCards(player);
+							if (!cards.length) {
 								player.unmarkSkill("mb_qingnangshu_skill");
+							} else {
+								player.markSkill("mb_qingnangshu_skill");
 							}
 						} else {
-							await game.cardsGotoSpecial(card);
+							await game.cardsGotoSpecial(cardx);
 						}
-						game.log(card, "被移出了游戏");
+						game.log(cardx, "被移出了游戏");
 					}
 				},
 			},
