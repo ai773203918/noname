@@ -12407,7 +12407,7 @@ const skills = {
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") {
-							return num + player.countMark("suizheng_effect");
+							return num + 2 * player.countMark("suizheng_effect");
 						}
 					},
 				},
@@ -14243,7 +14243,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countMark("weilie_used") <= player.getStorage("fuping").length && player.countCards("he") > 0 && game.hasPlayer(current => current.isDamaged());
+			return player.countMark("weilie_used") <= (player.getStorage("fuping").length + 1) && player.countCards("he") > 0 && game.hasPlayer(current => current.isDamaged());
 		},
 		filterCard: true,
 		position: "he",
@@ -14257,7 +14257,7 @@ const skills = {
 			player.addMark(name + "_used", 1, false);
 			await target.recover();
 			if (target.isDamaged()) {
-				await target.draw();
+				await target.draw(2);
 			}
 		},
 		onremove: true,
