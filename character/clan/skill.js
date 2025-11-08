@@ -4641,56 +4641,7 @@ const skills = {
 			});
 		},
 		content() {
-			"step 0";
-			var skills = player.getStockSkills(true, true);
-			game.expandSkills(skills);
-			var resetSkills = [];
-			var suffixs = ["used", "round", "block", "blocker"];
-			for (var skill of skills) {
-				var info = get.info(skill);
-				if (info.usable !== undefined) {
-					if (typeof player.getStat("triggerSkill")[skill] == "number" && player.getStat("triggerSkill")[skill] >= 1) {
-						delete player.getStat("triggerSkill")[skill];
-						resetSkills.add(skill);
-					}
-					/*
-					这段逻辑和上面的新逻辑任选一个使用即可
-					if (player.hasSkill("counttrigger") && (player.storage.counttrigger?.[skill] ?? 0) >= 1) {
-						delete player.storage.counttrigger[skill];
-						resetSkills.add(skill);
-					}
-					*/
-					if (typeof player.getStat("skill")[skill] == "number" && player.getStat("skill")[skill] >= 1) {
-						delete player.getStat("skill")[skill];
-						resetSkills.add(skill);
-					}
-				}
-				if (info.round && player.storage[skill + "_roundcount"]) {
-					delete player.storage[skill + "_roundcount"];
-					resetSkills.add(skill);
-				}
-				if (player.storage[`temp_ban_${skill}`]) {
-					delete player.storage[`temp_ban_${skill}`];
-					resetSkills.add(skill);
-				}
-				if (player.awakenedSkills.includes(skill)) {
-					player.restoreSkill(skill);
-					resetSkills.add(skill);
-				}
-				for (var suffix of suffixs) {
-					if (player.hasSkill(skill + "_" + suffix)) {
-						player.removeSkill(skill + "_" + suffix);
-						resetSkills.add(skill);
-					}
-				}
-			}
-			if (resetSkills.length) {
-				var str = "";
-				for (var i of resetSkills) {
-					str += "【" + get.translation(i) + "】、";
-				}
-				game.log(player, "重置了技能", "#g" + str.slice(0, -1));
-			}
+			player.refreshSkill();
 		},
 	},
 	//族吴匡

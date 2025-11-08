@@ -10358,6 +10358,60 @@ export class Player extends HTMLDivElement {
 			player.$removeAdditionalSkills(skill, target);
 		});
 	}
+	/**
+	 * 中流（×）批量重置技能
+	 * @param { string[] } [skills]
+	 */
+	refreshSkill(skills) {
+		const player = this;
+		if (!skills) {
+			skills = game.expandSkills(player.getStockSkills(true, true));
+		}
+		if (!Array.isArray(skills) || !skills?.length) {
+			return player;
+		}
+		const resetSkills = [],
+			suffixs = ["used", "round", "block", "blocker"];
+		for (const skill of skills) {
+			const info = get.info(skill);
+			if (info.usable !== undefined) {
+				if (typeof player.getStat("triggerSkill")[skill] == "number" && player.getStat("triggerSkill")[skill] >= 1) {
+					delete player.getStat("triggerSkill")[skill];
+					resetSkills.add(skill);
+				}
+				if (typeof player.getStat("skill")[skill] == "number" && player.getStat("skill")[skill] >= 1) {
+					delete player.getStat("skill")[skill];
+					resetSkills.add(skill);
+				}
+			}
+			if (info.round && player.storage[skill + "_roundcount"]) {
+				delete player.storage[skill + "_roundcount"];
+				resetSkills.add(skill);
+			}
+			if (player.storage[`temp_ban_${skill}`]) {
+				delete player.storage[`temp_ban_${skill}`];
+				resetSkills.add(skill);
+			}
+			if (player.awakenedSkills.includes(skill)) {
+				player.restoreSkill(skill);
+				resetSkills.add(skill);
+			}
+			for (const suffix of suffixs) {
+				if (player.hasSkill(skill + "_" + suffix)) {
+					player.removeSkill(skill + "_" + suffix);
+					resetSkills.add(skill);
+				}
+			}
+		}
+		if (resetSkills.length) {
+			let str = "";
+			for (const i of resetSkills) {
+				str += "【" + get.translation(i) + "】、";
+			}
+			game.log(player, "重置了技能", "#g" + str.slice(0, -1));
+		}
+		return player;
+	}
 	awakenSkill(skill, nounmark) {
 		if (!nounmark) {
 			this.unmarkSkill(skill);
