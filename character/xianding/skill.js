@@ -704,7 +704,7 @@ const skills = {
 		chooseCard(player, targets, source, eventId) {
 			const target = targets[0] == player ? targets[1] : targets[0];
 			return player
-				.chooseCard("h")
+				.chooseCard("h", true)
 				.set("prompt", `维卫：请选择一张要与${get.translation(target)}交换的手牌`)
 				.set("ai", card => {
 					const { player, target, source, att } = get.event();

@@ -87,10 +87,16 @@ const skills = {
 			let list = [draw, discard].map(func => Array.from(Array(num)).map(i => func)).flat();
 			let current = event.targets[0];
 			while (list.length) {
+				if (!current) {
+					break;
+				}
 				const func = list.shift();
 				await func(current);
 				if (current.countCards("h") == current.getHp()) {
 					current = current.getNext();
+					while (!current?.isIn()) {
+						current = current.getNext();
+					}
 				}
 			}
 		},

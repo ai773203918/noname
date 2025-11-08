@@ -1148,7 +1148,7 @@ const skills = {
 		},
 	},
 	//庞德
-	sxrmnizhan: {
+	sxrmnuozhan: {
 		audio: 2,
 		trigger: {
 			player: "phaseZhunbeiBegin",
@@ -1177,6 +1177,9 @@ const skills = {
 					.set("ai", button => {
 						const { player, kuangtu } = get.event(),
 							card = new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true});
+						if (!player.countCards("h") && ["huogong", "lx_huoshaolianying"].includes(button.link[2])) {
+							return -114514;
+						}
 						return Math.min(get.effect(player, card, kuangtu, player), get.effect(kuangtu, card, player, player));
 					})
 					.set("kuangtu", player)
