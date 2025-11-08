@@ -6921,11 +6921,11 @@ const skills = {
 						await player.loseToDiscardpile(cards);
 					}
 				}
-				if (!player.countCards("hs", card => player.hasUseTarget(get.autoViewAs({ name: "shunshou" }, [card]), false, false))) {
+				if (!player.countCards("hs", card => player.hasUseTarget(get.autoViewAs({ name: "shunshou", storage: { olsbjiewan: true } }, [card]), false, false))) {
 					return;
 				}
 				const next = player.chooseToUse();
-				next.set("openskilldialog", `###${get.prompt(event.name)}###将一张手牌当无距离限制的【顺手牵羊】使用`);
+				next.set("openskilldialog", `###${get.prompt(event.name)}###将一张手牌当距离限制为${Math.max(1, player.countExpansions("olsbjigu"))}的【顺手牵羊】使用`);
 				next.set("norestore", true);
 				next.set("_backupevent", `${event.name}_backup`);
 				next.set("forced", true);
@@ -6935,11 +6935,16 @@ const skills = {
 				});
 				next.set("targetRequired", true);
 				next.set("complexSelect", true);
-				next.set("filterTarget", function (card, player, target) {
-					return lib.filter.targetEnabled.apply(this, arguments);
-				});
 				next.backup(`${event.name}_backup`);
 				await next;
+			}
+		},
+		locked: false,
+		mod: {
+			targetInRange(card, player, target) {
+				if (card?.storage?.olsbjiewan) {
+					return 1 - Math.max(1, player.countExpansions("olsbjigu"));
+				}
 			}
 		},
 		subSkill: {
@@ -6948,7 +6953,12 @@ const skills = {
 				filterCard(card) {
 					return get.itemtype(card) == "card";
 				},
-				viewAs: { name: "shunshou" },
+				viewAs: {
+					name: "shunshou",
+					storage: {
+						olsbjiewan: true,
+					},
+				},
 				position: "hs",
 				ai1(card) {
 					const player = get.player();

@@ -477,7 +477,7 @@ const skills = {
 			return event.getg(player).length;
 		},
 		get usable() {
-			return get.mode() == "identity" ? 2 : 1;
+			return 2;
 		},
 		async cost(event, trigger, player) {
 			const cards = trigger.getg(player).filter(i => get.owner(i) == player);
@@ -6679,6 +6679,7 @@ const skills = {
 			content: "已记录牌名：$",
 		},
 		enable: "phaseUse",
+		usable: 1,
 		filter(event, player) {
 			const cards = event.sbbeifa;
 			return cards?.length > 0 && player.countCards("hs") > 0;
@@ -6813,9 +6814,9 @@ const skills = {
 				async content(event, trigger, player) {
 					let num = 0;
 					if (trigger.name.indexOf("lose") == 0) {
-						game.filterPlayer(current => {
+						game.filterPlayer2(current => {
 							num += trigger.getl(current).cards2.length;
-						});
+						}, null, true);
 					} else {
 						num += trigger.cards.length;
 					}
