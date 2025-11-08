@@ -12,7 +12,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const target = trigger.target;
-			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("yj_bingling"), 2).set("chooseonly", true).forResult();
+			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("bingling"), 2).set("chooseonly", true).forResult();
 		},
 		async content(event, trigger, player) {
 			const next = trigger.target.discard(event.cards);
