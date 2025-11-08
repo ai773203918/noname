@@ -3172,6 +3172,7 @@ const skills = {
 	},
 	dcsbzhanyan: {
 		audio: 2,
+		audioname: ["dc_sb_luxun_shadow"],
 		limited: true,
 		enable: "phaseUse",
 		skillAnimation: true,
