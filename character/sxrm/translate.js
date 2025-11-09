@@ -115,7 +115,7 @@ const translates = {
 	sxrm_pangde: "慢庞德",
 	sxrm_pangde_prefix: "慢",
 	sxrmnuozhan: "搦战",
-	sxrmnuozhan_info: "准备阶段，你可摸一张牌并令一名其他角色声明一个伤害类牌的牌名，然后你令你或其对对方使用此牌且伤害+1；若此牌未对目标造成伤害，使用者失去1点体力且你可以对相同角色重复此流程。",
+	sxrmnuozhan_info: "准备阶段，你可摸一张牌并令一名其他角色声明一个伤害类牌的牌名，然后你令你或其视为对对方使用此牌且伤害+1；若此牌未对目标造成伤害，使用者失去1点体力且你可以对相同角色重复此流程。",
 	sxrm_yanwen: "慢颜良文丑",
 	sxrm_yanwen_prefix: "慢",
 	sxrmhaibian: "骇变",

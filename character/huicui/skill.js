@@ -505,13 +505,20 @@ const skills = {
 	dcmuzhen: {
 		audio: 2,
 		enable: "phaseUse",
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const count = event.player.getHistory("useSkill", evt => evt.skill == "dcmuzhen" && evt.event.getParent("phaseUse") === event.getParent()).length + 1;
+			event.set("dcmuzhen_count", count);
+		},
 		filter(event, player) {
 			const types = player
 					.getCards("he")
 					.map(card => get.type2(card))
 					.unique(),
-				count = player.getHistory("useSkill", evt => evt.skill == "dcmuzhen" && evt.event.getParent("phaseUse") === event.getParent("phaseUse")).length;
-			return types.length > 0 && types.some(type => !player.getStorage("dcmuzhen_used").includes(type) && player.countCards("he", card => get.type2(card, player) == type) >= count + 1);
+				count = event.dcmuzhen_count;
+			return types.length > 0 && types.some(type => !player.getStorage("dcmuzhen_used").includes(type) && player.countCards("he", card => get.type2(card, player) == type) >= count);
 		},
 		filterTarget: lib.filter.notMe,
 		filterCard(card, player) {
@@ -524,9 +531,8 @@ const skills = {
 			return get.type2(selected[0], player) == type && bool;
 		},
 		selectCard() {
-			const player = get.player(),
-				count = player.getHistory("useSkill", evt => evt.skill == "dcmuzhen" && evt.event.getParent("phaseUse") === get.event().getParent("phaseUse")).length;
-			return count + 1;
+			const count = get.event("dcmuzhen_count");
+			return count;
 		},
 		position: "he",
 		complexCard: true,

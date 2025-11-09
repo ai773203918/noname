@@ -3561,15 +3561,21 @@ const skills = {
 	//刘永
 	jsrgdanxin: {
 		enable: "chooseToUse",
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const count = event.player.getHistory("useSkill", evt => evt.skill == "jsrgdanxin").length + 1;
+			event.set("jsrgdanxin_count", count);
+		},
 		viewAs: {
 			name: "tuixinzhifu",
 			storage: { jsrgdanxin: true },
 		},
 		filterCard: true,
 		selectCard() {
-			const player = get.player(),
-				count = player.getHistory("useSkill", evt => evt.skill == "jsrgdanxin" && evt.event.getParent("phaseUse") === get.event().getParent("phaseUse")).length;
-			return count + 1;
+			const count = get.event("jsrgdanxin_count");
+			return count;
 		},
 		check(card) {
 			var val = get.value(card);

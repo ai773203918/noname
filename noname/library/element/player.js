@@ -10360,12 +10360,15 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 中流（×）批量重置技能
-	 * @param { string[] } [skills]
+	 * @param { string[] | string } [skills]
 	 */
 	refreshSkill(skills) {
 		const player = this;
 		if (!skills) {
 			skills = game.expandSkills(player.getStockSkills(true, true));
+		}
+		if (typeof skills == "string") {
+			skills = [skills];
 		}
 		if (!Array.isArray(skills) || !skills?.length) {
 			return player;

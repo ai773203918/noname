@@ -2367,7 +2367,12 @@ const skills = {
 			if (!event.isFirstTarget || !["basic", "trick"].includes(get.type(event.card)) || _status.currentPhase !== player) {
 				return false;
 			}
-			if (player.getHistory("useCard", evt => evt?.targets?.length).indexOf(event.getParent()) != 0) {
+			if (player.getHistory("useCard", evt => {
+				if (!evt?.targets?.length) {
+					return false;
+				}
+				return ["basic", "trick"].includes(get.type(evt.card));
+			}).indexOf(event.getParent()) != 0) {
 				return false;
 			}
 			return game.hasPlayer(current => lib.filter.targetEnabled2(event.card, player, current) && !event.targets.includes(current));
