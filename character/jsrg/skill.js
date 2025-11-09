@@ -6928,74 +6928,55 @@ const skills = {
 				filter(event, player) {
 					return event._extraPhaseReason == "jsrglipan";
 				},
-				content() {
-					"step 0";
-					var targets = game.filterPlayer(current => {
+				async content(event, trigger, player) {
+					const targets = game.filterPlayer(current => {
 						return current.group == player.group;
 					});
-					targets.sortBySeat();
-					event.targets = targets;
-					"step 1";
-					var target = targets.shift();
-					event.target = target;
-					if (target && target.isIn() && target.canUse({ name: "juedou" }, player)) {
-						target.chooseCardTarget({
-							position: "hes",
-							prompt: "是否将一张牌当【决斗】对" + get.translation(player) + "使用？",
-							filterCard(card, player) {
-								return player.canUse(get.autoViewAs({ name: "juedou" }, [card]), _status.event.getParent().player);
-							},
-							filterTarget(card, player, target) {
-								var source = _status.event.getParent().player;
-								if (target != source && !ui.selected.targets.includes(source)) {
-									return false;
-								}
-								card = get.autoViewAs({ name: "juedou" }, [card]);
-								return lib.filter.filterTarget.apply(this, arguments);
-							},
-							selectTarget() {
-								var card = get.card(),
-									player = get.player();
-								if (!card) {
-									return;
-								}
-								card = get.autoViewAs({ name: "juedou" }, [card]);
-								var range = [1, 1];
-								game.checkMod(card, player, range, "selectTarget", player);
-								return range;
-							},
-							ai1(card) {
-								var player = _status.event.player,
-									target = _status.event.getParent().player;
-								var eff = get.effect(target, get.autoViewAs({ name: "juedou" }, [card]), player, player);
-								if (eff <= 0) {
-									return 0;
-								}
-								return (player.hp == 1 ? 10 : 6) - get.value(card);
-							},
-							ai2(target) {
-								if (target == _status.event.getParent().player) {
-									return 100;
-								}
-								return get.effect(target, { name: "juedou" }, _status.event.player);
-							},
-						});
-					}
-					"step 2";
-					if (result.bool) {
-						var cards = result.cards;
-						var cardx = get.autoViewAs({ name: "juedou" }, cards);
-						var targets = result.targets.filter(targetx => {
-							return target.canUse(cardx, targetx);
-						});
-						if (targets.length) {
-							target.useCard(cardx, cards, targets);
+					const func = async target => {
+						if (!target?.isIn()) {
+							return;
 						}
-					}
-					if (targets.length) {
-						event.goto(1);
-					}
+						const card = get.autoViewAs({ name: "juedou" }, "unsure");
+						if (!target.canUse(card, player, false)) {
+							return;
+						}
+						const next = target.chooseToUse();
+						next.set("openskilldialog", `离叛：是否将一张牌当做决斗对${get.translation(player)}使用？`);
+						next.set("norestore", true);
+						next.set("_backupevent", "jsrglipan_backup");
+						next.set("targetRequired", true);
+						next.set("complexTarget", true);
+						next.set("sourcex", player);
+						next.set("custom", {
+							add: {},
+							replace: { window() {} },
+						});
+						next.set("filterTarget", function (card, player, target) {
+							const { sourcex } = get.event();
+							if (target != sourcex && !ui.selected.targets.includes(sourcex)) {
+								return false;
+							}
+							return lib.filter.targetEnabled.apply(this, arguments);
+						});
+						next.backup("jsrglipan_backup");
+						await next;
+					};
+					await game.doAsyncInOrder(targets, func);
 				},
+			},
+			backup: {
+				filterCard(card) {
+					return get.itemtype(card) == "card";
+				},
+				viewAs: {
+					name: "juedou",
+				},
+				selectCard: 1,
+				position: "hes",
+				ai1(card) {
+					return 7 - get.value(card);
+				},
+				log: false,
 			},
 		},
 	},

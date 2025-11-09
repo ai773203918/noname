@@ -731,7 +731,7 @@ const skills = {
 						target: target,
 					});
 					const result = await target
-						.chooseControl(lib.suit.slice(0).reverse())
+						.chooseControl([...lib.suit.slice(0).reverse(), "cancel2"])
 						.set("dialog", ["请选择一个花色", player.getCards("h")])
 						.set("ai", () => {
 							const target = get.event("target");
@@ -750,6 +750,9 @@ const skills = {
 						.set("target", player)
 						.forResult();
 					const choice = result.control;
+					if (choice == "cancel2") {
+						return;
+					}
 					game.log(target, "选择了" + get.translation(choice));
 					target.popup(choice);
 					if (player.hasCard(card => get.suit(card, player) == choice, "h")) {

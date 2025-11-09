@@ -748,7 +748,7 @@ const skills = {
 						trigger.forced = true;
 						const evt = trigger.getParent(2);
 						evt.targets.splice(evt.num + 1);
-					} else {
+					} else if (player.countCards("h")) {
 						const evt = trigger.getParent();
 						const next = evt.target.viewHandcards(player);
 						event.next.remove(next);

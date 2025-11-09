@@ -6486,7 +6486,7 @@ const skills = {
 							});
 							next.backup("sbtiaoxin_backupx");
 							const result = await next.forResult();
-							if (!result.bool) {
+							if (!result?.bool) {
 								target.addTempSkill("sbtiaoxin_xiongluan");
 							}
 						}
@@ -6509,7 +6509,7 @@ const skills = {
 								})
 								.set("sourcex", player)
 								.forResult();
-							if (!result.bool) {
+							if (!result?.bool) {
 								await player.discardPlayerCard(target, "he", true);
 							}
 						}
