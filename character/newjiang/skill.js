@@ -20,19 +20,19 @@ const skills = {
 				const card = event.cards[0],
 					cardx = event.cards[1];
 				let num = 0;
-				if (get.type2(card) == get.type2(cardx)) {
+				if (get.type2(card, false) == get.type2(cardx, false)) {
 					await player.gain(event.cards, "gain2");
 					num++;
 				}
-				if (get.suit(card) == get.suit(cardx)) {
+				if (get.suit(card, false) == get.suit(cardx, false)) {
 					await player.recover();
 					num++;
 				}
-				if (get.cardNameLength(card) == get.cardNameLength(cardx)) {
+				if (get.cardNameLength(card, false) == get.cardNameLength(cardx, false)) {
 					await player.draw(get.cardNameLength(card));
 					num++;
 				}
-				if (get.number(card) == get.number(cardx)) {
+				if (get.number(card, false) == get.number(cardx, false)) {
 					await trigger.target.loseHp(trigger.target.getHp());
 					num++;
 				}
