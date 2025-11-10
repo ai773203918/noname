@@ -10012,6 +10012,10 @@ const skills = {
 			content: "已记录花色：$",
 			onunmark: true,
 		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeTip(skill);
+		},
 		group: "sbliegong_count",
 		subSkill: {
 			clear: {

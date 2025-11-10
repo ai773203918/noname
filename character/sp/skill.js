@@ -21025,7 +21025,7 @@ const skills = {
 								return;
 							}
 							var button = ui.create.button(card, "card", dialog.buttonss[index]);
-							game.createButtonCardsetion(name + get.strNumber(card.number), dialog.buttons[i]);
+							game.createButtonCardsetion(name + get.strNumber(card.number), button);
 						},
 						event.videoId,
 						card,

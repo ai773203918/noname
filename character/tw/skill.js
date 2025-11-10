@@ -1655,7 +1655,7 @@ const skills = {
 						.reduce((list, evt) => {
 							return list.addArray(evt.targets);
 						}, []).length;
-					trigger.num += Math.min(5, num - 1);
+					trigger.num += Math.min(5, num);
 				},
 			},
 			effect: {
@@ -1690,7 +1690,7 @@ const skills = {
 		filterCard: (card, player) => get.name(card, player) == "sha" && !player.getStorage("twmiyong_effect").includes(card),
 		check: (card, player) => player.getUseValue(card),
 		position: "h",
-		selectCard: 2,
+		selectCard: [1, 2],
 		lose: false,
 		discard: false,
 		delay: false,
@@ -4289,9 +4289,7 @@ const skills = {
 	},
 	twchenglong: {
 		audio: 2,
-		trigger: {
-			global: "phaseJieshuBegin",
-		},
+		trigger: { global: "phaseJieshuBegin" },
 		forced: true,
 		juexingji: true,
 		skillAnimation: true,
@@ -4323,11 +4321,8 @@ const skills = {
 			} else {
 				list = get.gainableCharacters(info => ["shu", "qun"].includes(info[1]));
 			}
-			const players = game.players.concat(game.dead);
-			for (var i = 0; i < players.length; i++) {
-				list.remove(players[i].name);
-				list.remove(players[i].name1);
-				list.remove(players[i].name2);
+			for (const current of game.players.concat(game.dead)) {
+				list.removeArray(get.nameList(current));
 			}
 			const filter = skill => {
 				const translation = get.skillInfoTranslation(skill, player);
@@ -4351,7 +4346,14 @@ const skills = {
 					createDialog: [
 						[
 							[[`成龙：获得其中至多两个技能`], "addNewRow"],
-							[list, "character"],
+							[
+								list,
+								(item, type, position, noclick, node) => {
+									node = ui.create.button(item, "character", position, true);
+									lib.setIntro(node);
+									return node;
+								},
+							],
 							[
 								[
 									Object.values(skillList)
@@ -4362,7 +4364,7 @@ const skills = {
 							],
 							[
 								dialog => {
-									dialog.style.setProperty("top", get.is.phoneLayout() ? "20%" : "30%", "important");
+									dialog.style.setProperty("top", get.is.phoneLayout() ? "20%" : "25%", "important");
 								},
 								"handle",
 							],
@@ -4370,25 +4372,21 @@ const skills = {
 					],
 					forced: true,
 					selectButton: [1, 2],
-					filterOk: () => {
-						return ui.selected.buttons.every(button => typeof button._link != "string");
-					},
 					ai(button) {
-						if (button._link) {
+						const { link } = button;
+						const info = get.info(link);
+						if (info?.ai?.neg || info?.ai?.halfneg) {
 							return 0;
 						}
-						return get.skillRank(button.link, "inout");
+						return 1 + Math.random();
 					},
 				});
-				if (!result?.links?.length) {
-					return;
+				if (result?.links?.length) {
+					await player.addSkills(result.links);
 				}
-				await player.addSkills(result.links);
 			}
 		},
-		ai: {
-			combo: "twciyin",
-		},
+		ai: { combo: "twciyin" },
 	},
 	//幻诸葛亮
 	twbeiding: {

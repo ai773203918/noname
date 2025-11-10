@@ -9811,53 +9811,61 @@ const skills = {
 		audio: "sbqingzheng",
 		inherit: "mbcmqingzheng",
 		async content(event, trigger, player) {
-			const { chooseOneSuitCard } = get.info("mbcmqingzheng");
 			const {
 				targets: [target],
-				cost_data: cards1,
+				cards: cards1,
 			} = event;
 			await player.showHandcards();
 			await player.discard(cards1);
-			if (!target.countCards("h")) {
+			if (
+				!target.countCards("h") ||
+				lib.suits
+					.slice()
+					.filter(suit => target.hasCard((card, playerx) => get.suit(card, playerx) === suit, "h"))
+					.every(suit => target.hasCard((card, playerx) => get.suit(card, playerx) === suit && !lib.filter.cardDiscardable(card, player), "h"))
+			) {
+				if (target.countCards("h")) {
+					await target.showHandcards();
+				}
+				return;
+			}
+			const list = get.addNewRowList(target.getCards("h"), "suit", target);
+			let { result } = await player
+				.chooseButton(
+					[
+						[
+							[[`清正：弃置${get.translation(target)}一种花色的所有牌`], "addNewRow"],
+							[
+								dialog => {
+									dialog.classList.add("fullheight");
+									dialog.forcebutton = false;
+									dialog._scrollset = false;
+								},
+								"handle",
+							],
+							list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+						],
+					],
+					true
+				)
+				.set("filterButton", button => {
+					const player = get.player();
+					if (!button.links.length || button.links.some(card => !lib.filter.cardDiscardable(card, player, get.event().getParent().name))) {
+						return false;
+					}
+					return true;
+				})
+				.set("ai", button => {
+					const player = get.player();
+					return button.links.length;
+				});
+			if (!result?.links?.length) {
 				return;
 			}
 			await target.showHandcards();
-			let next,
-				str2 = `清正：弃置${get.translation(target)}一种花色的所有牌`;
-			let ai2 = function () {
-				let list = lib.suits.slice().filter(i => target.hasCard({ suit: i }, "h"));
-				let getv = cards => cards.map(i => get.value(i)).reduce((p, c) => p + c, 0);
-				return {
-					bool: true,
-					cards: target.getCards("h", {
-						suit: list.sort((a, b) => {
-							return getv(target.getCards("h", { suit: b })) - getv(target.getCards("h", { suit: a }));
-						})[0],
-					}),
-				};
-			};
-			if (event.isMine()) {
-				next = chooseOneSuitCard(player, target, true, 1, str2, ai2);
-			} else if (player.isOnline()) {
-				let { promise, resolve } = Promise.withResolvers();
-				player.send(chooseOneSuitCard, player, target, true, 1, str2, ai2);
-				player.wait(result => {
-					if (result == "ai") {
-						result = ai2();
-					}
-					resolve(result);
-				});
-				next = promise;
-			} else {
-				next = Promise.resolve(ai2());
-			}
-			let result = await next;
-			if (!result?.cards?.length) {
-				return;
-			}
-			const cards2 = result.cards.slice().filter(card => lib.filter.canBeDiscarded(card, player, target));
+			const cards2 = target.getDiscardableCards(player, "h").filter(card => result.links.includes(get.suit(card, target)));
 			if (cards2.length) {
-				await target.discard(cards2, "notBySelf");
+				await target.discard(cards2, "notBySelf").set("discarder", player);
 			}
 			if (cards1.length > cards2.length) {
 				await target.damage(player);
@@ -27271,6 +27279,7 @@ const skills = {
 	//龙起襄樊
 	//龙庞德
 	dragtaiguan: {
+		audio: "juesi",
 		enable: "phaseUse",
 		usable(skill, player) {
 			return Math.max(1, player.getDamagedHp());

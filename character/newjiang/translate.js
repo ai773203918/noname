@@ -12,8 +12,6 @@ const translates = {
 	zhilve: "知略",
 	zhilve_info: "锁定技，准备阶段，你选择一项：1.移动场上装备区的一张牌并失去1点体力。2.移动场上判定区的一张牌并令本回合手牌上限-1。3.本回合摸牌阶段多摸一张牌且使用的第一张【杀】无距离限制且不计入次数限制。",
 	xinzhilve: "知略",
-	xinzhilve_backup: "知略",
-	xinzhilve_mark: "知略",
 	xinzhilve_info: "出牌阶段限一次，你可以失去1点体力并选择一项：1.移动场上的一张牌；2.视为使用一张无距离限制且不计入次数限制的【杀】并摸一张牌。然后你本回合的手牌上限+1。",
 	xinxhzhiyan: "治严",
 	xinxhzhiyan_false: "治严",

@@ -5122,8 +5122,8 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				var list = ["移动场上的一张牌", "摸一张牌并视为使用一张【杀】"];
-				var choiceList = ui.create.dialog("知略：失去1点体力并...", "forcebutton", "hidden");
+				const list = ["移动场上的一张牌", "摸一张牌并视为使用一张【杀】"];
+				const choiceList = ui.create.dialog("知略：失去1点体力并...", "forcebutton", "hidden");
 				choiceList.add([
 					list.map((item, i) => {
 						return [i, item];
@@ -5161,236 +5161,57 @@ const skills = {
 				},
 			},
 		},
-	},
-	xinzhilve_move: {
-		audio: "zhilve",
-		sourceSkill: "xinzhilve",
-		filterCard() {
-			return false;
-		},
-		selectCard: -1,
-		delay: false,
-		content() {
-			"step 0";
-			event.forceDie = true;
-			if (!player.canMoveCard(null, event.nojudge)) {
-				event.finish();
-				return;
-			}
-			var next = player.chooseTarget(2, function (card, player, target) {
-				if (ui.selected.targets.length) {
-					var from = ui.selected.targets[0];
-					var js = from.getCards("j");
-					for (var i = 0; i < js.length; i++) {
-						if (_status.event.nojudge) {
-							break;
-						}
-						if (target.canAddJudge(js[i])) {
-							return true;
-						}
+		subSkill: {
+			backup: {},
+			move: {
+				audio: "zhilve",
+				filterCard: () => false,
+				selectCard: -1,
+				delay: false,
+				async content(event, trigger, player) {
+					await player.loseHp();
+					if (player.canMoveCard()) {
+						await player.moveCard(true);
 					}
-					if (target.isMin()) {
-						return false;
-					}
-					var es = from.getCards("e");
-					for (var i = 0; i < es.length; i++) {
-						if (target.canEquip(es[i])) {
-							return true;
-						}
-					}
-					return false;
-				} else {
-					var range = "ej";
-					if (_status.event.nojudge) {
-						range = "e";
-					}
-					return target.countCards(range) > 0;
-				}
-			});
-			next.set("nojudge", event.nojudge || false);
-			next.set("ai", function (target) {
-				var player = _status.event.player;
-				var att = get.attitude(player, target);
-				var sgnatt = get.sgn(att);
-				if (ui.selected.targets.length == 0) {
-					if (att > 0) {
-						if (
-							!_status.event.nojudge &&
-							target.countCards("j", function (card) {
-								return game.hasPlayer(function (current) {
-									return current.canAddJudge(card) && get.attitude(player, current) < 0;
-								});
-							})
-						) {
-							return 14;
-						}
-						if (
-							target.countCards("e", function (card) {
-								return (
-									get.value(card, target) < 0 &&
-									game.hasPlayer(function (current) {
-										return current != target && get.attitude(player, current) < 0 && current.canEquip(card);
-									})
-								);
-							}) > 0
-						) {
-							return 9;
-						}
-					} else if (att < 0) {
-						if (
-							game.hasPlayer(function (current) {
-								if (current != target && get.attitude(player, current) > 0) {
-									var es = target.getCards("e");
-									for (var i = 0; i < es.length; i++) {
-										if (get.value(es[i], target) > 0 && current.canEquip(es[i]) && get.value(es[i], current) > 0) {
-											return true;
-										}
-									}
-								}
-							})
-						) {
-							return -att;
-						}
-					}
-					return 0;
-				}
-				var es = ui.selected.targets[0].getCards("e");
-				var i;
-				var att2 = get.sgn(get.attitude(player, ui.selected.targets[0]));
-				for (i = 0; i < es.length; i++) {
-					if (sgnatt != 0 && att2 != 0 && get.sgn(get.value(es[i], ui.selected.targets[0])) == -att2 && get.sgn(get.value(es[i], target)) == sgnatt && target.canEquip(es[i])) {
-						return Math.abs(att);
-					}
-				}
-				if (
-					i == es.length &&
-					(_status.event.nojudge ||
-						!ui.selected.targets[0].countCards("j", function (card) {
-							return target.canAddJudge(card);
-						}))
-				) {
-					return 0;
-				}
-				return -att * get.attitude(player, ui.selected.targets[0]);
-			});
-			next.set("multitarget", true);
-			next.set("targetprompt", _status.event.targetprompt || ["被移走", "移动目标"]);
-			next.set("prompt", event.prompt || "移动场上的一张牌");
-			if (event.prompt2) {
-				next.set("prompt2", event.prompt2);
-			}
-			if (event.forced) {
-				next.set("forced", true);
-			}
-			"step 1";
-			event.result = result;
-			if (result.bool) {
-				player.line2(result.targets, "green");
-				event.targets = result.targets;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			game.delay();
-			"step 3";
-			if (targets.length == 2) {
-				player
-					.choosePlayerCard(
-						"ej",
-						true,
-						function (button) {
-							var player = _status.event.player;
-							var targets0 = _status.event.targets0;
-							var targets1 = _status.event.targets1;
-							if (get.attitude(player, targets0) > 0 && get.attitude(player, targets1) < 0) {
-								if (get.position(button.link) == "j") {
-									return 12;
-								}
-								if (get.value(button.link, targets0) < 0) {
-									return 10;
-								}
-								return 0;
-							} else {
-								if (get.position(button.link) == "j") {
-									return -10;
-								}
-								return get.equipValue(button.link);
-							}
-						},
-						targets[0]
-					)
-					.set("nojudge", event.nojudge || false)
-					.set("targets0", targets[0])
-					.set("targets1", targets[1])
-					.set("filterButton", function (button) {
-						var targets1 = _status.event.targets1;
-						if (get.position(button.link) == "j") {
-							if (_status.event.nojudge) {
-								return false;
-							}
-							return targets1.canAddJudge(button.link);
-						} else {
-							return targets1.canEquip(button.link);
-						}
-					});
-			} else {
-				event.finish();
-			}
-			"step 4";
-			if (result.bool && result.links.length) {
-				player.loseHp();
-			}
-			"step 5";
-			if (result.bool && result.links.length) {
-				var link = result.links[0];
-				if (get.position(link) == "e") {
-					event.targets[1].equip(link);
-				} else if (link.viewAs) {
-					event.targets[1].addJudge({ name: link.viewAs }, [link]);
-				} else {
-					event.targets[1].addJudge(link);
-				}
-				event.targets[0].$give(link, event.targets[1]);
-				event.result.card = link;
-				event.result.position = get.position(link);
-				game.delay();
-				player.addTempSkill("xinzhilve_mark");
-				player.addMark("xinzhilve_mark", 1, false);
-			}
-		},
-	},
-	xinzhilve_use: {
-		audio: "zhilve",
-		sourceSkill: "xinzhilve",
-		filterCard() {
-			return false;
-		},
-		selectCard: -1,
-		filterTarget(card, player, target) {
-			return player.canUse({ name: "sha", isCard: true }, target, false);
-		},
-		content() {
-			player.loseHp();
-			player.draw();
-			player.useCard({ name: "sha", isCard: true }, false, target).forceDie = true;
-			player.addTempSkill("xinzhilve_mark");
-			player.addMark("xinzhilve_mark", 1, false);
-		},
-		ai: {
-			result: {
-				target(player, target) {
-					return get.effect(target, { name: "sha" }, player, target);
+					player.addTempSkill("xinzhilve_mark");
+					player.addMark("xinzhilve_mark", 1, false);
 				},
 			},
-		},
-	},
-	xinzhilve_mark: {
-		intro: { content: "本回合手牌上限+#" },
-		onremove: true,
-		charlotte: true,
-		mod: {
-			maxHandcard(player, num) {
-				return num + player.countMark("xinzhilve_mark");
+			use: {
+				audio: "zhilve",
+				filterCard: () => false,
+				selectCard: -1,
+				delay: false,
+				filterTarget(card, player, target) {
+					return player.canUse({ name: "sha", isCard: true }, target, false);
+				},
+				async content(event, trigger, player) {
+					await player.loseHp();
+					await player.draw();
+					const next = player.useCard({ name: "sha", isCard: true }, false, event.target);
+					next.forceDie = true;
+					await next;
+					player.addTempSkill("xinzhilve_mark");
+					player.addMark("xinzhilve_mark", 1, false);
+				},
+				ai: {
+					result: {
+						target(player, target) {
+							return get.effect(target, { name: "sha" }, player, target);
+						},
+					},
+				},
+			},
+			mark: {
+				markimage: "image/card/handcard.png",
+				charlotte: true,
+				onremove: true,
+				intro: { content: "本回合手牌上限+#" },
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("xinzhilve_mark");
+					},
+				},
 			},
 		},
 	},
