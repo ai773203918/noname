@@ -49,10 +49,10 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player, triggername) {
-			if (!event.hasNature()) {
-				return player.getRoundHistory("damage", evt => !evt.hasNature()).indexOf(event) < 2;
-			}
 			if (triggername == "damageBegin3") {
+				if (!event.hasNature()) {
+					return player.getRoundHistory("damage", evt => !evt.hasNature()).indexOf(event) < 2;
+				}
 				return event.hasNature("fire");
 			}
 			return event.hasNatrue();
@@ -151,7 +151,8 @@ const skills = {
 					if (!event.player.getStorage("yj_yanyu_source").includes(player)) {
 						return false;
 					}
-					return true;
+					const suits = event.cards.map(card => get.suit(card, false));
+					return event.player.getStorage("yj_yanyu_fire").some(suit => suits.includes(suit));
 				},
 				async content(event, trigger, player) {
 					await player.draw();
