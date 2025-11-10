@@ -5996,15 +5996,15 @@ const skills = {
 		forced: true,
 		usable: 1,
 		filter(event, player) {
-			if (event.type != "discard") {
+			/* if (event.type != "discard") {
 				const evt = event.getParent();
 				if (evt.name != "useCard" && evt.name != "respond") {
 					return false;
 				}
-			}
+			} */
 			const target = _status.currentPhase,
 				evt = event.getl(player);
-			if (!evt.cards2 || evt.cards2.length != 1 || !target || target == player || !target.isIn()) {
+			if (!evt?.cards2 || evt.cards2?.length != 1 || !target || target == player || !target.isIn()) {
 				return false;
 			}
 			return get.position(evt.cards2[0]) == "d" || target.countCards("he") < 0;
@@ -6045,9 +6045,11 @@ const skills = {
 							return 0;
 						}
 						return Math.random() > get.value(evt.card, evt.player) / 6 ? 1 : 0;
-						//return 1;
 					})
 					.forResult();
+			}
+			if (typeof result?.index !== "number") {
+				return;
 			}
 			if (result.index + addIndex == 0) {
 				await target.give(target.getGainableCards(player, "he").randomGet(), player);
@@ -6071,8 +6073,8 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const num = player.countMark("guying");
-					player.removeMark("guying", num, false);
-					await player.chooseToDiscard("he", num, true);
+					player.clearMark("guying", false);
+					if (num > 0) await player.chooseToDiscard("he", num, true, "allowChooseAll");
 				},
 			},
 		},

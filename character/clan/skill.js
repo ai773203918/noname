@@ -6182,7 +6182,7 @@ const skills = {
 						const skills = get.event("listx").slice();
 						skills.removeArray(["clanbaichu"]);
 						const { link } = button;
-						if (skills.includes(link)) {
+						if (!skills.includes(link)) {
 							return 0;
 						}
 						const info = get.info(link);
@@ -6193,9 +6193,10 @@ const skills = {
 							return 0;
 						}
 						if (Math.random() < 0.75 && link == "clandaojie") {
+							if (player.hasSkill("clanbaichu")) return 0;
 							return 2;
 						}
-						return 1;
+						return 0;
 					})
 					.set("listx", skills)
 					.forResult();
