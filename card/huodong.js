@@ -694,7 +694,7 @@ game.import("card", function () {
 					if (evt.shenbing == "useCard") {
 						for (let i = 1; i < 6; i++) {
 							if (!target.hasEnabledSlot(i)) {
-								return;
+								continue;
 							}
 							const card = get.cardPile2(function (card) {
 								return get.subtype(card) == "equip" + i && target.canUse(card, target);
@@ -2359,7 +2359,7 @@ game.import("card", function () {
 			liehuo_info: "出牌阶段，对所有其他角色使用，令你和目标暗中选择一张手牌，若有角色与你选择的牌颜色相同，你弃置你选择的牌对这些角色各造成1点火焰伤害。",
 			shenbing: "神兵",
 			shenbing_bg: "兵",
-			shenbing_info: "出牌阶段，对所有角色使用，令目标弃置装备区所有牌或依次使用牌堆不用副类型的装备牌各一张。",
+			shenbing_info: "出牌阶段，对所有角色使用，令目标弃置装备区所有牌或依次使用牌堆不同副类型的装备牌各一张。",
 			jinnao: "金铙",
 			jinnao_skill: "金铙",
 			jinnao_bg: "金",

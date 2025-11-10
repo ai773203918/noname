@@ -1089,7 +1089,7 @@ const skills = {
 				.set("logSkill", event.skill)
 				.forResult();
 		},
-		derivation: "zhengnan",
+		derivation: ["zhengnan", "newzhennan"],
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const target = event.targets[0];
@@ -1585,6 +1585,9 @@ const skills = {
 				event.result.cards = result.links;
 			} else {
 				event.getParent().goto(0);
+				if (player != game.me && !player.isOnline()) {
+					event.getParent()._aiexclude.add("olyouque");
+				}
 			}
 		},
 		async content(event, trigger, player) {

@@ -3,14 +3,14 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const dynamicTranslates = {
 	dcsbjunmou(player) {
 		const bool = player.storage.dcsbjunmou;
-		let yang = "此牌视为无次数限制的火【杀】",
-			yin = "重铸此牌并横置一名角色";
+		let yang = "此牌视为无距离次数限制的火【杀】并摸一张牌（你可额外摸一张牌并令此技能本阶段失效）",
+			yin = "此颜色的牌不计入手牌上限并横置一名角色（你可额外横置一名角色并令此技能本阶段失效）";
 		if (bool) {
 			yin = `<span class="bluetext">${yin}</span>`;
 		} else {
 			yang = `<span class="firetext">${yang}</span>`;
 		}
-		const start = `转换技。①游戏开始时，你可以转换此技能状态；②一张牌结算结束后，若此牌的目标包括你，你可以摸一张牌并选择一张手牌，`,
+		const start = `转换技。①游戏开始时，你可以转换此技能状态；②一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，`,
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
 	},

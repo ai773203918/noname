@@ -731,7 +731,7 @@ const skills = {
 						target: target,
 					});
 					const result = await target
-						.chooseControl(lib.suit.slice(0).reverse())
+						.chooseControl([...lib.suit.slice(0).reverse(), "cancel2"])
 						.set("dialog", ["请选择一个花色", player.getCards("h")])
 						.set("ai", () => {
 							const target = get.event("target");
@@ -750,6 +750,9 @@ const skills = {
 						.set("target", player)
 						.forResult();
 					const choice = result.control;
+					if (choice == "cancel2") {
+						return;
+					}
 					game.log(target, "选择了" + get.translation(choice));
 					target.popup(choice);
 					if (player.hasCard(card => get.suit(card, player) == choice, "h")) {
@@ -772,6 +775,9 @@ const skills = {
 							await player.gain(card, "gain2");
 						}
 					}
+					if (target.countMark("potjiejie_blocker") >= 2) {
+						return;
+					}
 					let getSuits = current =>
 						current
 							.getRoundHistory("custom", evt => {
@@ -780,6 +786,8 @@ const skills = {
 							.reduce((arr, evt) => arr.addArray(evt?.suits || []), []);
 					const num = getSuits(player).length;
 					if (!game.hasPlayer(current => current != player && getSuits(current).length >= num)) {
+						target.addTempSkill("potjiejie_blocker", { global: "roundStart"});
+						target.addMark("potjiejie_blocker", 1, false);
 						await target.useSkill("potqingshi", [player]);
 					}
 				},
@@ -791,6 +799,10 @@ const skills = {
 						},
 					},
 				},
+			},
+			blocker: {
+				charlotte: true,
+				onremove: true,
 			},
 			used: {
 				charlotte: true,
@@ -2668,7 +2680,7 @@ const skills = {
 			return player.inRange(event.player) && player.getStorage("mbjili").length < 4;
 		},
 		async cost(event, trigger, player) {
-			const list = [0, 1, 2, 3].filter(num => !player.getStorage("mbjili").includes(num));
+			const list = [0, 1, 2].filter(num => !player.getStorage("mbjili").includes(num));
 			list.add("cancel2");
 			const result = await player
 				.chooseControl(list)
@@ -2679,7 +2691,7 @@ const skills = {
 					if (get.attitude(player, target) > 0) {
 						return "cancel2";
 					}
-					return [0, 1, 2, 3].filter(num => !player.getStorage("mbjili").includes(num)).randomGet();
+					return [0, 1, 2].filter(num => !player.getStorage("mbjili").includes(num)).randomGet();
 				})
 				.forResult();
 			event.result = {
@@ -2997,6 +3009,7 @@ const skills = {
 			const [left, right] = get.info("mbfeijing").getTargets(player, event.target);
 			return left.length || right.length;
 		},
+		usable: 2,
 		getTargets(source, target) {
 			let left = [],
 				right = [],

@@ -6,29 +6,42 @@ const skills = {
 		trigger: {
 			player: ["damageBegin3", "loseBefore"],
 		},
+		usable: 20, //红桃七惨案
 		filter(event, player) {
 			if (event.name == "damage") {
 				return player.countCards("h") == 1;
 			}
-			return event.cards?.length;
+			return event.cards.length && event.cards.someInD("he");
 		},
 		prompt2(event, player) {
 			if (event.name == "damage") {
 				return "防止此伤害";
 			}
-			return `即将失去${get.translation(event.cards)}，失去1点体力并防止之`;
+			return `即将失去${get.translation(event.cards.filterInD("he"))}，失去1点体力并防止之`;
 		},
 		check(event, player) {
 			if (event.name == "damage") {
 				return true;
 			}
-			return event.cards.reduce((sum, card) => sum + player.getUseValue(card), -10) > 0;
+			if (player.hp <= 1) {
+				return false;
+			}
+			return event.cards.filterInD("he").reduce((sum, card) => sum + player.getUseValue(card), -10) > 0;
 		},
 		async content(event, trigger, player) {
 			if (trigger.name !== "damage") {
 				await player.loseHp();
 			}
-			trigger.cancel();
+			if (trigger.cards.everyInD("he")) {
+				trigger.cancel();
+			} else {
+				for (let i = 0; i < trigger.cards.length; i++) {
+					const pos = get.position(trigger.cards[i]);
+					if ("he".includes(pos)) {
+						trigger.cards.splice(i--, 1);
+					}
+				}
+			}
 		},
 	},
 	zj_lijun: {
@@ -16721,33 +16734,40 @@ const skills = {
 	},
 	//严政
 	hm_didao: {
-		locked: true,
 		trigger: {
 			player: "phaseUseBegin",
 		},
 		filter(event, player) {
 			return player.isDamaged() && player.countCards("h");
 		},
-		check(event, player) {
-			const card = get.autoViewAs({ name: "sha" }, player.getCards("h"));
-			return player.hasValueTarget(card, false, false);
-		},
-		async content(event, trigger, player) {
-			await player
+		limited: true,
+		skillAnimation: true,
+		animationColor: "metal",
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseToUse()
-				.set("openskilldialog", "地道：将所有手牌当一张无距离限制的伤害为X的【杀】使用(X为此【杀】的实体牌数）")
+				.set("openskilldialog", get.prompt2(event.skill))
 				.set("norestore", true)
-				.set("_backupevent", `${event.name}_backup`)
+				.set("_backupevent", `${event.skill}_backup`)
 				.set("custom", {
 					add: {},
 					replace: { window() {} },
 				})
-				.backup(`${event.name}_backup`)
-				.set("oncard", () => {
-					const evt = get.event();
-					evt.baseDamage = evt.cards.length;
-				})
-				.set("addCount", false);
+				.backup(`${event.skill}_backup`)
+				.set("addCount", false)
+				.set("chooseonly", true)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { result } = event.cost_data;
+			const next = player.useResult(result, event);
+			player
+				.when("useCard0")
+				.filter(evt => evt == next)
+				.step(async (event, trigger, player) => {
+					trigger.baseDamage = trigger.cards.length;
+				});
+			await next;
 		},
 		subSkill: {
 			backup: {
@@ -16776,6 +16796,9 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
+			if (!event.player.countCards("hej")) {
+				return false;
+			}
 			return game.countPlayer(target => target != player) >= 1;
 		},
 		async content(event, trigger, player) {
