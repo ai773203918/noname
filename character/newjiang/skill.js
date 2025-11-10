@@ -173,7 +173,7 @@ const skills = {
 					cardname(card, player, name) {
 						const suits = player.getStorage("yj_yanyu_fire"),
 							suit = get.suit(card);
-						if (!suits.includes(suit, false)) {
+						if (!suits.includes(suit)) {
 							return;
 						}
 						if (get.type(name, null, false) == "basic") {
