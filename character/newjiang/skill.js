@@ -152,7 +152,7 @@ const skills = {
 						return false;
 					}
 					const suits = event.cards.map(card => get.suit(card, false));
-					return event.player.getStorage("yj_yanyu_fire").some(suit => suits.includes(suit));
+					return event.player.getStorage("yj_yanyu_fire").some(suit => suits.includes(suit)) && ["basic", "trick", "equip"].includes(get.type2(event.card, false));
 				},
 				async content(event, trigger, player) {
 					await player.draw();
