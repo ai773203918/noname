@@ -6163,7 +6163,7 @@ const skills = {
 			}),
 				undamaged = game.filterPlayer().removeArray(damaged),
 				list = event.cost_data;
-			if (list.includes("damage")) {
+			if (list.includes("damage") && undamaged.length) {
 				const result = await player
 					.chooseCardTarget({
 						prompt: "逆乱：弃置一张牌并选择一名未对你造成过伤害的角色，对其造成1点伤害",
@@ -6190,7 +6190,7 @@ const skills = {
 					await target.damage();
 				}
 			}
-			if (list.includes("draw")) {
+			if (list.includes("draw") && damaged.length) {
 				const result = await player
 					.chooseTarget("逆乱：令一名对你造成过伤害的角色摸两张牌", true, (card, player, target) => {
 						return get.event("damaged").includes(target);
@@ -12143,7 +12143,7 @@ const skills = {
 						break;
 					}
 					const result2 = await player
-						.chooseTarget("###是否继续发动〖乘流〗？###对装备区牌数小于你的一名角色造成1点伤害", (card, player, target) => {
+						.chooseTarget(`###是否继续发动〖乘流〗？###对装备区牌数小于你的一名角色造成${num + 1}点伤害`, (card, player, target) => {
 							if (get.event("targets").includes(target)) {
 								return false;
 							}
