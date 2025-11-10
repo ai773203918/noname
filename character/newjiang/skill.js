@@ -5,11 +5,9 @@ const skills = {
 	bingling: {
 		trigger: { player: ["useCardToPlayer"] },
 		filter(event, player) {
-			return get.name(event.card) == "sha" && event.target.countDiscardableCards("hej") >= 2;
+			return get.name(event.card) == "sha" && event.target.countDiscardableCards("he") >= 2;
 		},
-		logTarget(event,player) {
-			return event?.target;
-		},
+		logTarget: "target",
 		async cost(event, trigger, player) {
 			const target = trigger.target;
 			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("bingling"), 2).set("chooseonly", true).forResult();
@@ -22,7 +20,7 @@ const skills = {
 				const card = event.cards[0],
 					cardx = event.cards[1];
 				let num = 0;
-				if (get.type(card) == get.type(cardx)) {
+				if (get.type2(card) == get.type2(cardx)) {
 					await player.gain(event.cards, "gain2");
 					num++;
 				}
@@ -50,11 +48,14 @@ const skills = {
 			source: ["damageSource"],
 		},
 		forced: true,
-		filter(event, player) {
+		filter(event, player, triggername) {
 			if (!event.hasNature()) {
-				return player.getRoundHistory("damage", evt => evt.hasNature()).length < 2;
+				return player.getRoundHistory("damage", evt => !evt.hasNature()).indexOf(event) < 2;
 			}
-			return event.hasNature();
+			if (triggername == "damageBegin3") {
+				return event.hasNature("fire");
+			}
+			return event.hasNatrue();
 		},
 		async content(event, trigger, player) {
 			if (event.triggername == "damageBegin3") {
@@ -147,10 +148,10 @@ const skills = {
 				charlotte: true,
 				trigger: { global: ["useCardAfter"] },
 				filter(event, player) {
-					if (!player.getStorage("yj_yanyu_source").includes(player)) {
+					if (!event.player.getStorage("yj_yanyu_source").includes(player)) {
 						return false;
 					}
-					return Object.values(event.modSkill).includes("yj_yanyu_fire");
+					return true;
 				},
 				async content(event, trigger, player) {
 					await player.draw();
@@ -158,6 +159,7 @@ const skills = {
 			},
 			fire: {
 				marktext: "焰",
+				charlotte: true,
 				intro: {
 					name: "焰狱",
 					mark(dialog, storage, player) {
