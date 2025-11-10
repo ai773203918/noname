@@ -942,7 +942,7 @@ const skills = {
 							},
 						],
 					])
-					.set("filterButton", button => get.player().hasUseTarget(button.link))
+					.set("filterButton", button => get.player().hasUseTarget(button.link) && get.position(button.link) == "d")
 					.set("ai", button => {
 						return get.player().getUseValue(button.link);
 					})
