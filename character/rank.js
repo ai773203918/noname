@@ -93,6 +93,8 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"yj_hanbing",
+		"yj_tengjia",
 		"yj_puyuan",
 		"scl_jiaxu",
 		"linglie",

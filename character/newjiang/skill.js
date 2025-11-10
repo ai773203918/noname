@@ -2,6 +2,206 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	bingling: {
+		trigger: { player: ["useCardToPlayer"] },
+		filter(event, player) {
+			return get.name(event.card) == "sha" && event.target.countDiscardableCards("he") >= 2;
+		},
+		logTarget: "target",
+		async cost(event, trigger, player) {
+			const target = trigger.target;
+			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("bingling"), 2).set("chooseonly", true).forResult();
+		},
+		async content(event, trigger, player) {
+			const next = trigger.target.discard(event.cards);
+			next.set("discarder", player);
+			await next;
+			if (event.cards.length > 1) {
+				const card = event.cards[0],
+					cardx = event.cards[1];
+				let num = 0;
+				if (get.type2(card, false) == get.type2(cardx, false)) {
+					await player.gain(event.cards, "gain2");
+					num++;
+				}
+				if (get.suit(card, false) == get.suit(cardx, false)) {
+					await player.recover();
+					num++;
+				}
+				if (get.cardNameLength(card, false) == get.cardNameLength(cardx, false)) {
+					await player.draw(get.cardNameLength(card));
+					num++;
+				}
+				if (get.number(card, false) == get.number(cardx, false)) {
+					await trigger.target.loseHp(trigger.target.getHp());
+					num++;
+				}
+				if (num == 0) {
+					await player.damage(1, "fire", "nosource");
+				}
+			}
+		},
+	},
+	renjia: {
+		trigger: {
+			player: ["damageBegin3", "damageAfter"],
+			source: ["damageSource"],
+		},
+		forced: true,
+		filter(event, player, triggername) {
+			if (triggername == "damageBegin3") {
+				if (!event.hasNature()) {
+					return player.getRoundHistory("damage", evt => !evt.hasNature()).indexOf(event) < 2;
+				}
+				return event.hasNature("fire");
+			}
+			return event.hasNatrue();
+		},
+		async content(event, trigger, player) {
+			if (event.triggername == "damageBegin3") {
+				if (trigger.hasNature("fire")) {
+					trigger.num++;
+				} else {
+					trigger.num--;
+				}
+			} else if (trigger.hasNature()) {
+				await player.draw();
+			}
+		},
+		group: ["renjia_gain"],
+		subSkill: {
+			gain: {
+				trigger: { player: ["expandEquipBegin", "enableEquipBegin"] },
+				forced: true,
+				init(player, skill) {
+					player.disableEquip(2);
+				},
+				onremove(player, skill) {
+					player.enableEquip(2);
+				},
+				filter(event, player) {
+					return event.slots.includes("equip2");
+				},
+				async content(event, trigger, player) {
+					trigger.slots.remove("equip2");
+					if (trigger.slots.length == 0) {
+						trigger.cancel();
+					}
+				},
+			},
+		},
+		ai: {
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "fireDamage")) {
+						return [1, 0, 1, -3];
+					}
+					if (!get.natureList(card).length && target.getRoundHistory("damage", evt => evt.hasNature()).length < 2) {
+						return [1, -1];
+					}
+				},
+			},
+		},
+	},
+	yj_yanyu: {
+		enable: ["phaseUse"],
+		limited: true,
+		lose: false,
+		discard: false,
+		selectCard: 2,
+		check(card) {
+			if (ui.selected.cards.some(cardx => get.suit(cardx) == get.suit(card))) {
+				return 0;
+			}
+			return 1;
+		},
+		filterCard: () => true,
+		filter(event, player) {
+			return player.countCards("h") >= 2;
+		},
+		filterTarget(card, player, target) {
+			return target != player;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.showCards(event.cards);
+			const card = get.cardPile2("tengjia"),
+				suits = event.cards.map(card => get.suit(card));
+			if (card && event.targets[0].canEquip("tengjia", true)) {
+				await event.targets[0].equip(card);
+			} else {
+				player.popup("杯具");
+			}
+			player.addSkill("yj_yanyu_use");
+			const targets = game.filterPlayer(curr => curr != event.targets[0]);
+			targets.forEach(curr => {
+				curr.markAuto("yj_yanyu_fire", suits);
+				const list = curr.getStorage("yj_yanyu_source");
+				list.add(player);
+				curr.setStorage("yj_yanyu_source", list);
+				curr.addSkill("yj_yanyu_fire");
+			});
+		},
+		subSkill: {
+			use: {
+				forced: true,
+				charlotte: true,
+				trigger: { global: ["useCardAfter"] },
+				filter(event, player) {
+					if (!event.player.getStorage("yj_yanyu_source").includes(player)) {
+						return false;
+					}
+					const suits = event.cards.map(card => get.suit(card, false));
+					return event.player.getStorage("yj_yanyu_fire").some(suit => suits.includes(suit)) && ["basic", "trick", "equip"].includes(get.type2(event.card, false));
+				},
+				async content(event, trigger, player) {
+					await player.draw();
+				},
+			},
+			fire: {
+				marktext: "焰",
+				charlotte: true,
+				intro: {
+					name: "焰狱",
+					mark(dialog, storage, player) {
+						const str = get.translation(storage).split("、"),
+							sources = get.translation(player.getStorage("yj_yanyu_source")).split("、");
+						dialog.addText(`${str}花色的手牌遵循:基本牌:火杀,锦囊牌:火攻,装备牌:铁索连环且使用后${sources}摸一张牌`);
+					},
+				},
+				mod: {
+					cardname(card, player, name) {
+						const suits = player.getStorage("yj_yanyu_fire"),
+							suit = get.suit(card);
+						if (!suits.includes(suit)) {
+							return;
+						}
+						if (get.type(name, null, false) == "basic") {
+							return "sha";
+						} else if (get.type2(name, false) == "trick") {
+							return "huogong";
+						} else if (get.type(name, null, false) == "equip") {
+							return "tiesuo";
+						}
+					},
+					cardnature(card, player) {
+						const suits = player.getStorage("yj_yanyu_fire"),
+							suit = get.suit(card, false);
+						if (suits.includes(suit) && get.type(card, null, false) == "basic") {
+							return "fire";
+						}
+					},
+				},
+			},
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 1,
+				target: -1,
+			},
+		},
+	},
 	biancai: {
 		trigger: {
 			global: ["phaseBegin"],
@@ -214,7 +414,10 @@ const skills = {
 					game.initCharacterList();
 				}
 				_status.characterlist.map(character => {
-					const names = get.characterSurname(character).map(info => info.join("")).concat([get.rawName(character)]),
+					const names = get
+							.characterSurname(character)
+							.map(info => info.join(""))
+							.concat([get.rawName(character)]),
 						skills = get.character(character, 3);
 					names.forEach(name => {
 						if (bingzhuSkill[name]) {
@@ -275,10 +478,12 @@ const skills = {
 				}
 			}
 			if (target != player) {
-				await player.draw(target.getSkills(null, false, false).filter(skill => {
-					const info = get.info(skill);
-					return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
-				}).length);
+				await player.draw(
+					target.getSkills(null, false, false).filter(skill => {
+						const info = get.info(skill);
+						return info && !info.charlotte && get.skillInfoTranslation(skill, target).length;
+					}).length
+				);
 			}
 		},
 	},

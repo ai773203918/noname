@@ -1,11 +1,25 @@
 const characters = {
+	yj_hanbing: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["bingling"],
+		names: "null|null",
+	},
+	yj_tengjia: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["renjia", "yj_yanyu"],
+		names: "null|null",
+	},
 	yj_puyuan: {
 		sex: "male",
 		group: "shu",
 		hp: 4,
 		skills: ["biancai", "cuiren", "shenfeng"],
 	},
-	
+
 	v_sunce: {
 		sex: "male",
 		group: "wu",
