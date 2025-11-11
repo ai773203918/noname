@@ -5059,14 +5059,15 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			const name = event.card.name;
+			const VJudge = event.card[event.card.cardSymbol];
 			if (event.excluded) {
 				delete event.excluded;
 			} else if (event.cancelled && !event.direct) {
 				if (lib.card[name].cancel) {
 					const next = game.createEvent(name + "Cancel");
 					next.setContent(lib.card[name].cancel);
-					next.card = event.card;
-					next.cards = event.card.cards ?? [];
+					next.card = VJudge;
+					next.cards = VJudge?.cards ?? [];
 					next.player = player;
 					await next;
 				}
@@ -5074,8 +5075,8 @@ player.removeVirtualEquip(card);
 				const next = game.createEvent(name);
 				next.setContent(lib.card[name].effect);
 				next._result = event.result;
-				next.card = event.card;
-				next.cards = event.card.cards ?? [];
+				next.card = VJudge;
+				next.cards = VJudge?.cards ?? [];
 				next.player = player;
 				await next;
 			}
