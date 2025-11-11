@@ -1418,7 +1418,7 @@ export default {
 	global: [],
 	globalmap: {},
 	storage: {},
-	undist: {},
+	undist: { charlotte: true },
 	others: {},
 	zhu: {},
 	zhuSkill: {},
@@ -1963,6 +1963,7 @@ export default {
 				game.broadcastAll(function (player) {
 					player.classList.remove("out");
 				}, player);
+				player.removeSkill("undist");
 				game.log(player, "移回了游戏");
 				delete _status._rest_return[player.playerid];
 				await player.recoverTo(player.maxHp);

@@ -6253,47 +6253,40 @@ export default {
 	gzzhuihuan: {
 		audio: "zhuihuan",
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
-		preHidden: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget([1, 2], "选择至多两名角色获得“追还”效果")
-				.setHiddenSkill("gzzhuihuan")
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
-				});
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets.sortBySeat();
-				player.logSkill("gzzhuihuan", targets);
-				event.targets = targets;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var next = player
-				.chooseTarget("选择一名角色获得反伤效果", "被选择的目标角色下次受到伤害后，其对伤害来源造成1点伤害；未被选择的目标角色下次受到伤害后，伤害来源弃置两张牌。", function (card, player, target) {
-					return _status.event.getParent().targets.includes(target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget([1, 2], `###${get.prompt(event.skill)}###选择至多两名角色获得“追还”效果`)
+				.setHiddenSkill(event.skill)
+				.set("ai", target => {
+					return get.attitude(get.player(), target);
 				})
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const prompt2 = "被选择的目标角色下次受到伤害后，其对伤害来源造成1点伤害；未被选择的目标角色下次受到伤害后，伤害来源弃置两张牌。";
+			const next = player
+				.chooseTarget("选择一名角色获得反伤效果", prompt2, (card, player, target) => {
+					return get.event("allTargets").includes(target);
+				})
+				.set("allTargets", event.targets)
+				.set("ai", target => {
+					return get.attitude(get.player(), target);
 				});
-			if (targets.length > 1) {
+			if (event.targets.length > 1) {
 				next.set("forced", true);
 			}
-			"step 3";
-			for (var target of targets) {
-				player.addTempSkill("gzzhuihuan_timeout", { player: "phaseZhunbeiBegin" });
-				var id = "gzzhuihuan_" + player.playerid;
-				if (result.targets.includes(target)) {
+			const result = await next.forResult();
+			player.addTempSkill("gzzhuihuan_timeout", { player: "phaseZhunbeiBegin" });
+			const id = `gzzhuihuan_${player.playerid}`;
+			event.targets.forEach(target => {
+				if (result?.bool && result.targets?.includes(target)) {
 					player.line(target, "fire");
 					target.addAdditionalSkill(id, "gzzhuihuan_damage");
 				} else {
 					player.line(target, "thunder");
 					target.addAdditionalSkill(id, "gzzhuihuan_discard");
 				}
-			}
+			});
 		},
 		subSkill: {
 			timeout: {

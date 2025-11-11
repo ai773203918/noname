@@ -12233,6 +12233,7 @@ player.removeVirtualEquip(card);
 					game.log(player, "进入了修整状态");
 					game.log(player, "移出了游戏");
 					//game.addGlobalSkill('_rest_return');
+					player.addSkill("undist");
 					_status._rest_return ??= {};
 					_status._rest_return[player.playerid] = {
 						type: restMap.type,
