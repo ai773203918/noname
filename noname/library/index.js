@@ -155,6 +155,7 @@ export class Library {
 	);
 	cardBingzhu = {};
 	duplicatePrefix = {
+		sb: "谋",
 		re: "界",
 		xin: "新",
 		std: "标",
