@@ -1,4 +1,9 @@
 export default {
+	"#jsrgguanhuo1": "四面合围，纵火惊之，此战必剿黄巾残党！",
+	"#jsrgguanhuo2": "兵有奇变，不在众寡，当以计胜之！",
+	"#jsrgjuxia1": "昔与明公俱为鸿鹄，不意明公今为凤皇耳！",
+	"#jsrgjuxia2": "天下事在公，义真何敢多言。",
+	"#jsrg_huangfusong:die": "一生为国纵横沙场，奈何宦海沉浮。",
 	"#jsrgzhengbing1": "厉兵秣马，待敌制胜。",
 	"#jsrgzhengbing2": "戎装既整，如羽扣弦。",
 	"#jsrgtuwei1": "成败之机，在此一战！",
