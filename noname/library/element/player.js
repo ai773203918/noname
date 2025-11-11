@@ -3692,7 +3692,6 @@ export class Player extends HTMLDivElement {
 		this.stat = [{ card: {}, skill: {}, triggerSkill: {} }];
 		this.tempSkills = {};
 		this.storage = { counttrigger: this.storage.counttrigger };
-		this.marks = {};
 		this.expandedSlots = {};
 		this.disabledSlots = {};
 		this.ai = { friend: [], enemy: [], neutral: [] };
@@ -3705,6 +3704,7 @@ export class Player extends HTMLDivElement {
 		*/
 
 		this.$uninit();
+		this.marks = {};
 
 		return this;
 	}
