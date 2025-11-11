@@ -3028,6 +3028,11 @@ export class ZhanfaManager {
 			}
 			card.type = "zhanfa";
 			card.subtype = `zf_${rarity}`;
+			if (card.value) {
+				card.ai ??= {};
+				card.ai.basic ??= {};
+				card.ai.basic.value = card.value;
+			}
 			lib.card[id] = card;
 			lib.cardPack["zhanfa"].push(id);
 			_zhanfa[id] = { skill: skill, rarity: rarity, ...args };
@@ -3074,6 +3079,11 @@ export class ZhanfaManager {
 		}
 		card.type = "zhanfa";
 		card.subtype = `zf_${rarity}`;
+		if (card.value) {
+			card.ai ??= {};
+			card.ai.basic ??= {};
+			card.ai.basic.value = card.value;
+		}
 		lib.card[id] = card;
 		lib.cardPack["zhanfa"].push(id);
 		this.#zhanfa[id] = { skill: skill, rarity: rarity, ...args };

@@ -5,12 +5,12 @@ const skills = {
 	bingling: {
 		trigger: { player: ["useCardToPlayer"] },
 		filter(event, player) {
-			return get.name(event.card) == "sha" && event.target.countDiscardableCards("he") >= 2;
+			return event.card.name == "sha" && event.target.countDiscardableCards(player, "he") >= 2;
 		},
 		logTarget: "target",
 		async cost(event, trigger, player) {
 			const target = trigger.target;
-			event.result = await player.discardPlayerCard(target, "hej", get.prompt2("bingling"), 2).set("chooseonly", true).forResult();
+			event.result = await player.discardPlayerCard(target, "he", get.prompt2(event.skill), 2).set("chooseonly", true).forResult();
 		},
 		async content(event, trigger, player) {
 			const next = trigger.target.discard(event.cards);
@@ -51,11 +51,23 @@ const skills = {
 		filter(event, player, triggername) {
 			if (triggername == "damageBegin3") {
 				if (!event.hasNature()) {
-					return player.getRoundHistory("damage", evt => !evt.hasNature()).indexOf(event) < 2;
+					return (
+						game
+							.getRoundHistory(
+								"everything",
+								evt => {
+									return evt.name == "damage" && evt.player == player && !evt.hasNature();
+								},
+								0,
+								false,
+								event
+							)
+							.indexOf(event) < 2
+					);
 				}
 				return event.hasNature("fire");
 			}
-			return event.hasNatrue();
+			return event.hasNature();
 		},
 		async content(event, trigger, player) {
 			if (event.triggername == "damageBegin3") {
