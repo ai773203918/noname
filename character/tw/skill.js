@@ -252,6 +252,7 @@ const skills = {
 			return event.player !== player && lib.skill.jsrgjuxia.countSkill(event.player) > lib.skill.jsrgjuxia.countSkill(player);
 		},
 		logTarget: "player",
+		derivation: "jsrgguanhuo",
 		prompt2(event, player) {
 			if (event.name !== "phaseZhunbei") {
 				return `令${get.translation(event.card)}对你无效，然后你摸两张牌`;
