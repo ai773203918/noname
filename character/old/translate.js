@@ -165,6 +165,14 @@ const translates = {
 	x_dc_zhangqiying_prefix: "新杀|牢",
 	two_yj_puyuan: "牢SP蒲元",
 	two_yj_puyuan_prefix: "牢|SP",
+	two_yj_tengjia: "牢藤甲男孩",
+	two_yj_tengjia_prefix: "牢",
+	two_yj_hanbing: "牢寒冰剑少女",
+	two_yj_hanbing_prefix: "牢",
+	chegu: "彻骨",
+	chegu_info: "你于回合内使用非装备牌指定目标时，可以取消此牌的全部目标并选择一项：1.弃置一名角色至多[2]张牌；2.弃置至多[2]名角色各一张牌。然后若以此法弃置的牌颜色或类型均相同，本回合此技能[]中的数值均+1。",
+	jianrou: "剑柔",
+	jianrou_info: "每轮限一次，你受到伤害时，可以弃置两张牌并防止此伤害。若你以此法弃置的牌颜色或类型相同，你摸一张牌并令此技能视为未发动过。",
 };
 
 export default translates;

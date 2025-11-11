@@ -9,8 +9,9 @@ const characters = {
 	yj_tengjia: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
-		skills: ["renjia", "yj_yanyu"],
+		hp: 1,
+		maxHp: 4,
+		skills: ["tenggu", "dunyong"],
 		names: "null|null",
 	},
 	yj_puyuan: {

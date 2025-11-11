@@ -95,6 +95,8 @@ window.noname_character_rank = {
 	a: [
 		"yj_hanbing",
 		"yj_tengjia",
+		"two_yj_hanbing",
+		"two_yj_tengjia",
 		"yj_puyuan",
 		"scl_jiaxu",
 		"linglie",
@@ -3007,6 +3009,10 @@ window.noname_character_rank = {
 			"guotiying",
 		],
 		rare: [
+			"yj_hanbing",
+			"yj_tengjia",
+			"two_yj_hanbing",
+			"two_yj_tengjia",
 			"taohuang",
 			"goblin",
 			"std_huangwudie",

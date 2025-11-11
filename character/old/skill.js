@@ -2,6 +2,192 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//寒冰剑
+	chegu: {
+		audio: 2,
+		onremove(player, skill) {
+			player.removeSkill("chegu_effect");
+		},
+		trigger: {
+			player: "useCardToPlayer",
+		},
+		filter(event, player) {
+			if (player !== _status.currentPhase || get.type(event.card) == "equip") {
+				return false;
+			}
+			return event.targets?.length && event.isFirstTarget;
+		},
+		check(event, player) {
+			const getV = current => get.effect(current, { name: "guohe_copy2" }, player, player),
+				targets = game.filterPlayer(current => current.countDiscardableCards(player, "he") > 0).sort((a, b) => getV(b) - getV(a));
+			const getAllV = (num, numx) => {
+				let index = 0,
+					eff = 0;
+				while (index < num) {
+					const target = targets[index];
+					if (!target) {
+						break;
+					}
+					index++;
+					const count = Math.min(numx, target.countDiscardableCards(player, "he"));
+					eff += count * getV(target);
+				}
+				return eff;
+			};
+			const list = [1, 2 + player.countMark("chegu_effect")];
+			let val = Math.max(getAllV(...list), getAllV(...list.reverse()));
+			return event.targets.reduce((val, current) => {
+				return val - get.effect(current, event.card, player, player);
+			}, val) > 0;
+		},
+		async content(event, trigger, player) {
+			const evt = trigger.getParent();
+			if (evt) {
+				evt.targets.length = 0;
+				evt.all_excluded = true;
+			}
+			const getPrompt = list => {
+				const [num, numx] = list;
+				return `弃置${num > 1 ? "至多" : ""}${get.cnNumber(num)}名角色${num > 1 ? "各" : ""}${numx > 1 ? "至多" : ""}${get.cnNumber(numx)}张牌`;
+			},
+				list1 = [1, 2 + player.countMark("chegu_effect")],
+				list2 =[2 + player.countMark("chegu_effect"), 1];
+			const result = await player
+				.chooseButton([
+					"彻骨：选择一项",
+					[
+						[
+							[list1, getPrompt(list1)],
+							[list2, getPrompt(list2)],
+						],
+						"textbutton",
+					]
+				], true)
+				.set("ai", button => {
+					const list = button.link;
+					const getV = current => get.effect(current, { name: "guohe_copy2" }, player, player),
+						targets = game.filterPlayer(current => current.countDiscardableCards(player, "he") > 0).sort((a, b) => getV(b) - getV(a));
+					const getAllV = (num, numx) => {
+						let index = 0,
+							eff = 0;
+						while (index < num) {
+							const target = targets[index];
+							if (!target) {
+								break;
+							}
+							index++;
+							const count = Math.min(numx, target.countDiscardableCards(player, "he"));
+							eff += count * getV(target);
+						}
+						return eff;
+					};
+					return getAllV(...list);
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				const [num, numx] = result.links[0],
+					targets = game.filterPlayer(current => current.countDiscardableCards(player, "he") > 0);
+				if (!targets?.length) {
+					return;
+				}
+				const result2 = targets.length === 1 ? {
+					bool: true,
+					targets: targets,
+				} : await player
+					.chooseTarget("彻骨：选择要弃牌的目标角色", [1, num], true, (card, player, target) => {
+						return target.countDiscardableCards(player, "he");
+					})
+					.set("maxNum", numx)
+					.set("ai", target => {
+						const { player, maxNum } = get.event();
+						return get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(maxNum, target.countDiscardableCards(player, "he"));
+					})
+					.forResult();
+				if (result2?.bool && result2.targets?.length) {
+					const func = async target => {
+						const discard = Math.min(numx, target.countDiscardableCards(player, "he"));
+						if (discard > 0) {
+							await player.discardPlayerCard(target, [1, discard], true, "he");
+						}
+					};
+					player.line(result2.targets, "green");
+					await game.doAsyncInOrder(result2.targets, func);
+					const colors = [],
+						types = [];
+					game.getGlobalHistory("everything", evt => {
+						if (evt.name != "lose" || evt.type != "discard") {
+							return false;
+						}
+						if (evt.getParent(3) === event && evt.cards?.length) {
+							evt.cards.forEach(card => {
+								colors.add(get.color(card, false));
+								types.add(get.type2(card, false));
+							});
+						}
+					});
+					if (colors.length === 1 || types.length === 1) {
+						player.addTempSkill("chegu_effect");
+						player.addMark("chegu_effect", 1, false);
+					}
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "本回合【彻骨】数值+#",
+				},
+			},
+		},
+	},
+	jianrou: {
+		audio: 2,
+		round: 1,
+		trigger: {
+			player: "damageBegin3",
+		},
+		filter(event, player) {
+			return player.countDiscardableCards(player, "he") >= 2;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard(get.prompt2(event.skill), 2)
+				.set("eff", get.damageEffect(player, trigger.source ?? player, player))
+				.set("ai", card => {
+					const { player, eff } = get.event();
+					if (eff >= 0) {
+						return 0;
+					}
+					if (ui.selected.cards.length) {
+						const cardx = ui.selected.cards[0];
+						if (get.color(cardx, false) == get.color(card, false) || get.type2(cardx, false) == get.type2(card, false)) {
+							return 16 - get.value(card);
+						}
+						return 4 - get.value(card);
+					}
+					return 7 - get.value(card);
+				})
+				.set("chooseonly", true)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards, name } = event;
+			await player.modedDiscard(cards);
+			trigger.cancel();
+			const check = key => cards.map(card => get[key](card, false)).toUniqued().length === 1;
+			if (check("color") || check("type2")) {
+				await player.draw();
+				const limit = `${name}_roundcount`;
+				if (player.storage[limit]) {
+					delete player.storage[limit];
+					player.unmarkSkill(limit);
+					game.log(player, "令", "#g【剑柔】", "视为未发动过");
+				}
+			}
+		},
+	},
 	//爻袁术
 	yao_yaoyi: {
 		audio: 2,

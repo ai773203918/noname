@@ -1,4 +1,22 @@
 const characters = {
+	two_yj_hanbing: {
+		sex: "female",
+		group: "qun",
+		hp: 4,
+		skills: ["chegu", "jianrou"],
+		names: "null|null",
+		img: "image/character/yj_hanbing.jpg",
+		dieAudios: ["yj_hanbing"],
+	},
+	two_yj_tengjia: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["renjia", "yj_yanyu"],
+		names: "null|null",
+		img: "image/character/yj_tengjia.jpg",
+		dieAudios: ["yj_tengjia"],
+	},
 	two_yj_puyuan: {
 		sex: "male",
 		group: "shu",

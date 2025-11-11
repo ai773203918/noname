@@ -2,7 +2,201 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	tenggu: {
+		audio: 2,
+		trigger: {
+			player: "dying",
+		},
+		filter(event, player) {
+			if (!event.reason) {
+				return false;
+			}
+			const reason = event.reason;
+			return reason.name == "damage" && !reason.hasNature("fire");
+		},
+		forced: true,
+		async content(event, trigger ,player) {
+			await player.loseMaxHp();
+			await player.recoverTo(player.maxHp);
+		},
+		mod: {
+			targetEnabled(card, player, target) {
+				if (get.subtypes(card)?.includes("equip2")) {
+					return false;
+				}
+			},
+		},
+		group: ["tenggu_tengjia", "tenggu_noequip"],
+		subSkill: {
+			noequip: {
+				audio: "tenggu",
+				trigger: {
+					player: "equipBefore",
+				},
+				filter(event, player) {
+					return get.subtypes(event.card)?.includes("equip2");
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					trigger.cancel();
+					if (trigger.cards?.length) {
+						const map = new Map(),
+							targets = [];
+						for (const card of trigger.cards) {
+							const owner = get.owner(card);
+							if (owner) {
+								targets.add(owner);
+								map.set(owner, (map.get(owner) ?? []).concat([card]));
+							}
+						}
+						if (targets.length) {
+							await game
+								.loseAsync({
+									map: map,
+									targets: targets,
+									cards: trigger.cards,
+								})
+								.setContent(async (event, trigger, player) => {
+									const { map, targets, cards } = event;
+									for (const target of targets) {
+										const lose = map.get(target);
+										const next = target.lose(lose, ui.discardPile);
+										next.getlx = false;
+										await next;
+									}
+									game.log(cards, "进入了弃牌堆");
+								});
+						}
+					}
+				},
+			},
+			tengjia: {
+				trigger: {
+					target: ["useCardToBefore", "shaBefore"],
+					player: "damageBegin3",
+				},
+				equipSkill: true,
+				forced: true,
+				priority: 6,
+				audio: "tengjia",
+				logAudio(event) {
+					return `tengjia${event.name == "damage" ? 2 : 1}.mp3`;
+				},
+				filter(event, player, name) {
+					if (player.hasSkillTag("unequip2")) {
+						return false;
+					}
+					const owner = event[event.name == "damage" ? "source" : "player"];
+					if (owner?.hasSkillTag("unequip", false, {
+							name: event.card ? event.card.name : null,
+							target: player,
+							card: event.card,
+						})
+					) {
+						return false;
+					}
+					if (name == "shaBefore") {
+						return event.card.name == "sha" && !game.hasNature(event.card);
+					}
+					if (event.name == "damage") {
+						return game.hasNature(event, "fire");
+					}
+					return ["wanjian", "nanman"].includes(event.card.name);
+				},
+				async content(event, trigger, player) {
+					if (trigger.name == "damage") {
+						trigger.num++;
+					} else {
+						trigger.cancel();
+					}
+				},
+				ai: {
+					effect: {
+						target(card, player, target, current) {
+							if (target.hasSkillTag("unequip2")) {
+								return;
+							}
+							if (
+								player.hasSkillTag("unequip", false, {
+									name: card ? card.name : null,
+									target: target,
+									card: card,
+								}) ||
+								player.hasSkillTag("unequip_ai", false, {
+									name: card ? card.name : null,
+									target: target,
+									card: card,
+								})
+							) {
+								return;
+							}
+							if (card.name == "nanman" || card.name == "wanjian") {
+								return "zeroplayertarget";
+							}
+							if (card.name == "sha") {
+								if (game.hasNature(card, "fire")) {
+									return 2;
+								}
+								if (player.hasSkill("zhuque_skill")) {
+									return 1.9;
+								}
+								if (!game.hasNature(card)) {
+									return "zeroplayertarget";
+								}
+							}
+							if (get.tag(card, "fireDamage") && current < 0) {
+								return 2;
+							}
+						},
+					},
+				},
+			},
+		},
+	},
+	dunyong: {
+		audio: 2,
+		trigger: {
+			source: "damageBegin4",
+			global: "dying",
+		},
+		filter(event, player) {
+			if (event.name == "damage") {
+				if (event.player == player || player.isMinMaxHp(true)) {
+					return false;
+				}
+				return true;
+			}
+			return event.player.maxHp > 0;
+		},
+		priority: 1,
+		forced: true,
+		locked: false,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const name = event.name;
+			if (trigger.name == "damage") {
+				await player.damage(trigger.num, "nosource", "nocard");
+			} else {
+				await player.draw(trigger.player.maxHp);
+				player.addTip(name, "钝勇 无限制");
+				player
+					.when({
+						global: ["phaseBefore", "phaseAfter"],
+					})
+					.step(async (event, trigger, player) => {
+						player.removeTip(name);
+					})
+					.assign({
+						mod: {
+							cardUsable: () => Infinity,
+							targetInRange: () => true,
+						},
+					});
+			}
+		},
+	},
 	bingling: {
+		audio: 2,
 		trigger: { player: ["useCardToPlayer"] },
 		filter(event, player) {
 			return event.card.name == "sha" && event.target.countDiscardableCards(player, "he") >= 2;
