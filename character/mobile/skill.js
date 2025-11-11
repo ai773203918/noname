@@ -864,7 +864,7 @@ const skills = {
 				await game.asyncDraw([player, target]);
 			} else {
 				await player.chooseToDiscard(true, "he");
-				await target.chooseToDiscard(true, "he");
+				await player.discardPlayerCard(target, "he", true);
 			}
 		},
 	},

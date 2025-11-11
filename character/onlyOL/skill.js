@@ -17,13 +17,17 @@ const skills = {
 				if (evt.name == "lose") {
 					if (evt.position == ui.discardPile) {
 						for (let i of evt.cards) {
-							suits.add(get.suit(i, false));
+							if (get.position(i) == "d") {
+								suits.add(get.suit(i, false));
+							}
 						}
 					}
 				} else {
 					if (evt.name == "cardsDiscard") {
 						for (let i of evt.cards) {
-							suits.add(get.suit(i, false));
+							if (get.position(i) == "d") {
+								suits.add(get.suit(i, false));
+							}
 						}
 					}
 				}
@@ -50,8 +54,9 @@ const skills = {
 		async cost(event, trigger, player) {
 			const suits = get.info(event.skill).getSuits(),
 				num = 4 - suits.length;
-			let prompt = get.prompt2(event.skill).replaceAll("X次", `${get.cnNumber(num)}次`);
-			prompt = `${prompt.slice(0, prompt.indexOf("（"))}${prompt.slice(prompt.indexOf("）") + 1)}`;
+			let prompt = get.prompt2(event.skill).replaceAll("为本回合弃牌堆缺少的花色数", `目前为${num}`);
+			/*let prompt = get.prompt2(event.skill).replaceAll("X次", `${get.cnNumber(num)}次`);
+			prompt = `${prompt.slice(0, prompt.indexOf("（"))}${prompt.slice(prompt.indexOf("）") + 1)}`;*/
 			event.result = await player
 				.chooseTarget(prompt)
 				.set("numx", num)
@@ -76,28 +81,43 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const suits = get.info(event.name).getSuits(),
-				num = 4 - suits.length,
-				draw = async current => await current.draw(),
+			const draw = async current => await current.draw(),
 				discard = async current => {
 					if (current.countDiscardableCards(current, "he")) {
 						await current.chooseToDiscard("he", true);
 					}
 				};
-			let list = [draw, discard].map(func => Array.from(Array(num)).map(i => func)).flat();
-			let current = event.targets[0];
-			while (list.length) {
+			let num = 4 - get.info(event.name).getSuits().length,
+				count = 0,
+				current = event.targets[0];
+			while (count < num) {
 				if (!current) {
 					break;
 				}
-				const func = list.shift();
-				await func(current);
+				count++;
+				await draw(current);
 				if (current.countCards("h") == current.getHp()) {
 					current = current.getNext();
 					while (!current?.isIn()) {
 						current = current.getNext();
 					}
 				}
+				num = 4 - get.info(event.name).getSuits().length;
+			}
+			count = 0;
+			while (count < num) {
+				if (!current) {
+					break;
+				}
+				count++;
+				await discard(current);
+				if (current.countCards("h") == current.getHp()) {
+					current = current.getNext();
+					while (!current?.isIn()) {
+						current = current.getNext();
+					}
+				}
+				num = 4 - get.info(event.name).getSuits().length;
 			}
 		},
 	},
@@ -167,6 +187,7 @@ const skills = {
 							const next = player.addToExpansion(result.links, "draw2");
 							next.gaintag.add(skill);
 							await next;
+							game.log(player, "将", result.links, "移出了游戏");
 						}
 						await player.removeSkills(skill);
 						player.markSkill(skill);
