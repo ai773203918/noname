@@ -1,6 +1,6 @@
 export default {
 	//cuilie: "",
-	//star_jiangwan: "",
+	star_jiangwan: "讬忠赞业",
 	//star_yanliang: "",
 	lijue: "奸谋恶勇",
 	zhangji: "武威雄豪",

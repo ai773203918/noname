@@ -13648,8 +13648,14 @@ const skills = {
 			if (Object.keys(player.storage.pingjian_check)?.length) {
 				Object.keys(player.storage.pingjian_check).forEach(skill => {
 					player.removeSkill(skill);
-					const names = player.tempname && player.tempname.filter(i => lib.character[i][3].includes(skill));
+					const names = player.tempname && player.tempname.filter(i => get.character(i, 3)?.includes(skill));
 					if (names) {
+						get.nameList(player).forEach(name => {
+							const { tempname } = get.character(name);
+							if (tempname && Array.isArray(tempname)) {
+								names.removeArray(tempname);
+							}
+						});
 						game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 					}
 					delete player.storage.pingjian_check[skill];
@@ -13769,8 +13775,14 @@ const skills = {
 			if (Object.keys(player.storage.pingjian_check)?.length) {
 				Object.keys(player.storage.pingjian_check).forEach(skill => {
 					player.removeSkill(skill);
-					const names = player.tempname && player.tempname.filter(i => lib.character[i][3].includes(skill));
+					const names = player.tempname && player.tempname.filter(i => get.character(i, 3)?.includes(skill));
 					if (names) {
+						get.nameList(player).forEach(name => {
+							const { tempname } = get.character(name);
+							if (tempname && Array.isArray(tempname)) {
+								names.removeArray(tempname);
+							}
+						});
 						game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 					}
 					delete player.storage.pingjian_check[skill];
@@ -13908,8 +13920,14 @@ const skills = {
 		content() {
 			var skill = get.sourceSkillFor(trigger);
 			player.removeSkill(skill);
-			const names = player.tempname && player.tempname.filter(i => lib.character[i][3].includes(skill));
+			const names = player.tempname && player.tempname.filter(i => get.character(i, 3)?.includes(skill));
 			if (names) {
+				get.nameList(player).forEach(name => {
+					const { tempname } = get.character(name);
+					if (tempname && Array.isArray(tempname)) {
+						names.removeArray(tempname);
+					}
+				});
 				game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 			}
 			delete player.storage.pingjian_check[skill];
@@ -13939,8 +13957,14 @@ const skills = {
 				return player.storage.pingjian_check[skill] == trigger;
 			});
 			player.removeSkill(skills);
-			const names = player.tempname && player.tempname.filter(i => skills.some(skill => lib.character[i][3].includes(skill)));
+			const names = player.tempname && player.tempname.filter(i => skills.some(skill => get.character(i, 3)?.includes(skill)));
 			if (names) {
+				get.nameList(player).forEach(name => {
+					const { tempname } = get.character(name);
+					if (tempname && Array.isArray(tempname)) {
+						names.removeArray(tempname);
+					}
+				});
 				game.broadcastAll((player, names) => player.tempname.removeArray(names), player, names);
 			}
 			for (var skill of skills) {

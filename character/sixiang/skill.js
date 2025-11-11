@@ -4337,7 +4337,7 @@ const skills = {
 			await player.gain(trigger.cards.filterInD(), "gain2");
 		},
 	},
-	stdxunjie: {
+	stdjiexun: {
 		audio: "jiexun",
 		trigger: { player: "phaseJieshuBegin" },
 		async cost(event, trigger, player) {
