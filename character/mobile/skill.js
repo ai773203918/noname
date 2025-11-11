@@ -7201,7 +7201,7 @@ const skills = {
 			player.markAuto(skillName, [get.type2(trigger.card)]);
 			player.addTip(skillName, get.translation(skillName) + player.getStorage(skillName).reduce((str, type) => str + get.translation(type), ""));
 			if (player.getStorage(skillName).length >= 3) {
-				const types = player.getStorage(skillName).map(i => `caoying_${i}`);
+				const types = player.getStorage(skillName).sort((a, b) => b.indexOf("c") - a.indexOf("c")).map(i => `caoying_${i}`);
 				const {
 					result: { links },
 				} = await player.chooseButton(["选择你要移去的“启诲”标记", [types, "vcard"]], [2, 2], true).set("ai", button => {

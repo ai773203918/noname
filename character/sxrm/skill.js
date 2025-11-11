@@ -1416,7 +1416,7 @@ const skills = {
 							],
 							[
 								dialog => {
-									dialog.css({ top: "25%" });
+									dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
 									dialog.buttons
 										.filter(button => typeof button.link == "number")
 										.forEach(button => {

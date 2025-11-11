@@ -1992,7 +1992,6 @@ export default {
 			if (event.type == "phase" && get.position(card) != "s" && player.canRecast(card)) {
 				return true;
 			} else {
-				// @ts-expect-error 类型系统未来可期
 				if (game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
 					return false;
 				}
@@ -2001,83 +2000,101 @@ export default {
 			}
 		},
 		filterTarget(fuck, player, target) {
-			const card = ui.selected.cards[0];
-			const event = get.event();
-			const backup = event._backup;
-			// @ts-expect-error 类型系统未来可期
-			if (!card || game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
-				return false;
-			}
-			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
-			return backup.filterCard(cardx, player, event) && backup.filterTarget(cardx, player, target);
+					const card = ui.selected.cards[0],
+						event = _status.event,
+						backup = event._backup;
+					if (!card || game.checkMod(card, player, "unchanged", "cardEnabled2", player) === false) {
+						return false;
+					}
+					const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+					return backup.filterCard(cardx, player, event) && backup.filterTarget(cardx, player, target);
 		},
 		selectTarget() {
-			const card = ui.selected.cards[0];
-			const event = get.event();
-			const player = event.player;
-			const backup = event._backup;
-			let recast = false;
-			let use = false;
-			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
-			if (event.type == "phase" && player.canRecast(card)) {
-				recast = true;
-			}
-			// @ts-expect-error 类型系统未来可期
-			if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
-				if (backup.filterCard(cardx, player, event)) {
-					use = true;
-				}
-			}
-			if (!use) {
-				return [0, 0];
-			} else {
-				const select = backup.selectTarget(cardx, player);
-				if (recast && select[0] > 0) {
-					select[0] = 0;
-				}
-				return select;
-			}
+					const card = ui.selected.cards[0],
+						event = _status.event,
+						player = event.player,
+						backup = event._backup;
+					let recast = false,
+						use = false;
+					const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+					if (event.type == "phase" && player.canRecast(card)) {
+						recast = true;
+					}
+					if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
+						if (backup.filterCard(cardx, player, event)) {
+							use = true;
+						}
+					}
+					if (!use) {
+						return [0, 0];
+					} else {
+						const select = backup.selectTarget(cardx, player);
+						if (recast && select[0] > 0) {
+							select[0] = 0;
+						}
+						return select;
+					}
 		},
 		filterOk() {
-			const card = ui.selected.cards[0];
-			const event = get.event();
-			const player = event.player;
-			const backup = event._backup;
-			const selected = ui.selected.targets.length;
-			let recast = false,
-				use = false;
-			const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
-			if (event.type == "phase" && player.canRecast(card)) {
-				recast = true;
-			}
-			// @ts-expect-error 类型系统未来可期
-			if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
-				if (backup.filterCard(cardx, player, event)) {
-					use = true;
-				}
-			}
-			if (recast && selected == 0) {
-				return true;
-			} else if (use) {
-				const select = backup.selectTarget(cardx, player);
-				if (select[0] <= -1) {
-					return true;
-				}
-				return selected >= select[0] && selected <= select[1];
-			}
+					const card = ui.selected.cards[0],
+						event = _status.event,
+						player = event.player,
+						backup = event._backup;
+					const selected = ui.selected.targets.length;
+					let recast = false,
+						use = false;
+					const cardx = get.autoViewAs({ name: "tiesuo" }, [card]);
+					if (event.type == "phase" && player.canRecast(card)) {
+						recast = true;
+					}
+					if (card && game.checkMod(card, player, "unchanged", "cardEnabled2", player) !== false) {
+						if (backup.filterCard(cardx, player, event)) {
+							use = true;
+						}
+					}
+					if (recast && selected == 0) {
+						return true;
+					} else if (use) {
+						const select = backup.selectTarget(cardx, player);
+						if (select[0] <= -1) {
+							return true;
+						}
+						return selected >= select[0] && selected <= select[1];
+					}
+		},
+		ai1(card) {
+			return 6 - get.value(card);
+		},
+		ai2(target) {
+			const player = get.player();
+			return get.effect(target, { name: "tiesuo" }, player, player);
 		},
 		discard: false,
 		lose: false,
 		delay: false,
+		viewAs(cards, player) {
+			return {
+				name: "tiesuo",
+			};
+		},
+		prepare: () => true,
 		async precontent(event, trigger, player) {
 			const result = event.result;
-			// @ts-expect-error 类型系统未来可期
-			if (result.targets.length > 0) {
-				result.card = get.autoViewAs({ name: "tiesuo" }, result.cards);
+			if (!result?.targets?.length) {
+				delete result.card;
 			}
 		},
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
+		},
+		ai: {
+			order(item, player) {
+				if (game.hasPlayer(current => get.effect(current, { name: "tiesuo" }, player, player) > 0) || player.hasCard(card => get.suit(card) == "club" && player.canRecast(card), "h")) {
+					return 8;
+				}
+				return 1;
+			},
+			result: { player: 1 },
 		},
 	},
 	/** @type {Skill} */
