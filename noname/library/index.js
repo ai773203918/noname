@@ -14110,6 +14110,13 @@ export class Library {
 			},
 		],
 		[
+			"礼",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
 			"TW",
 			{
 				getSpan: () => {
