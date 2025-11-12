@@ -9833,7 +9833,7 @@ const skills = {
 			return game.hasPlayer(target => lib.skill.olshandao.filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("he");
+			return target.countCards("hej");
 		},
 		usable: 1,
 		selectTarget: [1, Infinity],
@@ -9862,6 +9862,9 @@ const skills = {
 				}
 				if (target.countCards("e")) {
 					dialog.addArray(['<div class="text center">' + name + "的装备区</div>", target.getCards("e")]);
+				}
+				if (target.countCards("j")) {
+					dialog.addArray(['<div class="text center">' + name + "的判定区</div>", target.getCards("j")]);
 				}
 			}
 			const {

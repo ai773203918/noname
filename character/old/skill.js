@@ -36,9 +36,11 @@ const skills = {
 			};
 			const list = [1, 2 + player.countMark("chegu_effect")];
 			let val = Math.max(getAllV(...list), getAllV(...list.reverse()));
-			return event.targets.reduce((val, current) => {
-				return val - get.effect(current, event.card, player, player);
-			}, val) > 0;
+			return (
+				event.targets.reduce((val, current) => {
+					return val - get.effect(current, event.card, player, player);
+				}, val) > 0
+			);
 		},
 		async content(event, trigger, player) {
 			const evt = trigger.getParent();
@@ -47,24 +49,28 @@ const skills = {
 				evt.all_excluded = true;
 			}
 			const getPrompt = list => {
-				const [num, numx] = list;
-				return `弃置${num > 1 ? "至多" : ""}${get.cnNumber(num)}名角色${num > 1 ? "各" : ""}${numx > 1 ? "至多" : ""}${get.cnNumber(numx)}张牌`;
-			},
+					const [num, numx] = list;
+					return `弃置${num > 1 ? "至多" : ""}${get.cnNumber(num)}名角色${num > 1 ? "各" : ""}${numx > 1 ? "至多" : ""}${get.cnNumber(numx)}张牌`;
+				},
 				list1 = [1, 2 + player.countMark("chegu_effect")],
-				list2 =[2 + player.countMark("chegu_effect"), 1];
+				list2 = [2 + player.countMark("chegu_effect"), 1];
 			const result = await player
-				.chooseButton([
-					"彻骨：选择一项",
+				.chooseButton(
 					[
+						"彻骨：选择一项",
 						[
-							[list1, getPrompt(list1)],
-							[list2, getPrompt(list2)],
+							[
+								[list1, getPrompt(list1)],
+								[list2, getPrompt(list2)],
+							],
+							"textbutton",
 						],
-						"textbutton",
-					]
-				], true)
+					],
+					true
+				)
 				.set("ai", button => {
-					const list = button.link;
+					const list = button.link,
+						player = get.player();
 					const getV = current => get.effect(current, { name: "guohe_copy2" }, player, player),
 						targets = game.filterPlayer(current => current.countDiscardableCards(player, "he") > 0).sort((a, b) => getV(b) - getV(a));
 					const getAllV = (num, numx) => {
@@ -90,19 +96,22 @@ const skills = {
 				if (!targets?.length) {
 					return;
 				}
-				const result2 = targets.length === 1 ? {
-					bool: true,
-					targets: targets,
-				} : await player
-					.chooseTarget("彻骨：选择要弃牌的目标角色", [1, num], true, (card, player, target) => {
-						return target.countDiscardableCards(player, "he");
-					})
-					.set("maxNum", numx)
-					.set("ai", target => {
-						const { player, maxNum } = get.event();
-						return get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(maxNum, target.countDiscardableCards(player, "he"));
-					})
-					.forResult();
+				const result2 =
+					targets.length === 1
+						? {
+								bool: true,
+								targets: targets,
+							}
+						: await player
+								.chooseTarget("彻骨：选择要弃牌的目标角色", [1, num], true, (card, player, target) => {
+									return target.countDiscardableCards(player, "he");
+								})
+								.set("maxNum", numx)
+								.set("ai", target => {
+									const { player, maxNum } = get.event();
+									return get.effect(target, { name: "guohe_copy2" }, player, player) * Math.min(maxNum, target.countDiscardableCards(player, "he"));
+								})
+								.forResult();
 				if (result2?.bool && result2.targets?.length) {
 					const func = async target => {
 						const discard = Math.min(numx, target.countDiscardableCards(player, "he"));
@@ -844,12 +853,15 @@ const skills = {
 		content() {
 			const list = [event.name, trigger.dying];
 			player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, get.prompt2(...list))
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					get.prompt2(...list)
+				)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)

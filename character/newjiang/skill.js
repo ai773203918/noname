@@ -15,7 +15,7 @@ const skills = {
 			return reason.name == "damage" && !reason.hasNature("fire");
 		},
 		forced: true,
-		async content(event, trigger ,player) {
+		async content(event, trigger, player) {
 			await player.loseMaxHp();
 			await player.recoverTo(player.maxHp);
 		},
@@ -87,7 +87,8 @@ const skills = {
 						return false;
 					}
 					const owner = event[event.name == "damage" ? "source" : "player"];
-					if (owner?.hasSkillTag("unequip", false, {
+					if (
+						owner?.hasSkillTag("unequip", false, {
 							name: event.card ? event.card.name : null,
 							target: player,
 							card: event.card,
@@ -5997,6 +5998,14 @@ const skills = {
 		onuse(links, player) {
 			player.addTempSkill("mbguli_effect", "phaseUseAfter");
 		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.mbguli) {
+					return Infinity;
+				}
+			},
+		},
 		ai: {
 			order: 1,
 			threaten: 1.14514,
@@ -6013,23 +6022,24 @@ const skills = {
 				audio: "mbguli",
 				trigger: { global: "useCardAfter" },
 				charlotte: true,
-				prompt2: "失去1点体力，然后将手牌摸至体力上限",
+				prompt2: "将手牌摸至体力上限，然后若此牌未造成过伤害，你失去1点体力",
 				check(event, player) {
 					var num = player.maxHp - player.countCards("h");
 					return (num >= 3 && player.hp >= 2) || (num >= 2 && player.hp >= 3);
 				},
 				filter(event, player) {
-					return (
-						event.card.storage &&
-						event.card.storage.mbguli &&
-						game.hasPlayer2(current => {
-							return current.hasHistory("sourceDamage", evt => evt.card == event.card);
-						})
-					);
+					return event.card.storage?.mbguli;
 				},
 				async content(event, trigger, player) {
-					await player.loseHp();
 					await player.drawTo(player.maxHp);
+					if (
+						game.hasPlayer2(current => {
+							return current.hasHistory("sourceDamage", evt => evt.card == trigger.card);
+						}, true)
+					) {
+						return;
+					}
+					await player.loseHp();
 				},
 				group: "mbguli_unequip",
 			},
