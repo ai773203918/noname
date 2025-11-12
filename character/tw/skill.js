@@ -18282,7 +18282,7 @@ const skills = {
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("prompt", "约俭：将这些牌置于牌堆顶或牌堆底");
 			next.set("processAI", function (list) {
-				var cards = list[0][1],
+				var cards = list[0][1].slice(0),
 					player = _status.event.player;
 				var target = player.next;
 				var att = get.sgn(get.attitude(player, target));

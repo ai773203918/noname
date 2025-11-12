@@ -13,7 +13,7 @@ const skills = {
 				if (!["duanjian", "serafuku", "yonglv"].includes(event.card.name)) {
 					return false;
 				}
-				return player.countCards("h") < player.getHandcardLimit();
+				return player.countCards("h") < player.maxHp;
 			}
 			return true;
 		},
@@ -22,7 +22,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "useCard") {
-				await player.drawTo(player.getHandcardLimit());
+				await player.drawTo(player.maxHp);
 			} else {
 				if (!_status.zc26_cangqiao) {
 					game.broadcastAll(function () {
