@@ -2,6 +2,215 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	youtan: {
+		audio: 2,
+		trigger: {
+			player: "gainAfter",
+			global: "loseAsyncAfter",
+			target: "useCardToTarget",
+		},
+		filter(event, player, name) {
+			if (name == "useCardToTarget") {
+				if (event.player == player) {
+					return false;
+				}
+				return !player.getStorage("youtan").includes(get.suit(event.card));
+			}
+			const evt = event.getParent("phaseUse", true);
+			if (evt && evt.player == player) {
+				return false;
+			}
+			const cards = event.getg(player);
+			return cards?.length && cards.some(card => !player.getStorage("youtan").includes(get.suit(card)));
+		},
+		intro: {
+			content: "已记录花色:$",
+		},
+		forced: true,
+		onremove: true,
+		async content(event, trigger, player) {
+			if (event.triggername == "useCardToTarget") {
+				const eff = get.effect(player, trigger.card, trigger.player, trigger.player);
+				const { result } = await trigger.player
+					.chooseToDiscard(`忧叹：弃置一张牌，否则${get.translation(trigger.card)}对${get.translation(player)}无效`, "he")
+					.set("ai", card => {
+						const { eff } = get.event();
+						if (eff > 0) {
+							return 10 - get.value(card);
+						}
+						return 0;
+					})
+					.set("eff", eff);
+				if (!result?.bool) {
+					trigger.getParent().excluded.add(player);
+				}
+			} else {
+				const suits = trigger
+					.getg(player)
+					.map(card => get.suit(card))
+					.removeArray(player.getStorage(event.name));
+				if (suits?.length) {
+					player.markAuto(event.name, suits);
+					player.addTip(
+						event.name,
+						`忧叹${player
+							.getStorage(event.name)
+							.map(i => get.translation(i))
+							.join("")}`
+					);
+				}
+			}
+		},
+		mod: {
+			cardEnabled(card, player) {
+				if (!player.isPhaseUsing() || get.suit(card) == "unsure") {
+					return;
+				}
+				if (!player.getStorage("youtan").includes(get.suit(card))) {
+					return false;
+				}
+			},
+			cardSavable(card, player) {
+				if (!player.isPhaseUsing() || get.suit(card) == "unsure") {
+					return;
+				}
+				if (!player.getStorage("youtan").includes(get.suit(card))) {
+					return false;
+				}
+			},
+		},
+	},
+	ciren: {
+		audio: 2,
+		global: "ciren_global",
+		subSkill: {
+			global: {
+				trigger: {
+					player: "phaseZhunbeiBegin",
+				},
+				filter(event, player) {
+					if (!player.countCards("he")) {
+						return false;
+					}
+					return game.hasPlayer(current => {
+						return current != player && current.hasSkill("ciren");
+					});
+				},
+				async cost(event, trigger, player) {
+					const targets = game.filterPlayer(current => current != player && current.hasSkill("ciren"));
+					event.result = await player
+						.chooseCardTarget({
+							prompt: get.prompt("ciren"),
+							prompt2: `将一张牌交给${targets}${targets.length > 1 ? "中的一人" : ""}，令其交给另一张同花色牌，或你摸一张牌`,
+							position: "he",
+							filterCard: true,
+							filterTarget(card, player, target) {
+								return get.event("targetx").includes(target);
+							},
+							targetx: targets,
+							ai1(card) {
+								return 6 - get.value(card);
+							},
+							ai2(target) {
+								const player = get.player();
+								return get.attitude(player, target);
+							},
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+							cards,
+							targets: [target],
+						} = event,
+						suit = get.suit(cards[0]);
+					await player.give(cards, target);
+					const result = await target
+						.chooseToGive(`交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
+						.set("filterCard", card => {
+							const { player, preCards, suit } = get.event();
+							return !preCards.includes(card) && get.suit(card) == suit;
+						})
+						.set("ai", card => {
+							const { player, att } = get.event(),
+								value = get.value(card);
+							if (value <= 0 && att <= 0) {
+								return 10;
+							}
+							if (value > 15 && att > 0) {
+								return 10;
+							}
+							return 0;
+						})
+						.set("att", get.attitude(target, player))
+						.set("preCards", cards)
+						.set("suit", suit)
+						.forResult();
+					if (!result?.bool) {
+						await player.draw();
+					}
+				},
+			},
+		},
+	},
+	zhancai: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		manualConfirm: true,
+		async content(event, trigger, player) {
+			const skill = "youtan";
+			await player.draw(player.getStorage(skill).length);
+			const list = player.getStorage(skill);
+			if (!list?.length) {
+				return;
+			}
+			const result = await player
+				.chooseButton(["展才：移去一个花色", [list.map(suit => ["", "", `lukai_${suit}`]), "vcard"]], true)
+				.set("ai", button => {
+					const player = get.player(),
+						suit = button.link[2].slice(6);
+					const num = player.countCards("hs", card => {
+						return get.suit(card) == suit && player.hasValueTarget(card);
+					});
+					if (num > 0) {
+						return 1 / num;
+					}
+					return 2;
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				player.unmarkAuto(
+					skill,
+					result.links.map(i => i[2].slice(6))
+				);
+				player.addTip(
+					skill,
+					`忧叹${player
+						.getStorage(skill)
+						.map(i => get.translation(i))
+						.join("")}`
+				);
+			}
+		},
+		ai: {
+			order: 9,
+			result: {
+				player(player) {
+					return player.getStorage("youtan").filter(suit => {
+						return (
+							player.countCards("hs", card => {
+								return get.suit(card) == suit && player.hasValueTarget(card);
+							}) === 0
+						);
+					}).length;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+		},
+	},
 	tenggu: {
 		audio: 2,
 		trigger: {
