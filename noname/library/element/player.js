@@ -954,6 +954,9 @@ export class Player extends HTMLDivElement {
 				}
 				if (typeof obj == "object" && obj !== null) {
 					Object.assign(skill, obj);
+					game.broadcast((skillName, obj) => {
+						Object.assign(lib.skill[skillName], obj);
+					}, skillName, obj);
 				}
 				return this;
 			},

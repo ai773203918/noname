@@ -18282,7 +18282,7 @@ const skills = {
 			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
 			next.set("prompt", "约俭：将这些牌置于牌堆顶或牌堆底");
 			next.set("processAI", function (list) {
-				var cards = list[0][1],
+				var cards = list[0][1].slice(0),
 					player = _status.event.player;
 				var target = player.next;
 				var att = get.sgn(get.attitude(player, target));
@@ -18683,66 +18683,58 @@ const skills = {
 			}
 			return event.targets.some(target => player.canCompare(target));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("twyulong"), (card, player, target) => {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return _status.event.getTrigger().targets.includes(target) && player.canCompare(target);
 				})
 				.set("ai", target => {
+					const player = get.player();
 					if (player.hasCard(card => get.value(card) < 6, "h")) {
-						return -get.attitude(_status.event.player, target);
+						return -get.attitude(player, target);
 					}
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("twyulong", target);
-				if (player.canCompare(target)) {
-					player.chooseToCompare(target);
-				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var color = get.color(result.player, false);
-				if (color == "black") {
-					trigger.getParent().baseDamage++;
-				} else if (color == "red") {
-					trigger.directHit.addArray(game.players);
-				}
-				trigger.getParent().twyulong = true;
-				player.addTempSkill("twyulong_addCount");
-			}
+				})
+				.forResult();
 		},
-		subSkill: {
-			addCount: {
-				audio: "twyulong",
-				charlotte: true,
-				forced: true,
-				trigger: { source: "damageSource" },
-				filter(event, player) {
-					if (!event.card || event.card.name != "sha") {
-						return false;
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (!player.canCompare(target)) {
+				return;
+			}
+			const result = await player.chooseToCompare(target).forResult();
+			const color = get.color(result.player, false);
+			if (color == "black") {
+				trigger.getParent().baseDamage++;
+				game.log(trigger.card, "的伤害+1");
+			} else if (color == "red") {
+				trigger.directHit.addArray(game.players);
+				game.log(trigger.card, "不可被响应");
+			}
+			player
+				.when("useCardAfter")
+				.filter(evt => evt == trigger.getParent())
+				.step(async (event, trigger, player) => {
+					const bool = game.hasPlayer2(current => current.hasHistory("damage", evt => evt.card == trigger.card), true);
+					if (bool !== result.bool) {
+						return;
 					}
-					var evt = event.getParent(2);
-					if (evt.name != "useCard" || !evt.twyulong) {
-						return false;
-					}
-					return true;
-				},
-				content() {
-					var evt = trigger.getParent(2);
-					if (evt.addCount !== false) {
-						evt.addCount = false;
-						if (player.stat[player.stat.length - 1].card.sha > 0) {
-							player.stat[player.stat.length - 1].card.sha--;
+					player.logSkill("twyulong");
+					if (bool) {
+						if (trigger.addCount !== false) {
+							trigger.addCount = false;
+							const stat = player.getStat("card"),
+								name = trigger.card.name;
+							if (typeof stat[name] == "number" && stat[name] > 0) {
+								stat[name]--;
+							}
+							game.log(trigger.card, "不计入次数限制");
+						}
+					} else {
+						if (trigger.cards?.someInD()) {
+							await player.gain(trigger.cards.filterInD(), "gain2");
 						}
 					}
-				},
-			},
+				});
 		},
 	},
 	twjianming: {
@@ -18776,14 +18768,26 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.addTempSkill("twjianming_used");
-			player.markAuto("twjianming_used", get.suit(event.indexedData));
+			const skill = "twjianming_used";
+			player.addTempSkill(skill);
+			player.markAuto(skill, get.suit(event.indexedData));
+			player.addTip(
+				skill,
+				`剑鸣${player
+					.getStorage(skill)
+					.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+					.map(suit => get.translation(suit))
+					.join("")}`
+			);
 			await player.draw();
 		},
 		subSkill: {
 			used: {
 				charlotte: true,
-				onremove: true,
+				onremove(player, skill) {
+					player.removeTip(skill);
+					player.setStorage(skill, []);
+				},
 			},
 		},
 	},

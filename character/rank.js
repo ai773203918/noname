@@ -95,6 +95,8 @@ window.noname_character_rank = {
 	a: [
 		"yj_hanbing",
 		"yj_tengjia",
+		"two_yj_hanbing",
+		"two_yj_tengjia",
 		"yj_puyuan",
 		"scl_jiaxu",
 		"linglie",
@@ -293,6 +295,8 @@ window.noname_character_rank = {
 		"zj_zhugezhan",
 		"zj_liuyin",
 		"zj_huoyi",
+		"mb_luyu",
+		"yj_fazheng",
 		"ol_sb_lusu",
 		"ol_sb_zhugeliang",
 		"ol_le_liushan",
@@ -2507,6 +2511,8 @@ window.noname_character_rank = {
 		],
 		epic: [
 			"dc_sb_zhuran",
+			"mb_luyu",
+			"yj_fazheng",
 			"zc26_lusu",
 			"zc26_zhanghe",
 			"zc26_taishici",
@@ -3007,6 +3013,10 @@ window.noname_character_rank = {
 			"guotiying",
 		],
 		rare: [
+			"yj_hanbing",
+			"yj_tengjia",
+			"two_yj_hanbing",
+			"two_yj_tengjia",
 			"taohuang",
 			"goblin",
 			"std_huangwudie",

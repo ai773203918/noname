@@ -1177,10 +1177,8 @@ const skills = {
 					.set("ai", button => {
 						const { player, kuangtu } = get.event(),
 							card = new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true});
-						if (!player.countCards("h") && ["huogong", "lx_huoshaolianying"].includes(button.link[2])) {
-							return -114514;
-						}
-						return Math.min(get.effect(player, card, kuangtu, player), get.effect(kuangtu, card, player, player));
+						let eff = Math.max(get.effect(player, card, kuangtu, kuangtu), get.effect(kuangtu, card, player, kuangtu));
+						return eff;
 					})
 					.set("kuangtu", player)
 					.forResult();
@@ -1219,7 +1217,9 @@ const skills = {
 				next.baseDamage ??= 1;
 				next.baseDamage++;
 				await next;
-				if (user.hasHistory("sourceDamage", evt => evt.getParent(evtx => evtx == next, true))) {
+				if (next.targets?.length && next.targets.some(current => {
+					return current.hasHistory("damage", evt => evt.card == next.card);
+				})) {
 					break;
 				}
 				await user.loseHp();
@@ -1416,7 +1416,7 @@ const skills = {
 							],
 							[
 								dialog => {
-									dialog.css({ top: "25%" });
+									dialog.css({ top: get.is.phoneLayout() ? "20%" : "25%" });
 									dialog.buttons
 										.filter(button => typeof button.link == "number")
 										.forEach(button => {

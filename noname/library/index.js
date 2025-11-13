@@ -155,6 +155,7 @@ export class Library {
 	);
 	cardBingzhu = {};
 	duplicatePrefix = {
+		sb: "谋",
 		re: "界",
 		xin: "新",
 		std: "标",
@@ -14107,6 +14108,13 @@ export class Library {
 					return span.outerHTML;
 				},
 			},
+		],
+		[
+			"礼",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
 		],
 		[
 			"TW",

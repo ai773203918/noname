@@ -3034,7 +3034,7 @@ const skills = {
 				const result = await player
 					.chooseControl("一张", "两张")
 					.set("prompt", "###隽谋：摸一张牌###你可摸两张牌并令此技能本阶段失效")
-					.set("ai", get.rand(1))
+					.set("ai", () => get.rand(0, 1))
 					.forResult();
 				if (result?.control) {
 					await player.draw(result.index + 1);

@@ -7843,7 +7843,7 @@ const skills = {
 			global: "useCardAfter",
 		},
 		filter(event, player) {
-			if (!event.player.isIn() || get.distance(player, event.player) > 1) {
+			if (!event.player.isIn() || get.distance(event.player, player) > 1) {
 				return false;
 			}
 			return (

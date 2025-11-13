@@ -355,7 +355,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardUsable",
 			modNum(card, player, num) {
-				if (card.name == "sha" && player.coutnMark("danqi_hufu") >= 3) {
+				if (card.name == "sha" && player.countMark("danqi_hufu") >= 3) {
 					return num + 1;
 				}
 			},

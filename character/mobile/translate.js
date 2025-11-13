@@ -1161,7 +1161,7 @@ const translates = {
 	potjiejie: "诫节",
 	potjiejie_info: `每名角色的出牌阶段限一次，当前回合角色可以令你观看其手牌，然后你可以选择一种花色，若其手牌：1.包含此花色，其本回合使用此花色的牌无次数限制，然后弃置其余花色的手牌；2.不包含此花色，其获得此花色的一张牌。每轮限两次，若其本轮以此法向你展示牌所包含的花色为唯一最多，你对其发动一次${get.poptip("potqingshi")}。`,
 	potqingshi: "清识",
-	potqingshi_info: "当你受到伤害后，你可选择一名角色，然后若你与其阵营：相同：你与其各摸一张牌；不同：你与其各弃置一张牌。",
+	potqingshi_info: "当你受到伤害后，你可选择一名角色，然后若你与其阵营：相同：你与其各摸一张牌；不同：你弃置你与其各一张牌。",
 	mb_caohong: "手杀曹洪",
 	mb_caohong_prefix: "手杀",
 	mbyuanhu: "援护",
@@ -1184,6 +1184,17 @@ const translates = {
 	potjixi_info: `若你拥有技能${get.poptip("pottuntian")}，你可移除1个“峥嵘”标记，然后将一张“田”以不计入次数且无距离限制的方式使用或打出。`,
 	potzaoxian: "凿险",
 	potzaoxian_info: `锁定技，一名角色的回合结束时，若你拥有技能${get.poptip("pottuntian")}，且你拥有0或3点蓄力点，你获得1个“峥嵘”标记。`,
+	mb_luyu: "礼卢毓",
+	mb_luyu_prefix: "礼",
+	mbbingfa: "秉法",
+	mbbingfa_info: `每轮开始时，你可选择两条${get.poptip({
+		id: "bingfa_lvfa",
+		name: "律法",
+		type: "character",
+		info: `<li>造成伤害最多者受到2点无来源伤害<br><li>获得牌数最多者手牌上限-2<br><li>体力变化次数最多者减少1点体力上限<br><li>区域内牌数最多者交给每名其他角色各一张牌`,
+	})}并令其他角色投票，得票最多的${get.poptip("bingfa_lvfa")}于本轮结束时执行。`,
+	mbshuxing: "束刑",
+	mbshuxing_info: "每回合限一次，一名角色成为【杀】的目标时，你可令此【杀】无效并展示手牌，若其中有【闪】，你令使用者选择一项：1.失去1点体力；2.交给你其手牌中【闪】和〖秉法〗的投票权。",
 };
 
 export default translates;

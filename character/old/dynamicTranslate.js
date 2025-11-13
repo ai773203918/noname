@@ -1,6 +1,11 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	chegu(player, skill) {
+		const info = lib.translate[`${skill}_info`],
+			num = 2 + player.countMark(`${skill}_effect`);
+		return info.replaceAll("[2]", `[${num}]`);
+	},
 	yao_chenwei(player, skill) {
 		const bool = player.storage[skill];
 		let str1 = "阳：令一名角色将你的一张手牌翻面";
