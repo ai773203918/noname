@@ -1140,6 +1140,7 @@ const skills = {
 								skill,
 								`诫节${player
 									.getStorage(skill)
+									.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
 									.map(suit => get.translation(suit))
 									.join("")}`
 							);
@@ -7544,12 +7545,16 @@ const skills = {
 					return event.getd()?.some(i => i.name == "xuanjian");
 				},
 				async cost(event, trigger, player) {
-					const storage = player.getStorage("friendqihui");
+					const storage = player
+						.getStorage("friendqihui")
+						.sort((a, b) => b.indexOf("c") - a.indexOf("c"))
+						.map(i => `caoying_${i}`);
 					const gains = trigger.getd().filter(i => i.name == "xuanjian");
 					const {
 						result: { links, bool },
-					} = await player.chooseButton(["###" + get.prompt("friendxiaxing") + '###<div class="text center">移去2枚“启诲”标记，获得' + get.translation(gains) + "</div>", [storage.map(c => [c, get.translation(c)]), "tdnodes"]], 2).set("ai", button => {
-						const player = get.player();
+					} = await player.chooseButton(["###" + get.prompt("friendxiaxing") + '###<div class="text center">移去2枚“启诲”标记，获得' + get.translation(gains) + "</div>", [storage, "vcard"]], 2).set("ai", button => {
+						const player = get.player(),
+							type = button.link[2].slice(8);
 						if (player.getVEquip("xuanjian")) {
 							return 0;
 						}
@@ -7557,17 +7562,26 @@ const skills = {
 							1 +
 							Math.random() +
 							player.countCards("he", card => {
-								return get.type2(card) === button.link && player.hasValueTarget(card);
+								return get.type2(card) === type && player.hasValueTarget(card);
 							})
 						);
 					});
-					event.result = {
-						bool: bool,
-						cost_data: links,
-					};
+					if (bool && links?.length) {
+						event.result = {
+							bool: bool,
+							cost_data: links.map(i => i[2].slice(8)),
+						};
+					}
 				},
 				async content(event, trigger, player) {
-					player.unmarkAuto("friendqihui", event.cost_data);
+					const skillName = "friendqihui";
+					player.unmarkAuto(skillName, event.cost_data);
+					const list = player.getStorage(skillName);
+					if (list.length) {
+						player.addTip(skillName, `${get.translation(skillName)}${list.map(i => get.translation(i)).join("")}`);
+					} else {
+						player.removeTip(skillName);
+					}
 					await player.gain(
 						trigger.getd().filter(i => i.name == "xuanjian"),
 						"gain2"

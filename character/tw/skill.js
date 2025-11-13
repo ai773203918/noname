@@ -18771,7 +18771,14 @@ const skills = {
 			const skill = "twjianming_used";
 			player.addTempSkill(skill);
 			player.markAuto(skill, get.suit(event.indexedData));
-			player.addTip(skill, `剑鸣${player.getStorage(skill).map(suit => get.translation(suit)).join("")}`);
+			player.addTip(
+				skill,
+				`剑鸣${player
+					.getStorage(skill)
+					.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
+					.map(suit => get.translation(suit))
+					.join("")}`
+			);
 			await player.draw();
 		},
 		subSkill: {

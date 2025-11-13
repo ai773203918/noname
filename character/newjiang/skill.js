@@ -27,7 +27,10 @@ const skills = {
 			content: "已记录花色:$",
 		},
 		forced: true,
-		onremove: true,
+		onremove(player, skill) {
+			player.removeTip(skill);
+			player.setStorage(skill, []);
+		},
 		async content(event, trigger, player) {
 			if (event.triggername == "useCardToTarget") {
 				const eff = get.effect(player, trigger.card, trigger.player, trigger.player);
@@ -55,6 +58,7 @@ const skills = {
 						event.name,
 						`忧叹${player
 							.getStorage(event.name)
+							.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a))
 							.map(i => get.translation(i))
 							.join("")}`
 					);
@@ -85,6 +89,7 @@ const skills = {
 		global: "ciren_global",
 		subSkill: {
 			global: {
+				audio: "ciren",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
@@ -101,7 +106,7 @@ const skills = {
 					event.result = await player
 						.chooseCardTarget({
 							prompt: get.prompt("ciren"),
-							prompt2: `将一张牌交给${targets}${targets.length > 1 ? "中的一人" : ""}，令其交给另一张同花色牌，或你摸一张牌`,
+							prompt2: `将一张牌交给${targets}${targets.length > 1 ? "中的一人" : ""}，令其交给你另一张同花色牌，或你摸一张牌`,
 							position: "he",
 							filterCard: true,
 							filterTarget(card, player, target) {
@@ -157,6 +162,13 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
+		filter(event, player) {
+			return player.getStorage("youtan").length;
+		},
+		prompt() {
+			const num = get.player().getStorage("youtan").length
+			return `摸${get.cnNumber(num)}张牌，然后移去一个记录的花色`;
+		},
 		manualConfirm: true,
 		async content(event, trigger, player) {
 			const skill = "youtan";
@@ -195,6 +207,7 @@ const skills = {
 		},
 		ai: {
 			order: 9,
+			combo: "youtan",
 			result: {
 				player(player) {
 					return player.getStorage("youtan").filter(suit => {
@@ -206,9 +219,6 @@ const skills = {
 					}).length;
 				},
 			},
-		},
-		subSkill: {
-			backup: {},
 		},
 	},
 	tenggu: {
@@ -6243,7 +6253,7 @@ const skills = {
 					await player.drawTo(player.maxHp);
 					if (
 						game.hasPlayer2(current => {
-							return current.hasHistory("sourceDamage", evt => evt.card == trigger.card);
+							return current.hasHistory("damage", evt => evt.card == trigger.card);
 						}, true)
 					) {
 						return;
