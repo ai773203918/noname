@@ -2262,12 +2262,12 @@ const skills = {
 		logAudio: () => 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return game.hasPlayer(target => target.hp <= player.hp && target != player); //
+			return game.hasPlayer(target => target != player); //target.hp <= player.hp && 
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target.hp <= player.hp && target != player; //
+					return target != player; //target.hp <= player.hp && 
 				})
 				.set("ai", target => {
 					return get.attitude(get.player(), target);
@@ -2316,7 +2316,7 @@ const skills = {
 							})
 							.join("<br>")
 					);
-					await player.drawTo(player.maxHp);
+					await player.drawTo(4);
 				},
 			},
 			clear: {
@@ -2423,7 +2423,7 @@ const skills = {
 			if (!selected.length) {
 				return true;
 			}
-			return Math.abs(target.countCards("h") - selected[0].countCards("h")) <= player.getDamagedHp();
+			return Math.abs(target.countCards("h") - selected[0].countCards("h")) <= 3;
 		},
 		complexTarget: true,
 		selectTarget: 2,
@@ -2433,12 +2433,31 @@ const skills = {
 			const { targets } = event,
 				num = player.getDamagedHp();
 			await targets[0].swapHandcards(targets[1]);
-			if (targets[0].countCards("h") == targets[1].countCards("h") || num == 0) {
+			if (num == 0) {
+				return;
+			}
+			const discard = Math.min(num, player.countDiscardableCards(player, "he")),
+				count = targets[0].countCards("h") - targets[1].countCards("h");
+			if (discard == 0 && count == 0) {
+				return;
+			}
+			if (count == 0) {
+				await player.chooseToDiscard(`缔盟：是否弃置${get.cnNumber(discard)}张牌？`, discard, "he");
 				return;
 			}
 			const target = targets.sort((a, b) => a.countCards("h") - b.countCards("h"))[0];
+			if (discard == 0) {
+				const result = await player
+					.chooseBool(`缔盟：是否令${get.translation(target)}摸${get.cnNumber(num)}张牌？`)
+					.set("choice", get.effect(target, { name: "draw" }, player, player) > 0)
+					.forResult();
+				if (result?.bool) {
+					await target.draw(num);
+				}
+				return;
+			}
 			const result = await player
-				.chooseToDiscard(`缔盟：弃置${num}张牌或令${get.translation(target)}摸${num}张牌`, num)
+				.chooseToDiscard(`缔盟：弃置${get.cnNumber(discard)}张牌或令${get.translation(target)}摸${get.cnNumber(num)}张牌`, discard, "he")
 				.set("targetx", target)
 				.set("ai", card => {
 					const player = get.player(),
@@ -2451,7 +2470,7 @@ const skills = {
 				})
 				.forResult();
 			if (!result?.cards?.length) {
-				await target.draw(player.getDamagedHp());
+				await target.draw(num);
 			}
 		},
 		ai: {

@@ -3197,7 +3197,7 @@ const skills = {
 			let { targets } = event;
 			await player.recover(targets.length);
 			while (true) {
-				targets = targets.filter(target => target.isIn() && target.countCards("h"));
+				targets = event.targets.filter(target => target.isIn() && target.countCards("h"));
 				if (!targets.length) {
 					break;
 				}
