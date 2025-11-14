@@ -1,4 +1,11 @@
 const characters = {
+	wxdl_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["wxdl_kejie", "wxdl_hongqi"],
+		isZhugong: true,
+	},
 	shinin_zhenji: {
 		sex: "female",
 		group: "wei",

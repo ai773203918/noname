@@ -14657,6 +14657,14 @@ export class Library {
 			},
 		],
 		[
+			"文心雕龙",
+			{
+				showName: "文",
+				color: "#ffffff",
+				nature: "firemm",
+			},
+		],
+		[
 			"26",
 			{
 				getSpan: () => {

@@ -297,6 +297,7 @@ window.noname_character_rank = {
 		"zj_liuyin",
 		"zj_huoyi",
 		"mb_luyu",
+		"wxdl_caocao",
 		"yj_fazheng",
 		"ol_sb_lusu",
 		"ol_sb_zhugeliang",
@@ -2514,6 +2515,7 @@ window.noname_character_rank = {
 		epic: [
 			"dc_sb_zhuran",
 			"mb_luyu",
+			"wxdl_caocao",
 			"yj_fazheng",
 			"zc26_lusu",
 			"zc26_zhanghe",

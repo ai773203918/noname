@@ -10603,12 +10603,13 @@ const skills = {
 	},
 	xiantu: {
 		audio: 2,
-		group: ["xiantu1", "xiantu2"],
-	},
-	xiantu1: {
-		audio: true,
+		logAudio(event) {
+			if (typeof event == "string") {
+				return "xiantu2.mp3";
+			}
+			return 1;
+		},
 		trigger: { global: "phaseUseBegin" },
-		sourceSkill: "xiantu",
 		filter(event, player) {
 			return event.player != player;
 		},
@@ -10632,67 +10633,50 @@ const skills = {
 			}
 			return true;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
+			const target = event.targets[0];
 			if (get.mode() !== "identity" || player.identity !== "nei") {
 				player.addExpose(0.2);
 			}
-			player.draw(2);
-			"step 1";
-			player.chooseCard(2, "he", true, "交给" + get.translation(trigger.player) + "两张牌").set("ai", function (card) {
-				if (ui.selected.cards.length && card.name == ui.selected.cards[0].name) {
-					return -1;
-				}
-				if (get.tag(card, "damage")) {
-					return 1;
-				}
-				if (get.type(card) == "equip") {
-					return 1;
-				}
-				return 0;
-			});
-			"step 2";
-			player.give(result.cards, trigger.player);
-			trigger.player.addSkill("xiantu4");
-			trigger.player.storage.xiantu4.push(player);
+			await player.draw(2);
+			const result = await player
+				.chooseCard(2, "he", true, `交给${get.translation(target)}两张牌`)
+				.set("ai", card => {
+					if (ui.selected.cards.length && card.name == ui.selected.cards[0].name) {
+						return -1;
+					}
+					if (get.tag(card, "damage")) {
+						return 1;
+					}
+					if (get.type(card) == "equip") {
+						return 1;
+					}
+					return 0;
+				})
+				.forResult();
+			if (result?.bool && result.cards?.length) {
+				player.give(result.cards, target);
+				player
+					.when({
+						global: "phaseAnyEnd",
+					})
+					.filter(evt => evt == event.getParent(evt.name, true, true))
+					.step(async (event, trigger, player) => {
+						if (game.hasGlobalHistory("everything", evt => {
+							if (evt.name != "die" || evt.source != target) {
+								return false;
+							}
+							return evt.getParent(trigger.name, true) == trigger;
+						})) {
+							return;
+						}
+						player.logSkill("xiantu", null, null, null, ["loseHp"]);
+						await player.loseHp();
+					});
+			}
 		},
 		ai: {
 			threaten: 1.1,
-		},
-	},
-	xiantu2: { audio: true },
-	xiantu4: {
-		trigger: { player: "phaseUseEnd" },
-		forced: true,
-		audio: false,
-		onremove: true,
-		sourceSkill: "xiantu",
-		init(player, skill) {
-			if (!player.storage[skill]) {
-				player.storage[skill] = [];
-			}
-		},
-		charlotte: true,
-		content() {
-			while (player.storage.xiantu4.length) {
-				var current = player.storage.xiantu4.shift();
-				if (current.isDead()) {
-					continue;
-				}
-				current.logSkill("xiantu2");
-				current.loseHp();
-			}
-			player.removeSkill("xiantu4");
-		},
-		group: "xiantu3",
-	},
-	xiantu3: {
-		trigger: { source: "dieAfter" },
-		forced: true,
-		audio: false,
-		sourceSkill: "xiantu",
-		content() {
-			player.removeSkill("xiantu4");
 		},
 	},
 	qiangzhi: {
