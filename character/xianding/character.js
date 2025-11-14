@@ -39,7 +39,7 @@ const characters = {
 		sex: "male",
 		group: "wu",
 		hp: 4,
-		skills: ["dcsbqinqiang"],
+		skills: ["dcsbqinqiang", "dcsbyizhen"],
 	},
 	suyue: {
 		sex: "male",

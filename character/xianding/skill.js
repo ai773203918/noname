@@ -1431,59 +1431,59 @@ const skills = {
 				})
 				.forResult();
 		},
-		popup: false,
 		async content(event, trigger, player) {
-			player.addTempSkill("dcsbqinqiang_effect", { player: "phaseBegin" });
-			const next = player.draw(event.cards.length * 2);
-			next.gaintag.add("dcsbqinqiang_effect");
-			await next;
+			await player.draw(event.cards.length * 2);
 		},
-		subSkill: {
+	},
+	dcsbyizhen: {
+		audio: 2,
+		trigger: { target: "useCardToTargeted" },
+		filter(event, player) {
+			if (player == event.player) {
+				return false;
+			}
+			const suit = get.suit(event.card),
+				suits = lib.suit.slice(0),
+				map = {};
+			suits.add(suit);
+			for (const suitx of suits) {
+				map[suitx] = player.countCards("h", { suit: suitx });
+			}
+			if (suits.every(suitx => suitx == suit || map[suitx] < map[suit])) {
+				return player.countDiscardableCards(player, "h", card => get.suit(card) == suit) > 0;
+			}
+			return suits.every(suitx => map[suitx] >= map[suit]);
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card),
+				suits = lib.suit.slice(0),
+				map = {};
+			suits.add(suit);
+			for (const suitx of suits) {
+				map[suitx] = player.countCards("h", { suit: suitx });
+			}
+			if (suits.every(suitx => suitx == suit || map[suitx] < map[suit])) {
+				await player.chooseToDiscard("h", card => get.suit(card) == suit, true);
+			}
+			if (suits.every(suitx => map[suitx] >= map[suit])) {
+				player
+					.when({ global: "useCardAfter" })
+					.filter((evt, player) => evt == trigger.getParent() && evt.cards?.someInD("od"))
+					.step(async (event, trigger, player) => {
+						await player.gain(trigger.cards.filterInD("od"), "gain2");
+					});
+			}
+		},
+		ai: {
 			effect: {
-				charlotte: true,
-				onremove(player, skill) {
-					player.removeGaintag(skill);
-				},
-				audio: "dcsbqinqiang",
-				trigger: { target: "useCardToTargeted" },
-				filter(event, player) {
-					const suit = get.suit(event.card);
-					if (!player.hasCard({ suit: suit }, "h") && event.cards?.someInD("od")) {
-						return true;
+				target(card, player, target) {
+					const suit = get.suit(card),
+						suits = target.getKnownCards(player).map(card => get.suit(card));
+					if (suits.length && target.countCards("h") - suits.length < 2 && !suits.includes(suit)) {
+						return [1, 1];
 					}
-					const suits = player.getCards("h").map(card => get.suit(card)),
-						num = Math.max(...suits.map(suitx => get.numOf(suits, suitx)));
-					return get.numOf(suits, suit) === num && player.hasCard(card => card.hasGaintag("dcsbqinqiang_effect") && lib.filter.cardDiscardable(card, player), "h");
-				},
-				forced: true,
-				async content(event, trigger, player) {
-					const suit = get.suit(trigger.card),
-						has = !player.hasCard({ suit: suit }, "h"),
-						suits = player.getCards("h").map(card => get.suit(card)),
-						num = Math.max(...[...lib.suit, "none"].map(suitx => get.numOf(suits, suitx)));
-					if (get.numOf(suits, suit) === num && player.hasCard(card => card.hasGaintag("dcsbqinqiang_effect") && lib.filter.cardDiscardable(card, player), "h")) {
-						await player.chooseToDiscard("h", true, card => card.hasGaintag("dcsbqinqiang_effect"));
-					}
-					if (!has) {
-						player
-							.when({ global: "useCardAfter" })
-							.filter((evt, player) => evt.card === trigger.card && evt.cards?.someInD("od"))
-							.step(async (event, trigger, player) => {
-								await player.gain(trigger.cards.filterInD("od"), "gain2");
-							});
-					}
-				},
-				ai: {
-					effect: {
-						target(card, player, target) {
-							const suit = get.suit(card),
-								suits = target.getKnownCards(player).map(card => get.suit(card));
-							if (suits.length && target.countCards("h") - suits.length < 2 && !suits.includes(suit)) {
-								return [1, 1];
-							}
-							return [1, 0];
-						},
-					},
+					return [1, 0];
 				},
 			},
 		},

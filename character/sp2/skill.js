@@ -11,7 +11,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target, name } = event;
 			const result = await target
-				.chooseControl("一张", "两张", "三张")
+				.chooseControl("两张", "三张", "四张")
 				.set("prompt", "声明一个数字")
 				.set("ai", () => {
 					return get.event("resultx");
@@ -19,34 +19,31 @@ const skills = {
 				.set(
 					"resultx",
 					(() => {
-						if (get.attitude(target, player) > 0 && player.getHp() > 1) {
-							return "三张";
+						if (get.attitude(target, player) > 0 && player.getDamagedHp() < 2) {
+							return "四张";
 						}
-						return "一张";
+						return "两张";
 					})()
 				)
 				.forResult();
 			target.popup(result.control, "wood");
-			game.log(target, "声明的数字为", `#y${result.index + 1}`);
+			const num = result.index + 2;
+			game.log(target, "声明的数字为", `#y${num}`);
 			const result2 = await player
-				.chooseToGive(target, "he", [1, Infinity], true, `交给${get.translation(target)}任意张牌`)
+				.chooseToGive(target, "he", num, `交给${get.translation(target)}${get.cnNumber(num)}张牌，否则你摸${get.cnNumber(num)}张牌`)
 				.set("ai", card => {
-					const { getNum, player } = get.event();
-					if (ui.selected.cards.length >= getNum && player.getHp() > 1) {
+					const { player } = get.event();
+					if (player.getDamagedHp() < 2) {
 						return 0;
 					}
 					return 7 - get.value(card);
 				})
-				.set("getNum", result.index)
 				.forResult();
 			if (result2?.bool && result2.cards?.length) {
-				if (result2.cards.length > result.index) {
-					player.addSkill(`${name}_effect`);
-					player.addMark(`${name}_effect`, 1, false);
-				} else {
-					await player.damage(target);
-					await player.draw(result.index + 1);
-				}
+				player.addTempSkill(`${name}_effect`, { player: "phaseBegin" });
+				player.addMark(`${name}_effect`, num, false);
+			} else {
+				await player.draw(num);
 			}
 		},
 		subSkill: {
@@ -55,26 +52,46 @@ const skills = {
 				onremove: true,
 				locked: false,
 				intro: {
-					content: "你的攻击范围和拼点点数+#",
+					content: "其他角色计算与你的距离和你的拼点点数+#",
 				},
 				trigger: {
 					player: "compare",
 					target: "compare",
+					global: ["chooseToCompareAfter","compareMultipleAfter"],
 				},
-				filter(event, player) {
-					if (player != event.target && event.iwhile) {
+				filter(event, player, name) {
+					if (name == "compare") {
+						if (player != event.target && event.iwhile) {
+							return false;
+						}
+						return player.countMark("dczijue_effect");
+					}
+					if (event.compareMultiple) {
 						return false;
 					}
-					return player.countMark("dczijue_effect");
+					if (event.compareMeanwhile || [event.player, event.target].includes(player)) {
+						const winner = event.winner || event.result.winner;
+						return winner == player;
+					}
+					return false;
 				},
 				async cost(event, trigger, player) {
-					const key = player == trigger.player ? "num1" : "num2";
-					trigger[key] = Math.min(13, trigger[key] + player.countMark(event.skill));
-					game.log(player, "的拼点牌点数+", player.countMark(event.skill));
+					if (event.triggername == "compare") {
+						const key = player == trigger.player ? "num1" : "num2";
+						trigger[key] = Math.min(13, trigger[key] + player.countMark(event.skill));
+						game.log(player, "的拼点牌点数+", player.countMark(event.skill));
+						return;
+					}
+					event.result = {
+						bool: true,
+					}
+				},
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 				mod: {
-					attackRange(player, num) {
-						return num + player.countMark("dczijue_effect");
+					globalTo(from, to, num) {
+						return num + to.countMark("dczijue_effect");
 					},
 				},
 			},
