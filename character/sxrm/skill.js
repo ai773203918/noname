@@ -1039,7 +1039,10 @@ const skills = {
 			const bool = player.getStorage(event.name, false);
 			player.changeZhuanhuanji(event.name);
 			if (bool) {
-				await player.discardPlayerCard(trigger.player, "he", 2, true);
+				const num = Math.min(2, trigger.player.countDiscardableCards(player, "he"));
+				if (num > 0) {
+					await player.discardPlayerCard(trigger.player, "he", num, true);
+				}
 			} else {
 				await game.asyncDraw([player, trigger.player]);
 			}

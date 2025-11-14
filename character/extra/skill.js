@@ -21,7 +21,7 @@ const skills = {
 				if (!target.countCards("h")) {
 					return;
 				}
-				const next = target.addToExpansion(target.getCards("h"), target, "give", "log");
+				const next = target.addToExpansion(target.getCards("h"), target, "giveAuto", false);
 				next.gaintag.add(name);
 				await next;
 			};
@@ -30,7 +30,14 @@ const skills = {
 		marktext: "溟",
 		intro: {
 			markcount: "expansion",
-			content: "expansion",
+			mark(dialog, storage, player) {
+				const cards = player.getExpansions("dccangming");
+				if (player.isUnderControl(true)) {
+					dialog.addAuto(cards);
+				} else {
+					return "共有" + get.cnNumber(cards.length) + "张牌";
+				}
+			},
 		},
 		global: "dccangming_gain",
 		subSkill: {
@@ -207,7 +214,7 @@ const skills = {
 						if (!cards.length) {
 							return;
 						}
-						const next = target.addToExpansion(cards, target, "give", "log");
+						const next = target.addToExpansion(cards, target, "giveAuto");
 						next.gaintag.add("dccangming");
 						await next;
 					},

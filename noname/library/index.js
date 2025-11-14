@@ -11630,6 +11630,9 @@ export class Library {
 			if (typeof event != "string") {
 				event = event.getParent().name;
 			}
+			if (player == target && !lib.filter.cardDiscardable(card, player, event)) {
+				return false;
+			}
 			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
 			if (mod != "unchanged") {
 				return mod;
