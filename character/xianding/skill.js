@@ -22900,6 +22900,7 @@ const skills = {
 			target.storage["dcwumei_wake"][2].add(next);
 			if (!trigger._finished) {
 				trigger.finish();
+				trigger._finished = true;
 				trigger.untrigger(true);
 				trigger._triggered = 5;
 				if (!lib.onround.includes(lib.skill.dcwumei.onRound)) {

@@ -9341,6 +9341,8 @@ const skills = {
 			if (trigger.name == "phase" && !trigger._finished) {
 				let first = game.findPlayer(current => current.getSeatNum() == 1) || trigger.player;
 				trigger.finish();
+				trigger._finished = true;
+				trigger.untrigger(true);
 				trigger._triggered = 5;
 				const evtx = first.insertPhase();
 				delete evtx.skill;
@@ -9529,6 +9531,8 @@ const skills = {
 			let newzhu = game.findPlayer(i => i.getSeatNum() == 1);
 			if (trigger.name === "phase" && newzhu != zhu && !trigger._finished) {
 				trigger.finish();
+				trigger._finished = true;
+				trigger.untrigger(true);
 				trigger._triggered = 5;
 				const evt = newzhu.insertPhase();
 				delete evt.skill;

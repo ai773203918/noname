@@ -2472,6 +2472,7 @@ const skills = {
 				.assign({ firstDo: true });
 			if (!trigger._finished) {
 				trigger.finish();
+				trigger._finished = true;
 				trigger.untrigger(true);
 				trigger._triggered = 5;
 				if (!lib.onround.includes(get.info("olduoqi").onRound)) {
