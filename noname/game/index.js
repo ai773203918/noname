@@ -10572,6 +10572,7 @@ export class Game extends GameCompatible {
 	chooseAnyOL(targets, func, args) {
 		const next = game.createEvent("chooseAnyOL");
 		next.targets = targets;
+		next.player = _status.event.player;
 		next.func = func;
 		next.args = args;
 		next.setContent("chooseAnyOL");

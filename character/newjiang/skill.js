@@ -106,7 +106,7 @@ const skills = {
 					event.result = await player
 						.chooseCardTarget({
 							prompt: get.prompt("ciren"),
-							prompt2: `将一张牌交给${targets}${targets.length > 1 ? "中的一人" : ""}，令其交给你另一张同花色牌，或你摸一张牌`,
+							prompt2: `将一张牌交给${get.translation(targets)}${targets.length > 1 ? "中的一人" : ""}，令其交给你另一张同花色牌，或你摸一张牌`,
 							position: "he",
 							filterCard: true,
 							filterTarget(card, player, target) {

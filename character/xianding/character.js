@@ -132,6 +132,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dchuashang", "dcyuzhi"],
+		names: "崔|null",
 	},
 	dc_wuzhi: {
 		sex: "male",
