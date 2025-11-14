@@ -1,4 +1,5 @@
 export default {
+	//dc_shen_sunquan: "",
 	shen_liubei: "誓守桃园义",
 	shen_luxun: "红莲业火",
 	shen_ganning: "江表之力牧",
