@@ -205,6 +205,7 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger.name !== "damage") {
 				await player.loseHp();
+				return;
 			}
 			if (trigger.cards.everyInD("he")) {
 				trigger.cancel();

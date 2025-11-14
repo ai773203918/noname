@@ -3763,7 +3763,7 @@ player.removeVirtualEquip(card);
 		if (
 			!card?.cards.some(card => {
 				return get.position(card, true) !== "o";
-			})
+			}) && target.canAddJudge(card)
 		) {
 			target.addJudge(card, cards);
 		}
