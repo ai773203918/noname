@@ -1218,58 +1218,51 @@ const skills = {
 					const choices = trigger.targets[0].getStorage("olquanyu_record");
 					const map = get.info("olquanyu").map;
 					const list = Object.keys(map);
-					const result = true
-						? {
-								bool: true,
-								links: choices,
+					/*const result = await player
+						.chooseButton(
+							[
+								`乾纲：请选择要额外执行的“权御”效果`,
+								[list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"],
+								[list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"],
+								[list.slice(4).map(i => [i, map[i]]), "tdnodes"],
+								[
+									dialog => {
+										dialog.buttons.forEach(i => {
+											i.style.setProperty("width", "200px", "important");
+											i.style.setProperty("text-align", "left", "important");
+										});
+									},
+									"handle",
+								],
+							],
+							[1, 6]
+						)
+						.set("choices", choices)
+						.set("filterButton", button => {
+							if (!get.event().choices.includes(button.link)) {
+								return false;
 							}
-						: await player
-								.chooseButton(
-									[
-										`乾纲：请选择要额外执行的“权御”效果`,
-										[list.slice(0, 2).map(i => [i, map[i]]), "tdnodes"],
-										[list.slice(2, 4).map(i => [i, map[i]]), "tdnodes"],
-										[list.slice(4).map(i => [i, map[i]]), "tdnodes"],
-										[
-											dialog => {
-												dialog.buttons.forEach(i => {
-													i.style.setProperty("width", "200px", "important");
-													i.style.setProperty("text-align", "left", "important");
-												});
-											},
-											"handle",
-										],
-									],
-									[1, 6]
-								)
-								.set("choices", choices)
-								.set("filterButton", button => {
-									if (!get.event().choices.includes(button.link)) {
-										return false;
-									}
-									if (button.link == "olquanyu_qingmin") {
-										const trigger = get.event().getTrigger();
-										const card = trigger.card;
-										const player = get.player();
-										return game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target));
-									}
-									return true;
-								})
-								.set("ai", button => {
-									const trigger = get.event().getTrigger();
-									const card = trigger.card;
-									const player = get.player();
-									if (button.link == "olquanyu_qingmin") {
-										if (!game.hasPlayer(target => !trigger.targets.includes(target) && get.effect(target, card, player, player) > 0)) {
-											return 0;
-										}
-									}
-									return 1;
-								})
-								.forResult();
-					if (result?.links?.length) {
-						event.result = { bool: true, cost_data: result.links };
-					}
+							if (button.link == "olquanyu_qingmin") {
+								const trigger = get.event().getTrigger();
+								const card = trigger.card;
+								const player = get.player();
+								return game.hasPlayer(target => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target));
+							}
+							return true;
+						})
+						.set("ai", button => {
+							const trigger = get.event().getTrigger();
+							const card = trigger.card;
+							const player = get.player();
+							if (button.link == "olquanyu_qingmin") {
+								if (!game.hasPlayer(target => !trigger.targets.includes(target) && get.effect(target, card, player, player) > 0)) {
+									return 0;
+								}
+							}
+							return 1;
+						})
+						.forResult();*/
+					event.result = { bool: true, cost_data: choices };
 				},
 				async content(event, trigger, player) {
 					const { cost_data: list } = event;
