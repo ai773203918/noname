@@ -3039,7 +3039,7 @@ const skills = {
 				if (result?.control) {
 					await player.draw(result.index + 1);
 					if (result.index) {
-						player.tempBanSkill(name, { global: "phaseAnyAfter"});
+						player.tempBanSkill(name, { global: "phaseAnyAfter" });
 					}
 				}
 			} else {
@@ -3072,7 +3072,7 @@ const skills = {
 					};
 					await game.doAsyncInOrder(result.targets, func);
 					if (result.targets.length > 1) {
-						player.tempBanSkill(name, { global: "phaseAnyAfter"});
+						player.tempBanSkill(name, { global: "phaseAnyAfter" });
 					}
 				}
 			}

@@ -408,6 +408,12 @@ const translates = {
 	ol_jsrg_zhangliao_prefix: "闪",
 	olzhengbing: "整兵",
 	olzhengbing_info: "群势力技。出牌阶段限三次。你可以重铸一张牌，若此牌为：【杀】，你的手牌上限+1；【闪】，你摸一张牌；【桃】/【酒】，你于此回合结束时执行一个出牌阶段。然后若你以此法触发过所有选项，变更势力为魏。",
+	dm_caocao: "OL魔曹操",
+	dm_caocao_prefix: "OL|魔",
+	olbachao: "霸朝",
+	olbachao_info: `出牌阶段开始时，你可以令所有其他角色同时选择是否交给你一张非基本牌，然后你对一名未以此法交给你牌的角色造成1点伤害；若该角色为你，本阶段你使用当前手牌无距离次数限制并${get.poptip("rule_rumo")}。`,
+	olzaifu: "载覆",
+	olzaifu_info: "锁定技，①你的装备牌只能当【借刀杀人】或【无中生有】使用。②若你的装备区没有牌，你视为装备着随机武器和防具各一件（优先装备攻击距离/牌名字数与你的体力值相同的武器/防具）。",
 };
 
 export default translates;

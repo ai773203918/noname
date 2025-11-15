@@ -980,7 +980,9 @@ export class GameEvent {
 			doneList: [],
 		};
 		const doingList = [];
-		const roles = ["player", "source", "target", "global"];
+		const roles = ["player", "source", "target", "global"],
+			map = lib.relatedTrigger,
+			names = Object.keys(map);
 		const playerMap = game.players.concat(game.dead).sortBySeat(start);
 		let player = start;
 		let allbool = false;
@@ -1061,10 +1063,22 @@ export class GameEvent {
 							if (role !== "global" && player !== event[role]) {
 								return false;
 							}
-							if (Array.isArray(expire[role])) {
-								return expire[role].includes(name);
+							const checkTrigger = trigger => {
+								if (trigger == name) {
+									return true;
+								}
+								const evt = names.find(evt => trigger?.startsWith(evt));
+								if (!evt) {
+									return false;
+								}
+								return map[evt].some(rawTrigger => {
+									return `${rawTrigger}${trigger.slice(evt.length)}` == name;
+								});
 							}
-							return expire[role] === name;
+							if (Array.isArray(expire[role])) {
+								return expire[role].length && expire[role].some(checkTrigger);
+							}
+							return checkTrigger(expire[role]);
 						});
 					}
 				})
