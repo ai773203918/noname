@@ -136,12 +136,12 @@ const skills = {
 			},
 		},
 	},
-	olzaifu: {
+	olfuzai: {
 		audio: 2,
 		enable: "chooseToUse",
 		locked: true,
 		filter(event, player) {
-			const hs = player.getCards("hs", card => get.type(card) == "equip");
+			const hs = player.getCards("he", card => get.type(card) == "equip");
 			if (!hs.length) {
 				return false;
 			}
@@ -154,14 +154,14 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				const hs = player.getCards("hs", card => get.type(card) == "equip");
+				const hs = player.getCards("he", card => get.type(card) == "equip");
 				const list = ["jiedao", "wuzhong"].filter(name => {
 					return hs.some(card => {
 						const vcard = get.autoViewAs({ name: name }, [card]);
 						return event.filterCard(vcard, player, event) && player.hasUseTarget(vcard);
 					});
 				});
-				const dialog = ui.create.dialog("载覆", [list, "vcard"], "hidden");
+				const dialog = ui.create.dialog("覆载", [list, "vcard"], "hidden");
 				dialog.direct = true;
 				return dialog;
 			},
@@ -175,12 +175,12 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 					},
-					position: "hs",
+					position: "he",
 					filterCard(card, player) {
 						return get.type(card) == "equip";
 					},
 					async precontent(event, trigger, player) {
-						event.result.skill = "olzaifu";
+						event.result.skill = "olfuzai";
 					},
 				};
 			},
@@ -192,14 +192,14 @@ const skills = {
 			if (!["jiedao", "wuzhong"].includes(name)) {
 				return false;
 			}
-			return player.countCards("hs", card => get.type(card) == "equip") > 0;
+			return player.countCards("he", card => get.type(card) == "equip") > 0;
 		},
 		mod: {
 			cardEnabled(card, player) {
 				if (["jiedao", "wuzhong"].includes(get.name(card))) {
 					return;
 				}
-				const hs = player.getCards("hs", card => get.type(card) == "equip");
+				const hs = player.getCards("he", card => get.type(card) == "equip");
 				if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
 					return false;
 				}
@@ -208,7 +208,7 @@ const skills = {
 				if (["jiedao", "wuzhong"].includes(get.name(card))) {
 					return;
 				}
-				const hs = player.getCards("hs", card => get.type(card) == "equip");
+				const hs = player.getCards("he", card => get.type(card) == "equip");
 				if ("cards" in card && Array.isArray(card.cards) && card.cards.containsSome(...hs)) {
 					return false;
 				}
@@ -228,7 +228,7 @@ const skills = {
 			player.removeAdditionalSkill(skill);
 			player.setStorage(skill, null, true);
 		},
-		group: "olzaifu_equip",
+		group: "olfuzai_equip",
 		subSkill: {
 			equip: {
 				trigger: {
@@ -237,14 +237,14 @@ const skills = {
 				},
 				filter(event, player) {
 					if (player.countCards("e")) {
-						return player.getStorage("olzaifu").length;
+						return player.getStorage("olfuzai").length;
 					}
 					if (event.name == "phase" && game.phaseNumber !== 0) {
 						return false;
 					}
 					if (event.name.indexOf("Equip") > 0) {
 						if (event.name == "disableEquip") {
-							return player.getStorage("olzaifu").some(name => {
+							return player.getStorage("olfuzai").some(name => {
 								const slot = get.subtype(name);
 								return event.slots.includes(slot) && !player.hasEmptySlot(slot);
 							});
@@ -253,25 +253,25 @@ const skills = {
 							if (!event.slots.includes(slot) || !player.hasEmptySlot(slot)) {
 								return false;
 							}
-							return !player.getStorage("olzaifu").some(name => get.subtype(name) == slot);
+							return !player.getStorage("olfuzai").some(name => get.subtype(name) == slot);
 						});
 					}
-					if (event.name != "changeHp" && player.getStorage("olzaifu").length) {
+					if (event.name != "changeHp" && player.getStorage("olfuzai").length) {
 						return false;
 					}
 					return player.hasEmptySlot(1) || player.hasEmptySlot(2);
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					if (player.getStorage("olzaifu").length) {
+					if (player.getStorage("olfuzai").length) {
 						let list = [];
 						if (trigger.name == "disableEquip") {
-							list = player.getStorage("olzaifu").filter(name => {
+							list = player.getStorage("olfuzai").filter(name => {
 								return player.hasEmptySlot(get.subtype(name));
 							});
 						}
 						if (list.length) {
-							player.setStorage("olzaifu", list, true);
+							player.setStorage("olfuzai", list, true);
 							const skills = [];
 							for (const name of list) {
 								const info = lib.card[name];
@@ -280,13 +280,13 @@ const skills = {
 								}
 							}
 							if (skills.length) {
-								player.addAdditionalSkill("olzaifu", skills);
+								player.addAdditionalSkill("olfuzai", skills);
 							}
-							player.addTip("olzaifu", list.map(name => `载覆 ${get.translation(name)}`).join("\n"));
+							player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 						} else {
-							player.setStorage("olzaifu", [], true);
-							player.removeAdditionalSkill("olzaifu");
-							player.removeTip("olzaifu");
+							player.setStorage("olfuzai", [], true);
+							player.removeAdditionalSkill("olfuzai");
+							player.removeTip("olfuzai");
 						}
 					}
 					if (player.countCards("e")) {
@@ -297,7 +297,7 @@ const skills = {
 						if (!player.hasEmptySlot(slot)) {
 							return false;
 						}
-						return player.getStorage("olzaifu").every(name => get.subtype(name) != slot);
+						return player.getStorage("olfuzai").every(name => get.subtype(name) != slot);
 					};
 					if (check("equip1")) {
 						const equip1 = lib.inpile
@@ -339,10 +339,23 @@ const skills = {
 						}
 					}
 					if (skills.length) {
-						player.addAdditionalSkill("olzaifu", skills);
+						player.addAdditionalSkill("olfuzai", skills);
 					}
-					player.setStorage("olzaifu", cards, true);
-					player.addTip("olzaifu", cards.map(name => `载覆 ${get.translation(name)}`).join("\n"));
+					player.setStorage("olfuzai", cards, true);
+					player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
+				},
+				mod: {
+					attackRange(player, num) {
+						const equips = player.getStorage("olfuzai");
+						let range = 0;
+						for (const card of equips) {
+							const info = lib.card[card];
+							if (info?.distance?.attackFrom) {
+								range -= info.distance.attackFrom;
+							}
+						}
+						return num + range;
+					},
 				},
 			},
 		},

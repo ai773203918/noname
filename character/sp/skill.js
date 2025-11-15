@@ -18,7 +18,7 @@ const skills = {
 		viewAs: {
 			name: "sha",
 			storage: {
-				olquwu: true,
+				olqiwu: true,
 			},
 			suit: "none",
 			number: null,

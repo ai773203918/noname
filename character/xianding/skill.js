@@ -3003,7 +3003,7 @@ const skills = {
 				if (!storage) {
 					return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，此牌视为无距离次数限制的火【杀】并摸一张牌（你可额外摸一张牌并令此技能本阶段失效）。`;
 				}
-				return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，此颜色的牌不计入手牌上限并横置一名角色（你可额外横置一名角色并令此技能本阶段失效）。`;
+				return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，令你此颜色的手牌不计入手牌上限并横置一名角色（你可额外横置一名角色并令此技能本阶段失效）。`;
 			},
 		},
 		trigger: {
@@ -3045,7 +3045,10 @@ const skills = {
 			} else {
 				const skill = `${name}_limit`;
 				player.addSkill(skill);
-				player.markAuto(skill, get.color(cards[0]));
+				const cards2 = player.getCards("h", card => get.color(card) == get.color(cards[0]) && !card.hasGaintag(skill));
+				if (cards2.length) {
+					player.addGaintag(cards2, skill);
+				}
 				const targets = game.filterPlayer(current => !current.isLinked());
 				if (!targets?.length) {
 					return;
@@ -3107,8 +3110,6 @@ const skills = {
 						}
 					},
 				},
-				forced: true,
-				popup: false,
 				charlotte: true,
 				firstDo: true,
 				trigger: {
@@ -3127,7 +3128,7 @@ const skills = {
 						})
 					);
 				},
-				async content(event, trigger, player) {
+				async cost(event, trigger, player) {
 					trigger.addCount = false;
 					const stat = player.getStat().card,
 						name = trigger.card.name;
@@ -3138,18 +3139,17 @@ const skills = {
 				},
 			},
 			limit: {
+				name: "<span style='text-shadow:rgba(0, 183, 255, 1) 0 0 2px, rgba(0, 183, 255, 1) 0 0 2px, rgba(0, 183, 255, 1) 0 0 2px, rgba(0, 183, 255, 1) 0 0 2px, black 0 0 1px'>隽谋</span>",
 				onremove: true,
 				charlotte: true,
 				mod: {
 					ignoredHandcard(card, player) {
-						const colors = player.getStorage("dcsbjunmou_limit");
-						if (colors.includes(get.color(card))) {
+						if (card.hasGaintag("dcsbjunmou_limit")) {
 							return true;
 						}
 					},
 					cardDiscardable(card, player, name) {
-						const colors = player.getStorage("dcsbjunmou_limit");
-						if (name === "phaseDiscard" && colors.includes(get.color(card))) {
+						if (name === "phaseDiscard" && card.hasGaintag("dcsbjunmou_limit")) {
 							return false;
 						}
 					},
