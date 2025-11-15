@@ -609,7 +609,7 @@ const skills = {
 	olquanyu: {
 		audio: 2,
 		map: {
-			olquanyu_baihong: "白虹：基础伤害改为2",
+			olquanyu_baihong: "白虹：伤害+1",
 			olquanyu_qingmin: "青冥：多指定一个目标",
 			olquanyu_bixie: "辟邪：无视防具",
 			olquanyu_zidian: "紫电：不可响应",
@@ -672,6 +672,14 @@ const skills = {
 			const map = get.info(event.name).map;
 			const list = Object.keys(map);
 			const result = await game.chooseAnyOL(targets.filter(target => target.getStorage(name).length < 6).sortBySeat(), get.info(event.name).chooseButton, [list, map]).forResult();
+			let num = 0,
+				me;
+			if (result.has(player)) {
+				const resultx = result.get(player);
+				if (resultx?.links?.length) {
+					me = resultx.links[0];
+				}
+			}
 			for (const [target, resultx] of result.entries()) {
 				if (resultx?.links?.length) {
 					const {
@@ -681,6 +689,9 @@ const skills = {
 					target.setStorage(event.name, link);
 					target.markSkill(event.name);
 					target.popup(map[link].slice(0, 2));
+					if (link == me) {
+						num++;
+					}
 					target
 						.when("roundStart")
 						.filter(evt => evt != trigger)
@@ -690,21 +701,25 @@ const skills = {
 						});
 				}
 			}
+			if (num > 0) {
+				await player.draw(num);
+			}
 		},
 		group: "olquanyu_effect",
 		subSkill: {
 			effect: {
-				trigger: { player: "useCard" },
+				trigger: { player: "useCardToPlayer" },
 				filter(event, player) {
-					if (event.card.name != "sha") {
+					if (event.card.name != "sha" || event.targets?.length != 1) {
 						return false;
 					}
 					return player.storage.olquanyu?.length;
 				},
 				actionMap: {
 					olquanyu_baihong: async (trigger, player) => {
-						trigger.baseDamage = 2;
-						game.log(trigger.card, "基础伤害改为2");
+						trigger.baseDamage ??= 1;
+						trigger.baseDamage++;
+						game.log(trigger.card, "基础伤害+1");
 					},
 					olquanyu_qingmin: async (trigger, player) => {
 						const check = (card, player, target) => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
@@ -749,7 +764,7 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const map = get.info(event.name).actionMap;
-					await map[player.storage.olquanyu](trigger, player);
+					await map[player.storage.olquanyu](trigger.getParent(), player);
 				},
 				mod: {
 					cardUsable(card, player, num) {
@@ -791,22 +806,39 @@ const skills = {
 			player.markAuto(`${event.name}_used`, bool);
 			if (!bool) {
 				await target.randomDiscard().set("discarder", player);
-				player.logSkill("olquanyu", target);
-				const next = game.createEvent("olquanyu");
-				next.set("player", player);
-				next.set("targets", [target]);
-				next.setContent(get.info("olquanyu").content);
-				await next;
+				const result = {
+					skill: "olquanyu",
+					targets: [target],
+				};
+				await player.useResult(result, event);
 			} else {
 				const card = get.cardPile2("sha");
 				if (card) {
-					await player.gain(card, "gain2");
+					player.addSkill("oltianen_effect");
+					const next = player.gain(card, "gain2");
+					next.gaintag.add("oltianen");
+					await next;
 				} else {
 					player.chat("我的王之力啊！");
 				}
 			}
 		},
 		subSkill: {
+			effect: {
+				charlotte: true,
+				mod: {
+					ignoredHandcard(card, player) {
+						if (card.hasGaintag("oltianen")) {
+							return true;
+						}
+					},
+					cardDiscardable(card, player, name) {
+						if (name == "phaseDiscard" && card.hasGaintag("oltianen")) {
+							return false;
+						}
+					},
+				},
+			},
 			used: {
 				charlotte: true,
 				onremove: true,
@@ -841,7 +873,10 @@ const skills = {
 					const choices = trigger.targets[0].getStorage("olquanyu_record");
 					const map = get.info("olquanyu").map;
 					const list = Object.keys(map);
-					const result = await player
+					const result = true ? {
+						bool: true,
+						links: choices,
+					} : await player
 						.chooseButton(
 							[
 								`乾纲：请选择要额外执行的“权御”效果`,

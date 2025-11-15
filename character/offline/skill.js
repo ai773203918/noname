@@ -203,10 +203,11 @@ const skills = {
 			return event.cards.filterInD("he").reduce((sum, card) => sum + player.getUseValue(card), -10) > 0;
 		},
 		async content(event, trigger, player) {
-			if (trigger.name !== "damage") {
-				await player.loseHp();
+			if (trigger.name == "damage") {
+				trigger.cancel();
 				return;
 			}
+			await player.loseHp();
 			if (trigger.cards.everyInD("he")) {
 				trigger.cancel();
 			} else {
