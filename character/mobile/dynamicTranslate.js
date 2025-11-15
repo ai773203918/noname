@@ -1,6 +1,20 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	mbweizhuang(player, skill) {
+		if (!player) {
+			return lib.translate[`${skill}_info`];
+		}
+		if (get.nameList(player).includes("mb_cuilingyi")) {
+			const skin = player.skin[player.name2 === "mb_cuilingyi" ? "name2" : "name"],
+				index = lib.characterSubstitute["mb_cuilingyi"].map(i =>i[0]).indexOf(skin);
+			if (index >= 0) {
+				const trueSkill = `${skill}_${skin.slice(13, -1)}x`;
+				return get.skillInfoTranslation(trueSkill, player, false);
+			}
+		}
+		return "这衣服，岂是你配穿的？";
+	},
 	mbfozong(player) {
 		const list = player.getStorage("mbfozong");
 		if (!list?.length) {

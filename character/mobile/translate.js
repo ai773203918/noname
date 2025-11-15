@@ -1195,6 +1195,22 @@ const translates = {
 	})}并令其他角色投票，得票最多的${get.poptip("bingfa_lvfa")}于本轮结束时执行。`,
 	mbshuxing: "束刑",
 	mbshuxing_info: "每回合限一次，一名角色成为【杀】的目标时，你可令此【杀】无效并展示手牌，若其中有【闪】，你令使用者选择一项：1.失去1点体力；2.交给你其手牌中【闪】和〖秉法〗的投票权。",
+	mb_cuilingyi: "手杀崔令仪",
+	mb_cuilingyi_ab: "手杀崔芙",
+	mb_cuilingyi_prefix: "手杀",
+	mbcaiqiu: "裁裘",
+	mbcaiqiu_info: "①每轮开始时，你观看牌堆顶X张牌（X为游戏人数），然后可以获得其中任意张牌。②其他角色使用牌结算结束后，若你本轮因〖裁裘〗获得过同名牌，你失去1点体力。",
+	mbxishang: "袭裳",
+	mbxishang_info: `锁定技，①游戏开始时，你选择本局形象并获得${get.poptip("mbweizhuang")}。②你不因摸牌而获得牌时，明置之。`,
+	faceup_tag: "明置牌",
+	mbweizhuang: "褽装",
+	mbweizhuang_info: `此技能效果根据你的形象发生变化：${get.poptip("mbweizhuang_guidianx")}${get.poptip("mbweizhuang_dongjiaox")}${get.poptip("mbweizhuang_xiugex")}。`,
+	mbweizhuang_guidianx: "桂殿",
+	mbweizhuang_guidianx_info: `①有明置牌的角色的结束阶段，你可令以下一个数值-1并发动${get.poptip("mbcaiqiu")}：1.摸牌阶段摸牌数；2.出【杀】次数；3.手牌上限；4.体力值。②每局游戏限X+1次，每X+1张牌被明置后，你令以上一项数值+1（X为游戏人数）。`,
+	mbweizhuang_dongjiaox: "东郊",
+	mbweizhuang_dongjiaox_info: `若你的明置牌包含类型数不小于：1，你使用基本牌数值+1；2，你使用锦囊牌指定目标后，可以获得其中一个目标一张牌；3，每回合每名角色限一次，你使用装备牌结算结束后，可以令一名有明置牌的角色摸两张牌。`,
+	mbweizhuang_xiugex: "绣阁",
+	mbweizhuang_xiugex_info: `①每回合每项各限一次，你可以弃置一张指定副类别的牌并视为使用一张无次数限制的对应牌，此牌结算结束后获得一张与弃置牌花色相同的牌：1.武器牌，【杀】；2.防具牌，【闪】；3.防御坐骑牌，【桃】；4.进攻坐骑牌，【酒】。②若你的明置牌包含四种花色，将此技能的“弃置”改为“展示”。`,
 };
 
 export default translates;

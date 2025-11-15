@@ -1,4 +1,11 @@
 const characters = {
+	mb_cuilingyi: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["mbcaiqiu", "mbxishang"],
+		names: "崔|null",
+	},
 	mb_luyu: {
 		sex: "male",
 		group: "wei",
