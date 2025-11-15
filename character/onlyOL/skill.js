@@ -302,7 +302,7 @@ const skills = {
 					if (check("equip1")) {
 						const equip1 = lib.inpile
 							.filter(name => get.subtype(name) == "equip1")
-							.concat(["qibaodao"])
+							.concat(["qibaodao", "baipidao"])
 							.randomSort();
 						let card = equip1.find(name => {
 							const info = lib.card[name];
