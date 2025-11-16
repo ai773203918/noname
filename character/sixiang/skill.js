@@ -640,7 +640,7 @@ const skills = {
 					},
 					ai1(button) {
 						const player = get.player();
-						if (!game.hasPlayer(current => player != current && get.attitude(player, target) > 0)) {
+						if (!game.hasPlayer(current => player != current && get.attitude(player, current) > 0)) {
 							return button.links.length;
 						}
 						return 1 / button.links.length;

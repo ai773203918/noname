@@ -12955,9 +12955,7 @@ const skills = {
 	},
 	dcsbhoude: {
 		audio: 2,
-		trigger: {
-			target: "useCardToTargeted",
-		},
+		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			const phaseUse = event.getParent("phaseUse");
 			if (!phaseUse || phaseUse.name !== "phaseUse" || phaseUse.player === player) {
@@ -12999,7 +12997,8 @@ const skills = {
 					.forResult();
 			} else {
 				result = await player
-					.choosePlayerCard(`###${get.prompt(event.skill, target)}###<div class="text center">弃置其的一张牌，令${get.translation(trigger.card)}对你无效。</div>`, target, "he")
+					.discardPlayerCard(`###${get.prompt(event.skill, target)}###<div class="text center">弃置其的一张牌，令${get.translation(trigger.card)}对你无效。</div>`, target, "he")
+					.set("chooseonly", true)
 					.set("ai", button => {
 						if (!get.event("goon")) {
 							return 0;
@@ -13013,7 +13012,7 @@ const skills = {
 					.set("goon", get.effect(player, trigger.card, target, player) < 0)
 					.forResult();
 			}
-			if (result.bool) {
+			if (result?.bool) {
 				event.result = {
 					bool: true,
 					cost_data: {
@@ -13027,7 +13026,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.player;
 			const result = event.cost_data;
-			if (result.links && result.links.length) {
+			if (result.links?.length) {
 				await target.discard(result.links, "notBySelf").set("discarder", player);
 			} else {
 				await player.discard(result.cards);

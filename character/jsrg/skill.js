@@ -11577,21 +11577,18 @@ const skills = {
 		filter(event, player) {
 			return game.hasPlayer(current => current.countCards("he"));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var prompt2 = get.translation(player) + "（你）的" + (trigger.judgestr || "") + "判定为" + get.translation(player.judging[0]) + "，" + "是否令至多两名角色依次弃置一张牌，然后选择其中一张作为新判定牌？";
-			player
-				.chooseTarget(get.prompt("jsrgxundao"), prompt2, [1, 2], (card, player, target) => {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `${get.translation(player)}（你）的${trigger.judgestr || ""}判定为${get.translation(player.judging[0])}，是否令至多两名角色依次弃置一张牌，然后选择其中一张作为新判定牌？`, [1, 2], (card, player, target) => {
 					return target.countCards("he");
 				})
 				.set("ai", target => {
-					var player = _status.event.player;
-					if (!_status.event.todiscard) {
+					const { player, todiscard } = get.event();
+					if (!todiscard) {
 						return 0;
 					}
-					if (_status.event.todiscard != "all") {
-						if (target == _status.event.todiscard) {
+					if (todiscard != "all") {
+						if (target == todiscard) {
 							return 100;
 						}
 					}
@@ -11599,7 +11596,7 @@ const skills = {
 				})
 				.set(
 					"todiscard",
-					(function () {
+					(() => {
 						if (trigger.judgestr == "闪电" && get.damageEffect(player, null, player, "thunder") >= 0) {
 							return "all";
 						}
@@ -11621,59 +11618,54 @@ const skills = {
 						}
 						return "all";
 					})()
-				);
-			"step 1";
-			if (result.bool) {
-				var targets = result.targets;
-				targets.sortBySeat(_status.currentPhase);
-				event.targets = targets;
-				player.logSkill("jsrgxundao", targets);
-				event.cards = [];
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var target = targets.shift();
-			target.chooseToDiscard("寻道：请弃置一张牌" + (target == player ? "" : "，可能被作为新判定牌"), "he", true).set("ai", card => {
-				var trigger = _status.event.getTrigger();
-				var player = _status.event.player;
-				var judging = _status.event.judging;
-				var result = trigger.judge(card) - trigger.judge(judging);
-				var attitude = get.attitude(player, trigger.player);
-				if (attitude == 0 || result == 0) {
-					return 0.1;
+				)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			let cards = [];
+			for (const target of event.targets.sortBySeat(_status.currentPhase)) {
+				if (!target.countDiscardableCards(target, "he")) {
+					continue;
 				}
-				if (attitude > 0) {
-					return result + 0.01;
-				} else {
-					return 0.01 - result;
+				const { result } = await target
+					.chooseToDiscard(`寻道：请弃置一张牌${target == player ? "" : "，可能被作为新判定牌"}`, "he", true)
+					.set("ai", card => {
+						const trigger = get.event().getTrigger();
+						const { player, judging } = get.event();
+						const result = trigger.judge(card) - trigger.judge(judging);
+						const attitude = get.attitude(player, trigger.player);
+						if (attitude == 0 || result == 0) {
+							return 0.1;
+						}
+						if (attitude > 0) {
+							return result + 0.01;
+						} else {
+							return 0.01 - result;
+						}
+					})
+					.set("judging", player.judging[0]);
+				if (result?.cards?.length) {
+					cards.addArray(result.cards);
 				}
-			});
-			"step 3";
-			if (result.bool) {
-				event.cards.addArray(result.cards);
 			}
-			if (targets.length) {
-				event.goto(2);
+			cards = cards.filterInD("d");
+			if (!cards.length) {
+				return;
 			}
-			"step 4";
-			var cards = event.cards.filterInD("d");
-			if (cards.length) {
-				player.chooseButton(["寻道：选择一张作为新判定牌", cards], true).set("ai", button => {
-					return trigger.judge(button.link);
-				});
-			} else {
-				event.finish();
+			const result =
+				cards.length == 1
+					? { bool: true, links: cards }
+					: await player
+							.chooseButton(["寻道：选择一张作为新判定牌", cards], true)
+							.set("ai", button => {
+								return get.event().getTrigger().judge(button.link);
+							})
+							.forResult();
+			if (!result?.links?.length) {
+				return;
 			}
-			"step 5";
-			if (result.bool) {
-				var card = result.links[0];
-				event.card = card;
-				game.cardsGotoOrdering(card).relatedEvent = trigger;
-			} else {
-				event.finish();
-			}
-			"step 6";
+			const [card] = result.links;
+			await game.cardsGotoOrdering(card).set("relatedEvent", trigger);
 			if (player.judging[0].clone) {
 				game.broadcastAll(
 					function (card, card2, player) {
@@ -11690,17 +11682,15 @@ const skills = {
 				);
 				game.addVideo("deletenode", player, get.cardsInfo([player.judging[0].clone]));
 			}
-			game.cardsDiscard(player.judging[0]);
+			await game.cardsDiscard(player.judging[0]);
 			player.judging[0] = card;
 			trigger.orderingCards.add(card);
 			game.log(player, "的判定牌改为", card);
-			game.delay(2);
+			await game.delay(2);
 		},
 		ai: {
 			rejudge: true,
-			tag: {
-				rejudge: 1,
-			},
+			tag: {	rejudge: 1},
 		},
 	},
 	jsrglinghua: {
@@ -11738,45 +11728,46 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var next = (event.executeDelayCardEffect = player.executeDelayCardEffect("shandian"));
-			if (event.triggername != "phaseJieshuBegin") {
-				return;
+		async content(event, trigger, player) {
+			const next = player.executeDelayCardEffect("shandian");
+			if (trigger.name == "phaseJieshu") {
+				next.judge = card => -lib.card.shandian.judge(card) - 4;
+				next.judge2 = result => !lib.card.shandian.judge2(result);
 			}
-			next.judge = card => -lib.card.shandian.judge(card) - 4;
-			next.judge2 = result => !lib.card.shandian.judge2(result);
-			"step 1";
-			var executeDelayCardEffect = event.executeDelayCardEffect;
-			if (!player.hasHistory("damage", evt => evt.getParent(2) == executeDelayCardEffect)) {
-				if (trigger.name == "phaseZhunbei") {
-					player.chooseTarget("灵化：是否令一名角色回复1点体力？").set("ai", target => {
-						var player = _status.event.player;
-						return get.recoverEffect(target, player, player);
-					});
-				} else {
-					player.chooseTarget("灵化：是否对一名角色造成1点雷电伤害？").set("ai", target => {
-						var player = _status.event.player;
-						return get.damageEffect(target, player, player, "thunder");
-					});
+			await next;
+			if (!player.hasHistory("damage", evt => evt.getParent(2) == next)) {
+				let result;
+				if (trigger.name == "phaseJieshu") {
+					result = await player
+						.chooseTarget("灵化：是否对一名角色造成1点雷电伤害？")
+						.set("ai", target => {
+							const player = get.player();
+							return get.damageEffect(target, player, player, "thunder");
+						})
+						.forResult();
+				} else if (game.hasPlayer(current => current.isDamaged())) {
+					result = await player
+						.chooseTarget("灵化：是否令一名角色回复1点体力？", (card, player, target) => {
+							return target.isDamaged();
+						})
+						.set("ai", target => {
+							const player = get.player();
+							return get.recoverEffect(target, player, player);
+						})
+						.forResult();
 				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target);
-				if (trigger.name == "phaseZhunbei") {
-					target.recover();
-				} else {
-					target.damage("thunder");
+				if (result?.targets?.length) {
+					const [target] = result.targets;
+					player.line(target);
+					if (trigger.name == "phaseZhunbei") {
+						await target.recover();
+					} else {
+						await target.damage("thunder");
+					}
 				}
 			}
 		},
-		ai: {
-			threaten: 2.8,
-		},
+		ai: { threaten: 2.8 },
 	},
 	//江山如故·兴
 	//贾南风
