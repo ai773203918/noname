@@ -9017,10 +9017,8 @@ const skills = {
 					game.broadcastAll(() => (_status.noclearcountdown = true));
 				}
 				let given_map = [];
-				while (togive.length) {
-					const {
-						result: { bool, cards, targets },
-					} = await player.chooseCardTarget({
+				while (togive.length && game.hasPlayer(current => current != player) && player.hasCard(card => !card.hasGaintag("olsujian_given"), "h")) {
+					const { result } = await player.chooseCardTarget({
 						forced: true,
 						filterCard(card, player) {
 							return get.event("togive").includes(card) && !card.hasGaintag("olsujian_given");
@@ -9041,10 +9039,14 @@ const skills = {
 							return 0;
 						},
 						togive: togive,
+						allowChooseAll: true,
 					});
-					if (bool) {
+					if (result?.cards?.length && result.targets?.length) {
+						const {
+							cards,
+							targets: [target],
+						} = result;
 						togive.removeArray(cards);
-						const target = targets[0];
 						if (given_map.some(i => i[0] == target)) {
 							given_map[given_map.indexOf(given_map.find(i => i[0] == target))][1].addArray(cards);
 						} else {

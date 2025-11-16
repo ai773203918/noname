@@ -8645,11 +8645,11 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "hes", function (card) {
-					if (get.color(card) != "black") {
+				.chooseCard(`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`, "hes", card => {
+					const player = get.player();
+					if (get.color(card) !== "black") {
 						return false;
 					}
-					const player = _status.event.player;
 					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
 						return mod2;
@@ -8660,11 +8660,10 @@ const skills = {
 					}
 					return true;
 				})
-				.set("ai", function (card) {
-					const trigger = _status.event.getTrigger();
-					const player = _status.event.player;
-					const judging = _status.event.judging;
-					let result = trigger.judge(card) - trigger.judge(judging);
+				.set("ai", card => {
+					const trigger = get.event().getTrigger();
+					const { player, judging } = get.event();
+					const result = trigger.judge(card) - trigger.judge(judging);
 					const attitude = get.attitude(player, trigger.player);
 					let val = get.value(card);
 					if (get.subtype(card) == "equip2") {
@@ -8683,20 +8682,21 @@ const skills = {
 				.set("judging", trigger.player.judging[0])
 				.forResult();
 		},
+		popup: false,
 		async content(event, trigger, player) {
-			await player.respond(event.cards, "highlight", "guidao", "noOrdering");
-			player.$gain2(trigger.player.judging[0]);
-			await player.gain(trigger.player.judging[0]);
-			trigger.player.judging[0] = event.cards[0];
-			trigger.orderingCards.addArray(event.cards);
-			game.log(trigger.player, "的判定牌改为", event.cards[0]);
-			await game.delay(2);
+			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			if (cards?.length) {
+				player.$gain2(trigger.player.judging[0]);
+				await player.gain(trigger.player.judging[0]);
+				trigger.player.judging[0] = cards[0];
+				trigger.orderingCards.addArray(cards);
+				game.log(trigger.player, "的判定牌改为", cards);
+				await game.delay(2);
+			}
 		},
 		ai: {
 			rejudge: true,
-			tag: {
-				rejudge: 1,
-			},
+			tag: { rejudge: 1 },
 		},
 	},
 	// 蛊惑（guhuo）技能错误，请勿引用

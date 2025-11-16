@@ -4850,11 +4850,9 @@ const skills = {
 						return player.countCards("hs");
 					},
 					async cost(event, trigger, player) {
-						const {
-							result: { bool, cards },
-						} = await player
-							.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "hs", card => {
-								const player = _status.event.player;
+						event.result = await player
+							.chooseCard(`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`, "hs", card => {
+								const player = get.player();
 								const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 								if (mod2 != "unchanged") {
 									return mod2;
@@ -4866,9 +4864,8 @@ const skills = {
 								return true;
 							})
 							.set("ai", card => {
-								const trigger = _status.event.getTrigger();
-								const player = _status.event.player;
-								const judging = _status.event.judging;
+								const trigger = get.event().getTrigger();
+								const { player, judging } = get.event();
 								const result = trigger.judge(card) - trigger.judge(judging);
 								const attitude = get.attitude(player, trigger.player);
 								if (attitude == 0 || result == 0) {
@@ -4880,31 +4877,30 @@ const skills = {
 									return -result - get.value(card) / 2;
 								}
 							})
-							.set("judging", trigger.player.judging[0]);
-						if (bool) {
-							event.result = { bool, cost_data: { cards } };
-						}
+							.set("judging", trigger.player.judging[0])
+							.forResult();
 					},
 					popup: false,
 					async content(event, trigger, player) {
-						const chooseCardResultCards = event.cost_data.cards;
 						lib.skill.olhedao.tianshuClear(event.name, player);
-						await player.respond(chooseCardResultCards, event.name, "highlight", "noOrdering");
-						if (trigger.player.judging[0].clone) {
-							trigger.player.judging[0].clone.classList.remove("thrownhighlight");
-							game.broadcast(card => {
-								if (card.clone) {
-									card.clone.classList.remove("thrownhighlight");
-								}
-							}, trigger.player.judging[0]);
-							game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+						const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+						if (cards?.length) {
+							if (trigger.player.judging[0].clone) {
+								trigger.player.judging[0].clone.classList.remove("thrownhighlight");
+								game.broadcast(card => {
+									if (card.clone) {
+										card.clone.classList.remove("thrownhighlight");
+									}
+								}, trigger.player.judging[0]);
+								game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
+							}
+							player.$gain2(trigger.player.judging);
+							await player.gain(trigger.player.judging);
+							trigger.player.judging[0] = cards[0];
+							trigger.orderingCards.addArray(cards);
+							game.log(trigger.player, "的判定牌改为", cards);
+							await game.delay(2);
 						}
-						player.$gain2(trigger.player.judging);
-						await player.gain(trigger.player.judging);
-						trigger.player.judging[0] = chooseCardResultCards[0];
-						trigger.orderingCards.addArray(chooseCardResultCards);
-						game.log(trigger.player, "的判定牌改为", chooseCardResultCards[0]);
-						await game.delay(2);
 					},
 					ai: {
 						rejudge: true,
@@ -28118,34 +28114,29 @@ const skills = {
 	},
 	huanshi_three: {
 		audio: "huanshi",
-		trigger: {
-			global: "judge",
-		},
+		trigger: { global: "judge" },
 		filter(event, player) {
 			return player.countCards("hes") > 0 && player.side == event.player.side;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("huanshi_three"), "hes", function (card) {
-					var player = _status.event.player;
-					var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`, "hes", card => {
+					const player = get.player();
+					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
 						return mod2;
 					}
-					var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+					const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
 					if (mod != "unchanged") {
 						return mod;
 					}
 					return true;
 				})
-				.set("ai", function (card) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					var judging = _status.event.judging;
-					var result = trigger.judge(card) - trigger.judge(judging);
-					var attitude = get.attitude(player, trigger.player);
+				.set("ai", card => {
+					const trigger = get.event().getTrigger();
+					const { player, judging } = get.event();
+					const result = trigger.judge(card) - trigger.judge(judging);
+					const attitude = get.attitude(player, trigger.player);
 					if (attitude == 0 || result == 0) {
 						return 0;
 					}
@@ -28155,15 +28146,13 @@ const skills = {
 						return -result - get.value(card) / 2;
 					}
 				})
-				.set("judging", trigger.player.judging[0]);
-			"step 1";
-			if (result.bool) {
-				player.respond(result.cards, "highlight", "huanshi_three", "noOrdering");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
+				.set("judging", trigger.player.judging[0])
+				.forResult();
+		},
+		popup: false,
+		async content(event, trigger, player) {
+			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			if (cards?.length) {
 				if (trigger.player.judging[0].clone) {
 					trigger.player.judging[0].clone.classList.remove("thrownhighlight");
 					game.broadcast(function (card) {
@@ -28173,18 +28162,16 @@ const skills = {
 					}, trigger.player.judging[0]);
 					game.addVideo("deletenode", player, get.cardsInfo([trigger.player.judging[0].clone]));
 				}
-				game.cardsDiscard(trigger.player.judging[0]);
-				trigger.player.judging[0] = result.cards[0];
-				trigger.orderingCards.addArray(result.cards);
-				game.log(trigger.player, "的判定牌改为", result.cards[0]);
-				game.delay(2);
+				await game.cardsDiscard(trigger.player.judging[0]);
+				trigger.player.judging[0] = cards[0];
+				trigger.orderingCards.addArray(cards);
+				game.log(trigger.player, "的判定牌改为", cards);
+				await game.delay(2);
 			}
 		},
 		ai: {
 			rejudge: true,
-			tag: {
-				rejudge: 1,
-			},
+			tag: { rejudge: 1 },
 		},
 	},
 	//变权移植

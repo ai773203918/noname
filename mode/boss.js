@@ -8153,48 +8153,55 @@ export default () => {
 			tiandao: {
 				audio: true,
 				trigger: { global: "judge" },
-				direct: true,
 				filter(event, player) {
-					return player.countCards("he") > 0;
+					return player.countCards("hes") > 0;
 				},
-				content() {
-					"step 0";
-					player.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt("tiandao"), "he").ai = function (card) {
-						var trigger = _status.event.parent._trigger;
-						var player = _status.event.player;
-						var result = trigger.judge(card) - trigger.judge(trigger.player.judging[0]);
-						var attitude = get.attitude(player, trigger.player);
-						if (attitude == 0 || result == 0) {
-							return 0;
-						}
-						if (attitude > 0) {
-							return result;
-						} else {
-							return -result;
-						}
-					};
-					"step 1";
-					if (result.bool) {
-						player.respond(result.cards, "highlight");
-					} else {
-						event.finish();
-					}
-					"step 2";
-					if (result.bool) {
-						player.logSkill("tiandao");
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseCard(`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`, "hes", card => {
+							const player = get.player();
+							const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
+							if (mod2 != "unchanged") {
+								return mod2;
+							}
+							const mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
+							if (mod != "unchanged") {
+								return mod;
+							}
+							return true;
+						})
+						.set("ai", card => {
+							const trigger = get.event().getTrigger();
+							const { player, judging } = get.event();
+							const result = trigger.judge(card) - trigger.judge(judging);
+							const attitude = get.attitude(player, trigger.player);
+							if (attitude == 0 || result == 0) {
+								return 0;
+							}
+							if (attitude > 0) {
+								return result;
+							} else {
+								return -result;
+							}
+						})
+						.set("judging", trigger.player.judging[0])
+						.forResult();
+				},
+				popup: false,
+				async content(event, trigger, player) {
+					const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+					if (cards?.length) {
 						player.$gain2(trigger.player.judging[0]);
-						player.gain(trigger.player.judging[0]);
-						trigger.player.judging[0] = result.cards[0];
-						trigger.position.appendChild(result.cards[0]);
-						game.log(trigger.player, "的判定牌改为", result.cards[0]);
+						await player.gain(trigger.player.judging[0]);
+						trigger.player.judging[0] = cards[0];
+						trigger.orderingCards.addArray(cards);
+						game.log(trigger.player, "的判定牌改为", cards);
+						await game.delay(2);
 					}
-					"step 3";
-					game.delay(2);
 				},
 				ai: {
-					tag: {
-						rejudge: 1,
-					},
+					rejudge: true,
+					tag: { rejudge: 1 },
 					threaten: 1.5,
 				},
 			},
