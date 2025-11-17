@@ -7175,7 +7175,7 @@ const skills = {
 				}
 				const evtx = event.getParent();
 				if (evtx.name !== "orderingDiscard") {
-					return true;
+					return false;
 				}
 				const evt2 = evtx.relatedEvent || evtx.getParent();
 				return evt2.name == "useCard" && evt2.player != event.getParent("phaseUse")?.player;
