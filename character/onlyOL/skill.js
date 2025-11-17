@@ -233,13 +233,16 @@ const skills = {
 			equip: {
 				trigger: {
 					global: ["phaseBefore", "loseAfter", "loseAsyncAfter", "equipAfter", "addToExpansionAfter", "addJudgeAfter", "gainAfter"],
-					player: ["enterGame", "expandEquipAfter", "disableEquipAfter", "enableEquipAfter", "changeHpAfter"],
+					player: ["enterGame", "expandEquipAfter", "disableEquipAfter", "enableEquipAfter", "changeHpAfter", "changeSkillsAfter"],
 				},
 				filter(event, player) {
 					if (player.countCards("e")) {
 						return player.getStorage("olfuzai").length;
 					}
 					if (event.name == "phase" && game.phaseNumber !== 0) {
+						return false;
+					}
+					if (event.name == "changeSkills" && !event.addSkill?.includes("olfuzai")) {
 						return false;
 					}
 					if (event.name.indexOf("Equip") > 0) {

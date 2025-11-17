@@ -4,7 +4,7 @@ const dynamicTranslates = {
 	dcsbjunmou(player) {
 		const bool = player.storage.dcsbjunmou;
 		let yang = "此牌视为无距离次数限制的火【杀】并摸一张牌（你可额外摸一张牌并令此技能本阶段失效）",
-			yin = "令你此颜色的手牌不计入手牌上限并横置一名角色（你可额外横置一名角色并令此技能本阶段失效）";
+			yin = "令你此颜色的当前手牌不计入手牌上限并可横置一名角色（你可额外横置一名角色并令此技能本阶段失效）";
 		if (bool) {
 			yin = `<span class="bluetext">${yin}</span>`;
 		} else {

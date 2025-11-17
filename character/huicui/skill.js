@@ -11746,9 +11746,9 @@ const skills = {
 				target.addSkill("dcyongbi_eff1");
 			}
 			if (list.length >= 3) {
-				player.addMark("dcyongbi_eff2", 2, false);
+				player.addMark("dcyongbi_eff2", 1, false);
 				player.addSkill("dcyongbi_eff2");
-				target.addMark("dcyongbi_eff2", 2, false);
+				target.addMark("dcyongbi_eff2", 1, false);
 				target.addSkill("dcyongbi_eff2");
 			}
 		},
@@ -14295,7 +14295,7 @@ const skills = {
 		usable: 1,
 		content() {
 			"step 0";
-			player.draw();
+			player.draw(2);
 			"step 1";
 			if (player.countCards("h") > 0 && game.hasPlayer(current => current != player)) {
 				var suits = lib.suit.slice(0),

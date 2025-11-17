@@ -3003,7 +3003,7 @@ const skills = {
 				if (!storage) {
 					return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，此牌视为无距离次数限制的火【杀】并摸一张牌（你可额外摸一张牌并令此技能本阶段失效）。`;
 				}
-				return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，令你此颜色的手牌不计入手牌上限并横置一名角色（你可额外横置一名角色并令此技能本阶段失效）。`;
+				return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，令你此颜色的当前手牌不计入手牌上限并可横置一名角色（你可额外横置一名角色并令此技能本阶段失效）。`;
 			},
 		},
 		trigger: {
@@ -3015,7 +3015,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			let prompt2;
 			if (player.getStorage(event.skill, false)) {
-				prompt2 = "你可选择一张手牌，令此颜色牌不计入手牌上限并横置一名角色";
+				prompt2 = "你可选择一张手牌，令你此颜色的当前手牌不计入手牌上限并可横置一名角色";
 			} else {
 				prompt2 = "你可选择一张手牌，令此牌视为无距离次数限制的火【杀】并摸一张牌";
 			}
@@ -3053,22 +3053,19 @@ const skills = {
 				if (!targets?.length) {
 					return;
 				}
-				const result = targets.length > 1 ? await player
-					.chooseTarget("###隽谋：横置一名角色###你可横置两名角色并令此技能本阶段失效", (card, player, target) => {
+				const result = await player
+					.chooseTarget("###隽谋：是否横置一名角色？###你可横置两名角色并令此技能本阶段失效", (card, player, target) => {
 						if (ui.selected.targets.length) {
 							return 0;
 						}
 						return get.event("isLinked").includes(target);
-					}, [1, 2], true)
+					}, [1, 2])
 					.set("ai", target => {
 						return get.effect(target, { name: "tiesuo" }, get.player(), get.player());
 					})
 					.set("isLinked", targets)
-					.forResult() : {
-						bool: true,
-						targets: targets,
-					}
-				if (result?.targets?.length) {
+					.forResult();
+				if (result?.bool && result?.targets?.length) {
 					player.line(result.targets, "yellow");
 					const func = async target => {
 						await target.link(true);
