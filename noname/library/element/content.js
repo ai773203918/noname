@@ -9662,7 +9662,7 @@ player.removeVirtualEquip(card);
 			//player.using=cards;
 			let cardaudio = true;
 
-			if (event.skill) {
+			if (event.skill && event.addSkillCount !== false) {
 				if (lib.skill[event.skill].audio) {
 					cardaudio = false;
 				}
@@ -10648,7 +10648,7 @@ player.removeVirtualEquip(card);
 		async (event, trigger, player) => {
 			let { cards, card } = event;
 			var cardaudio = true;
-			if (event.skill) {
+			if (event.skill && event.addSkillCount !== false) {
 				if (lib.skill[event.skill].audio) {
 					cardaudio = false;
 				}

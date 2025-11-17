@@ -1278,7 +1278,6 @@ const skills = {
 			},
 			backup: {
 				async precontent(event, trigger, player) {
-					event.result._apply_args = { addSkillCount: false };
 					player.popup(event.result.card.name, "metal");
 					await game.delayx();
 					event.getParent().addCount = false;
@@ -7919,7 +7918,6 @@ const skills = {
 					"step 0";
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
-					event.result._apply_args = { addSkillCount: false };
 					var owner = get.owner(cards[0]);
 					event.target = owner;
 					owner.$give(cards[0], player, false);
