@@ -9557,10 +9557,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			if (player.isHealthy()) {
-				return false;
-			}
-			return true;
+			return player.isDamaged();
 		},
 		async content(event, trigger, player) {
 			let num = player.getDamagedHp();
@@ -9570,10 +9567,8 @@ const skills = {
 					game.broadcastAll(() => (_status.noclearcountdown = true));
 				}
 				let given_map = [];
-				while (num > 0 && player.hasCard(card => !card.hasGaintag("olsujian_given"), "he")) {
-					const {
-						result: { bool, cards, targets },
-					} = await player.chooseCardTarget({
+				while (num > 0 && player.hasCard(card => !card.hasGaintag("olsujian_given"), "he") && game.hasPlayer(current => current != player)) {
+					const { result } = await player.chooseCardTarget({
 						filterCard(card, player) {
 							return !card.hasGaintag("olsujian_given");
 						},
@@ -9593,10 +9588,14 @@ const skills = {
 							}
 							return 0;
 						},
+						allowChooseAll: true,
 					});
-					if (bool) {
+					if (result?.cards?.length && result.targets?.length) {
+						const {
+							cards,
+							targets: [target],
+						} = result;
 						num -= cards.length;
-						const target = targets[0];
 						if (given_map.some(i => i[0] == target)) {
 							given_map[given_map.indexOf(given_map.find(i => i[0] == target))][1].addArray(cards);
 						} else {

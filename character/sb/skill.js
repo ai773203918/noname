@@ -901,10 +901,8 @@ const skills = {
 			if (cardsx.length) {
 				player.directgains(cardsx, null, "sbhuanshi_tag");
 			}
-			let {
-				result: { bool, cards },
-			} = await player
-				.chooseCard(get.translation(trigger.player) + "的" + (trigger.judgestr || "") + "判定为" + get.translation(trigger.player.judging[0]) + "，" + get.prompt(event.skill), "hs", card => {
+			const { result } = await player
+				.chooseCard(`${get.translation(trigger.player)}的${trigger.judgestr || ""}判定为${get.translation(trigger.player.judging[0])}，${get.prompt(event.skill)}`, "hs", card => {
 					const player = _status.event.player;
 					const mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 					if (mod2 != "unchanged") {
@@ -936,46 +934,49 @@ const skills = {
 				})
 				.set("judging", trigger.player.judging[0])
 				.set("pile", cardsx);
-
-			const gain = bool && cards?.[0] && !cards[0].hasGaintag("sbhuanshi_tag");
-			cardsx = player.getCards("s", card => card.hasGaintag("sbhuanshi_tag"));
-			if (cardsx.length) {
-				if (cards) {
-					cards = cards.map(card => {
-						if (cardsx.includes(card)) {
-							return card.preCard;
-						}
-						return card;
-					});
-				}
-				if (player.isOnline2()) {
-					player.send(
-						function (cards, player) {
-							cards.forEach(i => i.delete());
-							if (player == game.me) {
-								ui.updatehl();
+			let cards = [];
+			if (result?.cards?.length) {
+				cards = result.cards;
+				cardsx = player.getCards("s", card => card.hasGaintag("sbhuanshi_tag"));
+				if (cardsx.length) {
+					if (cards) {
+						cards = cards.map(card => {
+							if (cardsx.includes(card)) {
+								return card.preCard;
 							}
-						},
-						cardsx,
-						player
-					);
-				}
-				cardsx.forEach(i => i.delete());
-				if (player == game.me) {
-					ui.updatehl();
+							return card;
+						});
+					}
+					if (player.isOnline2()) {
+						player.send(
+							function (cards, player) {
+								cards.forEach(i => i.delete());
+								if (player == game.me) {
+									ui.updatehl();
+								}
+							},
+							cardsx,
+							player
+						);
+					}
+					cardsx.forEach(i => i.delete());
+					if (player == game.me) {
+						ui.updatehl();
+					}
 				}
 			}
-
 			event.result = {
-				bool: bool,
+				bool: result?.bool,
 				cards: cards,
-				cost_data: gain,
+				cost_data: result?.cards?.length && !result.cards[0].hasGaintag("sbhuanshi_tag"),
 			};
 		},
 		popup: false,
 		async content(event, trigger, player) {
-			const cards = event.cards;
-			await player.respond(cards, "sbhuanshi", "highlight", "noOrdering");
+			const { cards } = await player.respond(event.cards, event.name, "highlight", "noOrdering");
+			if (!cards?.length) {
+				return;
+			}
 			if (trigger.player.judging[0].clone) {
 				trigger.player.judging[0].clone.classList.remove("thrownhighlight");
 				game.broadcast(function (card) {
@@ -1006,9 +1007,7 @@ const skills = {
 		},
 		ai: {
 			rejudge: true,
-			tag: {
-				rejudge: 1,
-			},
+			tag: { rejudge: 1 },
 		},
 	},
 	sbhongyuan: {
