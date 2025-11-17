@@ -38695,6 +38695,7 @@ const skills = {
 				} else {
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(card);
+					evt.result._apply_args = { addSkillCount: false };
 					if (aozhan) {
 						evt.result.card.name = name;
 					}

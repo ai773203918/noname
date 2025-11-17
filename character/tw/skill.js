@@ -1891,7 +1891,7 @@ const skills = {
 		},
 	},
 	//外服谋曹丕
-	twsb_xingshang: {
+	twsbxingshang: {
 		audio: "sbxingshang",
 		trigger: {
 			global: "die",
@@ -1955,7 +1955,6 @@ const skills = {
 									},
 								})
 								.set("allowChooseAll", true)
-								.setHiddenSkill(event.skill)
 						: await player
 								.chooseTarget(prompt2, (card, player, target) => {
 									return target != get.event("source");
@@ -2053,7 +2052,7 @@ const skills = {
 				.setContent("gaincardMultiple");
 		},
 	},
-	twsb_fangzhu: {
+	twsbfangzhu: {
 		audio: "sbfangzhu",
 		trigger: {
 			player: "damageEnd",
@@ -2101,17 +2100,17 @@ const skills = {
 				target.markAuto(skill, [phase]);
 			} else {
 				target.markAuto(skill, [[phase, target.getCards("h")]]);
-				target.addGaintag(target.getCards("h"), "twsb_fangzhu");
+				target.addGaintag(target.getCards("h"), "twsbfangzhu");
 			}
 		},
-		group: "twsb_fangzhu_liufang",
+		group: "twsbfangzhu_liufang",
 		subSkill: {
 			liufang: {
 				trigger: {
 					global: "phaseBegin",
 				},
 				filter(event, player) {
-					if (player.hasSkill("twsb_fangzhu_used")) {
+					if (player.hasSkill("twsbfangzhu_used")) {
 						return false;
 					}
 					return game.countPlayer(() => true) >= 4;
@@ -2139,7 +2138,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0],
 						targetx = target.getNext();;
-					player.addTempSkill("twsb_fangzhu_used", { global: "roundStart" });
+					player.addTempSkill("twsbfangzhu_used", { global: "roundStart" });
 					game.broadcastAll(
 						function (target1, target2) {
 							game.swapSeat(target1, target2);
@@ -2198,7 +2197,7 @@ const skills = {
 				onremove: function (player, skill) {
 					player.removeTip(skill);
 					player.setStorage(skill, []);
-					player.removeGaintag("twsb_fangzhu");
+					player.removeGaintag("twsbfangzhu");
 				},
 				trigger: {
 					player: "phaseEnd",
@@ -2207,7 +2206,7 @@ const skills = {
 					const list = player.getStorage(event.skill);
 					if (list.length && list.some(list => list[0] == trigger)) {
 						player.setStorage(event.skill, list.filter(list => list[0] == trigger));
-						player.removeGaintag("twsb_fangzhu");
+						player.removeGaintag("twsbfangzhu");
 						const cards = [];
 						for (let i of list) {
 							if (i[0] !== trigger) {
@@ -2215,7 +2214,7 @@ const skills = {
 							}
 							cards.addArray(i[1]);
 						}
-						player.addGaintag(cards, "twsb_fangzhu");
+						player.addGaintag(cards, "twsbfangzhu");
 					} else {
 						player.removeSkill(event.skill);
 					}
@@ -2228,7 +2227,7 @@ const skills = {
 							cards.addArray(card.cards);
 						}
 						const blocks = [],
-							list = player.getStorage("twsb_fangzhu_gongsun");
+							list = player.getStorage("twsbfangzhu_gongsun");
 						for (let i of list) {
 							if (Array.isArray(i) && Array.isArray(i[1])) {
 								blocks.addArray(i[1]);
@@ -2244,7 +2243,7 @@ const skills = {
 							cards.addArray(card.cards);
 						}
 						const blocks = [],
-							list = player.getStorage("twsb_fangzhu_gongsun");
+							list = player.getStorage("twsbfangzhu_gongsun");
 						for (let i of list) {
 							if (Array.isArray(i) && Array.isArray(i[1])) {
 								blocks.addArray(i[1]);
@@ -2260,7 +2259,7 @@ const skills = {
 							cards.addArray(card.cards);
 						}
 						const blocks = [],
-							list = player.getStorage("twsb_fangzhu_gongsun");
+							list = player.getStorage("twsbfangzhu_gongsun");
 						for (let i of list) {
 							if (Array.isArray(i) && Array.isArray(i[1])) {
 								blocks.addArray(i[1]);
@@ -2277,7 +2276,6 @@ const skills = {
 	},
 	twyuanbu: {
 		audio: 2,
-		forced: true,
 		mod: {
 			maxHandcard(player, num) {
 				return num + Math.min(4, game.countPlayer(current => current != player));
@@ -2290,7 +2288,7 @@ const skills = {
 			},
 		},
 	},
-	twsb_songwei: {
+	twsbsongwei: {
 		audio: "sbsongwei",
 		trigger: {
 			global: "phaseBegin",
@@ -2309,7 +2307,7 @@ const skills = {
 			if (event.player == player  || event.player.group != "wei") {
 				return false;
 			}
-			const evts = get.info("twsb_songwei").getPhases();
+			const evts = get.info("twsbsongwei").getPhases();
 			return game.countPlayer(current => {
 				return evts.every(evt => evt.player != current);
 			}) > 0;

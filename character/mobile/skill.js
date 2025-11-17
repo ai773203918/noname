@@ -42,6 +42,7 @@ const skills = {
 			const result = await player
 				.chooseButton(["裁裘：是否获得其中任意张牌？", cards], [1, Infinity], "allowChooseAll")
 				.set("ai", button => {
+					const player = get.player();
 					//只要贪不死就往死里贪
 					if (game.countPlayer(() => true) > player.hp && ["sha", "shan"].includes(button.link.name)) {
 						return 0;
@@ -636,6 +637,7 @@ const skills = {
 				popname: true,
 				ignoreMod: true,
 				position: "he",
+				log: false,
 				check(card) {
 					const player = get.player();
 					if (_status.event.type == "phase") {
@@ -658,7 +660,7 @@ const skills = {
 						cards = event.result.cards;
 					player.addTempSkill("mbweizhuang_blocker");
 					player.markAuto("mbweizhuang_blocker", name);
-					delete event.result.skill;
+					//delete event.result.skill;
 					event.getParent().addCount = false;
 					player.logSkill("mbweizhuang_xiuge", null, null, null, [name]);
 					const count = get

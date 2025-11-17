@@ -22933,17 +22933,17 @@ const skills = {
 			const result2 = await player
 				.chooseButton([`是否将${get.translation(result)}当作其中一张使用？`, [list, "vcard"]])
 				.set("filterButton", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().hasUseTarget(card);
 				})
 				.set("resultCard", [card])
 				.set("ai", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().getUseValue(card);
 				})
 				.forResult();
 			if (result2.bool && player.getCards("h").includes(card)) {
-				const cardx = { name: result2.links[0][2], natrue: result2.links[0][3] };
+				const cardx = { name: result2.links[0][2], nature: result2.links[0][3] };
 				game.broadcastAll(function (card) {
 					lib.skill.tyqingkou_backup.viewAs = card;
 					lib.skill.tyqingkou_backup.prompt = `是否将此牌当作${get.translation(card)}使用？`;
@@ -23003,17 +23003,17 @@ const skills = {
 			const result2 = await player
 				.chooseButton([`是否将${get.translation(result)}当作其中一张使用？`, [list, "vcard"]])
 				.set("filterButton", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().hasUseTarget(card);
 				})
 				.set("resultCard", [card])
 				.set("ai", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().getUseValue(card);
 				})
 				.forResult();
 			if (result2.bool && result2?.links?.length && player.getCards("h").includes(card)) {
-				const cardx = { name: result2.links[0][2], natrue: result2.links[0][3] };
+				const cardx = { name: result2.links[0][2], nature: result2.links[0][3] };
 				game.broadcastAll(function (card) {
 					lib.skill.tyfenwu_backup.viewAs = card;
 					lib.skill.tyfenwu_backup.prompt = `是否将此牌当作${get.translation(card)}使用？`;

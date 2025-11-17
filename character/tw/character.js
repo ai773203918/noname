@@ -91,7 +91,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["twsb_xingshang", "twsb_fangzhu", "twsb_songwei"],
+		skills: ["twsbxingshang", "twsbfangzhu", "twsbsongwei"],
 		isZhugong: true,
 		dieAudios: ["sb_caopi"],
 	},

@@ -78,7 +78,7 @@ const skills = {
 			event.set("dcchouxiList", list);
 		},
 		filter(event, player) {
-			if (!event.dcchouxiList?.length || !player.countCards("h")) {
+			if (!event.dcchouxiList?.length || !player.countCards("hs")) {
 				return false;
 			}
 			return event.dcchouxiList.some(name => {
@@ -112,7 +112,7 @@ const skills = {
 						},
 					},
 					filterCard: true,
-					position: "h",
+					position: "hs",
 					check(card) {
 						return 5 - get.value(card);
 					},
