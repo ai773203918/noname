@@ -1119,13 +1119,13 @@ const skills = {
 				});
 			} else {
 				delete evt.result.used;
+				delete evt.result.skill;
 				evt.result.card = get.autoViewAs({
 					name: name,
 					storage: { mark_shouli: true },
 					isCard: true,
 				});
 				evt.result.cards = [];
-				evt.result._apply_args = { addSkillCount: false };
 				evt.redo();
 				return;
 			}
@@ -7783,6 +7783,7 @@ const skills = {
 					});
 				} else {
 					delete evt.result.used;
+					delete evt.result.skill;
 					evt.result.card = get.autoViewAs(
 						{
 							name: name,
@@ -7792,7 +7793,6 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
-					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");

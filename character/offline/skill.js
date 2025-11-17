@@ -28882,6 +28882,7 @@ const skills = {
 					});
 				} else {
 					delete evt.result.used;
+					delete evt.result.skill;
 					evt.result.card = get.autoViewAs(
 						{
 							name: name,
@@ -28891,7 +28892,6 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
-					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");
@@ -29844,6 +29844,7 @@ const skills = {
 					evt.backup("psqichu_backup");
 				} else {
 					delete evt.result.used;
+					delete evt.result.skill;
 					evt.result.card = get.autoViewAs(result.links[0]);
 					if (aozhan) {
 						evt.result.card.name = name;
@@ -29888,6 +29889,7 @@ const skills = {
 					event.result.cards = event.result.card.cards;
 					event.result.card = get.autoViewAs(event.result.cards[0]);
 					event.result.card.name = name;
+					event.result._apply_args = { addSkillCount: false };
 				},
 				filterCard: () => false,
 				selectCard: -1,

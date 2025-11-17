@@ -4935,56 +4935,61 @@ const skills = {
 					}
 				}
 			});
-			const result = await player
-				.chooseButtonTarget({
-					createDialog: [`###${get.prompt(event.skill)}###移去一张“城”，令一名目标角色摸X张牌（X为该角色本回合失去过的牌数且至多为5）`, cards],
-					targets: targets,
-					drawMap: map,
-					filterButton: true,
-					filterTarget(card, player, target) {
-						const { targets, drawMap } = get.event();
-						if (drawMap.has(target)) {
-							target.prompt(`${drawMap.get(target)}张`);
-						}
-						return targets.includes(target);
-					},
-					complexTarget: true,
-					ai2(target) {
-						return target == get.event("targetx") ? 1 : 0;
-					},
-					targetx: (() => {
-						let info = [];
-						targets.filter(target => {
-							let att = get.attitude(player, target);
-							if (att <= 0) {
-								return false;
-							}
-							if (Math.abs(att) > 1) {
-								att = Math.sign(att) * Math.sqrt(Math.abs(att));
-							}
-							info.push([
-								target,
-								att *
-									target
-										.getHistory("lose")
-										.map(evt => evt.cards2.length)
-										.reduce((p, c) => p + c, 0),
-							]);
+			const next = player.chooseButtonTarget({
+				createDialog: [`###${get.prompt(event.skill)}###移去一张“城”，令一名目标角色摸X张牌（X为该角色本回合失去过的牌数且至多为5）`, cards],
+				targets: targets,
+				drawMap: map,
+				filterButton: true,
+				filterTarget(card, player, target) {
+					return get.event().targets.includes(target);
+				},
+				ai2(target) {
+					return target == get.event("targetx") ? 1 : 0;
+				},
+				targetx: (() => {
+					let info = [];
+					targets.filter(target => {
+						let att = get.attitude(player, target);
+						if (att <= 0) {
 							return false;
-						});
-						if (!info.length) {
-							return null;
 						}
-						info = info.sort((a, b) => {
-							return b[1] - a[1];
-						})[0];
-						if (info[1] <= 0) {
-							return null;
+						if (Math.abs(att) > 1) {
+							att = Math.sign(att) * Math.sqrt(Math.abs(att));
 						}
-						return info[0];
-					})(),
-				})
-				.forResult();
+						info.push([
+							target,
+							att *
+								target
+									.getHistory("lose")
+									.map(evt => evt.cards2.length)
+									.reduce((p, c) => p + c, 0),
+						]);
+						return false;
+					});
+					if (!info.length) {
+						return null;
+					}
+					info = info.sort((a, b) => {
+						return b[1] - a[1];
+					})[0];
+					if (info[1] <= 0) {
+						return null;
+					}
+					return info[0];
+				})(),
+			});
+			next.set(
+				"targetprompt2",
+				next.targetprompt2.concat([
+					target => {
+						if (!target.isIn() || !get.event().filterTarget(null, get.player(), target)) {
+							return false;
+						}
+						return `${get.cnNumber(get.event().drawMap.get(target))}张`;
+					},
+				])
+			);
+			const { result } = await next;
 			if (result?.links?.length && result.targets?.length) {
 				event.result = {
 					bool: true,
@@ -5030,9 +5035,10 @@ const skills = {
 				filter(event, player) {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
-				content() {
-					var cards = get.cards(2);
-					player.addToExpansion(cards, "gain2").gaintag.add("jsrgshacheng");
+				async content(event, trigger, player) {
+					const next = player.addToExpansion(get.cards(2), "gain2");
+					next.gaintag.add("jsrgshacheng");
+					await next;
 				},
 			},
 		},

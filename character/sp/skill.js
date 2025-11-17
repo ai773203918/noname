@@ -38694,8 +38694,8 @@ const skills = {
 					evt.backup("aocai_backup");
 				} else {
 					delete evt.result.used;
+					delete evt.result.skill;
 					evt.result.card = get.autoViewAs(card);
-					evt.result._apply_args = { addSkillCount: false };
 					if (aozhan) {
 						evt.result.card.name = name;
 					}
@@ -38743,6 +38743,7 @@ const skills = {
 						card = get.autoViewAs({ name, isCard: true });
 					}
 					event.result.card = card;
+					event.result._apply_args = { addSkillCount: false };
 				},
 				filterCard: () => false,
 				selectCard: -1,
