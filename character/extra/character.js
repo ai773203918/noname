@@ -1,4 +1,11 @@
 const characters = {
+	dc_shen_sunquan: {
+		sex: "male",
+		group: "shen",
+		hp: 4,
+		skills: ["dccangming", "dcchouxi", "dcjichao"],
+		groupInGuozhan: "wu",
+	},
 	zc26_shen_huangyueying: {
 		sex: "female",
 		group: "shen",

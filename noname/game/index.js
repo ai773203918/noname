@@ -10549,7 +10549,7 @@ export class Game extends GameCompatible {
 	 *
 	 * @param { Player[] } targets 需要执行async方法的目标
 	 * @param { (player: Player, i: number) => Promise<any | void> } asyncFunc 需要执行的async方法
-	 * @param { (a: Player, b: Player) => number } sort 排序器，默认为lib.sort.seat
+	 * @param { (a: Player, b: Player) => number } [sort] 排序器，默认为lib.sort.seat
 	 */
 	async doAsyncInOrder(targets, asyncFunc, sort) {
 		if (!sort) {
@@ -10572,6 +10572,7 @@ export class Game extends GameCompatible {
 	chooseAnyOL(targets, func, args) {
 		const next = game.createEvent("chooseAnyOL");
 		next.targets = targets;
+		next.player = _status.event.player;
 		next.func = func;
 		next.args = args;
 		next.setContent("chooseAnyOL");

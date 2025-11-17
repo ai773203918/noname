@@ -1820,6 +1820,12 @@ const translates = {
 	wn_zhuling_prefix: "渭南",
 	wn_zhanyi: "战意",
 	wn_zhanyi_info: "出牌阶段限一次，你可以失去1点体力并弃置一张基本或锦囊牌，令你本回合使用此类型的牌额外结算一次。",
+	wxdl_caocao: "文心雕龙曹操",
+	wxdl_caocao_prefix: "文心雕龙",
+	wxdl_kejie: "克捷",
+	wxdl_kejie_info: `每当你的摸牌阶段结束，若手牌数小于5，其他受伤角色可以对你发动一次${get.poptip("xiantu")}，然后你可将任意张【闪】重铸，令你本回合增加等量出杀次数。`,
+	wxdl_hongqi: "洪起",
+	wxdl_hongqi_info: "主公技，限定技，准备阶段，你可以视为使用一张【万箭齐发】，然后其他魏势力角色可以使用一张【杀】。",
 };
 
 export default translates;

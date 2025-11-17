@@ -10836,7 +10836,8 @@ export class Player extends HTMLDivElement {
 				expire = { global: expire };
 			}
 			this.tempSkills[skill] = expire;
-
+			const map = lib.relatedTrigger,
+				names = Object.keys(map);
 			if (get.objtype(expire) == "object") {
 				const roles = ["player", "source", "target", "global"];
 				for (const i of roles) {
@@ -10844,7 +10845,15 @@ export class Player extends HTMLDivElement {
 					if (!Array.isArray(triggers)) {
 						triggers = [triggers];
 					}
-					triggers.forEach(trigger => (lib.hookmap[trigger] = true));
+					triggers.forEach(trigger => {
+						lib.hookmap[trigger] = true;
+						const key = names.find(name => trigger?.startsWith(name));
+						if (key) {
+							map[key].forEach(rawTrigger => {
+								lib.hookmap[`${rawTrigger}${trigger.slice(key.length)}`] = true;
+							});
+						}
+					});
 				}
 			}
 			game.broadcast(

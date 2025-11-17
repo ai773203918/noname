@@ -2,6 +2,180 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//文心雕龙
+	wxdl_kejie: {
+		audio: 2,
+		trigger: {
+			player: "phaseDrawEnd",
+		},
+		filter(event, player) {
+			if (player.countCards("h") >= 5) {
+				return false;
+			}
+			return game.hasPlayer(current => current != player && current.isDamaged());
+		},
+		async cost(event, trigger, player) {
+			const targets = game.filterPlayer(current => current != player && current.isDamaged());
+			let answer_ok = undefined;
+			let humans = targets.filter(current => current === game.me || current.isOnline());
+			let locals = targets.slice(0).randomSort();
+			locals.removeArray(humans);
+			const eventId = get.id();
+			const send = (current, player, eventId) => {
+				lib.skill.wxdl_kejie.chooseBool(current, player, eventId);
+				game.resume();
+			};
+			event._global_waiting = true;
+			let time = 10000;
+			if (lib.configOL && lib.configOL.choose_timeout) {
+				time = parseInt(lib.configOL.choose_timeout) * 1000;
+			}
+			targets.forEach(current => current.showTimer(time));
+			if (humans.length > 0) {
+				const solve = function (resolve, reject) {
+					return function (result, player) {
+						if (result?.bool && !answer_ok) {
+							answer_ok = player;
+							resolve();
+						} else {
+							reject();
+						}
+					};
+				};
+				await Promise.any(
+					humans.map(current => {
+						return new Promise((resolve, reject) => {
+							if (current.isOnline()) {
+								current.send(send, current, player, eventId);
+								current.wait(solve(resolve, reject));
+							} else {
+								const next = lib.skill.wxdl_kejie.chooseBool(current, player, eventId);
+								const solver = solve(resolve, reject);
+								if (_status.connectMode) {
+									game.me.wait(solver);
+								}
+								return next.forResult().then(result => {
+									if (_status.connectMode && !answer_ok) {
+										game.me.unwait(result, current);
+									} else {
+										solver(result, current);
+									}
+								});
+							}
+						});
+					})
+				).catch(() => {});
+				game.broadcastAll("cancel", eventId);
+			}
+			if (!answer_ok && locals.length > 0) {
+				for (const current of locals) {
+					const result = await lib.skill.wxdl_kejie.chooseBool(current, player).forResult();
+					if (result?.bool) {
+						answer_ok = current;
+						break;
+					}
+				}
+			}
+			delete event._global_waiting;
+			for (const i of targets) {
+				i.hideTimer();
+			}
+			if (answer_ok && get.itemtype(answer_ok) == "player") {
+				event.result = {
+					bool: true,
+					targets: [answer_ok],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const result = {
+				skill: "xiantu",
+				targets: [player],
+			};
+			await target.useResult(result, event);
+			const result2 = await player
+				.chooseCard(
+					"克捷：是否重铸任意张【闪】？",
+					[1, Infinity],
+					function (card) {
+						if (get.name(card) != "shan") {
+							return false;
+						}
+						return lib.filter.cardRecastable.apply(this, arguments);
+					},
+					"he",
+					"allowChooseAll"
+				)
+				.set("ai", card => {
+					return 6 - get.value(card);
+				})
+				.forResult();
+			if (result2?.bool) {
+				await player.recast(result2.cards);
+				player.addTempSkill("wxdl_kejie_sha");
+				player.addMark("wxdl_kejie_sha", result2.cards.length, false);
+			}
+		},
+		chooseBool(player, source, eventId) {
+			const next = player.chooseBool(`###克捷###<div class="text center">是否对${get.translation(source)}发动${get.poptip("xiantu")}？</div>`);
+			next.set("id", eventId);
+			next.set("_global_waiting", true);
+			next.set("choice", get.attitude(player, source) > 0);
+			return next;
+		},
+		subSkill: {
+			sha: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "出杀次数+#",
+				},
+				mod: {
+					cardUsable(card, player, num) {
+						if (card?.name == "sha") {
+							return num + player.countMark("wxdl_kejie_sha");
+						}
+					},
+				},
+			},
+		},
+		derivation: "xiantu",
+	},
+	wxdl_hongqi: {
+		audio: 2,
+		trigger: {
+			player: "phaseZhunbeiBegin",
+		},
+		limited: true,
+		zhuSkill: true,
+		skillAnimation: true,
+		animationColor: "water",
+		filter(event, player) {
+			const card = new lib.element.VCard({ name: "wanjian", isCard: true });
+			return player.hasUseTarget(card);
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const card = new lib.element.VCard({ name: "wanjian", isCard: true });
+			await player.chooseUseTarget(card, true);
+			const func = async target => {
+				if (!target?.isIn() || target.group !== "wei" || target == player) {
+					return;
+				}
+				await target.chooseToUse(function (card, player, event) {
+					if (get.name(card) != "sha") {
+						return false;
+					}
+					return lib.filter.filterCard.apply(this, arguments);
+				}, "洪起：是否使用一张杀？");
+			};
+			await game.doAsyncInOrder(
+				game.filterPlayer(() => true),
+				func
+			);
+		},
+	},
 	zj_juxian: {
 		trigger: {
 			player: ["damageBegin3", "loseBefore"],
@@ -29,9 +203,11 @@ const skills = {
 			return event.cards.filterInD("he").reduce((sum, card) => sum + player.getUseValue(card), -10) > 0;
 		},
 		async content(event, trigger, player) {
-			if (trigger.name !== "damage") {
-				await player.loseHp();
+			if (trigger.name == "damage") {
+				trigger.cancel();
+				return;
 			}
+			await player.loseHp();
 			if (trigger.cards.everyInD("he")) {
 				trigger.cancel();
 			} else {
@@ -9164,6 +9340,8 @@ const skills = {
 			if (trigger.name == "phase" && !trigger._finished) {
 				let first = game.findPlayer(current => current.getSeatNum() == 1) || trigger.player;
 				trigger.finish();
+				trigger._finished = true;
+				trigger.untrigger(true);
 				trigger._triggered = 5;
 				const evtx = first.insertPhase();
 				delete evtx.skill;
@@ -9352,6 +9530,8 @@ const skills = {
 			let newzhu = game.findPlayer(i => i.getSeatNum() == 1);
 			if (trigger.name === "phase" && newzhu != zhu && !trigger._finished) {
 				trigger.finish();
+				trigger._finished = true;
+				trigger.untrigger(true);
 				trigger._triggered = 5;
 				const evt = newzhu.insertPhase();
 				delete evt.skill;
@@ -22753,17 +22933,17 @@ const skills = {
 			const result2 = await player
 				.chooseButton([`是否将${get.translation(result)}当作其中一张使用？`, [list, "vcard"]])
 				.set("filterButton", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().hasUseTarget(card);
 				})
 				.set("resultCard", [card])
 				.set("ai", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().getUseValue(card);
 				})
 				.forResult();
 			if (result2.bool && player.getCards("h").includes(card)) {
-				const cardx = { name: result2.links[0][2], natrue: result2.links[0][3] };
+				const cardx = { name: result2.links[0][2], nature: result2.links[0][3] };
 				game.broadcastAll(function (card) {
 					lib.skill.tyqingkou_backup.viewAs = card;
 					lib.skill.tyqingkou_backup.prompt = `是否将此牌当作${get.translation(card)}使用？`;
@@ -22823,17 +23003,17 @@ const skills = {
 			const result2 = await player
 				.chooseButton([`是否将${get.translation(result)}当作其中一张使用？`, [list, "vcard"]])
 				.set("filterButton", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().hasUseTarget(card);
 				})
 				.set("resultCard", [card])
 				.set("ai", button => {
-					let card = get.autoViewAs({ name: button.link[2], natrue: button.link[3] }, get.event("resultCard"));
+					let card = get.autoViewAs({ name: button.link[2], nature: button.link[3] }, get.event("resultCard"));
 					return get.player().getUseValue(card);
 				})
 				.forResult();
 			if (result2.bool && result2?.links?.length && player.getCards("h").includes(card)) {
-				const cardx = { name: result2.links[0][2], natrue: result2.links[0][3] };
+				const cardx = { name: result2.links[0][2], nature: result2.links[0][3] };
 				game.broadcastAll(function (card) {
 					lib.skill.tyfenwu_backup.viewAs = card;
 					lib.skill.tyfenwu_backup.prompt = `是否将此牌当作${get.translation(card)}使用？`;

@@ -2173,7 +2173,7 @@ const skills = {
 		trigger: { player: "damageBegin3" },
 		audio: 2,
 		filter(event, player) {
-			return event.card?.name == "sha" && event.source?.isIn();
+			return event.card?.name == "sha" && get.color(event.card) == "red" && event.source?.isIn();
 		},
 		forced: true,
 		check() {

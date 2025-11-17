@@ -39,7 +39,7 @@ const characters = {
 		sex: "male",
 		group: "wu",
 		hp: 4,
-		skills: ["dcsbqinqiang"],
+		skills: ["dcsbqinqiang", "dcsbyizhen"],
 	},
 	suyue: {
 		sex: "male",
@@ -132,6 +132,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dchuashang", "dcyuzhi"],
+		names: "崔|null",
 	},
 	dc_wuzhi: {
 		sex: "male",

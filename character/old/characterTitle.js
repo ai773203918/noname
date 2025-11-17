@@ -1,4 +1,6 @@
-export default {
+export default {	
+	//two_yj_hanbing: "",
+	//two_yj_tengjia: "",
 	old_zhangxingcai: "将门红妆",
 	old_xusheng: "奋身御前",
 	old_lingtong: "豪情烈胆",

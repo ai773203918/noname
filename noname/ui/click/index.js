@@ -4042,7 +4042,7 @@ export class Click {
 		var initskill = false;
 		let deri = [];
 		for (var i = 0; i < list.length; i++) {
-			if (!get.info(list[i]) || get.info(list[i]).nopop) {
+			if (get.info(list[i])?.nopop) {
 				continue;
 			}
 			if (!lib.translate[list[i]] || !lib.translate[list[i] + "_info"]) {
@@ -4074,7 +4074,7 @@ export class Click {
 				continue;
 			}
 			let info = get.info(skill);
-			if (!Object.keys(info)?.length || info.nopop) {
+			if (info?.nopop) {
 				continue;
 			}
 			if (!lib.translate[skill] || !lib.translate[skill + "_info"]) {

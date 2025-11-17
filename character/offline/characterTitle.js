@@ -2,6 +2,7 @@ export default {
 	//pe_guozhao: "",
 	//scl_lvbu: "",
 	//jun_lvbu: "",
+	wxdl_caocao: "东临碣石",
 	shinin_zhenji: "薄幸的美人",
 	awaken_shinin_zhenji: "闪耀战姬",
 	shinin_wuguotai: "武烈皇后",

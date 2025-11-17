@@ -18,7 +18,7 @@ const skills = {
 		viewAs: {
 			name: "sha",
 			storage: {
-				olquwu: true,
+				olqiwu: true,
 			},
 			suit: "none",
 			number: null,
@@ -28,11 +28,11 @@ const skills = {
 			if (!lib.filter.cardDiscardable(card, player, "olqiwu")) {
 				return false;
 			}
-			return player.hasSkill("olzhuangrong_awaken") || !get.tag(card, "damage");
+			return true; //player.hasSkill("olzhuangrong_awaken") || !get.tag(card, "damage");
 		},
 		selectCard: [1, Infinity],
 		check(card) {
-			if (ui.selected.cards.every(cardx => get.type2(card) != get.type2(cardx))) {
+			if (ui.selected.cards.every(cardx => get.suit(card) != get.suit(cardx))) {
 				return 6 - get.value(card);
 			}
 			return 0;
@@ -46,6 +46,11 @@ const skills = {
 					return true;
 				}
 			},
+			cardUsable(card, player) {
+				if (card?.storage?.olqiwu) {
+					return Infinity;
+				}
+			},
 		},
 		async precontent(event, trigger, player) {
 			const cards = event.result.cards;
@@ -53,11 +58,12 @@ const skills = {
 			await player.modedDiscard(cards);
 			event.result.card = get.autoViewAs({ name: "sha", storage: { olqiwu: true }, isCard: true });
 			event.result.cards = [];
+			event.getParent().addCount = false;
 			player
 				.when("useCard1")
 				.filter(evt => evt.getParent() == event.getParent())
 				.step(async (event, trigger, player) => {
-					const num = cards?.map(card => get.type2(card)).toUniqued().length;
+					const num = cards?.map(card => get.suit(card)).toUniqued().length;
 					const func = async target => {
 						const numx = Math.min(num, target.countDiscardableCards(target, "he"));
 						let allCards = cards;
@@ -71,19 +77,12 @@ const skills = {
 							allCards = [...allCards, ...result.cards];
 						}
 						if (allCards?.some(card => card.name == "shan")) {
-							if (player.hasSkill("olzhuangrong_awaken")) {
-								const gains = result?.cards?.filterInD("od");
-								if (gains?.length) {
-									await player.gain(gains, "gain2");
-								}
-							} else {
-								player.addTempSkill("olqiwu_effect");
-								const gains = allCards.filter(card => card.name == "shan" && get.position(card) == "d");
-								if (gains.length) {
-									const next = player.gain(gains, "gain2");
-									next.gaintag.add("olqiwu");
-									await next;
-								}
+							player.addTempSkill("olqiwu_effect");
+							const gains = allCards.filter(card => card.name == "shan" && get.position(card) == "d");
+							if (gains.length) {
+								const next = player.gain(gains, "gain2");
+								next.gaintag.add("olqiwu");
+								await next;
 							}
 						} else {
 							trigger.directHit.addArray(game.players);
@@ -131,7 +130,7 @@ const skills = {
 			const map = `${skill}_map`;
 			_status[map] ??= new Map();
 			if (!_status[map].has(player)) {
-				_status[map].set(player, get.info(skill).getNames);
+				_status[map].set(player, get.info(skill).getNames.slice(0));
 			}
 			game.broadcastAll(
 				(map, list) => {
@@ -166,8 +165,29 @@ const skills = {
 				}
 			}
 		},
-		group: "olzhuangrong_awake",
+		group: "olzhuangrong_count",
 		subSkill: {
+			count: {
+				trigger: {
+					global: "phaseEnd",
+				},
+				filter(event, player) {
+					if (player.hasSkill("olzhuangrong_awaken")) {
+						return false;
+					}
+					const evts = player.getAllHistory("useSkill", evt => {
+						const skill = evt.skill.slice(0, -6);
+						return get.info("olzhuangrong").getNames.includes(skill);
+					});
+					return evts.length > 1;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					player.addSkill("olzhuangrong_awaken");
+					await player.gainMaxHp();
+					await player.recover();
+				},
+			},
 			awake: {
 				trigger: {
 					player: ["loseAfter"],
@@ -330,17 +350,13 @@ const skills = {
 			global: ["changeHpAfter"],
 		},
 		filter(event, player) {
+			if (player.countMark("olwenyi_used") > player.countMark("olwenyi_limit")) {
+				return false;
+			}
 			if (event.player.hp != 1 || event.num == 0) {
 				return false;
 			}
 			return player.hasUsableCard("tao", "use") || player.countCards("he", card => _status.connectMode || get.type(card) == "equip");
-		},
-		usable(skill, player) {
-			let count = Math.max(0, 1 + player.countMark("olwenyi_limit") - player.countMark("olwenyi_used"));
-			if (skill !== false) {
-				count += player.getStat("triggerSkill")[skill] || 0;
-			}
-			return count;
 		},
 		init(player, skill) {
 			player.markSkill("olwenyi_limit");
@@ -450,12 +466,17 @@ const skills = {
 			limit: {
 				intro: {
 					markcount(storage, player) {
-						let limit = get.info("olwenyi").usable(false, player);
-						return limit;
+						const used = player.countMark("olwenyi_used"),
+							max = player.countMark("olwenyi_limit") + 1;
+						if (max > used) {
+							return max - used;
+						}
+						return null;
 					},
 					content(storage, player) {
-						let limit = get.info("olwenyi").usable(false, player);
-						return `剩余可发动次数：${get.cnNumber(limit)}次`;
+						const used = player.countMark("olwenyi_used"),
+							max = player.countMark("olwenyi_limit") + 1;
+						return `剩余可发动次数：${max - used}`;
 					},
 				},
 			},
@@ -471,10 +492,12 @@ const skills = {
 			return event.num ?? 0;
 		},
 		async content(event, trigger, player) {
-			if (player.hasSkill("olwenyi", null, null, false)) {
+			const count = player.countMark("olwenyi_limit") + 1 - player.countMark("olwenyi_used");
+			if (player.hasSkill("olwenyi", null, null, false) && count === 0) {
 				player.addMark("olwenyi_limit", 1, false);
-			}
-			if (!player.getRoundHistory("useSkill", evt => evt.skill == "olwenyi").length) {
+				game.log(player, "的", "#g【温宜】", "可发动次数+1");
+				await player.draw();
+			} else {
 				await player.draw(2);
 			}
 		},
@@ -38672,6 +38695,7 @@ const skills = {
 				} else {
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(card);
+					evt.result._apply_args = { addSkillCount: false };
 					if (aozhan) {
 						evt.result.card.name = name;
 					}

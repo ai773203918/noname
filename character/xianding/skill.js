@@ -1431,59 +1431,59 @@ const skills = {
 				})
 				.forResult();
 		},
-		popup: false,
 		async content(event, trigger, player) {
-			player.addTempSkill("dcsbqinqiang_effect", { player: "phaseBegin" });
-			const next = player.draw(event.cards.length * 2);
-			next.gaintag.add("dcsbqinqiang_effect");
-			await next;
+			await player.draw(event.cards.length * 2);
 		},
-		subSkill: {
+	},
+	dcsbyizhen: {
+		audio: 2,
+		trigger: { target: "useCardToTargeted" },
+		filter(event, player) {
+			if (player == event.player) {
+				return false;
+			}
+			const suit = get.suit(event.card),
+				suits = lib.suit.slice(0),
+				map = {};
+			suits.add(suit);
+			for (const suitx of suits) {
+				map[suitx] = player.countCards("h", { suit: suitx });
+			}
+			if (suits.every(suitx => suitx == suit || map[suitx] < map[suit])) {
+				return player.countDiscardableCards(player, "h", card => get.suit(card) == suit) > 0;
+			}
+			return suits.every(suitx => map[suitx] >= map[suit]);
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const suit = get.suit(trigger.card),
+				suits = lib.suit.slice(0),
+				map = {};
+			suits.add(suit);
+			for (const suitx of suits) {
+				map[suitx] = player.countCards("h", { suit: suitx });
+			}
+			if (suits.every(suitx => suitx == suit || map[suitx] < map[suit])) {
+				await player.chooseToDiscard("h", card => get.suit(card) == suit, true);
+			}
+			if (suits.every(suitx => map[suitx] >= map[suit])) {
+				player
+					.when({ global: "useCardAfter" })
+					.filter((evt, player) => evt == trigger.getParent() && evt.cards?.someInD("od"))
+					.step(async (event, trigger, player) => {
+						await player.gain(trigger.cards.filterInD("od"), "gain2");
+					});
+			}
+		},
+		ai: {
 			effect: {
-				charlotte: true,
-				onremove(player, skill) {
-					player.removeGaintag(skill);
-				},
-				audio: "dcsbqinqiang",
-				trigger: { target: "useCardToTargeted" },
-				filter(event, player) {
-					const suit = get.suit(event.card);
-					if (!player.hasCard({ suit: suit }, "h") && event.cards?.someInD("od")) {
-						return true;
+				target(card, player, target) {
+					const suit = get.suit(card),
+						suits = target.getKnownCards(player).map(card => get.suit(card));
+					if (suits.length && target.countCards("h") - suits.length < 2 && !suits.includes(suit)) {
+						return [1, 1];
 					}
-					const suits = player.getCards("h").map(card => get.suit(card)),
-						num = Math.max(...suits.map(suitx => get.numOf(suits, suitx)));
-					return get.numOf(suits, suit) === num && player.hasCard(card => card.hasGaintag("dcsbqinqiang_effect") && lib.filter.cardDiscardable(card, player), "h");
-				},
-				forced: true,
-				async content(event, trigger, player) {
-					const suit = get.suit(trigger.card),
-						has = !player.hasCard({ suit: suit }, "h"),
-						suits = player.getCards("h").map(card => get.suit(card)),
-						num = Math.max(...[...lib.suit, "none"].map(suitx => get.numOf(suits, suitx)));
-					if (get.numOf(suits, suit) === num && player.hasCard(card => card.hasGaintag("dcsbqinqiang_effect") && lib.filter.cardDiscardable(card, player), "h")) {
-						await player.chooseToDiscard("h", true, card => card.hasGaintag("dcsbqinqiang_effect"));
-					}
-					if (!has) {
-						player
-							.when({ global: "useCardAfter" })
-							.filter((evt, player) => evt.card === trigger.card && evt.cards?.someInD("od"))
-							.step(async (event, trigger, player) => {
-								await player.gain(trigger.cards.filterInD("od"), "gain2");
-							});
-					}
-				},
-				ai: {
-					effect: {
-						target(card, player, target) {
-							const suit = get.suit(card),
-								suits = target.getKnownCards(player).map(card => get.suit(card));
-							if (suits.length && target.countCards("h") - suits.length < 2 && !suits.includes(suit)) {
-								return [1, 1];
-							}
-							return [1, 0];
-						},
-					},
+					return [1, 0];
 				},
 			},
 		},
@@ -3003,7 +3003,7 @@ const skills = {
 				if (!storage) {
 					return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，此牌视为无距离次数限制的火【杀】并摸一张牌（你可额外摸一张牌并令此技能本阶段失效）。`;
 				}
-				return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，此颜色的牌不计入手牌上限并横置一名角色（你可额外横置一名角色并令此技能本阶段失效）。`;
+				return `一张牌结算结束后，若此牌的目标包括你，你可以选择一张手牌，令你此颜色的当前手牌不计入手牌上限并可横置一名角色（你可额外横置一名角色并令此技能本阶段失效）。`;
 			},
 		},
 		trigger: {
@@ -3015,7 +3015,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			let prompt2;
 			if (player.getStorage(event.skill, false)) {
-				prompt2 = "你可选择一张手牌，令此颜色牌不计入手牌上限并横置一名角色";
+				prompt2 = "你可选择一张手牌，令你此颜色的当前手牌不计入手牌上限并可横置一名角色";
 			} else {
 				prompt2 = "你可选择一张手牌，令此牌视为无距离次数限制的火【杀】并摸一张牌";
 			}
@@ -3039,40 +3039,40 @@ const skills = {
 				if (result?.control) {
 					await player.draw(result.index + 1);
 					if (result.index) {
-						player.tempBanSkill(name, { global: "phaseAnyAfter"});
+						player.tempBanSkill(name, { global: "phaseAnyAfter" });
 					}
 				}
 			} else {
 				const skill = `${name}_limit`;
 				player.addSkill(skill);
-				player.markAuto(skill, get.color(cards[0]));
+				const cards2 = player.getCards("h", card => get.color(card) == get.color(cards[0]) && !card.hasGaintag(skill));
+				if (cards2.length) {
+					player.addGaintag(cards2, skill);
+				}
 				const targets = game.filterPlayer(current => !current.isLinked());
 				if (!targets?.length) {
 					return;
 				}
-				const result = targets.length > 1 ? await player
-					.chooseTarget("###隽谋：横置一名角色###你可横置两名角色并令此技能本阶段失效", (card, player, target) => {
+				const result = await player
+					.chooseTarget("###隽谋：是否横置一名角色？###你可横置两名角色并令此技能本阶段失效", (card, player, target) => {
 						if (ui.selected.targets.length) {
 							return 0;
 						}
 						return get.event("isLinked").includes(target);
-					}, [1, 2], true)
+					}, [1, 2])
 					.set("ai", target => {
 						return get.effect(target, { name: "tiesuo" }, get.player(), get.player());
 					})
 					.set("isLinked", targets)
-					.forResult() : {
-						bool: true,
-						targets: targets,
-					}
-				if (result?.targets?.length) {
+					.forResult();
+				if (result?.bool && result?.targets?.length) {
 					player.line(result.targets, "yellow");
 					const func = async target => {
 						await target.link(true);
 					};
 					await game.doAsyncInOrder(result.targets, func);
 					if (result.targets.length > 1) {
-						player.tempBanSkill(name, { global: "phaseAnyAfter"});
+						player.tempBanSkill(name, { global: "phaseAnyAfter" });
 					}
 				}
 			}
@@ -3107,8 +3107,6 @@ const skills = {
 						}
 					},
 				},
-				forced: true,
-				popup: false,
 				charlotte: true,
 				firstDo: true,
 				trigger: {
@@ -3127,7 +3125,7 @@ const skills = {
 						})
 					);
 				},
-				async content(event, trigger, player) {
+				async cost(event, trigger, player) {
 					trigger.addCount = false;
 					const stat = player.getStat().card,
 						name = trigger.card.name;
@@ -3138,18 +3136,17 @@ const skills = {
 				},
 			},
 			limit: {
+				name: "<span style='text-shadow:rgba(0, 183, 255, 1) 0 0 2px, rgba(0, 183, 255, 1) 0 0 2px, rgba(0, 183, 255, 1) 0 0 2px, rgba(0, 183, 255, 1) 0 0 2px, black 0 0 1px'>隽谋</span>",
 				onremove: true,
 				charlotte: true,
 				mod: {
 					ignoredHandcard(card, player) {
-						const colors = player.getStorage("dcsbjunmou_limit");
-						if (colors.includes(get.color(card))) {
+						if (card.hasGaintag("dcsbjunmou_limit")) {
 							return true;
 						}
 					},
 					cardDiscardable(card, player, name) {
-						const colors = player.getStorage("dcsbjunmou_limit");
-						if (name === "phaseDiscard" && colors.includes(get.color(card))) {
+						if (name === "phaseDiscard" && card.hasGaintag("dcsbjunmou_limit")) {
 							return false;
 						}
 					},
@@ -3197,7 +3194,7 @@ const skills = {
 			let { targets } = event;
 			await player.recover(targets.length);
 			while (true) {
-				targets = targets.filter(target => target.isIn() && target.countCards("h"));
+				targets = event.targets.filter(target => target.isIn() && target.countCards("h"));
 				if (!targets.length) {
 					break;
 				}
@@ -22899,6 +22896,7 @@ const skills = {
 			target.storage["dcwumei_wake"][2].add(next);
 			if (!trigger._finished) {
 				trigger.finish();
+				trigger._finished = true;
 				trigger.untrigger(true);
 				trigger._triggered = 5;
 				if (!lib.onround.includes(lib.skill.dcwumei.onRound)) {

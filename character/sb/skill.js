@@ -7285,7 +7285,9 @@ const skills = {
 						}
 					}
 				}
-				return ui.create.dialog("龙胆", [list, "vcard"], "hidden");
+				const dialog = ui.create.dialog("龙胆", [list, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
 			},
 			check(button) {
 				if (_status.event.getParent().type != "phase") {

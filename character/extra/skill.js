@@ -2,6 +2,277 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//新杀神孙权
+	dccangming: {
+		audio: 2,
+		trigger: {
+			global: "gameDrawAfter",
+		},
+		forced: true,
+		filter(event, player) {
+			return game.countPlayer(() => true) > 0;
+		},
+		logTarget() {
+			return game.filterPlayer(() => true);
+		},
+		async content(event, trigger, player) {
+			const { name } = event;
+			const func = async target => {
+				if (!target.countCards("h")) {
+					return;
+				}
+				const next = target.addToExpansion(target.getCards("h"), target, "giveAuto", false);
+				next.gaintag.add(name);
+				await next;
+			};
+			await game.doAsyncInOrder(event.targets, func);
+		},
+		marktext: "溟",
+		intro: {
+			markcount: "expansion",
+			mark(dialog, storage, player) {
+				const cards = player.getExpansions("dccangming");
+				if (player.isUnderControl(true)) {
+					dialog.addAuto(cards);
+				} else {
+					return "共有" + get.cnNumber(cards.length) + "张牌";
+				}
+			},
+		},
+		global: "dccangming_gain",
+		subSkill: {
+			gain: {
+				trigger: {
+					player: ["phaseBegin", "damageEnd"],
+				},
+				filter(event, player) {
+					return player.countExpansions("dccangming") > 0;
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					await player.gain(player.getExpansions("dccangming"), "giveAuto");
+				},
+			},
+		},
+	},
+	dcchouxi: {
+		audio: 2,
+		enable: "phaseUse",
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const list = [];
+			game.countPlayer(current => {
+				if (!current.countExpansions("dccangming")) {
+					return false;
+				}
+				for (const card of current.getExpansions("dccangming")) {
+					if (["basic", "trick"].includes(get.type(card, false))) {
+						list.add(get.name(card, false));
+					}
+				}
+				return true;
+			});
+			list.removeArray(event.player.getStorage("dcchouxi_used"));
+			event.set("dcchouxiList", list);
+		},
+		filter(event, player) {
+			if (!event.dcchouxiList?.length || !player.countCards("hs")) {
+				return false;
+			}
+			return event.dcchouxiList.some(name => {
+				const card = get.autoViewAs({ name: name, storage: { dcchouxi: true } }, "unsure");
+				return player.hasUseTarget(card);
+			});
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = event.dcchouxiList.filter(name => {
+					const card = get.autoViewAs({ name: name, storage: { dcchouxi: true } }, "unsure");
+					return player.hasUseTarget(card);
+				});
+				const dialog = ui.create.dialog("筹汐", [list, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
+			},
+			check(button) {
+				const player = get.player(),
+					card = get.autoViewAs({ name: button.link[2], storage: { dcchouxi: true } }, "unsure");
+				return player.getUseValue(card);
+			},
+			backup(links, player) {
+				return {
+					audio: "dcchouxi",
+					popname: true,
+					viewAs: {
+						name: links[0][2],
+						storage: {
+							dcchouxi: true,
+						},
+					},
+					filterCard: true,
+					position: "hs",
+					check(card) {
+						return 5 - get.value(card);
+					},
+					async precontent(event, trigger, player) {
+						player.addTempSkill("dcchouxi_used");
+						player.markAuto("dcchouxi_used", event.result.card.name);
+						event.getParent().addCount = false;
+					},
+				};
+			},
+			prompt(links, player) {
+				return `将一张手牌当作${get.translation(links[0][2])}使用`;
+			},
+		},
+		locked: false,
+		mod: {
+			cardUsable(card, player) {
+				if (card?.storage?.dcchouxi) {
+					return Infinity;
+				}
+			},
+			targetInRange(card, player) {
+				if (card?.storage?.dcchouxi) {
+					return true;
+				}
+			},
+		},
+		ai: {
+			order: 8,
+			result: {
+				player: 1,
+			},
+		},
+		subSkill: {
+			backup: {},
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
+	},
+	dcjichao: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return game.hasPlayer(current => current != player && current.countCards("h") > 0);
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const choiceList = [
+					["one", "令一名其他角色将随机一半手牌（向上取整）置于武将牌上"],
+					["all", "令所有其他角色将手牌置于武将牌上"],
+				];
+				const dialog = ui.create.dialog("激潮", [choiceList, "textbutton"], "hidden");
+				dialog.direct = true;
+				return dialog;
+			},
+			filter(button, player) {
+				return button.link == "one" || !player.hasSkill("dcjichao_blocker");
+			},
+			check(button) {
+				const player = get.player();
+				if (button.link == "all") {
+					return 2;
+				}
+				return 1;
+			},
+			backup(links, player) {
+				return {
+					choice: links[0],
+					manualConfirm: true,
+					filterTarget(card, player, target) {
+						return target != player && target.countCards("h") > 0;
+					},
+					selectTarget() {
+						const { choice } = get.info("dcjichao_backup");
+						if (choice == "all") {
+							return -1;
+						}
+						return 1;
+					},
+					async contentBefore(event, trigger, player) {
+						const { choice } = get.info("dcjichao_backup");
+						if (choice == "all") {
+							player.addTempSkill("dcjichao_blocker", { source: "die" });
+						}
+					},
+					async content(event, trigger, player) {
+						const { target, name } = event,
+							{ choice } = get.info(name);
+						let cards = target.getCards("h");
+						if (choice !== "all") {
+							let num = Math.ceil(cards.length / 2);
+							if (num > 0) {
+								cards = cards.randomGets(num);
+							}
+						}
+						if (!cards.length) {
+							return;
+						}
+						const next = target.addToExpansion(cards, target, "giveAuto");
+						next.gaintag.add("dccangming");
+						await next;
+					},
+					ai1: () => 1,
+					ai2(target) {
+						const player = get.player();
+						return -get.attitude(player, target);
+					},
+				};
+			},
+			prompt(links, player) {
+				if (links[0] == "all") {
+					return "令所有其他角色将手牌置于武将牌上，称为“溟”";
+				}
+				return "令一名其他角色将随机一半手牌（向上取整）置于武将牌上，称为“溟”";
+			},
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				if (
+					game.hasPlayer(current => {
+						if (current == player || !current.countCards("h")) {
+							return false;
+						}
+						if (get.attitude(player, current) > 0) {
+							return false;
+						}
+						return player.countCards("hs", card => player.canUse(card, current) && get.effect(current, card, player, player) > 0) > 0;
+					})
+				) {
+					return 9;
+				}
+				return 1;
+			},
+			result: {
+				player(player, target) {
+					if (
+						game.hasPlayer(current => {
+							if (current == player || !current.countCards("h")) {
+								return false;
+							}
+							return get.attitude(player, current) < 0;
+						})
+					) {
+						return 1;
+					}
+					return 0;
+				},
+			},
+		},
+		subSkill: {
+			blocker: {
+				charlotte: true,
+			},
+			backup: {},
+		},
+	},
 	//26珍藏神黄月英
 	zc26_cangqiao: {
 		trigger: {

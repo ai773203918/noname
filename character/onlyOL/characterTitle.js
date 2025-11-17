@@ -1,11 +1,12 @@
 export default {
-	//dm_sunquan: "",
 	//ol_sb_yl_luzhi: "国之桢干", //暂无称号，先取别的称号顶替一下
 	//ol_sunxiu: "弥殇的景君", //暂无称号，先取别的称号顶替一下
 	//ol_sb_zhaoyun: "七进七出", //暂无称号，先取别的称号顶替一下
 	//ol_sb_zhangfei: "义付桃园", //暂无称号，先取别的称号顶替一下
 	//ol_sb_jushou: "忠不逢时", //暂无称号，先取别的称号顶替一下
 	//ol_re_yujin: "",
+	//dm_sunquan: "",
+	//dm_caocao: "",
 	ol_jsrg_zhujun: "征无遗虑",
 	ol_jsrg_sunjian: "拔定烈志",
 	ol_sb_xizhicai: "薪火相传",

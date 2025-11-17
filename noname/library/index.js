@@ -4714,6 +4714,15 @@ export class Library {
 						document.documentElement.style.setProperty("--tip-display", bool ? "flex" : "none");
 					},
 				},
+				show_sortPack: {
+					name: "显示武将分包",
+					intro: "开启后，长按/右键查看武将信息时将显示武将所在分包",
+					init: false,
+					unfrequent: true,
+					onclick(bool) {
+						game.saveConfig("show_sortPack", bool);
+					},
+				},
 				show_deckMonitor: {
 					name: "显示记牌器",
 					init: true,
@@ -11630,6 +11639,9 @@ export class Library {
 			if (typeof event != "string") {
 				event = event.getParent().name;
 			}
+			if (player == target && !lib.filter.cardDiscardable(card, player, event)) {
+				return false;
+			}
 			var mod = game.checkMod(card, player, target, event, "unchanged", "canBeDiscarded", target);
 			if (mod != "unchanged") {
 				return mod;
@@ -14653,6 +14665,14 @@ export class Library {
 			"有",
 			{
 				color: "#dd9420",
+				nature: "firemm",
+			},
+		],
+		[
+			"文心雕龙",
+			{
+				showName: "文",
+				color: "#ffffff",
 				nature: "firemm",
 			},
 		],

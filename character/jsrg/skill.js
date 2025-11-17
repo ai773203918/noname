@@ -4920,14 +4920,35 @@ const skills = {
 		async cost(event, trigger, player) {
 			const cards = player.getExpansions("jsrgshacheng");
 			const targets = trigger.targets.filter(i => i.isIn() && i.hasHistory("lose", evt => evt.cards2.length));
+			const map = new Map();
+			trigger.targets.forEach(target => {
+				if (target.isIn()) {
+					const num = Math.min(
+						5,
+						target
+							.getHistory("lose")
+							.map(evt => evt.cards2.length)
+							.reduce((p, c) => p + c, 0)
+					);
+					if (num > 0) {
+						map.set(target, num);
+					}
+				}
+			});
 			const result = await player
 				.chooseButtonTarget({
 					createDialog: [`###${get.prompt(event.skill)}###移去一张“城”，令一名目标角色摸X张牌（X为该角色本回合失去过的牌数且至多为5）`, cards],
 					targets: targets,
+					drawMap: map,
 					filterButton: true,
 					filterTarget(card, player, target) {
-						return get.event().targets.includes(target);
+						const { targets, drawMap } = get.event();
+						if (drawMap.has(target)) {
+							target.prompt(`${drawMap.get(target)}张`);
+						}
+						return targets.includes(target);
 					},
+					complexTarget: true,
 					ai2(target) {
 						return target == get.event("targetx") ? 1 : 0;
 					},
