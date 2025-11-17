@@ -29889,6 +29889,7 @@ const skills = {
 					event.result.cards = event.result.card.cards;
 					event.result.card = get.autoViewAs(event.result.cards[0]);
 					event.result.card.name = name;
+					event.result._apply_args = { addSkillCount: false };
 				},
 				filterCard: () => false,
 				selectCard: -1,
