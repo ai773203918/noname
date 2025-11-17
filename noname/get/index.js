@@ -4917,8 +4917,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 			}
 		}
 	}
-	nodeintro(node, simple, evt) {
-		var uiintro = ui.create.dialog("hidden", "notouchscroll");
+	nodeintro(node, simple, evt, uiintro) {
+		uiintro ??= ui.create.dialog("hidden", "notouchscroll");
 		uiintro.setAttribute("id", "nodeintro");
 		if (node.classList.contains("player") && !node.name) {
 			return uiintro;
@@ -6194,14 +6194,19 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	/**
 	 *
 	 * 弹出特殊名词的解释窗口
-	 * @param {string} info 对应解释在lib.poptip的值
+	 * @param {string | Function} info 对应解释在lib.poptip的值
+	 * @param {string} poptip 此名词的对应id
 	 * @param {PointerEvent|TouchEvent} event 点击事件
 	 */
-	poptipIntro(info, event) {
+	poptipIntro(info, poptip, event) {
 		const uiintro = ui.create.dialog("hidden", "notouchscroll");
 		uiintro.style.zIndex = "21";
 		uiintro.setAttribute("id", "poptip");
-		uiintro._place_text = uiintro.add(`<div class = "text">${info}</div>`);
+		if (typeof info == "string") {
+			uiintro._place_text = uiintro.add(`<div class = "text">${info}</div>`);
+		} else {
+			info(uiintro, poptip);
+		}
 		uiintro.classList.add("popped");
 		uiintro.classList.add("static");
 		ui.window.appendChild(uiintro);
@@ -7354,7 +7359,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 * @param {string} poptip.id 对应特殊名词id
 	 * @param {string} poptip.type 特殊名词的类型
 	 * @param {string} poptip.name 特殊名词
-	 * @param {string} poptip.info 对应解释
+	 * @param {string} [poptip.info] 对应解释
+	 * @param {string | ((dialog: Dialog, poptip: string) => Dialog)} [poptip.dialog] 自定义框
 	 * @returns {string}
 	 */
 	/**

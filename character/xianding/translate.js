@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "@noname";
+
 const translates = {
 	puyuan: "蒲元",
 	pytianjiang: "天匠",
@@ -138,7 +140,12 @@ const translates = {
 	syjiqiao: "激峭",
 	syjiqiao_info: "出牌阶段开始时，你可将牌堆顶的X张牌置于你的武将牌上（X为你的体力上限）。当你于此出牌阶段内使用的牌结算结束后，你可以获得其中的一张牌，然后若剩余牌中红色牌和黑色牌的数量：不相等，你失去1点体力；相等，你回复1点体力。出牌阶段结束时，你将这些牌置入弃牌堆。",
 	syxiongyi: "凶疑",
-	syxiongyi_info: "限定技。当你处于濒死状态时，若剩余武将牌堆中：有“徐氏”，则你可以将体力值回复至3点，并将此武将牌替换为“徐氏”；没有“徐氏”，则你可以将体力值回复至1点并获得〖魂姿〗。",
+	syxiongyi_info: `限定技。当你处于濒死状态时，若剩余武将牌堆中：有${get.poptip({
+		id: "character_xushi",
+		name: "徐氏",
+		type: "character",
+		dialog: "characterDialog",
+	})}，则你可以将体力值回复至3点，并将此武将牌替换为${get.poptip("character_xushi")}；否则，你可以将体力值回复至1点并获得${get.poptip("olhunzi")}。`,
 	re_zhangbao: "新杀张宝",
 	re_zhangbao_prefix: "新杀",
 	xinzhoufu: "咒缚",

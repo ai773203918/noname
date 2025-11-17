@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "@noname";
+
 const translates = {
 	lijue: "李傕",
 	zhangji: "张济",
@@ -223,7 +225,12 @@ const translates = {
 	xin_baosanniang_prefix: "新杀",
 	decadexushen: "许身",
 	decadexushen2: "许身",
-	decadexushen_info: "限定技，当你进入濒死状态后，你可以回复1点体力并获得技能“镇南”，然后如果你脱离濒死状态且“关索”不在场，你可令一名其他角色选择是否用“关索”代替其武将并令其摸三张牌。",
+	decadexushen_info: `限定技，当你进入濒死状态后，你可以回复1点体力并获得技能${get.poptip("decadezhennan")}，然后如果你脱离濒死状态且${get.poptip({
+		id: "character_dc_guansuo",
+		name: "关索",
+		type: "character",
+		dialog: "characterDialog",
+	})}不在场，你可令一名其他角色选择是否用${get.poptip("character_dc_guansuo")}代替其武将并令其摸三张牌。`,
 	decadezhennan: "镇南",
 	decadezhennan_info: "当有角色使用普通锦囊牌指定目标后，若此牌目标数大于1，你可以对一名其他角色造成1点伤害。",
 	ol_dingyuan: "丁原",

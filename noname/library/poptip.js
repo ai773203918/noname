@@ -74,6 +74,25 @@ export class PoptipManager {
 		};
 	}
 
+	/**
+	 * @type {Map<string, string | ((dialog: Dialog, poptip: string) => Dialog)>}
+	 */
+	createDialog = new Map([
+		["cardDialog", (dialog, poptip) => {
+			dialog.addSmall([[poptip], "vcard"]);
+			const node = dialog.buttons[0];
+			get.nodeintro(node, null, null, dialog);
+			return dialog;
+		}],
+		["characterDialog", (dialog, poptip) => {
+			const name = poptip.startsWith("character_") ? poptip.slice(10) : poptip;
+			dialog.addSmall([[name], "character"]);
+			const node = dialog.buttons[0];
+			get.nodeintro(node, null, null, dialog);
+			return dialog;
+		}],
+	]);
+
 	init() {
 		if (this.#inited) {
 			return;
@@ -179,10 +198,11 @@ export class PoptipManager {
 	 * @param {string} [poptip.id]
 	 * @param {string} poptip.name 名字，最终显示在translate上的文字
 	 * @param {string} [poptip.info] 解释，最终显示在弹窗里的文字
+	 * @param {(dialog: Dialog, poptip: string) => Dialog} [poptip.dialog] 自定义显示框
 	 * @returns {string} 生成的id
 	 */
 	add(poptip) {
-		let { type = "rule", id, name, info = "" } = poptip;
+		let { type = "rule", id, name, info = "", dialog } = poptip;
 		if (!this.#poptip[type]) {
 			throw new Error(`未注册的poptip类型: ${type}`);
 		} else if (id && (type === "skill" || type === "card")) {
@@ -192,11 +212,17 @@ export class PoptipManager {
 		if (id) {
 			lib.translate[id] = name;
 			lib.translate[id + "_info"] = info;
+			if (dialog) {
+				this.createDialog.set(id, dialog);
+			}
 			this.#poptip[type].idList.add(id);
 		} else {
 			do {
 				id = Math.random().toString(36).slice(-8);
 			} while (this.#customPoptip.has(id));
+			if (dialog) {
+				this.createDialog.set(id, dialog);
+			}
 			this.#customPoptip.set(id, { name, info, type });
 		}
 
@@ -233,7 +259,7 @@ export class HTMLPoptipElement extends HTMLElement {
 		this.addEventListener(lib.config.touchscreen ? "touchstart" : "click", e => {
 			// 保证同一时间只能出现一个poptip框，做完窗口管理后可删
 			game.closePoptipDialog();
-			return get.poptipIntro(this.info, e);
+			return get.poptipIntro(this.dialog, this.getAttribute("poptip") || "", e);
 		});
 	}
 
@@ -256,6 +282,23 @@ export class HTMLPoptipElement extends HTMLElement {
 			default:
 				return name;
 		}
+	}
+	/**
+	 * @return {string | ((dialog: Dialog, poptip: string) => Dialog)}
+	 */
+	get dialog() {
+		const poptip = this.getAttribute("poptip");
+		let dialog;
+		if (this.type == "card") {
+			dialog = lib.poptip.createDialog.get("cardDialog");
+		}
+		if (poptip && lib.poptip.createDialog.has(poptip)) {
+			dialog = lib.poptip.createDialog.get(poptip);
+			if (typeof dialog == "string" && lib.poptip.createDialog.has(dialog)) {
+				dialog = lib.poptip.createDialog.get(dialog)
+			}
+		}
+		return dialog || this.info;
 	}
 	get info() {
 		return lib.poptip.getInfo(this.getAttribute("poptip") || "");
