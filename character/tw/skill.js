@@ -1970,7 +1970,6 @@ const skills = {
 										return att / 100;
 									}
 								})
-								.setHiddenSkill(event.skill)
 								.set("source", trigger.player)
 								.set("enemy", get.value(cards[0], player, "raw") < 0);
 				if (result?.bool) {
