@@ -1119,13 +1119,13 @@ const skills = {
 				});
 			} else {
 				delete evt.result.used;
+				delete evt.result.skill;
 				evt.result.card = get.autoViewAs({
 					name: name,
 					storage: { mark_shouli: true },
 					isCard: true,
 				});
 				evt.result.cards = [];
-				evt.result._apply_args = { addSkillCount: false };
 				evt.redo();
 				return;
 			}
@@ -1278,6 +1278,7 @@ const skills = {
 			},
 			backup: {
 				async precontent(event, trigger, player) {
+					event.result._apply_args = { addSkillCount: false };
 					player.popup(event.result.card.name, "metal");
 					await game.delayx();
 					event.getParent().addCount = false;
@@ -7782,6 +7783,7 @@ const skills = {
 					});
 				} else {
 					delete evt.result.used;
+					delete evt.result.skill;
 					evt.result.card = get.autoViewAs(
 						{
 							name: name,
@@ -7791,7 +7793,6 @@ const skills = {
 						result.links
 					);
 					evt.result.cards = [result.links[0]];
-					evt.result._apply_args = { addSkillCount: false };
 					target.$give(result.links[0], player, false);
 					if (player != target) {
 						target.addTempSkill("fengyin");
@@ -7918,6 +7919,7 @@ const skills = {
 					"step 0";
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
+					event.result._apply_args = { addSkillCount: false };
 					var owner = get.owner(cards[0]);
 					event.target = owner;
 					owner.$give(cards[0], player, false);
