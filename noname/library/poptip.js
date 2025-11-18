@@ -59,14 +59,14 @@ export class PoptipManager {
 		this.#poptip["rule"] = {
 			idList: Array.from(_poptipMap.keys()),
 		};
-		this.#poptip["skill"] = {
-			get idList() {
-				return Object.keys(lib.skill);
-			},
-		};
 		this.#poptip["card"] = {
 			get idList() {
 				return Object.keys(lib.card);
+			},
+		};
+		this.#poptip["skill"] = {
+			get idList() {
+				return Object.keys(lib.skill);
 			},
 		};
 		this.#poptip["character"] = {
