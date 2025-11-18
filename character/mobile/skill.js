@@ -1581,6 +1581,7 @@ const skills = {
 					filterCard(card, player) {
 						return lib.filter.cardDiscardable(card, player, "mbzhennan");
 					},
+					position: "he",
 					filterTarget: true,
 					ai1(card) {
 						return 5 - get.value(card);

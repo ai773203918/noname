@@ -35112,33 +35112,40 @@ const skills = {
 	fenyong: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
-		content() {
-			player.addTempSkill("fenyong2");
+		frequent: true,
+		filter(event, player) {
+			return !player.hasSkill("fenyong_mark");
 		},
-	},
-	fenyong2: {
-		audio: "fenyong",
-		mark: true,
-		intro: {
-			content: "防止你受到的所有伤害",
+		async content(event, trigger, player) {
+			player.addSkill("fenyong_mark");
 		},
-		trigger: { player: "damageBegin3" },
-		forced: true,
-		sourceSkill: "fenyong",
-		content() {
-			trigger.cancel();
-		},
-		ai: {
-			maixie: true,
-			maixie_hp: true,
-			nofire: true,
-			nothunder: true,
-			nodamage: true,
-			effect: {
-				target(card, player, target, current) {
-					if (get.tag(card, "damage")) {
-						return "zeroplayertarget";
-					}
+		subSkill: {
+			mark: {
+				audio: "fenyong",
+				mark: true,
+				intro: {
+					content: "防止你受到的所有伤害",
+				},
+				trigger: { player: "damageBegin3" },
+				charlotte: true,
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.cancel();
+				},
+				ai: {
+					maixie: true,
+					maixie_hp: true,
+					nofire: true,
+					nothunder: true,
+					nodamage: true,
+					effect: {
+						target(card, player, target, current) {
+							if (get.tag(card, "damage")) {
+								return "zeroplayertarget";
+							}
+						},
+					},
 				},
 			},
 		},
@@ -35149,42 +35156,55 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return player.hasSkill("fenyong2") && event.player.isIn();
+			return player.hasSkill("fenyong_mark") && event.player.isIn();
 		},
-		content() {
-			"step 0";
-			player.removeSkill("fenyong2");
-			player
-				.chooseControl("弃牌", "出杀", function () {
-					var player = _status.event.player;
-					var trigger = _status.event.getTrigger();
-					if (get.attitude(player, trigger.player) < 0) {
-						var he = trigger.player.countCards("he");
-						if (he < 2) {
-							return "出杀";
-						}
-						if (player.maxHp - player.hp >= 2 && he <= 3) {
-							return "弃牌";
-						}
-						if (player.maxHp - player.hp >= 3 && he <= 5) {
-							return "弃牌";
-						}
-						if (player.maxHp - player.hp > 3) {
-							return "弃牌";
-						}
-						return "出杀";
+		async content(event, trigger, player) {
+			player.removeSkill("fenyong_mark");
+			const list = [];
+			if (trigger.player.countDiscardableCards(player, "he") && player.isDamaged()) {
+				list.add("弃牌");
+			}
+			const card = new lib.element.VCard({ name: "sha", isCard: true}),
+				targets = game.filterPlayer(current => {
+					return player.canUse(card, current, false);
+				});
+			if (targets.length) {
+				list.add("出杀");
+			}
+			if (!list.length) {
+				return;
+			}
+			const result = list.length > 1 ? await player
+				.chooseControl("弃牌", "出杀")
+				.set("prompt", `###雪恨###弃置${get.translation(trigger.player)}${get.cnNumber(player.getDamagedHp())}张牌，或对任意一名角色使用一张杀`)
+				.set("ai", () => get.event("resultx"))
+				.set("resultx", (() => {
+					const getV = current => get.effect(current, card, player, player);
+					const target = targets.maxBy(getV),
+						eff = getV(target),
+						eff2 = get.effect(trigger.player, { name: "guohe_copy2" }, player, player);
+					if (eff < 0) {
+						return 0;
 					}
-					return "出杀";
-				})
-				.set("prompt", "弃置" + get.translation(trigger.player) + get.cnNumber(player.maxHp - player.hp) + "张牌，或对任意一名角色使用一张杀");
-			"step 1";
+					if (eff2 < 0) {
+						return 1;
+					}
+					return eff > eff2 ? 1 : 0;
+				})())
+				.forResult() : {
+					control: list[0],
+				}
+			if (!result) {
+				return;
+			}
 			if (result.control == "弃牌") {
 				player.line(trigger.player, "green");
-				if (player.hp < player.maxHp && trigger.player.countCards("he")) {
-					player.discardPlayerCard(trigger.player, true, "he", player.maxHp - player.hp);
+				const num = Math.min(player.getDamagedHp(), trigger.player.countDiscardableCards(player, "he"));
+				if (num > 0) {
+					player.discardPlayerCard(trigger.player, true, "he", num);
 				}
 			} else {
-				player.chooseUseTarget({ name: "sha" }, true, false, "nodistance");
+				await player.chooseUseTarget(card, true, false, "nodistance")
 			}
 		},
 		ai: {
