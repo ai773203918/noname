@@ -7791,7 +7791,7 @@ export class Game extends GameCompatible {
 				}
 			}
 			if (prompt != false) {
-				game.log(player1, "将座位移至", player2, "后");
+				game.log(player1, "将座位移至", player2, "前");
 			}
 		} else {
 			game.addVideo("swapSeat", null, [player1.dataset.position, player2.dataset.position]);

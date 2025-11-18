@@ -24460,7 +24460,7 @@ const skills = {
 		usable: 1,
 		filterTarget: lib.filter.notMe,
 		async contentBefore(event, trigger, player) {
-			const target = targets[0],
+			const target = event.targets[0],
 				evt = event.getParent();
 			evt._target = target;
 			const list = game.filterPlayer(function (current) {

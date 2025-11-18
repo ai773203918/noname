@@ -141,6 +141,7 @@ const skills = {
 			},
 		},
 		ai: {
+			combo: ["dccangming", "dcjichao"],
 			order: 8,
 			result: {
 				player: 1,

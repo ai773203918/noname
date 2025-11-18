@@ -131,7 +131,7 @@ const skills = {
 						suit = get.suit(cards[0]);
 					await player.give(cards, target);
 					const result = await target
-						.chooseToGive(`交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
+						.chooseToGive(player, `交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
 						.set("filterCard", card => {
 							const { player, preCards, suit } = get.event();
 							return !preCards.includes(card) && get.suit(card) == suit;
