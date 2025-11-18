@@ -140,6 +140,12 @@ const translates = {
 	potjixi_info: `若你拥有技能${get.poptip("pottuntian")}，你可移除1个“峥嵘”标记，然后将一张“田”以不计入次数且无距离限制的方式使用或打出。`,
 	potzaoxian: "凿险",
 	potzaoxian_info: `锁定技，一名角色的回合结束时，若你拥有技能${get.poptip("pottuntian")}，且你拥有0或3点蓄力点，你获得1个“峥嵘”标记。`,
+	pot_chenjiao: "势陈矫",
+	pot_chenjiao_prefix: "势",
+	potqingyan: "清严",
+	potqingyan_info: "你需要使用【闪】或【无懈可击】时，可以展示X张手牌（X为本轮发动此技能的次数且至多为5）并视为使用之，然后此技能失效直到你手牌中没有以此法展示过的牌。",
+	potceduan: "策断",
+	potceduan_info: "出牌阶段限一次，你可以选择一名攻击范围包含你的角色，其攻击范围内的所有角色同时展示一张手牌，然后你将手牌中展示牌最多颜色的所有牌当做一张不计入次数限制的【杀】对其使用，若造成伤害，你摸一张牌。",
 };
 
 export default translates;

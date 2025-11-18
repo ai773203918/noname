@@ -1,4 +1,11 @@
 export default {
+	"#potqingyan1": " 行如圭臬，无偏毫厘。",
+	"#potqingyan2": " 既执权柄，不纵私欲。",
+	"#potqingyan3": " 清风两袖，正色一堂。",
+	"#potceduan1": "若蒙救援，使为外藩，则吴人可挫也。",
+	"#potceduan2": "鄙郡虽小，形便之国也。",
+	"#potceduan3": "江东虎狼，非王师不能制之。",
+	"#pot_chenjiao:die": "纵无申胥之效，敢忘弘演之义乎？",
 	"#potjiejie1": "职守，人之大义也，安可不出？",
 	"#potjiejie2": "为人执鞭而弃其事，不祥，不可也！",
 	"#potqingshi1": "军旅之间可以济者，唯仁与恕。",

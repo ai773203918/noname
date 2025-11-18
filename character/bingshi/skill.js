@@ -3,7 +3,170 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
-
+	//势陈矫
+	potqingyan: {
+		audio: 2,
+		enable: "chooseToUse",
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const num = Math.min(event.player.getRoundHistory("useSkill", evt => evt.skill == "potqingyan").length + 1, 5);
+			event.set("qingyanCount", num);
+		},
+		filter(event, player) {
+			if (player.countCards("h", card => card.hasGaintag("potqingyan"))) {
+				return false;
+			}
+			if (player.countCards("h") < event.qingyanCount) {
+				return false;
+			}
+			return ["shan", "wuxie"].some(name => {
+				const card = new lib.element.VCard({ name, isCard: true });
+				return event.filterCard(card, player, event);
+			});
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = ["shan", "wuxie"].filter(name => {
+					const card = new lib.element.VCard({ name, isCard: true });
+					return event.filterCard(card, player, event);
+				});
+				const dialog = ui.create.dialog("清严", [list, "vcard"], "hidden");
+				dialog.direct = true;
+				return dialog;
+			},
+			backup(links, player) {
+				const num = get.event().qingyanCount;
+				return {
+					filterCard: true,
+					ignoreMod: true,
+					position: "h",
+					selectCard: num,
+					popname: true,
+					viewAs: {
+						name: links[0][2],
+						isCard: true,
+						suit: "none",
+						number: null,
+					},
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("potqingyan");
+						const evt = event.result;
+						await player.showCards(evt.cards, `${get.translation(player)}发动了【清严】`);
+						player.addGaintag(evt.cards, "potqingyan");
+						evt.card = new lib.element.VCard({ name: evt.card.name, isCard: true });
+						evt.cards = [];
+					},
+				};
+			},
+			prompt(links, player) {
+				const event = get.event();
+				return `###清严###展示${get.cnNumber(event.qingyanCount)}张手牌，视为使用一张${get.translation(links[0][2])}`;
+			},
+		},
+		hiddenCard(player, name) {
+			if (!["shan", "wuxie"].includes(name)) {
+				return false;
+			}
+			if (player.countCards("h", card => card.hasGaintag("potqingyan"))) {
+				return false;
+			}
+			const num = player.getRoundHistory("useSkill", evt => evt.skill == "potqingyan").length + 1;
+			return player.countCards("h") >= num;
+		},
+		ai: {
+			order(item, player) {
+				player ??= get.player();
+				return get.order({ name: "shan" }, player) + 0.1;
+			},
+			result: {
+				player: 1,
+			},
+		},
+	},
+	potceduan: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget(card, player, target) {
+			return target.inRange(player);
+		},
+		async content(event, trigger, player) {
+			const { target } = event,
+				targets = game.filterPlayer(current => target.inRange(current) && current.countCards("h"));
+			const map = await game.chooseAnyOL(targets, get.info(event.name).showCard, []).forResult();
+			const cards = [];
+			for (const target of targets) {
+				const result = map.get(target);
+				if (result?.bool && result.cards?.length) {
+					cards.addArray(result.cards);
+				}
+			}
+			if (!cards?.length) {
+				return;
+			}
+			await player.showCards(cards, `${get.translation(player)}发动了【策断】`).set("showers", targets);
+			const colorMap = new Map();
+			for (const card of cards) {
+				const color = get.color(card);
+				let num = 0;
+				if (colorMap.has(color)) {
+					num = colorMap.get(color);
+				}
+				num++;
+				colorMap.set(color, num);
+			}
+			const colors = Array.from(colorMap.keys()),
+				maxColor = colors.maxBy(color => colorMap.get(color));
+			if (!maxColor) {
+				return;
+			}
+			const num = colorMap.get(maxColor);
+			const cards2 = player.getCards("h", card => {
+				const color = get.color(card);
+				return colorMap.has(color) && colorMap.get(color) == num;
+			});
+			if (cards2.length) {
+				const card = get.autoViewAs({ name: "sha" }, cards2);
+				if (player.canUse(card, target, false, true)) {
+					const next = player.useCard(card, cards2, target, false);
+					await next;
+					if (player.hasHistory("sourceDamage", evt => evt.getParent(2) == next)) {
+						await player.draw();
+					}
+				}
+			}
+		},
+		showCard(player, eventId) {
+			const next = player.chooseCard("策断：展示一张手牌", "h", true)
+			next.set("id", eventId)
+			next.set("_global_waiting", true);
+			return next;
+		},
+		ai: {
+			order(item ,player) {
+				player ??= get.player();
+				return get.order({ name: "sha" }, player) + 0.1;
+			},
+			result: {
+				target(player, target) {
+					const card = get.autoViewAs({ name: "sha" }, "unsure");
+					if (player.canUse(card, target, false, true)) {
+						return get.effect(target, card, player, target);
+					}
+					return 0;
+				},
+				player(player) {
+					if (player.countCards("h") >= 4) {
+						return -3;
+					}
+					return -1;
+				},
+			},
+		},
+	},
 	//势邓艾（神笔三技能互绑的三血白）
 	pottuntian: {
 		audio: 2,
