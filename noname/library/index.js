@@ -221,7 +221,7 @@ export class Library {
 		function () {
 			_status.skillOwner = {};
 			//武将包排序
-			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
+			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "bingshi", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
 			packSort = packSort.reverse();
 			const packs = Object.keys(lib.characterPack).sort((a, b) => {
 				return packSort.indexOf(b) - packSort.indexOf(a);

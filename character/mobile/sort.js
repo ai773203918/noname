@@ -19,7 +19,6 @@ const characterSort = {
 	mobile_xlqk5: ["mb_zhangfen", "mb_zerong", "mb_cuilingyi"],
 	mobile_xlqk6: ["mb_luyu"],
 	mobile_longxue: ["mb_simazhao", "mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_jiachong"],
-	mobile_bingshiPack: ["pot_xinxianying", "mb_chenzhi", "mb_sunjun", "pot_lusu", "pot_weiyan", "guoyuan", "mb_huangzu", "mb_tianfeng", "mb_luyusheng", "pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao", "mb_zhangyan", "pot_huanjie", "pot_dengai"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	mobile_laoyouji: ["friend_zhugeliang", "friend_xushu", "friend_pangtong", "friend_cuijun", "friend_shitao"],
 	mobile_standard: ["xin_xiahoudun", "xin_zhangfei", "old_yuanshu"],
 	mobile_shenhua_feng: ["re_xiaoqiao", "xin_zhoutai"],
@@ -72,7 +71,6 @@ const characterSortTranslate = {
 	mobile_xlqk5: "袖里乾坤·组5",
 	mobile_xlqk6: "袖里乾坤·君子六艺",
 	mobile_longxue: "龙血玄黄",
-	mobile_bingshiPack: "兵势篇",
 	mobile_laoyouji: "老友季",
 	mobile_others: "其他",
 	mobile_changshi: "十常侍单体",
