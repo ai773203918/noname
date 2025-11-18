@@ -1009,68 +1009,81 @@ const skills = {
 		trigger: { global: "useCardToTarget" },
 		usable: 1,
 		filter(event, player) {
-			return (event.card.name == "sha" || get.type(event.card, null, false) == "delay") && event.player != player && !event.targets.includes(player) && player.inRange(event.target);
-		},
-		logTarget: "target",
-		check(event, player) {
-			var target = event.target,
-				source = event.player;
-			var eff1 = get.effect(target, event.card, source, player);
-			if (eff1 >= 0) {
+			if (event.card.name != "sha" && get.type(event.card, null, false) != "delay") {
 				return false;
 			}
-			var eff2 = get.effect(player, event.card, source, player);
-			if (eff2 >= 0) {
-				return true;
-			}
-			if (eff1) {
-				if (event.card.name == "sha") {
-					if (player.hasShan()) {
-						return true;
-					}
-					if (eff1 > eff2) {
-						return false;
-					}
-					if (player.hp > 2) {
-						return true;
-					}
-					if (player.hp == 2) {
-						return eff2 > eff1 / 3;
-					}
-					return false;
-				}
-			}
-			if (event.card.name == "shandian" || event.card.name == "bingliang") {
-				return true;
-			}
-			if (event.card.name == "lebu") {
-				return !player.needsToDiscard() && target.needsToDiscard();
-			}
-			return false;
+			return event.player != player && (event.target == player || player.inRange(event.target));
 		},
-		content() {
-			"step 0";
-			var target = trigger.target,
-				evt = trigger.getParent();
+		async cost(event, trigger, player) {
+			let list = [
+				["discard", `弃置${get.translation(trigger.player)}一张手牌`],
+				["draw", "摸一张牌"],
+				["all", "背水！代替其成为此牌目标"],
+			];
+			if (player.hasSkill("spjincui_delete")) {
+				list = list.slice(0, 2);
+			}
+			const result = await player
+				.chooseButton([
+					get.prompt(event.skill, trigger.target),
+					[list, "textbutton"],
+				])
+				.set("filterButton", button => {
+					const user = get.event().getTrigger().player,
+						player = get.player();
+					return button.link != "discard" || user.countDiscardableCards(player, "h");
+				})
+				.set("ai", button => {
+					const trigger = get.event().getTrigger(),
+						player = get.player(),
+						{ target, player: user, card } = trigger;
+					let eff1 = get.effect(user, { name: "guohe_copy2" }, player, player),
+						eff2 = get.effect(player, { name: "draw" }, player, player);
+					if (button.link == "discard") {
+						return eff1;
+					}
+					if (button.link == "draw") {
+						return eff2;
+					}
+					const getV = current => get.effect(current, card, user, player);
+					let eff = getV(player) - getV(target) + eff2;
+					if (user.countDiscardableCards(player, "h")) {
+						eff += eff1;
+					}
+					return eff;
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+				};
+			}
+		},
+		logTarget: "target",
+		async content(event, trigger, player) {
+			const { cost_data: link } = event,
+				{ target, player: user } = trigger;
+			if (link != "draw" && user.countDiscardableCards(player, "h")) {
+				player.line(user, "fire");
+				await player.discardPlayerCard(user, "h", true);
+			}
+			if (link != "discard") {
+				await player.draw();
+			}
+			if (link != "all") {
+				return;
+			}
+			const evt = trigger.getParent();
+			if (evt.targets?.includes(player)) {
+				return;
+			}
 			evt.triggeredTargets2.remove(target);
 			evt.targets.remove(target);
 			evt.triggeredTargets2.add(player);
 			evt.targets.add(player);
 			game.log(trigger.card, "的目标被改为了", player);
 			trigger.untrigger();
-			"step 1";
-			if (!trigger.player.countDiscardableCards(player, "h")) {
-				event._result = { index: 0 };
-			} else {
-				player.chooseControl().set("choiceList", ["摸一张牌", "弃置" + get.translation(trigger.player) + "的一张手牌"]);
-			}
-			"step 2";
-			if (result.index == 0) {
-				player.draw();
-			} else {
-				player.line(trigger.player, "fire");
-				player.discardPlayerCard(trigger.player, true, "h");
-			}
 		},
 		ai: {
 			threaten: 1.4,
@@ -1085,9 +1098,18 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			player.awakenSkill(event.name);
+		prompt() {
+			const player = get.player();
+			const num = player.hp - player.getAllHistory("useSkill", evt => evt.skill == "spzhenting").length;
+			let str = "与一名其他角色交换座次";
+			if (num > 0) {
+				str = `${str}并失去${num}点体力`;
+			}
+			return str;
+		},
+		async content(event, trigger, player) {
+			const { name, target } = event;
+			player.awakenSkill(name);
 			game.broadcastAll(
 				function (target1, target2) {
 					game.swapSeat(target1, target2);
@@ -1095,10 +1117,20 @@ const skills = {
 				player,
 				target
 			);
-			"step 1";
-			if (player.hp > 0) {
-				player.loseHp(player.hp);
+			const num = player.hp - player.getAllHistory("useSkill", evt => evt.skill == "spzhenting").length;
+			if (num > 0) {
+				await player.loseHp(num);
 			}
+			if (game.hasGlobalHistory("changeHp", evt => {
+				if (evt.player != player || !evt.num) {
+					return false;
+				}
+				return evt.getParent().name == "loseHp" && evt.getParent(2) == event;
+			})) {
+				return;
+			}
+			await player.gainMaxHp();
+			player.addSkill("spjincui_delete");
 		},
 		ai: {
 			order: 5,
@@ -1107,13 +1139,10 @@ const skills = {
 					if (player.hasUnknown()) {
 						return 0;
 					}
-					if (!player.countCards("h", { name: ["tao", "jiu"] })) {
-						return 0;
-					}
-					var num = 0,
+					let num = 0,
 						current = player.next;
 					while (true) {
-						num -= get.sgn(get.attitude(player, current));
+						num -= get.sgnAttitude(player, current);
 						if (current == target) {
 							break;
 						}
@@ -1123,14 +1152,17 @@ const skills = {
 						if (current == player) {
 							break;
 						}
-						num += get.sgn(get.attitude(player, current)) * 1.1;
+						num += get.sgnAttitude(player, current) * 1.1;
 						current = current.next;
 					}
-					if (num < player.hp) {
-						return 0;
-					}
-					return num + 1 - player.hp;
+					const count = Math.max(0, player.hp - player.getAllHistory("useSkill", evt => evt.skill == "spzhenting").length);
+					return num + 1 - count;
 				},
+			},
+		},
+		subSkill: {
+			delete: {
+				charlotte: true,
 			},
 		},
 	},
