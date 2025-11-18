@@ -53,6 +53,7 @@ window.noname_character_replace = {
 	chengpu: ["chengpu", "ol_chengpu", "xin_chengpu", "re_chengpu", "tw_chengpu", "std_chengpu", "ns_chengpu"],
 	chengui: ["chengui", "mb_chengui"],
 	chengyu: ["chengyu", "dc_sb_chengyu", "std_chengyu", "xy_chengyu"],
+	chenjiao: ["chenjiao", "pot_chenjiao"],
 	chenlin: ["chenlin", "dc_sb_chenlin"],
 	chenqun: ["chenqun", "dc_chenqun", "re_chenqun", "old_chenqun"],
 	chenshi: ["chenshi", "ty_chenshi"],

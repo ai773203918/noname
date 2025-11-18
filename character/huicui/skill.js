@@ -2,6 +2,138 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//马邈
+	dczhangguan: {
+		audio: 2,
+		trigger: {
+			global: "phaseBegin",
+		},
+		async cost(event, trigger, player) {
+			const num = player.countCards("h") - player.hp;
+			if (num > 0) {
+				event.result = await player
+					.chooseToDiscard(get.prompt2(event.skill), "h", num)
+					.set("ai", card => {
+						if (get.event("eff")) {
+							return 10 - get.value(card);
+						}
+						return 0;
+					})
+					.set("eff", (() => {
+						const target = _status.currentPhase;
+						if (!target?.countGainableCards(player, "he")) {
+							return false;
+						}
+						const eff = get.effect(target, { name: "shunshou_copy2" }, player, player);
+						if (eff < 0 || get.attitude(player, target) > 0) {
+							return false;
+						}
+						const bonos = player.hasSkill("dccongfeng") ? 3 : 6;
+						return eff > Math.sqrt(num) * bonos;
+					})())
+					.set("chooseonly", true)
+					.forResult();
+			} else {
+				event.result = await player
+					.chooseBool(get.prompt2(event.skill))
+					.set("choice", player.isDamaged() || num < -1 || get.attitude(player, trigger.player) > 0)
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const count = player.countCards("h");
+			if (count < player.hp) {
+				await player.drawTo(player.hp);
+			}
+			if (event.cards?.length) {
+				await player.modedDiscard(event.cards);
+			}
+			const num = player.countCards("h") - count;
+			if (num == 0) {
+				await player.recover();
+			}
+			if (num < 0) {
+				const target = _status.currentPhase;
+				if (target?.isIn() && target.countGainableCards(player, "he")) {
+					await player.gainPlayerCard(target, "he", true);
+				}
+			}
+			player.addTempSkill("dczhangguan_effect");
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					global: "useCard",
+				},
+				charlotte: true,
+				filter(event, player) {
+					if (event.player == player) {
+						return false;
+					}
+					const evts = game.getGlobalHistory("useCard", evt => evt.player != player);
+					return evts?.length > 0 && get.color(event.card) == get.color(evts[0].card);
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.directHit.add(player);
+				},
+			},
+		},
+	},
+	dccongfeng: {
+		audio: 2,
+		trigger: {
+			global: ["gainAfter", "loseAsyncAfter"],
+		},
+		getIndex(event, player) {
+			if (!event.getl || !event.getg) {
+				return [];
+			}
+			const list = [],
+				gains = event.getg(player),
+				loses = event.getl(player).cards2;
+			game.filterPlayer(current => {
+				const gains2 = event.getg(current),
+					loses2 = event.getl(current).cards2;
+				if (current == player) {
+					return false;
+				}
+				if (gains2.length && loses.length && gains2.containsSome(...loses)) {
+					list.add([current, player]);
+				}
+				if (gains.length && loses2.length && loses2.containsSome(...gains)) {
+					list.add([player, current]);
+				}
+				return true;
+			});
+			return list;
+		},
+		filter(event, player, name, list) {
+			if (event.getParent().name == "dccongfeng") {
+				return false;
+			}
+			const [gain, lose] = list;
+			return lose.countGainableCards(gain, "he");
+		},
+		async cost(event, trigger, player) {
+			const [gain, lose] = event.indexedData;
+			event.result = await gain
+				.chooseBool(get.prompt(event.skill, lose, gain), "随机获得其一张牌")
+				.set("choice", get.effect(lose, { name: "shunshou_copy2" }, gain, gain) > 0)
+				.forResult();
+		},
+		logTarget(event, player, name, list) {
+			return list.find(current => current != player);
+		},
+		async content(event, trigger, player) {
+			const [gain, lose] = event.indexedData;
+			const cards = lose.getGainableCards(gain, "he");
+			if (cards?.length) {
+				await gain.gain(cards.randomGets(1), "giveAuto");
+			}
+		},
+	},
 	//吉吉国王
 	dczouyi: {
 		audio: 2,
