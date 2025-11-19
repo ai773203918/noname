@@ -1,4 +1,10 @@
 const characters = {
+	sp_zhonghui: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbsizi", "mbxiezhi", "mbyunan", "mbkechang"],
+	},
 	mb_cuilingyi: {
 		sex: "female",
 		group: "wei",

@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	mbkechang(player, skill) {
+		if (player.getStorage(skill, false)) {
+			return lib.translate[`${skill}_rewrite_info`];
+		}
+		return lib.translate[`${skill}_info`];
+	},
 	mbweizhuang(player, skill) {
 		if (!player) {
 			return lib.translate[`${skill}_info`];
