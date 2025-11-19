@@ -1024,10 +1024,7 @@ const skills = {
 				list = list.slice(0, 2);
 			}
 			const result = await player
-				.chooseButton([
-					get.prompt(event.skill, trigger.target),
-					[list, "textbutton"],
-				])
+				.chooseButton([get.prompt(event.skill, trigger.target), [list, "textbutton"]])
 				.set("filterButton", button => {
 					const user = get.event().getTrigger().player,
 						player = get.player();
@@ -1121,12 +1118,14 @@ const skills = {
 			if (num > 0) {
 				await player.loseHp(num);
 			}
-			if (game.hasGlobalHistory("changeHp", evt => {
-				if (evt.player != player || !evt.num) {
-					return false;
-				}
-				return evt.getParent().name == "loseHp" && evt.getParent(2) == event;
-			})) {
+			if (
+				game.hasGlobalHistory("changeHp", evt => {
+					if (evt.player != player || !evt.num) {
+						return false;
+					}
+					return evt.getParent().name == "loseHp" && evt.getParent(2) == event;
+				})
+			) {
 				return;
 			}
 			await player.gainMaxHp();
@@ -2232,12 +2231,15 @@ const skills = {
 					var target2 = result.targets[0];
 					player.line(target2, "green");
 					target
-						.chooseToUse(function (card, player, event) {
-							if (get.name(card) != "sha") {
-								return false;
-							}
-							return lib.filter.filterCard.apply(this, arguments);
-						}, "对" + get.translation(target2) + "使用一张杀，否则交给其两张牌")
+						.chooseToUse(
+							function (card, player, event) {
+								if (get.name(card) != "sha") {
+									return false;
+								}
+								return lib.filter.filterCard.apply(this, arguments);
+							},
+							"对" + get.translation(target2) + "使用一张杀，否则交给其两张牌"
+						)
 						.set("targetRequired", true)
 						.set("complexSelect", true)
 						.set("complexTarget", true)
@@ -6454,12 +6456,15 @@ const skills = {
 		content() {
 			"step 0";
 			target
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "引裾：对" + get.translation(player) + "使用一张杀，或跳过下回合的出牌阶段和弃牌阶段")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"引裾：对" + get.translation(player) + "使用一张杀，或跳过下回合的出牌阶段和弃牌阶段"
+				)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)
@@ -6671,13 +6676,16 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(function (card, player, event) {
-					var name = get.name(card);
-					if (name != "sha" && name != "juedou") {
-						return false;
-					}
-					return lib.filter.cardEnabled.apply(this, arguments);
-				}, "合击：是否对" + get.translation(trigger.targets[0]) + "使用一张【杀】或【决斗】？")
+				.chooseToUse(
+					function (card, player, event) {
+						var name = get.name(card);
+						if (name != "sha" && name != "juedou") {
+							return false;
+						}
+						return lib.filter.cardEnabled.apply(this, arguments);
+					},
+					"合击：是否对" + get.translation(trigger.targets[0]) + "使用一张【杀】或【决斗】？"
+				)
 				.set("logSkill", "heji")
 				.set("complexSelect", true)
 				.set("filterTarget", function (card, player, target) {

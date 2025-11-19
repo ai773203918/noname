@@ -19,18 +19,21 @@ const skills = {
 						}
 						return 0;
 					})
-					.set("eff", (() => {
-						const target = _status.currentPhase;
-						if (!target?.countGainableCards(player, "he")) {
-							return false;
-						}
-						const eff = get.effect(target, { name: "shunshou_copy2" }, player, player);
-						if (eff < 0 || get.attitude(player, target) > 0) {
-							return false;
-						}
-						const bonos = player.hasSkill("dccongfeng") ? 3 : 6;
-						return eff > Math.sqrt(num) * bonos;
-					})())
+					.set(
+						"eff",
+						(() => {
+							const target = _status.currentPhase;
+							if (!target?.countGainableCards(player, "he")) {
+								return false;
+							}
+							const eff = get.effect(target, { name: "shunshou_copy2" }, player, player);
+							if (eff < 0 || get.attitude(player, target) > 0) {
+								return false;
+							}
+							const bonos = player.hasSkill("dccongfeng") ? 3 : 6;
+							return eff > Math.sqrt(num) * bonos;
+						})()
+					)
 					.set("chooseonly", true)
 					.forResult();
 			} else {
@@ -6822,12 +6825,15 @@ const skills = {
 			"step 2";
 			if (trigger.source && trigger.source.isIn() && player.hasHistory("gain", evt => evt.getParent(2) == event.recast && evt.cards.some(value => get.name(value) == "sha"))) {
 				player
-					.chooseToUse(function (card) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "击逆：是否对" + get.translation(trigger.source) + "使用一张不可被响应的杀？")
+					.chooseToUse(
+						function (card) {
+							if (get.name(card) != "sha") {
+								return false;
+							}
+							return lib.filter.filterCard.apply(this, arguments);
+						},
+						"击逆：是否对" + get.translation(trigger.source) + "使用一张不可被响应的杀？"
+					)
 					.set("complexSelect", true)
 					.set("filterTarget", function (card, player, target) {
 						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) {
@@ -7217,12 +7223,15 @@ const skills = {
 			player.removeSkill("dcmoyu_add");
 			const num = player.getStorage("dcmoyu_clear").length;
 			const result = await target
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "是否对" + get.translation(player) + "使用一张无距离限制的【杀】？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"是否对" + get.translation(player) + "使用一张无距离限制的【杀】？"
+				)
 				.set("targetRequired", true)
 				.set("complexTarget", true)
 				.set("complexSelect", true)
@@ -7372,12 +7381,15 @@ const skills = {
 			"step 1";
 			var num = player.getStorage("oldmoyu_clear").length;
 			target
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "是否对" + get.translation(player) + "使用一张无距离限制的【杀】（伤害基数为" + num + "）？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"是否对" + get.translation(player) + "使用一张无距离限制的【杀】（伤害基数为" + num + "）？"
+				)
 				.set("targetRequired", true)
 				.set("complexTarget", true)
 				.set("complexSelect", true)
@@ -8254,16 +8266,19 @@ const skills = {
 							}
 						}
 					}
-					game.broadcastAll(function (ind) {
-						var bgColor = lib.skill.dchuiling_hint.markColor[ind][0],
-							text = '<span style="color: ' + lib.skill.dchuiling_hint.markColor[ind][1] + '">灵</span>';
-						for (var player of game.players) {
-							if (player.marks.dchuiling) {
-								player.marks.dchuiling.firstChild.style.backgroundColor = bgColor;
-								player.marks.dchuiling.firstChild.innerHTML = text;
+					game.broadcastAll(
+						function (ind) {
+							var bgColor = lib.skill.dchuiling_hint.markColor[ind][0],
+								text = '<span style="color: ' + lib.skill.dchuiling_hint.markColor[ind][1] + '">灵</span>';
+							for (var player of game.players) {
+								if (player.marks.dchuiling) {
+									player.marks.dchuiling.firstChild.style.backgroundColor = bgColor;
+									player.marks.dchuiling.firstChild.innerHTML = text;
+								}
 							}
-						}
-					}, Math.sign(black - red) + 1);
+						},
+						Math.sign(black - red) + 1
+					);
 				},
 			},
 		},
@@ -9039,7 +9054,7 @@ const skills = {
 				});
 			"step 1";
 			if (result.bool) {
-				player.logSkill("dcweidang"), player.lose(result.cards[0], ui.cardPile);
+				(player.logSkill("dcweidang"), player.lose(result.cards[0], ui.cardPile));
 				game.broadcastAll(function (player) {
 					var cardx = ui.create.card();
 					cardx.classList.add("infohidden");
@@ -14381,7 +14396,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.countMark("weilie_used") <= (player.getStorage("fuping").length + 1) && player.countCards("he") > 0 && game.hasPlayer(current => current.isDamaged());
+			return player.countMark("weilie_used") <= player.getStorage("fuping").length + 1 && player.countCards("he") > 0 && game.hasPlayer(current => current.isDamaged());
 		},
 		filterCard: true,
 		position: "he",
@@ -16042,7 +16057,10 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const { cards, targets: [target] } = event;
+			const {
+				cards,
+				targets: [target],
+			} = event;
 			await player.discard(cards);
 			const num = cards.length;
 			let result;

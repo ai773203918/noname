@@ -183,7 +183,7 @@ window.noname_character_replace = {
 	lvfan: ["lvfan", "sp_lvfan", "std_lvfan"],
 	lvkuanglvxiang: ["lvkuanglvxiang", "dc_lvkuanglvxiang"],
 	lvlingqi: ["lvlingqi", "std_lvlingqi", "shinin_lvlingqi", "ol_lvlingqi"],
-	lvmeng: ["lvmeng", "re_lvmeng", "sb_lvmeng", "sp_lvmeng", "ns_lvmeng", "she_lvmeng", "sxrm_lvmeng"],
+	lvmeng: ["lvmeng", "re_lvmeng", "sb_lvmeng", "sp_lvmeng", "ns_lvmeng", "she_lvmeng", "sxrm_lvmeng", "dc_sb_lvmeng"],
 	machao: ["machao", "re_machao", "sp_machao", "dc_sp_machao", "one_dc_sp_machao", "two_dc_sp_machao", "v_machao", "sb_machao", "jsrg_machao", "ps_machao", "old_machao"],
 	madai: ["old_madai", "ol_madai", "re_madai", "tw_madai", "madai"],
 	majun: ["majun", "yj_majun", "std_majun", "cx_majun", "qq_majun"],

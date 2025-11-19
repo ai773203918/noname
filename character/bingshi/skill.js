@@ -140,13 +140,13 @@ const skills = {
 			}
 		},
 		showCard(player, eventId) {
-			const next = player.chooseCard("策断：展示一张手牌", "h", true)
-			next.set("id", eventId)
+			const next = player.chooseCard("策断：展示一张手牌", "h", true);
+			next.set("id", eventId);
 			next.set("_global_waiting", true);
 			return next;
 		},
 		ai: {
-			order(item ,player) {
+			order(item, player) {
 				player ??= get.player();
 				return get.order({ name: "sha" }, player) + 0.1;
 			},
