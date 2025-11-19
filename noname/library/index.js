@@ -896,7 +896,7 @@ export class Library {
 		qizhengxiangsheng: ["sha", "shan"],
 		juedou: ["sha"],
 		nanman: ["sha"],
-		jiedao: ["jiedao"],
+		jiedao: ["sha"],
 		//所有锦囊都可以用无懈可击响应
 		trick: ["wuxie"],
 		//所有伤害牌都可以用草船借箭响应
