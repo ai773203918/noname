@@ -2644,6 +2644,252 @@ const skills = {
 			},
 		},
 	},
+	//SP徐氏 by柴油鹿鹿
+	zc26_longchen: {
+		audio: "wengua",
+		enable: "phaseUse",
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				const list = [
+					["damage", "对一名角色造成1点雷电伤害"],
+					["draw", "令一名角色摸一张牌并回复1点体力"],
+				];
+				return ui.create.dialog("龙谶", [list, "textbutton"], "hidden");
+			},
+			check(button) {
+				const player = get.player();
+				const getE = current => {
+					if (button.link == "damage") {
+						return get.damageEffect(current, player, player);
+					}
+					return get.effect(current, { name: "draw" }, player, player) + get.recoverEffect(current, player, player);
+				};
+				return getE(game.filterPlayer(() => true).maxBy(getE));
+			},
+			backup(links, player) {
+				return {
+					audio: "zc26_longchen",
+					control: links[0],
+					async content(event, trigger, player) {
+						const { control } = get.info(event.name),
+							{ throwShengbei } = get.info("zc26_longchen");
+						let num = await throwShengbei(player);
+						if (typeof num != "number") {
+							return;
+						}
+						let count = 1;
+						if (num == 1) {
+							count++;
+						} else {
+							player.addMark("zc26_longchen", Math.max(1, 2 - num));
+						}
+						while (count > 0) {
+							count--;
+							const result2 = await player
+								.chooseTarget(control == "damage" ? "对一名角色造成1点雷电伤害" : "令一名角色摸一张牌并回复1点体力", true)
+								.set("control", control)
+								.set("ai", target => {
+									const { player, control } = get.event();
+									if (control == "draw") {
+										return get.effect(target, { name: "draw" }, player, player) + get.recoverEffect(target, player, player);
+									}
+									return get.damageEffect(target, player, player, "thunder");
+								})
+								.forResult();
+							if (!result2?.bool) {
+								continue;
+							}
+							const target = result2.targets[0];
+							player.line(target, control == "draw" ? "wood" : "thunder");
+							if (control == "draw") {
+								await target.draw();
+								await target.recover(1);
+							} else {
+								await target.damage("thunder");
+							}
+						}
+					},
+				};
+			},
+			prompt() {
+				return "点击确定投掷龙鳞贝询问神明";
+			},
+		},
+		async throwShengbei(player) {
+			game.log(player, "掷出了圣杯向神明请示");
+			let num1 = get.rand(0, 1),
+				num2 = get.rand(0, 1),
+				list = ["yang", "yin"];
+			game.broadcastAll(() => {
+				ui.arena.classList.add("thrownhighlight");
+			});
+			game.addVideo("thrownhighlight1");
+			const shengBei1 = game.createCard(`shengbei_left_${list[num1]}`, "", ""),
+				shengBei2 = game.createCard(`shengbei_right_${list[num2]}`, "", "");
+			let cardsetions = {};
+			if (lib.config.card_animation_info) {
+				cardsetions[player.playerid] = get.cardsetion(player);
+			}
+			const throwc = function (node) {
+				node.style.setProperty("transform-origin", "center", "important");
+				if (lib.config.cardback_style != "default") {
+					node.style.transitionProperty = "none";
+					ui.refresh(node);
+					node.classList.add("infohidden");
+					ui.refresh(node);
+					node.style.transitionProperty = "";
+				} else {
+					node.classList.add("infohidden");
+				}
+				if (cardsetions) {
+					const next = ui.create.div(".cardsetion", cardsetions[player.playerid] || "", node);
+					next.style.setProperty("display", "block", "important");
+					if (node.node) {
+						if (node.node.cardsetion) {
+							node.node.cardsetion.remove();
+							delete node.node.cardsetion;
+						}
+						node.node.cardsetion = next;
+					}
+				}
+				node.style.transform = "perspective(600px) rotateY(180deg) translateX(0)";
+				const onEnd01 = function () {
+					node.style.transition = "all ease-in 0.3s";
+					node.style.transform = "perspective(600px) rotateY(270deg) translateX(0px)";
+					const onEnd = function () {
+						node.classList.remove("infohidden");
+						node.style.transition = "all 0s";
+						ui.refresh(node);
+						node.style.transform = "perspective(600px) rotateY(-90deg) translateX(0px)";
+						ui.refresh(node);
+						node.style.transition = "";
+						ui.refresh(node);
+						node.style.transform = "";
+					};
+					node.listenTransition(onEnd);
+				};
+				onEnd01();
+			};
+			game.broadcastAll(
+				function (player, throwc, card1, card2) {
+					const node1 = player.$throwxy2(card1, "calc(50% - 114px)", "calc(50% - 52px)", "perspective(600px) rotateY(90deg) translateX(0px)", true);
+					throwc(node1);
+					const node2 = player.$throwxy2(card2, "50%", "calc(50% - 52px)", "perspective(600px) rotateY(90deg) translateX(0px)", true);
+					throwc(node2);
+				},
+				player,
+				throwc,
+				shengBei1,
+				shengBei2
+			);
+			game.addVideo("compare", player, [get.cardInfo(shengBei1), player.dataset.position, get.cardInfo(shengBei2)]);
+			//等待一会儿
+			await game.delay(0, 1500);
+			const num = num1 + num2;
+			const result = ["阴杯", "圣杯", "笑杯"][num];
+			const map = {
+					阴杯: ["thunder", "thundertext"],
+					笑杯: ["soil", "firetext"],
+					圣杯: ["metal", "yellowtext"],
+				},
+				str = `${get.translation(player)}的掷杯结果为：<span class=${map[result][1]}>${result}</span>`;
+			player.popup(result, map[result][0]);
+			game.log("神明给", player, `的答复是<span class=${map[result][1]}>${result}</span>`);
+			game.broadcastAll(str => {
+				const dialog = ui.create.dialog(str);
+				dialog.classList.add("center");
+				setTimeout(() => {
+					dialog.close();
+				}, 1000);
+			}, str);
+			await game.delay(2);
+			game.broadcastAll(() => {
+				ui.arena.classList.remove("thrownhighlight");
+			});
+			game.addVideo("thrownhighlight2");
+			game.broadcastAll(() => {
+				ui.clear();
+			});
+			return num;
+		},
+		marktext: "怒",
+		intro: {
+			name: "龙怒(龙谶)",
+			name2: "龙怒",
+			content: "mark",
+		},
+		subSkill: {
+			backup: {},
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	zc26_tianqi: {
+		audio: 2,
+		trigger: {
+			player: ["phaseZhunbeiBegin", "dying"],
+		},
+		juexingji: true,
+		forced: true,
+		skillAnimation: true,
+		animationColor: "ice",
+		filter(event, player, name) {
+			return name == "dying" || player.countMark("zc26_longchen") >= 3;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			player.changeSkin({ characterName: "zc26_sp_xushi" }, "zc26_sp_xushi_shadow");
+			await player.loseMaxHp();
+			await player.recoverTo(player.maxHp);
+			await player.addSkills("zc26_shouxin");
+			const func = async target => {
+				if (target.hasSex("male")) {
+					player.line(target, "thunder");
+					await target.damage("thunder");
+				}
+			};
+			await game.doAsyncInOrder(game.filterPlayer(() => true), func);
+		},
+		derivation: "zc26_shouxin",
+	},
+	zc26_shouxin: {
+		audio: 2,
+		trigger: {
+			target: "useCardToTarget",
+			source: "damageSource",
+		},
+		filter(event, player) {
+			if (event.name == "damage") {
+				return event.hasNature();
+			}
+			return event.player != player && player.hasMark("zc26_longchen");
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name == "damage") {
+				event.result = {
+					bool: true,
+				};
+				return;
+			}
+			event.result = await player
+				.chooseBool(get.prompt(event.skill), `移去1枚“龙怒”并令${get.translation(trigger.card)}对你无效`)
+				.set("choice", get.effect(player, trigger.card, trigger.player, player) < 0)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "damage") {
+				await player.draw();
+			} else {
+				player.removeMark("zc26_longchen", 1);
+				trigger.getParent().excluded.add(player);
+			}
+		},
+	},
 	//26珍藏太史慈
 	zc26_tianyi: {
 		enable: "phaseUse",
@@ -35164,7 +35410,7 @@ const skills = {
 			if (trigger.player.countDiscardableCards(player, "he") && player.isDamaged()) {
 				list.add("弃牌");
 			}
-			const card = new lib.element.VCard({ name: "sha", isCard: true}),
+			const card = new lib.element.VCard({ name: "sha", isCard: true }),
 				targets = game.filterPlayer(current => {
 					return player.canUse(card, current, false);
 				});
@@ -35174,26 +35420,32 @@ const skills = {
 			if (!list.length) {
 				return;
 			}
-			const result = list.length > 1 ? await player
-				.chooseControl("弃牌", "出杀")
-				.set("prompt", `###雪恨###弃置${get.translation(trigger.player)}${get.cnNumber(player.getDamagedHp())}张牌，或对任意一名角色使用一张杀`)
-				.set("ai", () => get.event("resultx"))
-				.set("resultx", (() => {
-					const getV = current => get.effect(current, card, player, player);
-					const target = targets.maxBy(getV),
-						eff = getV(target),
-						eff2 = get.effect(trigger.player, { name: "guohe_copy2" }, player, player);
-					if (eff < 0) {
-						return 0;
-					}
-					if (eff2 < 0) {
-						return 1;
-					}
-					return eff > eff2 ? 1 : 0;
-				})())
-				.forResult() : {
-					control: list[0],
-				}
+			const result =
+				list.length > 1
+					? await player
+							.chooseControl("弃牌", "出杀")
+							.set("prompt", `###雪恨###弃置${get.translation(trigger.player)}${get.cnNumber(player.getDamagedHp())}张牌，或对任意一名角色使用一张杀`)
+							.set("ai", () => get.event("resultx"))
+							.set(
+								"resultx",
+								(() => {
+									const getV = current => get.effect(current, card, player, player);
+									const target = targets.maxBy(getV),
+										eff = getV(target),
+										eff2 = get.effect(trigger.player, { name: "guohe_copy2" }, player, player);
+									if (eff < 0) {
+										return 0;
+									}
+									if (eff2 < 0) {
+										return 1;
+									}
+									return eff > eff2 ? 1 : 0;
+								})()
+							)
+							.forResult()
+					: {
+							control: list[0],
+						};
 			if (!result) {
 				return;
 			}
@@ -35204,7 +35456,7 @@ const skills = {
 					player.discardPlayerCard(trigger.player, true, "he", num);
 				}
 			} else {
-				await player.chooseUseTarget(card, true, false, "nodistance")
+				await player.chooseUseTarget(card, true, false, "nodistance");
 			}
 		},
 		ai: {

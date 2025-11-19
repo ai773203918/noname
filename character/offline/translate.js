@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const translates = {
+	zc26_sp_xushi: "26SP徐氏",
+	zc26_sp_xushi_prefix: "26|SP",
+	zc26_longchen: "龙谶",
+	zc26_longchen_info: `出牌阶段限一次，你可以选择一项：1.对一名角色造成1点雷电伤害；2.令一名角色摸一张牌并回复1点体力。在执行效果前，你投掷${get.poptip({
+		id: "longchen_shengbei",
+		name: "龙鳞贝",
+		type: "character",
+		info: "投出两个龙鳞贝，若结果为：<br><li>圣杯：一阴一阳，额外执行一次所选效果。<br><li>笑杯：双阳，获得一枚“龙怒”。<br><li>阴杯：双阴，获得两枚“龙怒”。",
+	})}询问神明。`,
+	zc26_tianqi: "天泣",
+	zc26_tianqi_info: `觉醒技，准备阶段若你的“龙怒”标记不小于3枚，或当你进入濒死状态时，你减1点体力上限并回复所有体力，然后你获得${get.poptip("zc26_shouxin")}，对所有男性角色造成1点雷电伤害。`,
+	zc26_shouxin: "守心",
+	zc26_shouxin_info: "当你造成属性伤害后，你摸一张牌；当你成为其他角色使用牌的目标时，你可以移去1枚“龙怒”取消之。",
 	zc26_lusu: "26界鲁肃",
 	zc26_lusu_prefix: "26|界",
 	zc26_haoshi: "好施",

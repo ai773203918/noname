@@ -1,6 +1,22 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	shengbei_left_yin: {
+		fullskin: true,
+		noname: true,
+	},
+	shengbei_left_yang: {
+		fullskin: true,
+		noname: true,
+	},
+	shengbei_right_yin: {
+		fullskin: true,
+		noname: true,
+	},
+	shengbei_right_yang: {
+		fullskin: true,
+		noname: true,
+	},
 	yiguzuoqi: {
 		derivation: "xy_lvbu",
 		audio: true,
