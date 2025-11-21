@@ -1434,7 +1434,7 @@ const skills = {
 		frequent: true,
 		preHidden: true,
 		filter(event) {
-			return get.type(event.card) == "trick" && event.card.isCard;
+			return get.type(event.card) == "trick";
 		},
 		async content(event, trigger, player) {
 			player.draw("nodelay");
