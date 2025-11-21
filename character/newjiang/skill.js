@@ -956,7 +956,7 @@ const skills = {
 			player.addSkill("pyshenduan_max");
 		},
 		check(event, player) {
-			if (get.subtypes(event.card) == "equip4" && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
+			if (get.subtypes(event.card)?.includes("equip4") && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
 				return false;
 			}
 			return true;
@@ -968,6 +968,7 @@ const skills = {
 			const subtypes = player.getStorage("pyshenduan_used");
 			return !get.subtypes(event.card).every(type => subtypes.includes(type));
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			const types = get.subtypes(trigger.card);
 			const subtypes = (player.getStorage("pyshenduan_used") || []).addArray(types);

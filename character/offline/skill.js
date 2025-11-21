@@ -9734,11 +9734,11 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			await player.draw();
-			if (trigger.target == player) {
+			if (trigger.target == player || !trigger.target?.isIn()) {
 				return;
 			}
 			const result = await player.chooseToGive(true, "he", trigger.target).set("visibleMove", true).forResult();
-			if (!result.bool) {
+			if (!result?.bool) {
 				return;
 			}
 			await game.delay();

@@ -2428,6 +2428,7 @@ const skills = {
 				filter(event, player) {
 					return player.countCards("e") == player.countCards("h", card => card.hasGaintag("dcjigu"));
 				},
+				forced: true,
 				prompt2(event, player) {
 					return (
 						"摸" +
