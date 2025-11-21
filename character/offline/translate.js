@@ -1211,7 +1211,17 @@ const translates = {
 	tybenxiang: "奔降",
 	tybenxiang_info: "锁定技，你杀死一名角色后，你令一名其他角色摸三张牌。",
 	tyxiezhan: "协战",
-	tyxiezhan_info: "锁定技，①游戏开始时，你选择「范疆」或「张达」并变更武将牌。②出牌阶段开始时，你变更武将牌。",
+	tyxiezhan_info: `锁定技，①游戏开始时，你选择${get.poptip({
+		id: "character_ty_fanjiang",
+		name: "范疆",
+		type: "character",
+		dialog: "characterDialog",
+	})}或${get.poptip({
+		id: "character_ty_zhangda",
+		name: "张达",
+		type: "character",
+		dialog: "characterDialog",
+	})}并变更武将牌。②出牌阶段开始时，你变更武将牌。`,
 	tyxingsha: "刑杀",
 	tyxingsha_info: "每回合限一次，出牌阶段，你可以将至多两张牌置于你的武将牌上，称为“怨”。结束阶段，你可以将两张“怨”当做无距离限制的普通【杀】使用。",
 	tyxianshou: "献首",
