@@ -11061,11 +11061,11 @@ const skills = {
 					content: "摸牌阶段少摸一张牌，装备牌失效",
 				},
 				mod: {
-					attackRange(player, num) {
+					attackRangeBase(player, num) {
 						if (player != _status.currentPhase) {
 							return;
 						}
-						return num + 1 - player.getEquipRange();
+						return 1;
 					},
 					globalFrom(from, to, distance) {
 						if (from != _status.currentPhase) {

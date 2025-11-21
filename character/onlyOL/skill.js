@@ -348,16 +348,16 @@ const skills = {
 					player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 				},
 				mod: {
-					attackRange(player, num) {
+					attackRangeBase(player) {
 						const equips = player.getStorage("olfuzai");
-						let range = 0;
+						let range = 1;
 						for (const card of equips) {
 							const info = lib.card[card];
 							if (info?.distance?.attackFrom) {
 								range -= info.distance.attackFrom;
 							}
 						}
-						return num + range;
+						return Math.max(player.getEquipRange(player.getCards("e")), range);
 					},
 				},
 			},

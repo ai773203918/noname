@@ -6,19 +6,13 @@ const skills = {
 	clandingan: {
 		audio: 2,
 		trigger: {
-			player: "useCard",
+			player: "useCardAfter",
 		},
-		forced: true,
+		locked: true,
 		filter(event, player) {
 			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) > 0;
 		},
-		async content(event, trigger, player) {
-			player
-				.when("useCardAfter")
-				.filter(evt => evt == trigger)
-				.step(get.info(event.name).contentx);
-		},
-		async contentx(event, trigger, player) {
+		async cost(event, trigger, player) {
 			const targets = game.filterPlayer(current => {
 				if (trigger.targets?.includes(current)) {
 					return false;
@@ -29,26 +23,26 @@ const skills = {
 				targets.length > 1
 					? await player
 							.chooseTarget(
-								`定安：令一名不为此牌目标的其他角色与你各摸一张牌`,
+								`定安：与任意名不为此牌目标的其他角色各摸一张牌`,
 								(card, player, target) => {
 									return get.event("targetx").includes(target);
 								},
-								true
+								true,
+								[1, targets.length]
 							)
 							.set("targetx", targets)
-							.set("prompt2", "然后你令你与其之中手牌最多的角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
+							.set("prompt2", "然后你令之中手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
 							.set("ai", target => {
-								const player = get.player(),
-									abs = player.countCards("h") - target.countCards("h"),
-									max = abs > 0 ? player : target;
-								let eff = 0;
-								for (const current of [player, target]) {
-									eff += get.effect(current, { name: "draw" }, player, player);
-									if (abs != 0 && max == current) {
-										eff += get.damageEffect(current, player, player) / 2;
-									}
+								const { player, targetx } = get.event(),
+									getD = current => get.effect(current, { name: "draw" }, player, player);
+								const eff = getD(target);
+								if (eff > 0) {
+									return 2;
 								}
-								return eff;
+								if (ui.selected.targets.every(current => getD(current) > 0 && current.countCards("h") < target.countCards("h"))) {
+									return -eff;
+								}
+								return 0;
 							})
 							.forResult()
 					: {
@@ -58,9 +52,19 @@ const skills = {
 			if (!result?.bool) {
 				return;
 			}
-			const draws = [player, ...result.targets];
-			await game.asyncDraw(draws);
-			const currents = draws.filter(current => current.isMaxHandcard(true, currentx => draws.includes(currentx)));
+			let targets2 = [player];
+			if (result.targets?.length) {
+				targets2.addArray(result.targets);
+			}
+			event.result = {
+				bool: true,
+				targets: targets2,
+			};
+		},
+		async content(event, trigger, player) {
+			const { targets } = event;
+			await game.asyncDraw(targets);
+			const currents = targets.filter(target => target != player && target.isMaxHandcard(false, current => current != player && targets.includes(current)));
 			if (!currents?.length) {
 				return;
 			}
@@ -88,7 +92,7 @@ const skills = {
 						return get.sgnAttitude(player, target) * Math.sqrt(target.countCards("h"));
 					})
 					.forResult();
-				if (result2?.bool) {
+				if (result2?.bool && result2.links?.length) {
 					player.line(target);
 					if (result2.links[0] == "damage") {
 						await target.damage(player);
