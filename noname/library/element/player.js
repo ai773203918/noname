@@ -2869,19 +2869,11 @@ export class Player extends HTMLDivElement {
 	 * @returns { GameEvent }
 	 */
 	changeGroup(group, log, broadcast) {
-		var next = game.createEvent("changeGroup");
+		const next = game.createEvent("changeGroup");
 		next.player = this;
-		next.log = true;
-		for (var i = 0; i < arguments.length; i++) {
-			var arg = arguments[i];
-			if (lib.group.includes(arg)) {
-				next.group = arg;
-			} else if (typeof arg === "boolean") {
-				next.log = arg;
-			} else if (arg === "nobroadcast") {
-				next.broadcast = false;
-			}
-		}
+		next.group = group;
+		next.log = typeof log === "boolean" ? log : true;
+		next.broadcast = broadcast !== "nobroadcast";
 		next.setContent("changeGroup");
 		return next;
 	}

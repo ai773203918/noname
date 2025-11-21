@@ -786,7 +786,7 @@ export class Game extends GameCompatible {
 	/**
 	 * 基于钩子的添加势力方法
 	 */
-	addGroup(id, short, name, config) {
+	addGroup(id, short, name, config, type = "default") {
 		if (!id) {
 			throw new TypeError();
 		}
@@ -801,7 +801,12 @@ export class Game extends GameCompatible {
 		if (!lib.comparator.typeEquals(short, "string") && short) {
 			name = short;
 		}
-		lib.group.add(id);
+		if (["default", "all"].includes(type)) {
+			lib.group.add(id);
+		}
+		if (["select", "all"].includes(type)) {
+			lib.selectGroup.add(id);
+		}
 		if (short) {
 			lib.translate[id] = short;
 		}
