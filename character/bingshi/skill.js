@@ -5,7 +5,7 @@ const skills = {
 	//potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	//势陈矫
 	potqingyan: {
-		audio: 2,
+		audio: 3,
 		enable: "chooseToUse",
 		onChooseToUse(event) {
 			if (game.online) {
@@ -87,7 +87,7 @@ const skills = {
 		},
 	},
 	potceduan: {
-		audio: 2,
+		audio: 3,
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget(card, player, target) {

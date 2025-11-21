@@ -48,6 +48,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dczijue",
 				charlotte: true,
 				onremove: true,
 				locked: false,

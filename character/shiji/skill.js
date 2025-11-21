@@ -1005,7 +1005,13 @@ const skills = {
 	},
 	//蒋琬
 	spzhenting: {
-		audio: 2,
+		audio: 4,
+		logAudio(_1, _2, _3, _4, costResult) {
+			if (costResult?.cost_data == "all") {
+				return ["spzhenting3.mp3", "spzhenting4.mp3"];
+			}
+			return 2;
+		},
 		trigger: { global: "useCardToTarget" },
 		usable: 1,
 		filter(event, player) {
@@ -1087,7 +1093,7 @@ const skills = {
 		},
 	},
 	spjincui: {
-		audio: 2,
+		audio: 4,
 		enable: "phaseUse",
 		usable: 1,
 		seatRelated: "changeSeat",

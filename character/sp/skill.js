@@ -4,7 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//吕玲绮
 	olqiwu: {
-		audio: 2,
+		audio: 4,
 		enable: "phaseUse",
 		usable: 1,
 		position: "he",
@@ -168,6 +168,7 @@ const skills = {
 		group: "olzhuangrong_count",
 		subSkill: {
 			count: {
+				audio: "olzhuangrong",
 				trigger: {
 					global: "phaseEnd",
 				},
