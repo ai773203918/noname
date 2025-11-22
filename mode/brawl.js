@@ -1569,6 +1569,7 @@ export default () => {
 									markimage2: "image/character/shibing1.jpg",
 									intro: {
 										name: "副将",
+										name2: "副将",
 										markcount(_, player) {
 											return player?.viceCharacters?.length || 0;
 										},
@@ -1848,6 +1849,7 @@ export default () => {
 								},
 							},
 							translate: {
+								_gainViceCharacter: "副将",
 								hhsg_tianshu: "天书残卷",
 								hhsg_tianshu_info: "出牌阶段限一次，若你的体力值大于1，你可以对自己造成1点伤害，然后摸两张牌。",
 								hhsg_sadou: "撒豆成兵",
@@ -2285,10 +2287,28 @@ export default () => {
 					func();
 				},
 				init: function () {
-					for (var i in lib.character) {
-						var skills = lib.character[i][3];
-						if (skills.includes("jizhi") || skills.includes("rejizhi") || skills.includes("lingzhou") || skills.includes("sbaiyin")) {
-							delete lib.character[i];
+					for (const i in lib.character) {
+						const { skills } = get.character(i),
+							checked = [];
+						const check = skill => {
+							if (checked.includes(skill)) {
+								return false;
+							}
+							checked.add(skill);
+							if (lib.translate[skill] == "集智") {
+								return true;
+							}
+							let { derivation } = get.info(skill);
+							if (!derivation) {
+								return false;
+							}
+							if (!Array.isArray(derivation)) {
+								derivation = [derivation];
+							}
+							return derivation.some(check);
+						};
+						if (skills.some(check)) {
+							get.character(i).isUnseen = true;
 						}
 					}
 				},

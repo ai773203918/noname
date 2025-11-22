@@ -28359,7 +28359,7 @@ const skills = {
 			var num = 0;
 			for (var i = 0; i < history.length; i++) {
 				for (var j = 0; j < history[i].lose.length; j++) {
-					if (history[i].lose[j].getParent(2).name == "useCard") {
+					if (history[i].lose[j].getParent().name == "useCard") {
 						continue;
 					}
 					num += history[i].lose[j].cards2.filter(function (card) {
