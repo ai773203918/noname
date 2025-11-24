@@ -3045,10 +3045,10 @@ const skills = {
 		check(card) {
 			const player = get.player();
 			if (game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1)) {
-				if (get.position(card) == "h") {
-					return 4;
+				if (get.position(card) !== "h") {
+					return -get.value(card);
 				}
-				return 6 - ui.selected.cards.length - get.value(card);
+				return 10 - ui.selected.cards.length - get.value(card);
 			}
 			const num = get.event().spolzhujiu;
 			if (typeof num == "number" && ui.selected.cards.length >= num) {

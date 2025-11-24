@@ -13010,7 +13010,9 @@ const skills = {
 		},
 	},
 	reguhuo_backup: {},
-	reguhuo_phase: {},
+	reguhuo_phase: {
+		charlotte: true,
+	},
 	rechanyuan: {
 		init(player, skill) {
 			if (player.hp <= 1) {

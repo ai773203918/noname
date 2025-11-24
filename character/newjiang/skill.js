@@ -1765,10 +1765,14 @@ const skills = {
 			return player
 				.chooseControl("摸牌", "出杀")
 				.set("prompt", `忠锷：请选择一项与${str}依次执行`)
-				.set("prompt2", `若你与其选择的选项不同，${get.translation(player)}执行时额外执行一遍`)
+				.set("prompt2", `若你与其选择的选项不同，${get.translation(targets[0])}执行时额外执行一遍`)
 				.set("ai", () => {
+					if (get.event("att") > 0) {
+						return "摸牌";
+					}
 					return Math.random() > 0.3 ? "出杀" : "摸牌";
 				})
+				.set("att", Math.max(get.attitude(targets[0], targets[1]), get.attitude(targets[1], targets[0])))
 				.set("id", eventId)
 				.set("_global_waiting", true);
 		},
