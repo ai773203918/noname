@@ -131,7 +131,7 @@ const skills = {
 						suit = get.suit(cards[0]);
 					await player.give(cards, target);
 					const result = await target
-						.chooseToGive(`交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
+						.chooseToGive(player, `交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
 						.set("filterCard", card => {
 							const { player, preCards, suit } = get.event();
 							return !preCards.includes(card) && get.suit(card) == suit;
@@ -956,7 +956,7 @@ const skills = {
 			player.addSkill("pyshenduan_max");
 		},
 		check(event, player) {
-			if (get.subtypes(event.card) == "equip4" && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
+			if (get.subtypes(event.card)?.includes("equip4") && game.countPlayer(curr => curr != player && get.attitude(player, curr) > 0) - game.countPlayer(curr => get.attitude(player, curr) < 0) > 0) {
 				return false;
 			}
 			return true;
@@ -968,6 +968,7 @@ const skills = {
 			const subtypes = player.getStorage("pyshenduan_used");
 			return !get.subtypes(event.card).every(type => subtypes.includes(type));
 		},
+		forced: true,
 		async content(event, trigger, player) {
 			const types = get.subtypes(trigger.card);
 			const subtypes = (player.getStorage("pyshenduan_used") || []).addArray(types);
@@ -1764,10 +1765,14 @@ const skills = {
 			return player
 				.chooseControl("摸牌", "出杀")
 				.set("prompt", `忠锷：请选择一项与${str}依次执行`)
-				.set("prompt2", `若你与其选择的选项不同，${get.translation(player)}执行时额外执行一遍`)
+				.set("prompt2", `若你与其选择的选项不同，${get.translation(targets[0])}执行时额外执行一遍`)
 				.set("ai", () => {
+					if (get.event("att") > 0) {
+						return "摸牌";
+					}
 					return Math.random() > 0.3 ? "出杀" : "摸牌";
 				})
+				.set("att", Math.max(get.attitude(targets[0], targets[1]), get.attitude(targets[1], targets[0])))
 				.set("id", eventId)
 				.set("_global_waiting", true);
 		},
@@ -3970,65 +3975,90 @@ const skills = {
 	//陈式
 	qingbei: {
 		audio: 2,
-		trigger: { global: "roundStart" },
-		direct: true,
-		content() {
-			"step 0";
-			var next = player.chooseButton(['###擎北：是否选择任意种花色？###<div class="text center">你不能于本轮使用这些花色，且使用牌后摸等同于选择花色数的牌</div>', [lib.suit.map(i => ["", "", "lukai_" + i]), "vcard"]], [1, 4]);
-			next.set("ai", button => {
-				var player = _status.event.player;
-				var suit = button.link[2].slice(6);
-				var val = player
-					.getCards("hs", { suit: suit })
-					.map(card => {
-						return get.value(card) + player.getUseValue(card) / 3;
-					})
-					.reduce((p, c) => {
-						return p + c;
-					}, 0);
-				if (val > 10 && ui.selected.buttons.length > 0) {
-					return -1;
-				}
-				if (val > 6 && ui.selected.buttons.length == 2) {
-					return -1;
-				}
-				if (ui.selected.buttons.length == 3) {
-					return -1;
-				}
-				return 1 + 1 / val;
-			});
-			"step 1";
-			if (result.bool) {
-				var suits = result.links.map(i => i[2].slice(6)).sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
-				player.logSkill("qingbei");
-				player.addTempSkill("qingbei_effect", "roundStart");
-				player.setStorage("qingbei_effect", suits);
-				player.markSkill("qingbei_effect");
-				player.addTip("qingbei_effect", get.translation("qingbei_effect") + player.getStorage("qingbei_effect").reduce((str, i) => str + get.translation(i), ""));
+		trigger: {
+			global: "roundStart",
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			if (event.name != "useCard") {
+				return true;
 			}
+			if (!player.getStorage("qingbei_effect").length) {
+				return false;
+			}
+			const suit = get.suit(event.card);
+			if (!suit) {
+				return false;
+			}
+			return suit !== "none";
+		},
+		async cost(event, trigger, player) {
+			if (trigger.name == "useCard") {
+				event.result = {
+					bool: true,
+				};
+				return;
+			}
+			const result = await player
+				.chooseButton([
+					`###${get.prompt(event.skill)}###<div class='text center'>选择任意个花色，令你本轮不能使用这些花色的牌</div>`, 
+					[lib.suit.map(i => ["", "", "lukai_" + i]), "vcard"],
+				], [1, 4])
+				.set("ai", button => {
+					const player = get.player(),
+						suit = button.link[2].slice(6),
+						val = player
+							.getCards("hs", { suit: suit })
+							.map(card => {
+								return get.value(card) + player.getUseValue(card) / 3;
+							})
+							.reduce((sum, value) => {
+								return sum + value;
+							}, 0);
+					if (val > 10 && ui.selected.buttons.length > 0) {
+						return -1;
+					}
+					if (val > 6 && ui.selected.buttons.length == 2) {
+						return -1;
+					}
+					if (ui.selected.buttons.length == 3) {
+						return -1;
+					}
+					return 1 + 1 / val;
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links,
+				}
+			}
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "useCard") {
+				await player.draw(player.getStorage("qingbei_effect").length, "nodelay");
+				return;
+			}
+			const { name, cost_data: links } = event;
+			const suits = links.map(i => i[2].slice(6)).sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+			const skill = `${name}_effect`;
+			player.addTempSkill(skill, "roundStart");
+			player.setStorage(skill, suits, true);
+			player.addTip(skill, `${get.translation(skill)}${suits.map(i => get.translation(i)).join("")}`);
 		},
 		ai: {
 			threaten: 2.3,
 		},
 		subSkill: {
 			effect: {
-				audio: "qingbei",
-				trigger: { player: "useCardAfter" },
 				charlotte: true,
 				onremove(player, skill) {
 					delete player.storage[skill];
 					player.removeTip(skill);
 				},
-				forced: true,
-				filter(event, player) {
-					return player.getStorage("qingbei_effect").length;
-				},
-				content() {
-					player.draw(player.getStorage("qingbei_effect").length, "nodelay");
-				},
 				mark: true,
 				intro: {
-					content: storage => `本轮内不能使用${get.translation(storage)}花色的牌，且使用牌后摸${get.cnNumber(storage.length)}张牌`,
+					content: `本轮内不能使用$花色的牌`,
 				},
 				mod: {
 					cardEnabled(card, player) {

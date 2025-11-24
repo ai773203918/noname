@@ -2,6 +2,196 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//族荀彧
+	clandingan: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+		},
+		locked: true,
+		filter(event, player) {
+			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) > 0;
+		},
+		async cost(event, trigger, player) {
+			const targets = game.filterPlayer(current => {
+				if (trigger.targets?.includes(current)) {
+					return false;
+				}
+				return current != player;
+			});
+			const result =
+				targets.length > 1
+					? await player
+							.chooseTarget(
+								`定安：与任意名不为此牌目标的其他角色各摸一张牌`,
+								(card, player, target) => {
+									return get.event("targetx").includes(target);
+								},
+								true,
+								[1, targets.length]
+							)
+							.set("targetx", targets)
+							.set("prompt2", "然后你令之中手牌最多的其他角色执行一项：1.受到你造成的1点伤害；2.弃置手牌中最多的同名牌。")
+							.set("ai", target => {
+								const { player, targetx } = get.event(),
+									getD = current => get.effect(current, { name: "draw" }, player, player);
+								const eff = getD(target);
+								if (eff > 0) {
+									return 2;
+								}
+								if (ui.selected.targets.every(current => getD(current) > 0 && current.countCards("h") < target.countCards("h"))) {
+									return -eff;
+								}
+								return 0;
+							})
+							.forResult()
+					: {
+							bool: true,
+							targets: targets,
+						};
+			if (!result?.bool) {
+				return;
+			}
+			let targets2 = [player];
+			if (result.targets?.length) {
+				targets2.addArray(result.targets);
+			}
+			event.result = {
+				bool: true,
+				targets: targets2,
+			};
+		},
+		async content(event, trigger, player) {
+			const { targets } = event;
+			targets.sortBySeat();
+			await game.asyncDraw(targets);
+			const currents = targets.filter(target => target != player && target.isMaxHandcard(false, current => current != player && targets.includes(current)));
+			if (!currents?.length) {
+				return;
+			}
+			const func = async target => {
+				const result2 = await player
+					.chooseButton(
+						[
+							`定安：选择一项令${get.translation(target)}执行`,
+							[
+								[
+									["damage", "受到你造成的1点伤害"],
+									["discard", "随机弃置手牌中最多的同名牌"],
+								],
+								"textbutton",
+							],
+						],
+						true
+					)
+					.set("targetx", target)
+					.set("ai", button => {
+						const { player, targetx: target } = get.event();
+						if (button.link == "damage") {
+							return get.damageEffect(target, player, player);
+						}
+						return get.sgnAttitude(player, target) * Math.sqrt(target.countCards("h"));
+					})
+					.forResult();
+				if (result2?.bool && result2.links?.length) {
+					player.line(target);
+					if (result2.links[0] == "damage") {
+						await target.damage(player);
+					} else {
+						const cards = target.getCards("h"),
+							names = cards.map(card => get.name(card)),
+							maxName = names.toUniqued().maxBy(name => get.numOf(names, name));
+						const num = get.numOf(names, maxName);
+						if (num <= 1) {
+							return;
+						}
+						const name = names
+							.toUniqued()
+							.filter(name => get.numOf(names, name) == num)
+							.randomGet();
+						if (name) {
+							const discards = cards.filter(card => get.name(card) == name);
+							if (discards?.length) {
+								await target.modedDiscard(discards);
+							}
+						}
+					}
+				}
+			};
+			await game.doAsyncInOrder(currents, func);
+		},
+	},
+	clanfuning: {
+		audio: 2,
+		trigger: {
+			player: "changeHpAfter",
+		},
+		filter(event, player) {
+			const evts = game.getGlobalHistory("changeHp", evt => evt.player == player && evt.num != 0);
+			if (evts.indexOf(event) !== 0) {
+				return false;
+			}
+			if (!game.hasPlayer(current => current != player)) {
+				return false;
+			}
+			return player.countCards("he") >= Math.max(1, player.getDamagedHp());
+		},
+		async cost(event, trigger, player) {
+			const num = Math.max(1, player.getDamagedHp()),
+				count = game.countPlayer2(current => current.hasHistory("damage"), true);
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt2(event.skill),
+					filterCard: true,
+					position: "he",
+					selectCard: [num, Infinity],
+					filterTarget: lib.filter.notMe,
+					complexCard: true,
+					count: count,
+					ai1(card) {
+						const color = get.color(card),
+							{ player, count } = get.event();
+						if (!player.isDamaged() || ui.selected.cards.every(cardx => get.color(cardx) == color)) {
+							const num = ui.selected.cards.length,
+								num2 = player.countCards("h", cardx => !ui.selected.cards.includes(cardx));
+							if (count <= num && num2 > player.maxHp) {
+								return 15 - get.value(card);
+							}
+							return 10 - get.value(card);
+						}
+						return 3 - get.value(card);
+					},
+					ai2(target) {
+						const player = get.player();
+						return get.attitude(player, target);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				cards,
+				targets: [target],
+			} = event;
+			const bool1 = cards.map(card => get.color(card)).toUniqued().length == 1,
+				bool2 = cards.length > game.countPlayer2(current => current.hasHistory("damage"), true);
+			await player.give(cards, target);
+			if (bool1) {
+				await player.recover();
+			}
+			if (bool2) {
+				const num = player.countCards("h") - player.maxHp;
+				if (num > 0) {
+					const count = Math.min(num, player.countDiscardableCards(player, "h"));
+					if (count > 0) {
+						await player.chooseToDiscard("h", count, true);
+					}
+				} else if (num < 0) {
+					await player.draw(-num);
+				}
+			}
+		},
+	},
 	//族韩馥
 	clanheta: {
 		audio: 2,
@@ -369,7 +559,7 @@ const skills = {
 				.set("ai", card => {
 					return 7 - get.value(card);
 				});
-				nextx._args.remove("glow_result");
+			nextx._args.remove("glow_result");
 			const { result } = await nextx;
 			const lose_list = [],
 				cards = [];
@@ -6146,7 +6336,7 @@ const skills = {
 	},
 	clandaojie: {
 		audio: 2,
-		audioname: ["clan_xunshu", "clan_xunchen", "clan_xuncai", "clan_xuncan", "clan_xunyou"],
+		audioname: ["clan_xunshu", "clan_xunchen", "clan_xuncai", "clan_xuncan", "clan_xunyou", "clan_xunyu"],
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (

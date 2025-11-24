@@ -1,4 +1,9 @@
 export default {
+	"#dcjianli1": "天下十分而公有其九，此天人之应。",
+	"#dcjianli2": "天下咸知汉祚已尽，公复何疑? ",
+	"#dcqingzheng1": "百姓若得绫罗，吾子无裈亦可。",
+	"#dcqingzheng2": "粥饭维艰，恒念居野之饿殍。",
+	"#dc_huanjie:die": "人命在天，臣难堪陛下之任。",
 	"#dcsbjunmou1": "燎原之势已成，七十万枯骨作柴薪! ",
 	"#dcsbjunmou2": "夷陵宴始，邀玄德公献头! ",
 	"#dcsbzhanyan1": "东风若知趣，应携离火来! ",

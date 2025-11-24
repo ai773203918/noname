@@ -4,7 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//吕玲绮
 	olqiwu: {
-		audio: 2,
+		audio: 4,
 		enable: "phaseUse",
 		usable: 1,
 		position: "he",
@@ -168,6 +168,7 @@ const skills = {
 		group: "olzhuangrong_count",
 		subSkill: {
 			count: {
+				audio: "olzhuangrong",
 				trigger: {
 					global: "phaseEnd",
 				},
@@ -3044,10 +3045,10 @@ const skills = {
 		check(card) {
 			const player = get.player();
 			if (game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1)) {
-				if (get.position(card) == "h") {
-					return 4;
+				if (get.position(card) !== "h") {
+					return -get.value(card);
 				}
-				return 6 - ui.selected.cards.length - get.value(card);
+				return 10 - ui.selected.cards.length - get.value(card);
 			}
 			const num = get.event().spolzhujiu;
 			if (typeof num == "number" && ui.selected.cards.length >= num) {
@@ -28358,7 +28359,7 @@ const skills = {
 			var num = 0;
 			for (var i = 0; i < history.length; i++) {
 				for (var j = 0; j < history[i].lose.length; j++) {
-					if (history[i].lose[j].getParent(2).name == "useCard") {
+					if (history[i].lose[j].getParent().name == "useCard") {
 						continue;
 					}
 					num += history[i].lose[j].cards2.filter(function (card) {

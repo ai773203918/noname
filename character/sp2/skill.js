@@ -48,6 +48,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				audio: "dczijue",
 				charlotte: true,
 				onremove: true,
 				locked: false,
@@ -121,7 +122,7 @@ const skills = {
 			if (event.player == player || event.targets?.length != 1 || event.player == event.target) {
 				return false;
 			}
-			return !event.player.inRange(event.target) && player.canCompare(event.player);
+			return get.distance(event.player, event.target) > 1 && player.canCompare(event.player);
 		},
 		logTarget: "player",
 		check(event, player) {

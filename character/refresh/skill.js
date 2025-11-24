@@ -9006,33 +9006,12 @@ const skills = {
 					if (!target.countDiscardableCards(player, "he")) {
 						break;
 					}
-					if (i) {
-						const bool = await player
-							.chooseBool("是否继续发动〖旋风〗弃置" + get.translation(target) + "一张牌？")
-							.set("ai", () => get.event("bool"))
-							.set(
-								"bool",
-								(function () {
-									let att = get.attitude(player, target) > 0,
-										hs = target.getCards("h"),
-										es = target.getCards("e");
-									if (
-										att &&
-										es.some(i => {
-											return get.value(i, target) < 0;
-										})
-									) {
-										return true;
-									}
-									return (hs.length && att == target.hasSkillTag("noh")) || (es.length && att == target.hasSkillTag("noe"));
-								})()
-							)
-							.forResultBool();
-						if (!bool) {
-							break;
-						}
+					const next = player.discardPlayerCard(target, "he");
+					if (i > 0) {
+						next.set("prompt", `旋风：是否继续弃置${get.translation(target)}一张牌？`);
+					} else {
+						next.set("forced", true);
 					}
-					await player.discardPlayerCard(target, "he", true);
 				}
 			}
 			if (player !== _status.currentPhase) {
@@ -13031,7 +13010,9 @@ const skills = {
 		},
 	},
 	reguhuo_backup: {},
-	reguhuo_phase: {},
+	reguhuo_phase: {
+		charlotte: true,
+	},
 	rechanyuan: {
 		init(player, skill) {
 			if (player.hp <= 1) {

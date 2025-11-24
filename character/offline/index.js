@@ -29,6 +29,7 @@ game.import("character", function () {
 			shinin_ruiji: [["awaken_shinin_ruiji", []]],
 			shinin_lvlingqi: [["awaken_shinin_lvlingqi", []]],
 			shinin_dongwan: [["awaken_shinin_dongwan", []]],
+			zc26_sp_xushi: [["zc26_sp_xushi_shadow", ["die:xushi"]]],
 		},
 		dynamicTranslate: { ...dynamicTranslates },
 		characterIntro: { ...characterIntros },

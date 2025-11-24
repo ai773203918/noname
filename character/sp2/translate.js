@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "@noname";
+
 const translates = {
 	lijue: "李傕",
 	zhangji: "张济",
@@ -223,7 +225,12 @@ const translates = {
 	xin_baosanniang_prefix: "新杀",
 	decadexushen: "许身",
 	decadexushen2: "许身",
-	decadexushen_info: "限定技，当你进入濒死状态后，你可以回复1点体力并获得技能“镇南”，然后如果你脱离濒死状态且“关索”不在场，你可令一名其他角色选择是否用“关索”代替其武将并令其摸三张牌。",
+	decadexushen_info: `限定技，当你进入濒死状态后，你可以回复1点体力并获得技能${get.poptip("decadezhennan")}，然后如果你脱离濒死状态且${get.poptip({
+		id: "character_dc_guansuo",
+		name: "关索",
+		type: "character",
+		dialog: "characterDialog",
+	})}不在场，你可令一名其他角色选择是否用${get.poptip("character_dc_guansuo")}代替其武将并令其摸三张牌。`,
 	decadezhennan: "镇南",
 	decadezhennan_info: "当有角色使用普通锦囊牌指定目标后，若此牌目标数大于1，你可以对一名其他角色造成1点伤害。",
 	ol_dingyuan: "丁原",
@@ -653,7 +660,7 @@ const translates = {
 	dczijue: "赀爵",
 	dczijue_info: "出牌阶段限一次，你可令一名其他角色声明2-4中的一个数字，你可交给其X张牌并回复1点体力，然后其他角色计算与你的距离和你的拼点牌点数+X直到你的下回合开始且你拼点赢时摸一张牌；否则你摸X张牌（X为其声明的数字）。",
 	dcchibi: "斥避",
-	dcchibi_info: "每回合限一次，其他角色使用牌指定其攻击范围外的另一名角色为唯一目标时，你可与其拼点：若你赢，你令此牌无效并获得此牌；若你没赢，你成为此牌的额外目标。",
+	dcchibi_info: "每回合限一次，其他角色使用牌指定其计算距离大于1的角色为唯一目标时，你可与其拼点：若你赢，你令此牌无效并获得此牌；若你没赢，你成为此牌的额外目标。",
 };
 
 export default translates;

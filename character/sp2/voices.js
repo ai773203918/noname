@@ -1,4 +1,9 @@
 export default {
+	"#dczijue1": "恨朱紫有价，怨寒门无阶。",
+	"#dczijue2": "吾一腔才学，不当五百万钱否? ",
+	"#dcchibi1": "凉州鄙夫，安敢立马君前! ",
+	"#dcchibi2": "退! 退! 退! ",
+	"#cuilie:die": "唉，尔以吾为瞽叟也。",
 	"#starzhenting1": "臣者，国之股肱，君所倚仗也。",
 	"#starzhenting2": "忠臣事君，当鞠躬尽瘁，死而后已。",
 	"#starchiguo1": "国之兴亡，匹夫有责，况吾等尚食君禄。",

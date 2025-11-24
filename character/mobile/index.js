@@ -58,7 +58,7 @@ game.import("character", function () {
 				["mb_zerong_all", ["die:mb_zerong"]],
 			],
 			mb_cuilingyi: [
-				["mb_cuilingyi_guidian1", ["die:mb_cuilingyi"]],
+				["mb_cuilingyi_guidian1", ["character:mb_cuilingyi", "die:mb_cuilingyi"]],
 				["mb_cuilingyi_guidian2", ["die:mb_cuilingyi"]],
 				["mb_cuilingyi_guidian3", ["die:mb_cuilingyi"]],
 				["mb_cuilingyi_dongjiao1", ["die:mb_cuilingyi"]],

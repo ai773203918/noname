@@ -10317,6 +10317,7 @@ const skills = {
 		},
 	},
 	qiaoshui2: {
+		charlotte: true,
 		mod: {
 			cardEnabled(card) {
 				if (get.type(card, "trick") == "trick") {

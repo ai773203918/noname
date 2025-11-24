@@ -221,7 +221,7 @@ export class Library {
 		function () {
 			_status.skillOwner = {};
 			//武将包排序
-			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
+			let packSort = ["standard", "shenhua", "yijiang", "refresh", "extra", "sp", "xinghuoliaoyuan", "sp2", "mobile", "tw", "yingbian", "offline", "sb", "clan", "huicui", "shiji", "bingshi", "xianding", "jsrg", "onlyOL", "newjiang", "sixiang", "sxrm"];
 			packSort = packSort.reverse();
 			const packs = Object.keys(lib.characterPack).sort((a, b) => {
 				return packSort.indexOf(b) - packSort.indexOf(a);
@@ -896,7 +896,7 @@ export class Library {
 		qizhengxiangsheng: ["sha", "shan"],
 		juedou: ["sha"],
 		nanman: ["sha"],
-		jiedao: ["jiedao"],
+		jiedao: ["sha"],
 		//所有锦囊都可以用无懈可击响应
 		trick: ["wuxie"],
 		//所有伤害牌都可以用草船借箭响应
@@ -14613,6 +14613,20 @@ export class Library {
 					style.fontFamily = "MotoyaLMaru";
 					style.transform = "scaleY(0.85)";
 					span.textContent = "EU";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
+			"PE",
+			{
+				getSpan: () => {
+					const span = document.createElement("span"),
+						style = span.style;
+					style.writingMode = style.webkitWritingMode = "horizontal-tb";
+					style.fontFamily = "MotoyaLMaru";
+					style.transform = "scaleY(0.85)";
+					span.textContent = "PE";
 					return span.outerHTML;
 				},
 			},

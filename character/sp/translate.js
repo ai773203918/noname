@@ -764,7 +764,12 @@ const translates = {
 	olwuniang: "武娘",
 	olwuniang_info: "每回合限一次，当你于回合内使用的【杀】结算完成后，若此【杀】对应的目标数为1，则你可以令目标角色选择是否对你使用【杀】。你于其选择结算完成后摸一张牌，且本回合内使用【杀】的次数上限+1。",
 	olxushen: "许身",
-	olxushen_info: "限定技，当你进入濒死状态时，你可将体力回复至1点并获得技能〖镇南〗。然后若场上没有存活的“关索”，则你可以令一名其他男性角色选择是否将一张武将牌替换为“关索”。",
+	olxushen_info: `限定技，当你进入濒死状态时，你可将体力回复至1点并获得技能${get.poptip("olzhennan")}。然后若场上没有存活的${get.poptip({
+		id: "character_guansuo",
+		name: "关索",
+		type: "character",
+		dialog: "characterDialog",
+	})}，则你可以令一名其他男性角色选择是否将一张武将牌替换为${get.poptip("character_guansuo")}。`,
 	olzhennan: "镇南",
 	olzhennan2: "镇南",
 	olzhennan_info: "【南蛮入侵】对你无效。出牌阶段限一次，你可以将任意张手牌当做【南蛮入侵】对等量的角色使用。",

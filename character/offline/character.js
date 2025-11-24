@@ -96,6 +96,13 @@ const characters = {
 		skills: ["goblin_shiqiang", "goblin_lingruo"],
 		names: "null|null",
 	},
+	zc26_sp_xushi: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["zc26_longchen", "zc26_tianqi"],
+		dieAudios: ["xushi"],
+	},
 	zc26_lusu: {
 		sex: "male",
 		group: "wu",

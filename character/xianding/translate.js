@@ -1,3 +1,5 @@
+import { lib, game, ui, get, ai, _status } from "@noname";
+
 const translates = {
 	puyuan: "蒲元",
 	pytianjiang: "天匠",
@@ -138,7 +140,12 @@ const translates = {
 	syjiqiao: "激峭",
 	syjiqiao_info: "出牌阶段开始时，你可将牌堆顶的X张牌置于你的武将牌上（X为你的体力上限）。当你于此出牌阶段内使用的牌结算结束后，你可以获得其中的一张牌，然后若剩余牌中红色牌和黑色牌的数量：不相等，你失去1点体力；相等，你回复1点体力。出牌阶段结束时，你将这些牌置入弃牌堆。",
 	syxiongyi: "凶疑",
-	syxiongyi_info: "限定技。当你处于濒死状态时，若剩余武将牌堆中：有“徐氏”，则你可以将体力值回复至3点，并将此武将牌替换为“徐氏”；没有“徐氏”，则你可以将体力值回复至1点并获得〖魂姿〗。",
+	syxiongyi_info: `限定技。当你处于濒死状态时，若剩余武将牌堆中：有${get.poptip({
+		id: "character_xushi",
+		name: "徐氏",
+		type: "character",
+		dialog: "characterDialog",
+	})}，则你可以将体力值回复至3点，并将此武将牌替换为${get.poptip("character_xushi")}；否则，你可以将体力值回复至1点并获得${get.poptip("olhunzi")}。`,
 	re_zhangbao: "新杀张宝",
 	re_zhangbao_prefix: "新杀",
 	xinzhoufu: "咒缚",
@@ -1028,6 +1035,12 @@ const translates = {
 	dcjianli_info: "出牌阶段限两次，你可以交给一名其他角色至多两张牌并令其可使用一张手牌，若未使用牌或未造成伤害，其对你造成1点伤害。",
 	dcqingzheng: "清政",
 	dcqingzheng_info: "每回合每项各限一次，你的体力值/手牌数/装备区牌数发生变化后，若对应值为1，你可：1.摸X张牌；2.回复X点体力；3.从牌堆中将X张装备牌置入装备区。若X大于2，此技能视为未发动过且令你当前手牌无次数限制（X为你的体力值/手牌数/装备区牌数中为1的数量）。",
+	dc_sb_lvmeng: "新杀谋吕蒙",
+	dc_sb_lvmeng_prefix: "新杀谋",
+	dcsbhengye: "横野",
+	dcsbhengye_info: "锁定技，①你造成属性伤害后，令你以下一项数值+1（至多+3）：1.摸牌阶段摸牌数；2.出牌阶段使用【杀】的次数；3.手牌上限。②出牌阶段开始时，你回复1点体力并重置此技能。",
+	dcsbyingbo: "英博",
+	dcsbyingbo_info: "你使用伤害牌时，若此牌本轮已有角色使用过同名牌，此牌造成的伤害改为火焰伤害且伤害+1；否则此牌不可被响应且结算结束后你可将其交给一名其他角色。",
 };
 
 export default translates;

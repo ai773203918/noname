@@ -1,6 +1,12 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	mbkechang(player, skill) {
+		if (player.getStorage(skill, false)) {
+			return lib.translate[`${skill}_rewrite_info`];
+		}
+		return lib.translate[`${skill}_info`];
+	},
 	mbweizhuang(player, skill) {
 		if (!player) {
 			return lib.translate[`${skill}_info`];
@@ -23,12 +29,6 @@ const dynamicTranslates = {
 		const colors = list?.map(i => get.translation(i))?.join("和");
 		return `锁定技，你的${colors}手牌不计入手牌上限，造成的伤害值和恢复值+1。`;
 	},
-	potkuanggu(player) {
-        if (player.getStorage("potkuanggu", 0)) {
-			return lib.translate["potkuanggu_pot_weiyan_achieve_info"];
-		}
-		return lib.translate["potkuanggu_info"];
-    },
 	yizan_use(player) {
 		if (player.storage.yizan) {
 			return "你可以将一张基本牌当做任意基本牌使用或打出。";
@@ -83,36 +83,6 @@ const dynamicTranslates = {
 		let start = "转换技。出牌阶段限一次，",
 			end = "。";
 		return `${start}阳：${yang}；阴：${yin}${end}`;
-	},
-	pothanzhan(player) {
-		let str = lib.translate.pothanzhan_info;
-		if (!player.storage.pothanzhan) {
-			return str;
-		}
-		return str.replace(
-			"X为各自体力上限",
-			"X为" +
-				{
-					hp: "各自体力值",
-					damagedHp: "各自损失体力值",
-					countplayer: "场上存活角色数",
-				}[player.storage.pothanzhan]
-		);
-	},
-	potzhanlie(player) {
-		let str = lib.translate.potzhanlie_info;
-		if (!player.storage.potzhanlie) {
-			return str;
-		}
-		return str.replace(
-			"X为你的攻击范围",
-			"X为" +
-				{
-					hp: "你的体力值",
-					damagedHp: "你的损失体力值",
-					countplayer: "场上存活角色数",
-				}[player.storage.potzhanlie]
-		);
 	},
 	mbfunan(player) {
 		if (player.storage.mbfunan_rewrite) {

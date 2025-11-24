@@ -348,16 +348,16 @@ const skills = {
 					player.addTip("olfuzai", cards.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 				},
 				mod: {
-					attackRange(player, num) {
+					attackRangeBase(player) {
 						const equips = player.getStorage("olfuzai");
-						let range = 0;
+						let range = 1;
 						for (const card of equips) {
 							const info = lib.card[card];
 							if (info?.distance?.attackFrom) {
 								range -= info.distance.attackFrom;
 							}
 						}
-						return num + range;
+						return Math.max(player.getEquipRange(player.getCards("e")), range);
 					},
 				},
 			},
@@ -553,6 +553,28 @@ const skills = {
 						await player.removeSkills(skill);
 						player.markSkill(skill);
 						player
+							.when({
+								global: "phaseEnd",
+							})
+							.filter(evt => player.hasHistory("damage"))
+							.step(async (event, trigger, player) => {
+								const result = await player
+									.chooseTarget("###金烬###令一名角色获得〖金烬〗和你因〖金烬〗移出游戏的牌", true)
+									.set("ai", target => {
+										return get.attitude(get.player(), target);
+									})
+									.forResult();
+								if (result?.bool && result.targets?.length) {
+									const target = result.targets[0];
+									player.line(target, "green");
+									const cards = player.getExpansions(skill);
+									if (cards?.length) {
+										await target.gain(cards, "give", player);
+									}
+									await target.addSkills(skill);
+								}
+							});
+						/*player
 							.when("damageEnd")
 							.assign({
 								ai: {
@@ -593,7 +615,7 @@ const skills = {
 											await target.addSkills(skill);
 										}
 									});
-							});
+							});*/
 					},
 				};
 			},
