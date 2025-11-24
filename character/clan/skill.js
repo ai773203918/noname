@@ -63,6 +63,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { targets } = event;
+			targets.sortBySeat();
 			await game.asyncDraw(targets);
 			const currents = targets.filter(target => target != player && target.isMaxHandcard(false, current => current != player && targets.includes(current)));
 			if (!currents?.length) {

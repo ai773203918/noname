@@ -9055,7 +9055,8 @@ const skills = {
 				});
 			"step 1";
 			if (result.bool) {
-				(player.logSkill("dcweidang"), player.lose(result.cards[0], ui.cardPile));
+				player.logSkill("dcweidang");
+				player.lose(result.cards[0], ui.cardPile);
 				game.broadcastAll(function (player) {
 					var cardx = ui.create.card();
 					cardx.classList.add("infohidden");

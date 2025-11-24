@@ -1240,8 +1240,12 @@ const skills = {
 						return get.type(card, player) == "equip";
 					},
 					filterTarget(card, player, target) {
+						if (get.position(card) == "e" && target == player) {
+							return false;
+						}
 						return target.canEquip(card, true);
 					},
+					position: "he",
 					ai1(card) {
 						return 6 - get.value(card);
 					},
