@@ -193,8 +193,9 @@ const skills = {
 					}
 					return player.getStorage("dcsbyingbo_fire").includes(event.card);
 				},
-				locked: true,
-				async cost(event, trigger, player) {
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
 					game.setNature(trigger, "fire");
 					trigger.num++;
 				},
