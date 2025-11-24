@@ -21549,14 +21549,13 @@ const skills = {
 	duoduan: {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
-		direct: true,
+		usable: 1,
 		filter(event, player) {
-			return event.card.name == "sha" && player.countCards("he") > 0 && !player.hasSkill("duoduan_im");
+			return event.card.name == "sha" && player.countCards("he") > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseCard("he", get.prompt2("duoduan"), lib.filter.cardRecastable)
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard("he", get.prompt2(event.skill), lib.filter.cardRecastable)
 				.set("ai", function (card) {
 					if (_status.event.goon) {
 						return 8 - get.value(card);
@@ -21577,59 +21576,45 @@ const skills = {
 						}
 						return event.getRand() < 0.5;
 					})()
-				);
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("duoduan_im");
-				player.logSkill("duoduan", trigger.player);
-				player.recast(result.cards);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var sha = get.translation(trigger.card);
-			if (
-				!trigger.player.countCards("he", function (card) {
-					return lib.filter.cardDiscardable(card, trigger.player, "duoduan");
-				})
-			) {
-				event.finish();
-			} else {
-				player
-					.chooseControl()
-					.set("choiceList", ["令其摸两张牌，然后令" + sha + "对你无效", "令其弃置一张牌，然后你不可响应" + sha])
-					.set("prompt", "度断：令" + get.translation(trigger.player) + "执行一项")
-					.set("ai", function () {
-						var player = _status.event.player;
-						var source = _status.event.getTrigger().player;
-						if (get.attitude(player, source) > 0) {
-							return 0;
-						}
-						if (!player.hasShan() && player.hp >= 2) {
-							return 1;
-						}
-						return 0;
-					});
-			}
-			"step 3";
-			if (result.index == 0) {
-				event.goto(5);
-			} else {
-				trigger.player.chooseToDiscard("弃置一张牌令" + get.translation(player) + "不能闪避此【杀】", "he", true);
-			}
-			"step 4";
-			if (result.bool) {
-				trigger.directHit.add(player);
-			}
-			event.finish();
-			"step 5";
-			trigger.player.draw(2);
-			trigger.excluded.add(player);
+				)
+				.forResult();
 		},
-	},
-	duoduan_im: {
-		//'im' refers to 'Iwasawa Masami' in 'Angel Beats!'
-		//Although she disappeared in the Episode 3 of the anime, but her route in the game is really worth to play.
+		logTarget: "player",
+		async content(event, trigger, player) {
+			await player.recast(event.cards);
+			const bool = trigger.player.countCards("he", card => {
+				return lib.filter.cardDiscardable(card, trigger.player, "duoduan");
+			}) > 0;
+			const result = bool ? await player
+				.chooseControl()
+				.set("choiceList", [`令其摸两张牌，然后令${get.translation(trigger.card)}对你无效`, `令其弃置一张牌，然后你不可响应${get.translation(trigger.card)}`])
+				.set("prompt", `度断：令${get.translation(trigger.player)}执行一项`)
+				.set("ai", function () {
+					let player = _status.event.player;
+					let source = _status.event.getTrigger().player;
+					if (get.attitude(player, source) > 0) {
+						return 0;
+					}
+					if (!player.hasShan() && player.hp >= 2) {
+						return 1;
+					}
+					return 0;
+				})
+				.forResult() : {
+					index: 0,
+				};
+			if (result.index == 0) {
+				await trigger.player.draw(2);
+				trigger.excluded.add(player);
+			} else {
+				const result2 = await trigger.player
+					.chooseToDiscard("弃置一张牌令" + get.translation(player) + "不能闪避此【杀】", "he", true)
+					.forResult();
+				if (result2?.bool) {
+					trigger.directHit.add(player);
+				}
+			}
+		},
 	},
 	chengzhao: {
 		audio: 2,
