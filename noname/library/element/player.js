@@ -7490,7 +7490,7 @@ export class Player extends HTMLDivElement {
 		for (var i = 0; i < cards.length; i++) {
 			cards[i].fix();
 			if (gaintag) {
-				cards[i].addGaintag(gaintag);
+				gaintag.forEach(tag => cards[i].addGaintag(tag));
 			}
 			var sort = lib.config.sort_card(cards[i]);
 			this.node.expansions.insertBefore(cards[i], this.node.expansions.firstChild);
