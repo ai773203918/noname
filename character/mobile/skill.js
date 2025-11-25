@@ -1377,7 +1377,7 @@ const skills = {
 					break;
 			}
 		},
-		derivation: ["twzhian", "jianxiong"],
+		derivation: ["twzhian", "new_rejianxiong"],
 		subSkill: {
 			sha: {
 				charlotte: true,
