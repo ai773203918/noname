@@ -2825,12 +2825,10 @@ const skills = {
 	olduoqi: {
 		audio: 2,
 		group: ["olduoqi_gain", "olduoqi_mark"],
-		trigger: {
-			global: "phaseBeforeEnd",
-		},
+		trigger: { global: "phaseBeforeEnd" },
 		forced: true,
 		cardslist(player, target, killGain = false) {
-			const filterCard = card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards.includes(card);
+			const filterCard = card => card.hasGaintag("eternal_olduoqi_tag") && target._start_cards?.includes(card);
 			let cards = [...ui.cardPile.childNodes, ...ui.discardPile.childNodes].filter(filterCard);
 			const lose_list = [];
 			const targets = game.filterPlayer();
@@ -2943,9 +2941,7 @@ const skills = {
 		subSkill: {
 			gain: {
 				audio: "olduoqi",
-				trigger: {
-					source: "damageSource",
-				},
+				trigger: { source: "damageSource" },
 				forced: true,
 				filter(event, player) {
 					const cards = get.info("olduoqi").cardslist(player, event.player);
@@ -2971,12 +2967,13 @@ const skills = {
 			},
 			mark: {
 				trigger: {
-					global: "gameDrawAfter",
+					global: "phaseBefore",
+					player: "enterGame",
 				},
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return game.hasPlayer(target => target._start_cards?.length);
+					return (event.name != "phase" || game.phaseNumber == 0) && game.hasPlayer(target => target._start_cards?.length);
 				},
 				async content(event, trigger, player) {
 					game.filterPlayer().forEach(target => target.addGaintag(target._start_cards, "eternal_olduoqi_tag"));

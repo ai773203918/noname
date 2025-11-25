@@ -2699,7 +2699,8 @@ export class Player extends HTMLDivElement {
 				const goon = hiddenCard(player, name);
 				const bool =
 					!info.filter ||
-					(typeof info.filter === "function" &&
+					(info.enable &&
+						typeof info.filter === "function" &&
 						evtNames.some(evtName => {
 							let evt = event.getParent(evtName);
 							if (get.itemtype(evt) !== "event") {
