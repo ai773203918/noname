@@ -539,7 +539,7 @@ const skills = {
 						if (cards.length) {
 							const num = cards.reduce((list, card) => list.add(get.suit(card, false)), []).length;
 							const result =
-								cards.length == num
+								cards.length == 1
 									? { bool: true, links: cards }
 									: await player
 											.chooseButton(["金烬：移出任意张花色各不相同的牌", cards], [1, num], true)
