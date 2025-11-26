@@ -1744,12 +1744,12 @@ const skills = {
 			const targets = event.targets.filter(target => target.countCards("h", card => lib.filter.cardDiscardable(card, target, "mbfeijing")));
 			if (targets.length) {
 				const next = player
-					.chooseCardOL(targets, "h", true, "飞径：展示并弃置一张牌", (card, player) => {
+					.chooseCardOL(targets, "h", true, "飞径：展示并弃置一张手牌", (card, player) => {
 						return lib.filter.cardDiscardable(card, player, "mbfeijing");
 					})
 					.set("ai", get.unuseful)
 					.set("aiCard", target => {
-						const cards = target.getCards("he");
+						const cards = target.getCards("h");
 						return { bool: true, cards: [cards.randomGet()] };
 					});
 				next._args.remove("glow_result");

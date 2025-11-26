@@ -2607,7 +2607,7 @@ const skills = {
 		},
 		mod: {
 			aiOrder(player, card, num) {
-				if (num > 0) {
+				if (typeof card == "object" && num > 0) {
 					const select = get.info(card).selectTarget;
 					let range;
 					if (select == undefined) {
@@ -2657,7 +2657,7 @@ const skills = {
 					if (_status._fengliao_check) {
 						return;
 					}
-					if (!(typeof card !== "object") || !player || !target) {
+					if (typeof card !== "object" || !player || !target) {
 						return;
 					}
 					const select = get.info(card).selectTarget;
