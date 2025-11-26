@@ -541,7 +541,7 @@ const skills = {
 								cards.length == 1
 									? { bool: true, links: cards }
 									: await player
-											.chooseButton(["金烬：移出任意张花色各不相同的牌", cards], [1, 4], true)
+											.chooseButton(["金烬：移出任意张花色各不相同的牌", cards], [1, cards.reduce((list, card) => list.add(get.suit(card, false)), []).length], true)
 											.set("filterButton", button => {
 												const suit = get.suit(button.link, false);
 												return ui.selected.buttons?.every(buttonx => get.suit(buttonx.link, false) !== suit);
