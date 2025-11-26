@@ -741,7 +741,7 @@ const skills = {
 	jianhui: {
 		init(player, skill) {
 			player.addSkill(skill + "_record");
-			const source = player.getAllHistory("damage", evt => evt.source).lastItem?.source;
+			const source = player.getAllHistory("damage", evt => evt.source && evt.source != player).lastItem?.source;
 			if (source) {
 				player.storage[skill] = source;
 				player.markSkillCharacter(skill, source, "奸回", "这仇我记下了");
@@ -766,7 +766,7 @@ const skills = {
 				i--;
 			}
 			for (i; i >= 0; i--) {
-				if (history[i].source) {
+				if (history[i].source && history[i].source != player) {
 					return history[i].source;
 				}
 			}
@@ -798,7 +798,7 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source !== player.storage.jianhui;
+					return event.source && event.source !== player.storage.jianhui && event.source !== player;
 				},
 				firstDo: true,
 				forced: true,
