@@ -537,11 +537,12 @@ const skills = {
 						player.logSkill(skill);
 						const cards = get.discarded().filterInD("d");
 						if (cards.length) {
+							const num = cards.reduce((list, card) => list.add(get.suit(card, false)), []).length;
 							const result =
-								cards.length == 1
+								cards.length == num
 									? { bool: true, links: cards }
 									: await player
-											.chooseButton(["金烬：移出任意张花色各不相同的牌", cards], [1, cards.reduce((list, card) => list.add(get.suit(card, false)), []).length], true)
+											.chooseButton(["金烬：移出任意张花色各不相同的牌", cards], [1, num], true)
 											.set("filterButton", button => {
 												const suit = get.suit(button.link, false);
 												return ui.selected.buttons?.every(buttonx => get.suit(buttonx.link, false) !== suit);
@@ -585,6 +586,7 @@ const skills = {
 				return `###金烬###选择${get.translation(links[0][2])}的目标`;
 			},
 		},
+		marktext: "烬",
 		intro: {
 			mark(dialog, storage, player) {
 				const cards = player.getExpansions("olsbjinjin");
