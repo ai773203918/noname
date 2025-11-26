@@ -798,7 +798,7 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source && event.source !== player.storage.jianhui && event.source !== player;
+					return event.source && event.source !== player.storage.jianhui && (player.getAllHistory("damage", evt => evt.source && evt.source != player).indexOf(event) == 0 || event.source == lib.skill.jianhui.getLastPlayer(event, player));
 				},
 				firstDo: true,
 				forced: true,
