@@ -798,7 +798,7 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "damageEnd" },
 				filter(event, player) {
-					return event.source;
+					return event.source && event.source !== player.storage.jianhui;
 				},
 				firstDo: true,
 				forced: true,
