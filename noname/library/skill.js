@@ -634,7 +634,7 @@ export default {
 				if (!list.length) {
 					return "暂无战法";
 				}
-				dialog.add([list.map(i => [`zf_${lib.zhanfa.getRarity(i)}`, null, i]), "vcard"]);
+				dialog.add([list.map(i => [lib.zhanfa.getRarity(i, false), null, i]), "vcard"]);
 				//dialog.buttons.forEach(button => button.classList.add(`zf_${lib.zhanfa.getRarity(button.link[2])}`, "zhanfa"));
 			},
 		},
