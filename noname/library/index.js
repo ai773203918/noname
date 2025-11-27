@@ -10790,6 +10790,7 @@ export class Library {
 			zf_rare: "稀有",
 			zf_epic: "史诗",
 			zf_legend: "传说",
+			assigned_tag: "已分配",
 
 			phaseZhunbei: "准备阶段",
 			phaseJudge: "判定阶段",

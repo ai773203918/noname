@@ -1575,6 +1575,12 @@ const translates = {
 	olqiwu_info: "出牌阶段限一次，你可以弃置任意张牌，视为使用一张无距离次数限制的【杀】并令目标角色弃置X张牌（X为你弃置牌包含的花色数）。若你与其因此弃置的牌：包含【闪】，你获得其中的【闪】且这些牌本回合不计入手牌上限；不包含【闪】，此【杀】不可被响应。",
 	olzhuangrong: "妆戎",
 	olzhuangrong_info: `①锁定技，回合开始时，将${get.poptip("shufazijinguan")}${get.poptip("linglongshimandai")}${get.poptip("hongmianbaihuapao")}${get.poptip("wushuangfangtianji")}中的随机一件装备从游戏外置入你的对应空置装备栏。②每局游戏限一次，每回合结束时，若你发动过至少两次这些装备的效果，你增加1点体力上限并回复1点体力。`,
+	ol_cuiyan: "OL崔琰",
+	ol_cuiyan_prefix: "OL",
+	olshutong: "束统",
+	olshutong_info: "锁定技，你使用一张牌指定目标后，本回合你与目标角色使用的下一张牌不能为此花色。若目标角色均与你体力值相同，你摸一张牌。",
+	olzhijie: "直节",
+	olzhijie_info: "锁定技，每回合结束时，若你此回合使用或打出过牌，且你成为过牌的目标，你对攻击范围内的一名角色造成1点伤害",
 };
 
 export default translates;

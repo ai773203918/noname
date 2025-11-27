@@ -1350,7 +1350,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const cards = event.cost_data,
-				target = trigger.player;
+				target = event.targets[0];
 			await player.give(cards, target);
 			player
 				.when({ global: "phaseDiscardBegin" })
@@ -1359,9 +1359,9 @@ const skills = {
 					if (trigger.stddechong) {
 						return;
 					}
-					trigger.set("stddechong");
+					trigger.set("stddechong", true);
 					const target = trigger.player;
-					if (target.countCards("h") > target.hp) {
+					if (target.countCards("h") >= target.hp) {
 						const result = await player
 							.chooseBool(`得宠：是否对${get.translation(target)}造成1点伤害`)
 							.set("choice", get.damageEffect(target, player, player) > 0)

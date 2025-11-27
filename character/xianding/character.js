@@ -739,6 +739,7 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		skills: ["dcctjiuxian", "dcchenyong"],
+		clans: ["颍川陈氏"],
 	},
 	sunyu: {
 		sex: "male",

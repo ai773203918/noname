@@ -1,6 +1,18 @@
 import { lib, game, ui, get, ai, _status } from "@noname";
 
 const translates = {
+	ol_sb_chengyu: "OL谋程昱",
+	ol_sb_chengyu_prefix: "OL谋",
+	olsbliduan: "戾断",
+	olsbliduan_info: "你使用【杀】后，令你使用的下一张锦囊牌可以多指定一个目标；你使用锦囊牌后，令你使用的下一张【杀】可以多指定一个目标。",
+	olsbdanchi: "胆持",
+	olsbdanchi_info: "你每回合首次因牌造成伤害或受到伤害后，你可令此牌目标角色同时猜测，伤害来源本回合使用的下一张牌为【杀】或锦囊牌。此回合结束时，若有角色猜对，你摸两张牌；若有角色猜错，你视为使用一张【杀】",
+	ol_sb_dongzhao: "OL谋董昭",
+	ol_sb_dongzhao_prefix: "OL谋",
+	olsbshunji: "顺机",
+	olsbshunji_info: "每轮每名角色限一次，当一名角色受到伤害后，你可摸一张牌，然后交给其一张牌。若你因此失去了一个牌名的所有牌（每个牌名限一次），你对其造成一点伤害。",
+	olsbyishi: "移势",
+	olsbyishi_info: "出牌阶段限一次，你可保留手牌中每个花色各一张牌并展示，将其余牌置入弃牌堆，然后移动场上的一张牌。若你未因此失去手牌，直到你的下个回合开始，你不因使用而失去与移动牌花色相同的牌后，摸一张牌",
 	ol_sb_xizhicai: "OL谋戏志才",
 	ol_sb_xizhicai_prefix: "OL谋",
 	olsbxinchuan: "薪传",
