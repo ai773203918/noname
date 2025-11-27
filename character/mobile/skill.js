@@ -4009,7 +4009,7 @@ const skills = {
 								.join("、") +
 							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的牌" : "") +
 							"（不计入次数且无次数限制）",
-						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且这些牌不计入各自手牌上限直到各自结束阶段",
+						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且你的这些牌不计入手牌上限直到你的结束阶段",
 					])
 					.set("ai", () => {
 						const {
@@ -4077,9 +4077,9 @@ const skills = {
 					}
 				}
 				if (gains.flat().length) {
-					player.addTempSkill("mbzengou_effect");
+					player.addTempSkill("mbzengou_effect", { player: "phaseJieshuBegin" });
 					if (gains[1].length) {
-						target.addTempSkill("mbzengou_effect");
+						//target.addTempSkill("mbzengou_effect");
 						await game
 							.loseAsync({
 								gain_list: [
@@ -4122,10 +4122,11 @@ const skills = {
 					player.line(target);
 					player.popup(choose);
 					target.addSkill("mbzengou_debuff");
-					target.setStorage("mbzengou_debuff", choose, true);
-					target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`);
-					//target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"][choose] || 0);
-					//target.markSkill("mbzengou_debuff");
+					//target.setStorage("mbzengou_debuff", choose, true);
+					//target.addTip("mbzengou_debuff", `谮构 ${get.translation(choose)}`);
+					target.storage["mbzengou_debuff"][choose] = 1 + (target.storage["mbzengou_debuff"]?.[choose] || 0);
+					target.addTip("mbzengou_debuff", `谮构 ${get.translation(Object.keys(target.storage["mbzengou_debuff"]))}`);
+					target.markSkill("mbzengou_debuff");
 				}
 			}
 		},
@@ -4158,6 +4159,9 @@ const skills = {
 			},
 			debuff: {
 				charlotte: true,
+				init(player, skill) {
+					player.storage[skill] = {};
+				},
 				onremove(player, skill) {
 					delete player.storage[skill];
 					player.removeTip(skill);
@@ -4165,20 +4169,15 @@ const skills = {
 				mark: true,
 				marktext: "诬",
 				intro: {
+					markcount(storage = {}) {
+						return Object.keys(storage).reduce((sum, item) => sum + storage[item], 0);
+					},
 					content(storage) {
 						if (!storage) {
 							return "无效果";
 						}
-						return `你每回合使用的前三张牌结算完毕后，若此牌牌名为${get.translation(storage)}，则你失去1点体力并移去“诬”标记。`;
-					},
-				},
-				/*intro: {
-					markcount(storage = {}) {
-						return Object.keys(storage).reduce((sum, item) => sum + storage[item], 0);
-					},
-					content(storage = {}) {
 						return [
-							"每回合使用第一张牌结算完毕后，若你拥有此牌名的“诬”标记，则你失去1点体力并移去1枚此牌名的“诬”标记。",
+							`你每回合使用的前三张牌结算完毕后，若你拥有此牌名的“诬”标记，则你失去1点体力并移去“诬”标记。`,
 							"“诬”标记：<br>" +
 								Object.keys(storage)
 									.map(item => {
@@ -4188,33 +4187,36 @@ const skills = {
 						]
 							.map(str => "<li>" + str)
 							.join("<br>");
+						//return `每回合使用第一张牌结算完毕后，若你拥有此牌名的“诬”标记，则你失去1点体力并移去1枚此牌名的“诬”标记。`若此牌牌名为${get.translation(storage)}，;
 					},
-				},*/
+				},
 				audio: "mbzengou",
 				trigger: { player: "useCardAfter" },
 				filter(event, player) {
 					if (player.getHistory("useCard").indexOf(event) > 2) {
 						return false;
 					}
-					return player.getStorage("mbzengou_debuff") == event.card.name;
-					//return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
+					//return player.getStorage("mbzengou_debuff") == event.card.name;
+					return player.storage["mbzengou_debuff"]?.[event.card.name] ?? 0 > 0;
 				},
 				forced: true,
 				async content(event, trigger, player) {
 					await player.loseHp();
-					player.removeSkill(event.name);
-					/*player.storage[event.name][trigger.card.name]--;
+					/*player.removeSkill(event.name);*/
+					player.storage[event.name][trigger.card.name]--;
 					if (get.info(event.name).intro.markcount(player.storage[event.name]) === 0) {
 						player.removeSkill(event.name);
 						return;
 					}
 					if (player.storage[event.name][trigger.card.name] === 0) {
 						delete player.storage[event.name][trigger.card.name];
-					}*/
+					}
+					player.syncStorage(event.name);
+					player.addTip(event.name, `谮构 ${get.translation(Object.keys(player.storage[event.name]))}`);
 				},
 				mod: {
 					aiOrder(player, card, num) {
-						if (player.getHistory("useCard").length > 0 || player.storage["mbzengou_debuff"] != card.name) {
+						if (player.getHistory("useCard").length > 0 || player.storage["mbzengou_debuff"][card.name] > 0) {
 							return;
 						}
 						const effect = get.effect(player, { name: "losehp" }, player, player);
