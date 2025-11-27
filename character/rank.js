@@ -1065,6 +1065,7 @@ window.noname_character_rank = {
 		"pot_huanjie",
 	],
 	b: [
+		"houzhaoning",
 		"taohuang",
 		"ol_re_yujin",
 		"dc_sb_xusheng",
@@ -3037,6 +3038,7 @@ window.noname_character_rank = {
 			"guotiying",
 		],
 		rare: [
+			"houzhaoning",
 			"yj_hanbing",
 			"yj_tengjia",
 			"two_yj_hanbing",

@@ -1,4 +1,10 @@
 const characters = {
+	houzhaoning: {
+		sex: "female",
+		group: "qun",
+		hp: 3,
+		skills: ["dcwangzi", "dcherong"],
+	},
 	dc_sb_lvmeng: {
 		sex: "male",
 		group: "wu",

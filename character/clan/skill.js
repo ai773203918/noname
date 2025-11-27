@@ -83,7 +83,7 @@ const skills = {
 			const assigned = [];
 			event.assigned = assigned;
 			if (event.type == "card") {
-				while (assigned.length < cards.length && goon()) {
+				while (assigned.length < cards.length && goon(event)) {
 					const result = await player
 						.chooseCardTarget({
 							prompt: prompt,
@@ -116,7 +116,7 @@ const skills = {
 					}
 				}
 			} else {
-				while (assigned.length < cards.length && goon()) {
+				while (assigned.length < cards.length && goon(event)) {
 					const result = await player
 						.chooseButtonTarget({
 							createDialog: [prompt, cards.filter(i => !assigned.includes(i))],
