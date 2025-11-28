@@ -14,7 +14,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const result = await player
-				.chooseToDiscard(get.prompt2(event.skill, trigger.source), "chooseonly")
+				.chooseToDiscard(get.prompt2(event.skill, trigger.source), "chooseonly", "he")
 				.set("ai", card => {
 					const trigger = get.event().getTrigger();
 					const { source } = trigger;
