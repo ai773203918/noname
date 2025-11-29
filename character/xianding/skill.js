@@ -2489,7 +2489,6 @@ const skills = {
 						type = get.type2(card);
 					return ui.selected.cards.every(cardx => get.type2(cardx) == type) || ui.selected.cards.every(cardx => get.color(cardx) == color);
 				})
-				.set("allowChooseAll", true)
 				.set("complexCard", true)
 				.set("ai", card => {
 					const { parent: event, player } = get.event();
