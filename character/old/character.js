@@ -482,6 +482,7 @@ const characters = {
 		hp: 3,
 		skills: ["dingpin", "oldfaen"],
 		dieAudios: ["chenqun"],
+		clans: ["颍川陈氏"],
 	},
 	old_zhuhuan: {
 		sex: "male",

@@ -387,7 +387,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_anyDraw",
 			filter(event, player) {
-				return player.getRoundHistory("sourceDamage", evt => evt.card.name == "sha").indexOf(event) == 0;
+				return player.getRoundHistory("sourceDamage", evt => evt.card?.name == "sha").indexOf(event) == 0;
 			},
 		},
 	},
@@ -1487,7 +1487,7 @@ const _zhanfa = {
 		skill: {
 			inherit: "zf_cardDamage",
 			filter(event, player) {
-				return player.getHistory("useCard", evt => get.type2(evt.card) == "trick").indexOf(event) == 0;
+				return player.getHistory("useCard", evt => get.type2(evt.card) == "trick").indexOf(event) == 0 && get.tag(event.card, "damage");
 			},
 		},
 	},
@@ -1503,7 +1503,7 @@ const _zhanfa = {
 			inherit: "zf_cardDamage",
 			filter(event, player) {
 				const index = player.getHistory("useCard", evt => get.type2(evt.card) == "trick").indexOf(event);
-				return index >= 0 && index < 2;
+				return index >= 0 && index < 2 && get.tag(event.card, "damage");
 			},
 		},
 	},
@@ -2138,7 +2138,8 @@ const _zhanfa = {
 				next.set("player", player);
 				next.setContent(async (event, trigger, player) => {
 					const num = 7 - player.maxHp;
-					player[num > 0 ? "gainMaxHp" : "loseMaxHp"](Math.abs(num));
+					await player[num > 0 ? "gainMaxHp" : "loseMaxHp"](Math.abs(num));
+					await player.recover(Math.abs(num));
 				});
 			},
 			trigger: { player: ["gainMaxHpBefore", "loseMaxHpBefore"] },
@@ -3123,10 +3124,12 @@ export class ZhanfaManager {
 	/**
 	 * 获取对应战法的稀有度
 	 * @param {string} id 战法的id
+	 * @param {boolean} raw 是否返回不带zf_前缀的格式
 	 * @returns {string}
 	 */
-	getRarity(id) {
-		return this.get(id).rarity;
+	getRarity(id, raw) {
+		const str = this.get(id).rarity
+		return raw ? str : `zf_${str}`;
 	}
 
 	/**

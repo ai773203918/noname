@@ -182,7 +182,7 @@ const characters = {
 	pangshanmin: {
 		sex: "male",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["dccaisi", "dczhuoli"],
 	},
 	dc_jiachong: {

@@ -1,4 +1,11 @@
 const characters = {
+	clan_chenqun: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["clangezhi", "clanmingdian", "clanshize"],
+		clans: ["颍川陈氏"],
+	},
 	clan_xunyu: {
 		sex: "male",
 		group: "qun",

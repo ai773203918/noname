@@ -12,10 +12,10 @@ const skills = {
 			if (player.countCards("h") >= 5) {
 				return false;
 			}
-			return game.hasPlayer(current => current != player && current.isDamaged());
+			return game.hasPlayer(current => current.isDamaged());//current != player && 
 		},
 		async cost(event, trigger, player) {
-			const targets = game.filterPlayer(current => current != player && current.isDamaged());
+			const targets = game.filterPlayer(current => current.isDamaged());//current != player && 
 			let answer_ok = undefined;
 			let humans = targets.filter(current => current === game.me || current.isOnline());
 			let locals = targets.slice(0).randomSort();

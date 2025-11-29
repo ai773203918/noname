@@ -374,6 +374,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["redingpin", "refaen"],
+		clans: ["颍川陈氏"],
 	},
 	xin_caoxiu: {
 		sex: "male",

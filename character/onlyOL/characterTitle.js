@@ -1,4 +1,6 @@
 export default {
+	//ol_sb_dongzhao: "",
+	//ol_sb_chengyu: "",
 	//ol_sb_yl_luzhi: "国之桢干", //暂无称号，先取别的称号顶替一下
 	//ol_sunxiu: "弥殇的景君", //暂无称号，先取别的称号顶替一下
 	//ol_sb_zhaoyun: "七进七出", //暂无称号，先取别的称号顶替一下

@@ -95,6 +95,10 @@ window.noname_character_rank = {
 		"eu_yuejin",
 	],
 	a: [
+		"ol_sb_dongzhao",
+		"ol_sb_chengyu",
+		"ol_cuiyan",
+		"clan_chenqun",
 		"yj_hanbing",
 		"yj_tengjia",
 		"two_yj_hanbing",
@@ -1061,6 +1065,9 @@ window.noname_character_rank = {
 		"pot_huanjie",
 	],
 	b: [
+		"bozai",
+		"xiangjiaoduanwu",
+		"houzhaoning",
 		"taohuang",
 		"ol_re_yujin",
 		"dc_sb_xusheng",
@@ -2524,6 +2531,10 @@ window.noname_character_rank = {
 			"v_sunce",
 		],
 		epic: [
+			"ol_sb_dongzhao",
+			"ol_sb_chengyu",
+			"ol_cuiyan",
+			"clan_chenqun",
 			"dc_sb_zhuran",
 			"mb_luyu",
 			"wxdl_caocao",
@@ -3029,6 +3040,9 @@ window.noname_character_rank = {
 			"guotiying",
 		],
 		rare: [
+			"bozai",
+			"xiangjiaoduanwu",
+			"houzhaoning",
 			"yj_hanbing",
 			"yj_tengjia",
 			"two_yj_hanbing",

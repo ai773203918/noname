@@ -2,6 +2,73 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//崔琰
+	olshutong: {
+		audio: 2,
+		forced: true,
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			return event.isFirstTarget;
+		},
+		logTarget: "targets",
+		async content(event, trigger, player) {
+			const { targets } = event;
+			const suit = get.suit(trigger.card);
+			[player].concat(targets.sortBySeat()).forEach(target => {
+				target.addTempSkill(`${event.name}_debuff`);
+				target.markAuto(`${event.name}_debuff`, suit);
+			});
+			if (targets.every(target => target.getHp() == player.getHp())) {
+				await player.draw();
+			}
+		},
+		subSkill: {
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				silent: true,
+				trigger: { player: "useCard1" },
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+				},
+				intro: {
+					content: "使用的下张牌花色不能为：$",
+				},
+				mod: {
+					cardEnabled(card, player) {
+						if (player.getStorage("olshutong_debuff").includes(get.suit(card))) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (player.getStorage("olshutong_debuff").includes(get.suit(card))) {
+							return false;
+						}
+					},
+				},
+			},
+		},
+	},
+	olzhijie: {
+		audio: 2,
+		trigger: { global: "phaseEnd" },
+		filter(event, player) {
+			return (player.hasHistory("useCard") || player.hasHistory("respond")) && game.hasGlobalHistory("useCard", evt => evt.targets.includes(player)) && game.hasPlayer(target => player.inRange(target));
+		},
+		locked: true,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(`###${get.translation(event.skill)}###${get.skillInfoTranslation(event.skill, player)}`, true, (card, player, target) => {
+					return player.inRange(target);
+				})
+				.set("ai", target => get.damageEffect(target, get.player(), get.player()))
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { targets } = event;
+			await targets[0].damage();
+		},
+	},
 	//吕玲绮
 	olqiwu: {
 		audio: 4,
