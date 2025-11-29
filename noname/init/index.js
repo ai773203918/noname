@@ -1,4 +1,5 @@
-import { rootURL, lib, game, get, _status, ui, ai, gnc } from "@noname";
+/// <reference types="vite/client" />
+import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 export { onload } from "./onload.js";
 import { userAgentLowerCase, nonameInitialized, device, leaveCompatibleEnvironment } from "@/util/index.js";
@@ -343,46 +344,12 @@ export async function boot() {
 				return null;
 			}
 		};
-		if (typeof lib.device != "undefined") {
-			// 这是安卓端根目录的cordova.js，不是init目录下面的
-			const script = document.createElement("script");
-			script.src = "cordova.js";
-			document.body.appendChild(script);
-			await new Promise(resolve => {
-				document.addEventListener("deviceready", async () => {
-					const { cordovaReady } = await import("./cordova.js");
-					await cordovaReady();
-					resolve(void 0);
-				});
-			});
-		} else {
+		if (import.meta.env.DEV || typeof lib.device == "undefined") {
 			const { browserReady } = await import("./browser.js");
 			await browserReady();
-			// //为其他自定义平台提供文件读写函数赋值的一种方式。
-			// //但这种方式只允许修改game的文件读写函数。
-			// if (typeof window.initReadWriteFunction == "function") {
-			// 	const g = {};
-			// 	const ReadWriteFunctionName = ["download", "checkFile", "checkDir", "readFile", "readFileAsText", "writeFile", "removeFile", "getFileList", "ensureDirectory", "createDir", "removeDir"];
-			// 	ReadWriteFunctionName.forEach(prop => {
-			// 		Object.defineProperty(g, prop, {
-			// 			configurable: true,
-			// 			get() {
-			// 				return undefined;
-			// 			},
-			// 			set(newValue) {
-			// 				if (typeof newValue == "function") {
-			// 					delete g[prop];
-			// 					g[prop] = game[prop] = newValue;
-			// 				}
-			// 			},
-			// 		});
-			// 	});
-			// 	// @ts-expect-error ignore
-			// 	await window.initReadWriteFunction(g).catch(e => {
-			// 		console.error("文件读写函数初始化失败:", e);
-			// 	});
-			// 	delete window.initReadWriteFunction; // 后续用不到了喵
-			// }
+		} else {
+			const { cordovaReady } = await import("./cordova.js");
+			await cordovaReady();
 		}
 	}
 
@@ -455,6 +422,7 @@ export async function boot() {
 	await loadCss();
 	initSheet();
 
+	await lib.init.promises.js("game", "package");
 	const pack = window.noname_package;
 	delete window.noname_package;
 	for (const name in pack.character) {
@@ -566,6 +534,7 @@ export async function boot() {
 	}
 
 	// 无名杀更新日志
+	await lib.init.promises.js("game", "update");
 	if (window.noname_update) {
 		lib.version = window.noname_update.version;
 		// 更全面的更新内容
@@ -924,6 +893,8 @@ function initSheet() {
 }
 
 async function loadConfig() {
+	const path = "/game/config.js";
+	await import(/*@vite-ignore*/ path);
 	lib.config = window.config;
 	lib.configOL = {};
 	delete window.config;
