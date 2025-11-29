@@ -385,10 +385,10 @@ const skills = {
 			return game.countPlayer(current => current != player) > 1;
 		},
 		chooseToGive(target, player) {
-			const next = target.chooseCard(`霸朝：是否交给${get.translation(player)}一张非基本牌`, "he");
-			next.set("filterCard", card => {
+			const next = target.chooseCard(`霸朝：是否交给${get.translation(player)}一张牌`, "he");
+			/*next.set("filterCard", card => {
 				return get.type(card) != "basic";
-			});
+			});*/
 			next.set("sourcex", player);
 			next.set("att", get.attitude(target, player));
 			next.set("ai", card => {
@@ -397,7 +397,7 @@ const skills = {
 					return 15 - get.value(card);
 				}
 				if (game.countPlayer(current => current != sourcex) <= 3) {
-					return 10 - get.value(card);
+					return (get.type(card) != "basic" ? 10 : 8) - get.value(card);
 				}
 				return 0;
 			});
@@ -421,27 +421,21 @@ const skills = {
 				await next;
 			}
 			const targets = game.filterPlayer(current => {
-				return !current.hasHistory("lose", evt => evt.getParent() == next);
+				return !current.hasHistory("lose", evt => evt.getParent() == next && get.type(evt.cards[0]) != "basic");
 			});
 			if (!targets.length) {
 				return;
 			}
-			const result =
-				targets.length > 1
-					? await player
-							.chooseTarget("霸朝：对一名未交给你牌的角色造成1点伤害", true, (card, player, target) => {
-								return get.event("targetx").includes(target);
-							})
-							.set("targetx", targets)
-							.set("ai", target => {
-								const player = get.player();
-								return get.damageEffect(target, player, player);
-							})
-							.forResult()
-					: {
-							bool: true,
-							targets: targets,
-						};
+			const result = await player
+				.chooseTarget("霸朝：是否对一名未交给你非基本牌的角色造成1点伤害", (card, player, target) => {
+					return get.event("targetx").includes(target);
+				})
+				.set("targetx", targets)
+				.set("ai", target => {
+					const player = get.player();
+					return get.damageEffect(target, player, player);
+				})
+				.forResult();
 			if (result?.bool && result.targets?.length) {
 				const target = result.targets[0];
 				player.line(target, "green");

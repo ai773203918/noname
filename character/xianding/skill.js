@@ -1850,12 +1850,15 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (
+			/*if (
 				player
 					.getCards("hs")
 					.map(i => get.suit(i))
 					.unique().length < 2
 			) {
+				return false;
+			}*/
+			if (player.countCards("hs") < 2) {
 				return false;
 			}
 			return get
@@ -1893,9 +1896,10 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "dcfuhui",
-					filterCard(card, player) {
+					/*filterCard(card, player) {
 						return !ui.selected.cards.some(i => get.suit(i) === get.suit(card));
-					},
+					},*/
+					filterCard: true,
 					complexCard: true,
 					selectCard: 2,
 					popname: true,
@@ -1914,17 +1918,20 @@ const skills = {
 					},
 				};
 			},
-			prompt(links, player) {
-				return "将两张花色各不相同的手牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
+			prompt(links, player) {//花色各不相同的
+				return "将两张手牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
 			},
 		},
 		hiddenCard(player, name) {
-			if (
+			/*if (
 				player
 					.getCards("hs")
 					.map(i => get.suit(i))
 					.unique().length < 2
 			) {
+				return false;
+			}*/
+			if (player.countCards("hs") < 2) {
 				return false;
 			}
 			if (get.type(name) != "basic" && get.type(name) != "trick") {
@@ -1989,15 +1996,16 @@ const skills = {
 					if (event.skill !== "dcfuhui_backup" || (event.cards ?? []).length !== 2) {
 						return false;
 					}
-					const suits = event.cards.map(i => get.suit(i, player));
+					const sort = (a, b) => lib.suits.indexOf(a) - lib.suits.indexOf(b);
+					const suits = event.cards.map(i => get.suit(i, player)).sort(sort);
 					return !player.hasHistory(
 						"useCard",
 						evt => {
 							if (evt === event || (evt.cards ?? []).length !== 2) {
 								return false;
 							}
-							const suits2 = evt.cards.map(i => get.suit(i, player));
-							return suits.length === suits2.length && suits.every(suit => suits2.includes(suit));
+							const suits2 = evt.cards.map(i => get.suit(i, player)).sort(sort);
+							return suits.length === suits2.length && suits.every((suit, i) => suit == suits2[i]);
 						},
 						event
 					);
