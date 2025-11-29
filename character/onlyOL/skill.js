@@ -109,7 +109,7 @@ const skills = {
 			if (!event.card) {
 				return false;
 			}
-			const evt = event.getParent(evtx => evtx.card == event.card, true);
+			const evt = event.getParent(evtx => evtx.name == "useCard" && evtx.card == event.card, true);
 			if (!evt || !evt.targets?.some(target => target.isIn())) {
 				return false;
 			}
@@ -120,8 +120,8 @@ const skills = {
 		},
 		check: () => true,
 		logTarget(event, player) {
-			const evt = event.getParent(evtx => evtx.card == event.card, true);
-			return evt.targets?.filter(target => target.isIn());
+			const evt = event.getParent(evtx => evtx.name == "useCard" && evtx.card == event.card, true);
+			return evt.targets?.filter(target => target.isIn()).sortBySeat();
 		},
 		chooseControl(player, source, eventId) {
 			return player

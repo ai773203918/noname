@@ -274,7 +274,7 @@ const skills = {
 							return cards;
 						}
 						if (choice == "all") {
-							game.loseAsync({
+							await game.loseAsync({
 								lose_list: targets.sortBySeat().map(target => [target, getCards(target)]),
 								player: player,
 								animate: "giveAuto",

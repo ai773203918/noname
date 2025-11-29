@@ -225,7 +225,7 @@ const translates = {
 	clanmingdian: "明典",
 	clanmingdian_info: "出牌阶段或当你受到伤害后，你可重铸任意张基本牌（每轮每个牌名限一次）。若你重铸了你本回合使用过的牌名，你获得一张手牌中未拥有牌名的基本牌。",
 	clanshize: "士则",
-	clanshize_info: "宗族技，锁定技，你于回合内使用牌首次被响应后，你令一名同族角色攻击范围+1，直到其下次受到伤害。",
+	clanshize_info: "宗族技，锁定技，你于回合内使用牌首次被响应后，你令一名颍川陈氏角色攻击范围+1，直到其下次受到伤害。",
 };
 
 export default translates;
