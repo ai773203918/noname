@@ -3964,7 +3964,7 @@ const skills = {
 				skillAnimation: true,
 				animationColor: "fire",
 				filter(event, player) {
-					return player.isHealthy() && player.countCards("h") == 0;
+					return player.isHealthy() && player.countCards("h") < game.roundNumber;
 				},
 				content() {
 					game.log(player, "成功完成使命");
@@ -3976,14 +3976,35 @@ const skills = {
 				audio: "qingyu2.mp3",
 				trigger: { player: "dying" },
 				forced: true,
-				content() {
+				async content(event, trigger, player) {
 					game.log(player, "使命失败");
 					player.awakenSkill("qingyu");
-					player.loseMaxHp();
+					await player.loseMaxHp();
+					const targets = game.filterPlayer(current => current != player);
+					if (!targets.length) {
+						return;
+					}
+					const result =
+						targets.length > 1
+							? await player
+									.chooseTarget(`令一名其他角色获得${get.poptip("mbyongjue")}`, true, lib.filter.notMe)
+									.set("ai", target => {
+										return get.attitude(get.player(), target);
+									})
+									.forResult()
+							: {
+									bool: true,
+									targets: targets,
+								};
+					if (result?.bool && result.targets?.length) {
+						const target = result.targets[0];
+						player.line(target);
+						await target.addSkills("mbyongjue");
+					}
 				},
 			},
 		},
-		derivation: "xuancun",
+		derivation: ["xuancun", "mbyongjue"],
 	},
 	xuancun: {
 		audio: 2,
@@ -4000,6 +4021,33 @@ const skills = {
 		},
 		content() {
 			trigger.player.draw(Math.min(2, player.hp - player.countCards("h")));
+		},
+	},
+	mbyongjue: {
+		audio: "yongjue",
+		trigger: {
+			global: "useCard",
+		},
+		filter(event, player) {
+			if (event.player != _status.currentPhase || event.card.name != "sha") {
+				return false;
+			}
+			return event.player.getHistory("useCard").indexOf(event) == 0;
+		},
+		forced: true,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			player
+				.when({
+					global: "useCardAfter",
+				})
+				.filter(evt => evt == trigger)
+				.step(async (event, trigger, player) => {
+					const cards = trigger.cards.filterInD("od");
+					if (cards.length) {
+						await player.gain(cards, "gain2");
+					}
+				});
 		},
 	},
 	//羊祜
@@ -6130,28 +6178,32 @@ const skills = {
 			if (!list.includes("give") && player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0)) {
 				return true;
 			}
-			return false;
+			return !list.includes("draw") && game.hasPlayer(current => current != player);
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = ["将一张装备牌置于其他角色的装备区内并获得其一张手牌", "将两张牌交给一名其他角色并获得其装备区内的一张牌"];
-				var choiceList = ui.create.dialog("睦阵：请选择一项", "hidden");
-				choiceList.add([
-					list.map((item, i) => {
-						return [i, item];
-					}),
-					"textbutton",
-				]);
-				return choiceList;
+				const list = [
+					["gain", "将一张装备牌置于其他角色的装备区内并获得其一张手牌"],
+					["give", "将两张牌交给一名其他角色并获得其装备区内的一张牌"],
+					["draw", "你可以选择任意名其他角色，这些角色手牌数和装备区牌数每有一项与你相同，其摸一张牌，若这些角色均摸了两张牌，你摸选择角色数张牌"],
+				];
+				return ui.create.dialog("睦阵：请选择一项", [list, "textbutton"], "hidden");
 			},
 			filter(button, player) {
 				const list = player.getStorage("muzhen_used");
-				if (button.link == 0) {
-					return !list.includes("gain") && player.hasCard(i => get.type(i) == "equip", "he") && game.hasPlayer(current => current != player && current.countCards("h") > 0);
+				if (list.includes(button.link)) {
+					return false;
 				}
-				return !list.includes("give") && player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0);
+				if (button.link == "gain") {
+					return player.hasCard(i => get.type(i) == "equip", "he") && game.hasPlayer(current => current != player && current.countCards("h") > 0);
+				}
+				if (button.link == "give") {
+					return player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0);
+				}
+				return game.hasPlayer(current => current != player);
 			},
 			backup(links) {
+				const index = ["gain", "give", "draw"].indexOf(links[0]);
 				return {
 					audio: "muzhen",
 					filterTarget: [
@@ -6167,7 +6219,9 @@ const skills = {
 							}
 							return target.countCards("e") > 0;
 						},
-					][links[0]],
+						lib.filter.notMe,
+					][index],
+					selectTarget: [1, 1, [1, Infinity]][index],
 					filterCard: [
 						(card, player) => {
 							if (get.type(card) != "equip") {
@@ -6179,33 +6233,120 @@ const skills = {
 							return game.hasPlayer(current => current.countCards("h") > 0 && current.canEquip(card));
 						},
 						true,
-					][links[0]],
-					selectCard: 1 + links[0],
+						() => false,
+					][index],
+					selectCard: [1, 2, -1][index],
+					ai1(card) {
+						return 8 - get.value(card);
+					},
+					ai2: [
+						target => {
+							const player = get.player();
+							return get.attitude(player, target);
+						},
+						target => {
+							const player = get.player();
+							return get.attitude(player, target);
+						},
+						target => {
+							const player = get.player();
+							let cache = _status.event.getTempCache("muzhen", "targets");
+							if (!Array.isArray(cache)) {
+								let extras = [];
+								let draws = game.filterPlayer(current => {
+									if (current == player || get.attitude(player, current) <= 0) {
+										return false;
+									}
+									let num = 0;
+									for (const pos of ["h", "e"]) {
+										if (current.countCards(pos) == player.countCards(pos)) {
+											num++;
+										}
+									}
+									if (num == 2) {
+										extras.add(current);
+									}
+									return num == 1;
+								});
+								if (draws.length > extras.length) {
+									extras.addArray(draws);
+								}
+								_status.event.putTempCache("muzhen", "targets", extras);
+								cache = extras;
+							}
+							if (cache.length) {
+								return cache.includes(target) ? 2 : 0;
+							}
+							return get.attitude(player, target) > 0;
+						},
+					][index],
 					position: "he",
 					discard: false,
 					lose: false,
 					delay: false,
+					link: links[0],
+					multiline: true,
+					multitarget: true,
 					async content(event, trigger, player) {
-						const { cards, target } = event;
+						const { cards, targets } = event,
+							target = targets[0],
+							{ link } = get.info(event.name);
 						player.addTempSkill("muzhen_used", "phaseUseEnd");
-						if (cards.length == 1) {
-							player.markAuto("muzhen_used", "gain");
-							player.$giveAuto(cards[0], target);
-							await game.delayx();
-							await target.equip(cards[0]);
-						} else {
-							player.markAuto("muzhen_used", "give");
-							await player.give(cards, target);
-						}
-						const position = cards.length == 2 ? "e" : "h";
-						if (target.countGainableCards(player, position)) {
-							await player.gainPlayerCard(target, position, true);
+						player.markAuto("muzhen_used", link);
+						switch (link) {
+							case "gain": {
+								player.$giveAuto(cards[0], target);
+								await game.delayx();
+								await target.equip(cards[0]);
+								if (target.countGainableCards(player, "h")) {
+									await player.gainPlayerCard(target, "h", true);
+								}
+								break;
+							}
+							case "give": {
+								await player.give(cards, target);
+								if (target.countGainableCards(player, "e")) {
+									await player.gainPlayerCard(target, "e", true);
+								}
+								break;
+							}
+							default: {
+								targets.sortBySeat();
+								let draw = true;
+								await Promise.all(
+									targets.map(target => {
+										let num = 0;
+										for (const pos of ["h", "e"]) {
+											if (target.countCards(pos) == player.countCards(pos)) {
+												num++;
+											}
+										}
+										if (num != 2) {
+											draw = false;
+										}
+										if (num > 0) {
+											target.draw(num, "nodelay");
+										}
+										return target;
+									})
+								);
+								if (draw) {
+									await player.draw(targets.length);
+								}
+								break;
+							}
 						}
 					},
 				};
 			},
 			prompt() {
 				return "请选择【睦阵】的牌和目标";
+			},
+		},
+		ai: {
+			order: 6,
+			result: {
+				player: 1,
 			},
 		},
 		subSkill: {

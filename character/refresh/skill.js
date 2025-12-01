@@ -3470,12 +3470,15 @@ const skills = {
 				player.showCards(card, get.translation(player) + "对" + get.translation(targets[1]) + "发动了【应势】");
 				player.line(targets[0], "fire");
 
-				const next = targets[0].chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.cardEnabled.apply(this, arguments) && lib.filter.targetEnabled(card, player, (event || _status.event).sourcex);
-				}, "###是否对" + get.translation(targets[1]) + "使用一张【杀】？###若选择使用，则获得赏金（" + get.translation(card) + "）。若造成伤害，则再从牌堆中获得与此牌花色点数相同的牌作为额外赏金。");
+				const next = targets[0].chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.cardEnabled.apply(this, arguments) && lib.filter.targetEnabled(card, player, (event || _status.event).sourcex);
+					},
+					"###是否对" + get.translation(targets[1]) + "使用一张【杀】？###若选择使用，则获得赏金（" + get.translation(card) + "）。若造成伤害，则再从牌堆中获得与此牌花色点数相同的牌作为额外赏金。"
+				);
 				next.set("addCount", false);
 				next.set("complexSelect", true);
 				next.set("filterTarget", function (card, player, target) {
@@ -3518,9 +3521,12 @@ const skills = {
 							if (!slice) {
 								await target.gain(cards, "gain2");
 							} else {
-								setTimeout(function () {
-									target.$gain2(cards.slice(slice), true);
-								}, get.delayx(200, 200));
+								setTimeout(
+									function () {
+										target.$gain2(cards.slice(slice), true);
+									},
+									get.delayx(200, 200)
+								);
 								await target.gain(cards, player, "give");
 							}
 						}
@@ -7005,12 +7011,15 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			const { result } = await target
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
+				)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)
@@ -10757,6 +10766,100 @@ const skills = {
 			},
 			reverseEquip: true,
 			noe: true,
+		},
+	},
+	reyongjin: {
+		audio: "yongjin",
+		trigger: {
+			global: "phaseAnyEnd",
+		},
+		filter(event, player) {
+			const count = current => {
+				let cards = [];
+				current.getHistory("lose", evt => {
+					if (evt.getParent(event.name) == event) {
+						cards.addArray(evt.cards2);
+					}
+				});
+				return cards.length;
+			};
+			const num = count(player),
+				card = new lib.element.VCard({ name: "sha", isCard: true });
+			return (
+				num > 0 &&
+				game.hasPlayer(current => {
+					return count(current) == num && player.canUse(card, current, false);
+				})
+			);
+		},
+		async cost(event, trigger, player) {
+			const count = current => {
+				let cards = [];
+				current.getHistory("lose", evt => {
+					if (evt.getParent(trigger.name) == trigger) {
+						cards.addArray(evt.cards2);
+					}
+				});
+				return cards.length;
+			};
+			const num = count(player),
+				card = new lib.element.VCard({ name: "sha", isCard: true });
+			const targets = game.filterPlayer(current => {
+				return count(current) == num && player.canUse(card, current, false);
+			});
+			event.result = await player
+				.chooseTarget(
+					get.prompt2(event.skill),
+					(card, player, target) => {
+						return get.event("targetx").includes(target);
+					},
+					[1, Infinity]
+				)
+				.set("targetx", targets)
+				.set("ai", target => {
+					const card = new lib.element.VCard({ name: "sha", isCard: true }),
+						player = get.player();
+					return get.effect(target, card, player, player);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const card = new lib.element.VCard({ name: "sha", storage: { reyongjin: true }, isCard: true }),
+				targets = event.targets.filter(target => player.canUse(card, target, false));
+			if (!targets.length) {
+				return;
+			}
+			player.addTempSkill("reyongjin_effect");
+			await player.useCard(card, targets, false);
+			player.removeSkill("reyongjin_effect");
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					source: "damageSource",
+				},
+				charlotte: true,
+				filter(event, player) {
+					return event.card?.storage?.reyongjin;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					const slots = Array.from(Array(13))
+						.map((v, i) => `equip${parseFloat(i + 1)}`)
+						.filter(i => player.hasDisabledSlot(i));
+					if (slots.length) {
+						const slot = slots.randomGet();
+						await player.enableEquip(slot);
+						return;
+					}
+					const card = get.discardPile(card => get.type(card) == "equip" && player.canEquip(card) && !get.tag(card, "gifts"));
+					if (card) {
+						player.$gain2(card, false);
+						await player.equip(card);
+					}
+				},
+			},
 		},
 	},
 	rechunlao: {
@@ -16614,12 +16717,15 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "诛害：是否对" + get.translation(trigger.player) + "使用一张杀？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"诛害：是否对" + get.translation(trigger.player) + "使用一张杀？"
+				)
 				.set("logSkill", "zhuhai")
 				.set("complexSelect", true)
 				.set("complexTarget", true)
@@ -17482,3 +17588,4 @@ const skills = {
 };
 
 export default skills;
+ 
