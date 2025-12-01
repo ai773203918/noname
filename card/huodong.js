@@ -1758,7 +1758,7 @@ game.import("card", function () {
 							if (get.position(card) == "e") {
 								return sum + card[card.cardSymbol].storage.mb_qingnangshu_skill;
 							}
-							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNUm);
+							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNum);
 						}, 0);
 						if (!num) {
 							return "0";
@@ -1771,7 +1771,7 @@ game.import("card", function () {
 							if (get.position(card) == "e") {
 								return sum + card[card.cardSymbol].storage.mb_qingnangshu_skill;
 							}
-							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNUm);
+							return sum + (card.storage.mb_qingnangshu_skill || lib.card["mb_qingnangshu"].maxNum);
 						}, 0);
 						return `<li>剩余可用${num}次<br><li>锁定技，准备阶段，你加1点体力上限并回复1点体力。`;
 					},

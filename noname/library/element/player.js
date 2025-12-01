@@ -6754,6 +6754,9 @@ export class Player extends HTMLDivElement {
 				for (var i = 0; i < js.length; i++) {
 					if (
 						game.hasPlayer(function (current2) {
+							if (!aimTargets.includes(current2)) {
+								return false;
+							}
 							if (withatt) {
 								var att2 = get.attitude(player, current2);
 								if (att2 >= 0) {

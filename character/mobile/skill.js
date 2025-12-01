@@ -1720,6 +1720,10 @@ const skills = {
 					},
 				};
 			},
+			prompt(result, player) {
+				const num = result.index + 1;
+				return `摸${get.cnNumber(num)}张牌并失去${num}点体力`;
+			},
 		},
 		ai: {
 			order: 10,

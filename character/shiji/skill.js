@@ -2376,17 +2376,22 @@ const skills = {
 				player
 					.chooseControl(list)
 					.set("choiceList", list2)
-					.set("ai", function (target) {
-						if (
-							player.isDamaged() &&
-							(player.hp <= 2 ||
-								!target.countCards("e", function (card) {
-									return player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp();
-								}))
-						) {
+					.set("resultx", (() => {
+						if (!player.isDamaged()) {
+							return 0;
+						}
+						if (player.hp <= 2) {
+							return 1;
+						}
+						if (target.countCards("e", card => {
+							return player.canEquip(card) && get.value(card, target) >= 4 + player.getDamagedHp();
+						})) {
 							return 1;
 						}
 						return 0;
+					})())
+					.set("ai", () => {
+						return get.event("resultx");
 					});
 			} else {
 				player.loseHp();
