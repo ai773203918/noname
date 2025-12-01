@@ -6,6 +6,9 @@ export default {
 	//suyue: ""
 	//guotiying: "",
 	//dc_sb_lvmeng: "",
+	//dc_sb_pangtong: "",
+	//dc_sb_wuyi: "",
+	//dc_sb_fazheng: "",
 	dc_huanjie: "冰鉴丹心",
 	linglie: "烈虎千狩",
 	lvju: "仗钺征镇",

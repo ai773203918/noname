@@ -28,6 +28,7 @@ game.import("character", function () {
 			dc_sb_xunyu: [["dc_sb_xunyu_shadow", []]],
 			dc_sb_jiangwei: [["dc_sb_jiangwei_shadow", []]],
 			dc_sb_luxun: [["dc_sb_luxun_shadow", []]],
+			dc_sb_pangtong: [["dc_sb_pangtong_shadow", []]],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: { ...characterTitles },

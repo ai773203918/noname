@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const dynamicTranslates = {
+	dcsbyinmou(player) {
+		const bool = player.storage.dcsbyinmou;
+		let yang = "将手牌摸至体力上限（至多摸五）",
+			yin = "弃置体力值张手牌";
+		if (bool) {
+			yin = `<span class="bluetext">${yin}</span>`;
+		} else {
+			yang = `<span class="firetext">${yang}</span>`;
+		}
+		const start = `转换技，①游戏开始时，你可以转换此技能状态；②一名角色的回合结束时，若其本回合失去手牌数大于手牌数，你可观看牌堆顶三张牌并交给其其中一张，其失去此牌时，`,
+			end = "。";
+		return `${start}阳：${yang}；阴：${yin}${end}`;
+	},
 	dcsbjunmou(player) {
 		const bool = player.storage.dcsbjunmou;
 		let yang = "此牌视为无距离次数限制的火【杀】并摸一张牌（你可额外摸一张牌并令此技能本阶段失效）",

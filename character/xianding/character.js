@@ -1,4 +1,22 @@
 const characters = {
+	dc_sb_pangtong: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcsbyinmou", "dcsbhongce"],
+	},
+	dc_sb_wuyi: {
+		sex: "male",
+		group: "shu",
+		hp: 4,
+		skills: ["dcsbshibian", "dcsbbibu"],
+	},
+	dc_sb_fazheng: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["dcsbzhenjian", "dcsbxixing"],
+	},
 	houzhaoning: {
 		sex: "female",
 		group: "qun",
