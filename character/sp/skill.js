@@ -2531,11 +2531,14 @@ const skills = {
 			await target.chooseToGive(player, "h", true);
 			await target.recover();
 			await target.link(false);
-			const targets = [target.getPrevious(), target.getNext()].unique().sortBySeat();
+			const targets = [target.getPrevious(), target.getNext()].unique();
 			if (targets.length) {
-				for (const i of targets) {
-					await i.link(true);
+				const func = async target => {
+					if (target?.isIn()) {
+						await target.link(true);
+					}
 				}
+				await game.doAsyncInOrder(targets, func);
 			}
 			target.addSkill("oldici_effect");
 			target.markAuto("oldici_effect", [player]);
@@ -2545,9 +2548,8 @@ const skills = {
 			result: {
 				player(player, target) {
 					const targets = [target.getPrevious(), target.getNext()]
-						.filter(current => !current.isLinked())
-						.unique()
-						.sortBySeat();
+						.filter(current => current?.isIn() && !current.isLinked())
+						.unique();
 					let num = target.isLinked() ? get.effect(target, { name: "tiesuo" }, player, player) : 0;
 					if (targets.length) {
 						for (const current of targets) {
@@ -3229,7 +3231,7 @@ const skills = {
 		trigger: { global: "roundStart" },
 		forced: true,
 		async content(event, trigger, player) {
-			const nums = Array.from({ length: 3 }).map((_, i) => get.cnNumber(i + 1) + "张");
+			const nums = Array.from({ length: 4 }).map((_, i) => get.cnNumber(i + 1) + "张");
 			const { result } = await player
 				.chooseControl(nums)
 				.set("prompt", "奉蔚：请选择摸牌数")

@@ -6042,10 +6042,11 @@ const skills = {
 						.set("ai", target => {
 							const player = get.player(),
 								val = get.event().val;
-							if (val > 5) {
-								return get.attitude(player, target);
+							let att = get.attitude(player, target);
+							if (val < 4) {
+								att = Math.max(0.1, att);
 							}
-							return -get.attitude(player, target);
+							return att;
 						})
 						.set("val", Math.max(...cards.map(card => get.value(card))))
 						.forResult();

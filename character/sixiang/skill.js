@@ -1381,6 +1381,9 @@ const skills = {
 				charlotte: true,
 				mod: {
 					attackRange(player, num) {
+						if (!game.hasPlayer(current => current.hasSkill("stdyinzu"))) {
+							return;
+						}
 						const sub = player.countCards("h") - player.hp;
 						if (sub > 0) {
 							return num + 1;
