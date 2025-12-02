@@ -5986,7 +5986,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 					});
 					uiintro.add(viewInfo);
 				}
-				var addskin = false;
+				//先废弃这里的换肤
+				/*var addskin = false;
 				if (node.parentNode.classList.contains("menu-buttons")) {
 					addskin = !lib.config.show_charactercard;
 				} else {
@@ -6062,7 +6063,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							createButtons(lib.skin[nameskin]);
 						});
 					}
-				}
+				}*/
 			}
 		} else if (node.classList.contains("equips") && ui.arena.classList.contains("selecting")) {
 			(function () {
@@ -7370,6 +7371,87 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	 */
 	poptip(poptip) {
 		return lib.poptip.getElement(poptip);
+	}
+	/**
+	 * 获取角色原皮对应的图片路径
+	 * @param { string } name
+	 * @returns {string | null}
+	 */
+	skinPath(name) {
+		if (!name) {
+			return null;
+		}
+		let src,
+			ext = ".jpg",
+			subfolder = "default";
+		let dbimage = null,
+			extimage = null,
+			modeimage = null,
+			nameinfo = get.character(name),
+			gzbool = false;
+		if (nameinfo.skinPath) {
+			if (nameinfo.skinPath.startsWith("ext:")) {
+				return nameinfo.skinPath.replace(/^ext:/, "extension/");
+			}
+			return nameinfo.skinPath;
+		}
+		const mode = get.mode();
+		if (lib.characterPack[`mode_${mode}`] && lib.characterPack[`mode_${mode}`][name]) {
+			if (mode === "guozhan") {
+				if (name.startsWith("gz_shibing")) {
+					name = name.slice(3, 11);
+				} else {
+					if (lib.config.mode_config.guozhan.guozhanSkin && nameinfo && nameinfo.hasSkinInGuozhan) {
+						gzbool = true;
+					}
+					name = name.slice(3);
+				}
+			} else {
+				modeimage = mode;
+			}
+		} else if (name.includes("::")) {
+			// @ts-expect-error ignore
+			name = name.split("::");
+			modeimage = name[0];
+			name = name[1];
+		}
+		let imgPrefixUrl;
+		if (!modeimage && nameinfo) {
+			if (nameinfo.img) {
+				imgPrefixUrl = nameinfo.img;
+			} else if (nameinfo.trashBin) {
+				for (const value of nameinfo.trashBin) {
+					if (value.startsWith("img:")) {
+						imgPrefixUrl = value.slice(4);
+						break;
+					} else if (value.startsWith("ext:")) {
+						extimage = value;
+						break;
+					} else if (value.startsWith("db:")) {
+						dbimage = value;
+						break;
+					} else if (value.startsWith("mode:")) {
+						modeimage = value.slice(5);
+						break;
+					} else if (value.startsWith("character:")) {
+						name = value.slice(10);
+						break;
+					}
+				}
+			}
+		}
+		if (imgPrefixUrl) {
+			src = imgPrefixUrl;
+		} else if (extimage) {
+			src = extimage.replace(/^ext:/, "extension/");
+		} else if (dbimage) {
+			src = dbimage.slice(3);
+		} else if (modeimage) {
+			src = `image/mode/${modeimage}/character/${name}${ext}`;
+		} else {
+			src = `image/character/${gzbool ? "gz_" : ""}${name}${ext}`;
+		}
+		return `${src.split("/").slice(0, -2).join("/")}/skin/${name}/`;
 	}
 	/**
 	 * 将URL转换成相对于无名杀根目录的路径
