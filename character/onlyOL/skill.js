@@ -368,7 +368,7 @@ const skills = {
 	},
 	//魔曹操
 	olbachao: {
-		audio: 2,
+		audio: 5,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -495,7 +495,7 @@ const skills = {
 		},
 	},
 	olfuzai: {
-		audio: 2,
+		audio: 5,
 		enable: "chooseToUse",
 		locked: true,
 		filter(event, player) {
@@ -589,6 +589,7 @@ const skills = {
 		group: "olfuzai_equip",
 		subSkill: {
 			equip: {
+				audio: "olfuzai",
 				trigger: {
 					global: ["phaseBefore", "loseAfter", "loseAsyncAfter", "equipAfter", "addToExpansionAfter", "addJudgeAfter", "gainAfter"],
 					player: ["enterGame", "expandEquipAfter", "disableEquipAfter", "enableEquipAfter", "changeHpAfter", "changeSkillsAfter"],

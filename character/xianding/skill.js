@@ -3187,7 +3187,7 @@ const skills = {
 	},
 	//威曹操
 	dcduoyue: {
-		aduio: 2,
+		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			return game.hasPlayer(current => player.canCompare(current));
@@ -3342,7 +3342,7 @@ const skills = {
 		},
 	},
 	dcxiongwei: {
-		aduio: 2,
+		audio: 2,
 		trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
 		filter(event, player) {
 			if (event.preserve || event.result?.cancelled) {
