@@ -3322,6 +3322,7 @@ const skills = {
 			const [target, target1] = event.targets;
 			const cards = target.getCards("h").concat(target1.getCards("h"));
 			event.dialogRef = true;
+			const videoId = lib.status.videoId++;
 			game.broadcastAll(
 				function (cards, id, player, targets) {
 					const dialog = ui.create.dialog("缔盟", true);
@@ -3334,15 +3335,15 @@ const skills = {
 					_status.dieClose.push(dialog);
 					dialog.videoId = id;
 					if (_status.event.dialogRef) {
-						event.dialog = dialog;
+						_status.event.dialog = dialog;
 					}
 				},
 				cards,
-				dialog.videoId,
+				videoId,
 				player,
 				event.targets
 			);
-			game.addVideo("cardDialog", null, ["缔盟", get.cardsInfo(cards), dialog.videoId]);
+			game.addVideo("cardDialog", null, ["缔盟", get.cardsInfo(cards), videoId]);
 			delete event.dialogRef;
 			const dialog = event.dialog;
 			let current = target;
@@ -3355,7 +3356,7 @@ const skills = {
 					const next = current.chooseButton(true, function (button) {
 						return get.value(button.link, _status.event.player);
 					});
-					next.set("dialog", dialog.videoId);
+					next.set("dialog", get.idDialog(videoId));
 					next.set("closeDialog", false);
 					next.set("dialogdisplay", true);
 					const { result } = await next;
@@ -3398,7 +3399,7 @@ const skills = {
 							}
 						},
 						card,
-						dialog.videoId,
+						videoId,
 						current
 					);
 				}
@@ -3412,8 +3413,8 @@ const skills = {
 				await game.delay(2);
 			}
 			if (!_status.connectMode) {
-				game.log(targets[0], "获得了" + get.cnNumber(num1) + "张牌");
-				game.log(targets[1], "获得了" + get.cnNumber(num2) + "张牌");
+				game.log(event.targets[0], "获得了" + get.cnNumber(num1) + "张牌");
+				game.log(event.targets[1], "获得了" + get.cnNumber(num2) + "张牌");
 			}
 			dialog.close();
 			_status.dieClose.remove(dialog);
@@ -3423,8 +3424,8 @@ const skills = {
 					dialog.close();
 					_status.dieClose.remove(dialog);
 				}
-			}, dialog.videoId);
-			game.addVideo("cardDialog", null, dialog.videoId);
+			}, videoId);
+			game.addVideo("cardDialog", null, videoId);
 		},
 		targetprompt: ["先拿牌", "后拿牌"],
 		find(type) {

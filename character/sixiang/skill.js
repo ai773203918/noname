@@ -1381,14 +1381,15 @@ const skills = {
 				charlotte: true,
 				mod: {
 					attackRange(player, num) {
-						if (!game.hasPlayer(current => current.hasSkill("stdyinzu"))) {
+						const count = game.countPlayer(current => current.hasSkill("stdyinzu"));
+						if (!count) {
 							return;
 						}
 						const sub = player.countCards("h") - player.hp;
 						if (sub > 0) {
-							return num + 1;
+							return num + count;
 						}
-						return num - 1;
+						return num - count;
 					},
 				},
 			},
