@@ -9032,7 +9032,7 @@ player.removeVirtualEquip(card);
 				if (!event.noOrdering) {
 					//有noOrdering属性亮出牌就不会把牌丢进处理区
 					//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
-					if (ownerLose.values()?.flat()?.length > 0) {
+					if (Array.from(ownerLose.values())?.flat()?.length > 0) {
 						const next = game.loseAsync({ lose_list: Array.from(ownerLose.entries()) }).set("relatedEvent", event.relatedEvent || event.getParent());
 						next.setContent("chooseToCompareLose");
 						await next;
@@ -11610,16 +11610,17 @@ player.removeVirtualEquip(card);
 							cardx[j].destroyed = cardx[j]._destroy;
 							continue;
 						}
-					} else if ("destroyed" in cardx[j]) {
-						if (event.getlx !== false && event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
-							cardx[j].selfDestroy(event);
-							continue;
-						}
+					} else if (event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {//event.getlx !== false && 
+						cardx[j].selfDestroy(event);
+						continue;
+					} 
+					/*else if ("destroyed" in cardx[j]) {
+						
 					} else if (info.destroy) {
 						cardx[j].delete();
 						cardx[j].destroyed = info.destroy;
 						continue;
-					}
+					}*/
 					if (event.position) {
 						if (_status.discarded) {
 							if (event.position == ui.discardPile) {
