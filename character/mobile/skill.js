@@ -2248,16 +2248,12 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				let dialog = ui.create.dialog("净土：选择一项", "hidden");
-				dialog.add([
-					[
-						["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
-						["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并恢复等量体力"],
-						["all", "背水！同时执行两项"],
-					],
-					"textbutton",
-				]);
-				return dialog;
+				const list = [
+					["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
+					["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并恢复等量体力"],
+					["all", "背水！同时执行两项"],
+				];
+				return ui.create.dialog("净土：选择一项", [list, "textbutton"], "hidden");
 			},
 			filter(button) {
 				const player = get.player(),
@@ -2266,7 +2262,7 @@ const skills = {
 				if (link != "all") {
 					return count(link) > 0;
 				}
-				return count("red") > 1 && count("red") == count("black");
+				return count("red") > 0 && count("red") == count("black");
 			},
 			check(button) {
 				switch (button.link) {
