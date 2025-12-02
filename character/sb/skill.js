@@ -2536,7 +2536,7 @@ const skills = {
 					animate: "giveAuto",
 					gaintag: ["sbquhu"],
 				})
-				.setContent(lib.skill.sbquhu.addToExpansionMultiple);
+				.setContent("addToExpansionMultiple");
 			await game.delay(1.5);
 			const isMin = minLength > myCards.length;
 			const sortedList = lose_list
@@ -2589,7 +2589,7 @@ const skills = {
 				await game.delayx();
 			}
 		},
-		addToExpansionMultiple() {
+		/*addToExpansionMultiple() {
 			"step 0";
 			if (event.animate == "give") {
 				event.visible = true;
@@ -2848,7 +2848,7 @@ const skills = {
 			if (event.updatePile) {
 				game.updateRoundNumber();
 			}
-		},
+		},*/
 		intro: {
 			markcount: "expansion",
 			mark(dialog, storage, player) {
