@@ -7366,7 +7366,7 @@ const skills = {
 	},
 	//OL谋公孙
 	olsbjiaodi: {
-		audio: 2,
+		audio: 3,
 		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
 			return event.card.name === "sha" && event.isFirstTarget && event.targets.length === 1;
@@ -7413,7 +7413,7 @@ const skills = {
 		mod: { attackRange: player => player.getHp() },
 	},
 	olsbbaojing: {
-		audio: 2,
+		audio: 3,
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(target => target !== player);

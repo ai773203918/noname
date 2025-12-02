@@ -1,4 +1,12 @@
 export default {
+	"#clan_hanfu:die": "动则门生，行必故吏，此馥何主也。",
+	"#clanheta1": "兵者不可为首，待他州发动再和之不迟。",
+	"#clanheta2": "学从袁，职自董，当助袁氏乎？当助董氏乎？",
+	"#clanyingxiang1": "颖川冲要，不捍大难，冀州虽鄙，堪留余谷。",
+	"#clanyingxiang2": "西山冷冷，众卿莫怀守土依依。",
+	"#clanyingxiang3": "遣骑迎乡人，则韩氏不来唯荀姓独往。",
+	"#clanxumin_clan_hanfu1": "不恤袁门恩举，馥无以至今日，况牧一州之民乎？",
+	"#clanxumin_clan_hanfu2": "民尽主兴袁氏，我又怎能不恤此民意？",
 	"#clan_wangguang:die": "父过盈渊，子愿代父偿……",
 	"#clanlilun1": "明胆异气，不能相生。",
 	"#clanlilun2": "心之与声，明为二物。",

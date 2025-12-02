@@ -639,7 +639,7 @@ const skills = {
 		},
 	},
 	clanyingxiang: {
-		audio: 2,
+		audio: 3,
 		trigger: {
 			player: "phaseUseEnd",
 		},
@@ -5597,7 +5597,7 @@ const skills = {
 	},
 	clanxumin: {
 		audio: 2,
-		audioname: ["clan_hanshao", "clan_hanrong"],
+		audioname: ["clan_hanshao", "clan_hanrong", "clan_hanfu"],
 		enable: "phaseUse",
 		viewAs: { name: "wugu" },
 		filterCard: true,
