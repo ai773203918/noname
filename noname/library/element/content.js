@@ -3763,7 +3763,8 @@ player.removeVirtualEquip(card);
 		if (
 			!card?.cards.some(card => {
 				return get.position(card, true) !== "o";
-			}) && target.canAddJudge(card)
+			}) &&
+			target.canAddJudge(card)
 		) {
 			target.addJudge(card, cards);
 		}
@@ -9411,7 +9412,7 @@ player.removeVirtualEquip(card);
 				}
 				//创建动画，其实就跟judge的类似
 				game.broadcastAll(
-					function (player, cards, str, id) {
+					function (player, cards, str, id, cardid) {
 						var event;
 						if (game.online) {
 							event = {};
@@ -9421,7 +9422,6 @@ player.removeVirtualEquip(card);
 						event.nodes ??= [];
 						for (const card of cards) {
 							let node;
-							const cardid = get.id();
 							if (game.chess) {
 								node = card.copy("thrown", "center", ui.arena).addTempClass("start");
 							} else {
@@ -9442,7 +9442,8 @@ player.removeVirtualEquip(card);
 					player,
 					cards,
 					event.str,
-					event.videoId
+					event.videoId,
+					get.id()
 				);
 				if (event.log != false) {
 					const logList = event.log?.(cards, player) || [player, "亮出了", cards];
@@ -9460,22 +9461,24 @@ player.removeVirtualEquip(card);
 					game.broadcastAll("closeDialog", event.videoId);
 				}
 			} else {
-				game.broadcastAll(function (id) {
-					const dialog = get.idDialog(id);
-					if (dialog) {
-						dialog.close();
-					}
-					ui.arena.classList.remove("thrownhighlight");
-				}, event.videoId);
-				game.addVideo("judge2", null, event.videoId);
+				//亮出牌的还需要清理一次中央的区域残留的动画效果
+				if (event.clearArena !== false) {
+					game.broadcastAll(ui.clear);
+				}
+				if (event.removeHighlight !== false) {
+					game.broadcastAll(function (id) {
+						const dialog = get.idDialog(id);
+						if (dialog) {
+							dialog.close();
+						}
+						ui.arena.classList.remove("thrownhighlight");
+					}, event.videoId);
+					game.addVideo("judge2", null, event.videoId);
+				}
 			}
 		},
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
-			//亮出牌的还需要清理一次中央的区域残留的动画效果
-			if (event.clearArena != false && isFlash) {
-				game.broadcastAll(ui.clear);
-			}
+			const { cards, str } = event;
 			//新增callback事件
 			if (event.callback) {
 				const next = game.createEvent("showCardsCallback", false);
@@ -11975,10 +11978,10 @@ player.removeVirtualEquip(card);
 							cardx[j].destroyed = cardx[j]._destroy;
 							continue;
 						}
-					} else if (event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {//event.getlx !== false && 
+					} else if (event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
 						cardx[j].selfDestroy(event);
 						continue;
-					} 
+					}
 					/*else if ("destroyed" in cardx[j]) {
 						
 					} else if (info.destroy) {

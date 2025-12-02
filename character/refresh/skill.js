@@ -3470,12 +3470,15 @@ const skills = {
 				player.showCards(card, get.translation(player) + "对" + get.translation(targets[1]) + "发动了【应势】");
 				player.line(targets[0], "fire");
 
-				const next = targets[0].chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.cardEnabled.apply(this, arguments) && lib.filter.targetEnabled(card, player, (event || _status.event).sourcex);
-				}, "###是否对" + get.translation(targets[1]) + "使用一张【杀】？###若选择使用，则获得赏金（" + get.translation(card) + "）。若造成伤害，则再从牌堆中获得与此牌花色点数相同的牌作为额外赏金。");
+				const next = targets[0].chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.cardEnabled.apply(this, arguments) && lib.filter.targetEnabled(card, player, (event || _status.event).sourcex);
+					},
+					"###是否对" + get.translation(targets[1]) + "使用一张【杀】？###若选择使用，则获得赏金（" + get.translation(card) + "）。若造成伤害，则再从牌堆中获得与此牌花色点数相同的牌作为额外赏金。"
+				);
 				next.set("addCount", false);
 				next.set("complexSelect", true);
 				next.set("filterTarget", function (card, player, target) {
@@ -3518,9 +3521,12 @@ const skills = {
 							if (!slice) {
 								await target.gain(cards, "gain2");
 							} else {
-								setTimeout(function () {
-									target.$gain2(cards.slice(slice), true);
-								}, get.delayx(200, 200));
+								setTimeout(
+									function () {
+										target.$gain2(cards.slice(slice), true);
+									},
+									get.delayx(200, 200)
+								);
 								await target.gain(cards, player, "give");
 							}
 						}
@@ -7005,12 +7011,15 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			const { result } = await target
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"挑衅：对" + get.translation(player) + "使用一张杀，或令其弃置你的一张牌"
+				)
 				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("complexTarget", true)
@@ -10421,7 +10430,77 @@ const skills = {
 			}
 			return ["useCard", "respond"].includes(event.getParent().name) && event.getl(player)?.hs?.length;
 		},
-		content() {
+		async content(event, trigger, player) {
+			const cards = get.cards(1, true);
+			await player
+				.showCards(cards, get.translation(player) + "发动了【涯角】", true)
+				.set("type", get.type2(trigger.getParent().card))
+				.set("clearArena", false)
+				.set("removeHighlight", false)
+				.set("callback", async (event, trigger, player) => {
+					const { cards } = event;
+					const [card] = cards;
+					const { type } = event.getParent();
+					if (get.type2(card) == type) {
+						const result = await player
+							.chooseTarget("选择获得此牌的角色")
+							.set("ai", function (target) {
+								var att = get.attitude(_status.event.player, target);
+								if (_status.event.du) {
+									if (target.hasSkillTag("nodu")) {
+										return 0;
+									}
+									return -att;
+								}
+								if (att > 0) {
+									return att + Math.max(0, 5 - target.countCards("h"));
+								}
+								return att;
+							})
+							.set("du", get.name(card) == "du")
+							.forResult();
+						if (result?.bool && result.targets?.length) {
+							const {
+								targets: [target],
+							} = result;
+							player.line(target, "green");
+							await target.gain(cards, "gain2");
+						}
+					} else {
+						const result = await player
+							.chooseTarget("是否弃置攻击范围内包含你的一名角色区域内的一张牌？", function (card, player, target) {
+								return target.inRange(player) && target.countDiscardableCards(player, "hej") > 0;
+							})
+							.set("ai", function (target) {
+								var player = _status.event.player;
+								return get.effect(target, { name: "guohe" }, player, player);
+							})
+							.forResult();
+						if (result?.bool && result.targets?.length) {
+							const {
+								targets: [target],
+							} = result;
+							player.line(target, "green");
+							await player.discardPlayerCard(target, "hej", true);
+						}
+					}
+					//清楚残留的动画，同时移除arena的高亮
+					game.broadcastAll(ui.clear);
+					const videoId = event.getParent().videoId;
+					game.broadcastAll(function (id) {
+						const dialog = get.idDialog(id);
+						if (dialog) {
+							dialog.close();
+						}
+						ui.arena.classList.remove("thrownhighlight");
+					}, videoId);
+					game.addVideo("judge2", null, videoId);
+					if (cards.someInD()) {
+						await game.cardsGotoPile(cards.filterInD(), "insert");
+					}
+				});
+		},
+		/*content() {
 			"step 0";
 			event.card = get.cards()[0];
 			game.cardsGotoOrdering(event.card);
@@ -10562,7 +10641,7 @@ const skills = {
 			if (cards.length) {
 				game.cardsGotoPile(cards, "insert");
 			}
-		},
+		},*/
 		ai: {
 			effect: {
 				target(card, player, target) {
@@ -16614,12 +16693,15 @@ const skills = {
 		clearTime: true,
 		content() {
 			player
-				.chooseToUse(function (card, player, event) {
-					if (get.name(card) != "sha") {
-						return false;
-					}
-					return lib.filter.filterCard.apply(this, arguments);
-				}, "诛害：是否对" + get.translation(trigger.player) + "使用一张杀？")
+				.chooseToUse(
+					function (card, player, event) {
+						if (get.name(card) != "sha") {
+							return false;
+						}
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					"诛害：是否对" + get.translation(trigger.player) + "使用一张杀？"
+				)
 				.set("logSkill", "zhuhai")
 				.set("complexSelect", true)
 				.set("complexTarget", true)
