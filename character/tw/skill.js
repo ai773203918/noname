@@ -7133,7 +7133,7 @@ const skills = {
 								animate: "giveAuto",
 								gaintag: ["twjuexing_buff"],
 							})
-							.setContent(get.info("sbquhu").addToExpansionMultiple);
+							.setContent("addToExpansionMultiple");
 					}
 					if (player.getHp() > 0) {
 						await player.draw(player.getHp(), target.getHp() > 0 ? "nodelay" : "").set("gaintag", ["twjuexing"]);

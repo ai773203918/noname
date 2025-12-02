@@ -986,8 +986,6 @@ const skills = {
 							if (cardx) {
 								trigger.cards[i] = cardx;
 								trigger.card.cards[i] = cardx;
-								trigger.throw = false;
-								get.owner(cardx)?.$throw(cardx);
 							}
 						}
 					} else {

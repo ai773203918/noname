@@ -10596,14 +10596,14 @@ export class Game extends GameCompatible {
 			cards = [cards];
 		}
 		const cardsx = cards.map(card => {
-			while (card.rcardSymbol) {
+			/*while (card.rcardSymbol) {
 				//好孩子不玩嵌套
 				card = card[card.rcardSymbol];
-			}
+			}*/
 			const cardx = ui.create.card();
-			const rcardSymbol = Symbol("card");
-			cardx.rcardSymbol = rcardSymbol;
-			cardx[rcardSymbol] = card;
+			//const rcardSymbol = Symbol("card");
+			//cardx.rcardSymbol = rcardSymbol;
+			//cardx[rcardSymbol] = card;
 			cardx.isFake = true;
 			cardx._cardid = card.cardid;
 			if (isBlank) {
@@ -10630,7 +10630,7 @@ export class Game extends GameCompatible {
 		if (!Array.isArray(cards)) {
 			cards = [cards];
 		}
-		const fake = cards.filter(card => card.isFake && card.rcardSymbol && card._cardid),
+		const fake = cards.filter(card => card.isFake && card._cardid),//&& card.rcardSymbol 
 			other = cards.removeArray(fake),
 			wild = [],//野生的假牌
 			map = {};
