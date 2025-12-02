@@ -11,7 +11,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			const list = [`将手牌数调整至与全场最少角色相同，本轮下X次使用牌后摸两张牌（X为以此法弃置的牌数，且至少为1）`, `摸等同于体力上限张牌，本轮增加等量手牌上限，且本轮至多可以再使用三张牌`];
-			const result = await target.chooseControl().set("choiceList", list).set("choice", 0).forResult();
+			const result = await target.chooseControl().set("choiceList", list).forResult();
 			if (typeof result?.index == "number") {
 				const { index } = result;
 				if (index == 0) {
@@ -25,7 +25,7 @@ const skills = {
 					} else {
 						const count = Math.max(1, -numx);
 						if (numx < 0) {
-							await target.chooseToDiscard("h", -numx, true);
+							await target.chooseToDiscard("h", -numx, true).set("allowChooseAll", true);
 						}
 						target.addTempSkill(`${event.name}_effect1`, "roundStart");
 						target.addMark(`${event.name}_effect1`, count, false);
@@ -152,7 +152,7 @@ const skills = {
 			game.broadcastAll(function (card) {
 				lib.skill.dcsuishi_backup.viewAs = card;
 			}, card);
-			const next = player.chooseToUse();
+			const next = target.chooseToUse();
 			next.set("openskilldialog", `###${get.translation(event.name)}###是否将一张同字数牌当做【${get.translation(card.name)}】使用？`);
 			next.set("norestore", true);
 			next.set("addCount", false);

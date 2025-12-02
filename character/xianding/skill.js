@@ -164,7 +164,7 @@ const skills = {
 				const hs = player.getCards("h");
 				const types = hs.map(card => get.type2(card)).unique();
 				const choice = suits.slice().sort((a, b) => get.value(getCards(a)) - get.value(getCards(b)))[0];
-				const result = await player.chooseControl(suits).set("prompt", `谟猷：请弃置一种花色的所有手牌`).set("choice", choice).forResult();
+				const result = await player.chooseControl(suits).set("prompt", `谟猷：请弃置一种花色的所有手牌`).set("suit", choice).set("ai", () => get.event().suit).forResult();
 				if (result?.control) {
 					const suit = result.control;
 					const cards = getCards(suit);
@@ -182,8 +182,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				inherit: "junkshengzhi_effect",
-				/*mod: {
+				mod: {
 					cardUsable: () => Infinity,
 					targetInRange: () => true,
 				},
@@ -208,7 +207,7 @@ const skills = {
 				mark: true,
 				intro: {
 					content: "使用下一张牌无距离和次数限制",
-				},*/
+				},
 			},
 		},
 	},
