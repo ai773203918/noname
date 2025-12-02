@@ -2,6 +2,216 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//阎象
+	dcyuzheng: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget: true,
+		async content(event, trigger, player) {
+			const { target } = event;
+			const list = [`将手牌数调整至与全场最少角色相同，本轮下X次使用牌后摸两张牌（X为以此法弃置的牌数，且至少为1）`, `摸等同于体力上限张牌，本轮增加等量手牌上限，且本轮至多可以再使用三张牌`];
+			const result = await target.chooseControl().set("choiceList", list).set("choice", 0).forResult();
+			if (typeof result?.index == "number") {
+				const { index } = result;
+				if (index == 0) {
+					const num = game.findPlayer(i => i.isMinHandcard())?.countCards("h");
+					if (!num) {
+						return;
+					}
+					const numx = num - target.countCards("h");
+					if (numx > 0) {
+						await target.draw(numx);
+					} else {
+						const count = Math.max(1, -numx);
+						if (numx < 0) {
+							await target.chooseToDiscard("h", -numx, true);
+						}
+						target.addTempSkill(`${event.name}_effect1`, "roundStart");
+						target.addMark(`${event.name}_effect1`, count, false);
+					}
+				} else if (index == 1) {
+					const num = target.maxHp;
+					await target.draw(num);
+					target.addTempSkill(`${event.name}_debuff`, "roundStart");
+					target.addTempSkill(`${event.name}_effect2`, "roundStart");
+					target.addMark(`${event.name}_effect2`, num, false);
+				}
+			}
+		},
+		ai: {
+			order: 7,
+			result: {
+				target: 1,
+			},
+		},
+		subSkill: {
+			effect1: {
+				charlotte: true,
+				onremove: true,
+				forced: true,
+				trigger: { player: "useCardAfter" },
+				filter(event, player) {
+					return player.hasMark("dcyuzheng_effect1");
+				},
+				async content(event, trigger, player) {
+					player.removeMark(event.name, 1, false);
+					if (!player.hasMark(event.name)) {
+						player.removeSkill(event.name);
+					}
+					await player.draw(2);
+				},
+				intro: {
+					content: "下#次使用牌后摸两张牌",
+				},
+			},
+			effect2: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("dcyuzheng_effect2");
+					},
+				},
+			},
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				init(player, skill) {
+					player.addMark(skill, 3, false);
+				},
+				mod: {
+					cardEnabled(card, player) {
+						if (!player.hasMark("dcyuzheng_debuff")) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if (!player.hasMark("dcyuzheng_debuff")) {
+							return false;
+						}
+					},
+				},
+				trigger: { player: "useCard1" },
+				firstDo: true,
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return player.hasMark("dcyuzheng_debuff");
+				},
+				async content(event, trigger, player) {
+					player.removeMark(event.name, 1, false);
+				},
+				intro: {
+					content: "还能再使用#张牌",
+				},
+			},
+		},
+	},
+	dcsuishi: {
+		audio: 2,
+		trigger: { global: "phaseJieshuBegin" },
+		filter(event, player) {
+			return event.player.countCards("h") > event.player.getHp();
+		},
+		async cost(event, trigger, player) {
+			const list = get.inpileVCardList(info => {
+				if (info[3]) {
+					return false;
+				}
+				return get.tag({ name: info[2] }, "damage") > 0.5;
+			});
+			if (list.length) {
+				const result = await player
+					.chooseButton([get.prompt2(event.skill, trigger.player), [list, "vcard"]])
+					.set("goon", get.attitude(player, trigger.player) > 0)
+					.set("target", trigger.player)
+					.set("ai", button => {
+						if (!get.event().goon) {
+							return 0;
+						}
+						const { target } = get.event();
+						const card = get.autoViewAs({ name: button.link[2] }, "unsure");
+						return Math.max(...game.players.map(targetx => (target.canUse(card, target) ? get.effect(targetx, card, target, get.player()) : 0)));
+					})
+					.forResult();
+				if (result?.bool && result.links?.length) {
+					event.result = {
+						bool: true,
+						cost_data: { name: result.links[0][2] },
+					};
+				}
+			}
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const {
+				cost_data: card,
+				targets: [target],
+			} = event;
+			game.broadcastAll(function (card) {
+				lib.skill.dcsuishi_backup.viewAs = card;
+			}, card);
+			const next = player.chooseToUse();
+			next.set("openskilldialog", `###${get.translation(event.name)}###是否将一张同字数牌当做【${get.translation(card.name)}】使用？`);
+			next.set("norestore", true);
+			next.set("addCount", false);
+			next.set("_backupevent", `${event.name}_backup`);
+			next.set("custom", {
+				add: {},
+				replace: { window() {} },
+			});
+			next.backup(`${event.name}_backup`);
+			await next;
+		},
+		subSkill: {
+			backup: {
+				audio: "dcsuishi",
+				filterCard(card) {
+					return get.itemtype(card) == "card" && get.cardNameLength(card) == get.cardNameLength(get.info("dcsuishi_backup").viewAs);
+				},
+				position: "hes",
+				selectCard: 1,
+				check: card => 6 - get.value(card),
+				popname: true,
+				async precontent(event, trigger, player) {
+					event.getParent().oncard = function () {
+						const { card } = get.event();
+						player
+							.when("useCardAfter")
+							.filter(evt => evt.card == card)
+							.step(async (event, trigger, player) => {
+								const targets = game.filterPlayer(target => target.hasHistory("damage", evt => evt.card == trigger.card));
+								player.line(targets, "yellow");
+								targets.forEach(target => {
+									target.addTempSkill("dcsuishi_debuff", { player: "phaseAfter" });
+									target.markAuto("dcsuishi_debuff", get.color(trigger.card));
+								});
+							});
+					};
+				},
+			},
+			debuff: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					cardEnabled(card, player) {
+						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcsuishi_debuff").includes(get.color(card))) {
+							return false;
+						}
+					},
+					cardSavable(card, player) {
+						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcsuishi_debuff").includes(get.color(card))) {
+							return false;
+						}
+					},
+				},
+				intro: {
+					content: "不能使用$的装备牌和伤害牌",
+				},
+			},
+		},
+	},
 	//崔烈
 	dczijue: {
 		audio: 2,
@@ -58,7 +268,7 @@ const skills = {
 				trigger: {
 					player: "compare",
 					target: "compare",
-					global: ["chooseToCompareAfter","compareMultipleAfter"],
+					global: ["chooseToCompareAfter", "compareMultipleAfter"],
 				},
 				filter(event, player, name) {
 					if (name == "compare") {
@@ -85,7 +295,7 @@ const skills = {
 					}
 					event.result = {
 						bool: true,
-					}
+					};
 				},
 				async content(event, trigger, player) {
 					await player.draw();

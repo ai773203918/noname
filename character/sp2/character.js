@@ -1,4 +1,10 @@
 const characters = {
+	dc_yanxiang: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dcyuzheng", "dcsuishi"],
+	},
 	cuilie: {
 		sex: "male",
 		group: "qun",
