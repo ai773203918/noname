@@ -39,7 +39,7 @@ const skills = {
 			} else {
 				event.result = await player
 					.chooseBool(get.prompt2(event.skill))
-					.set("choice", player.isDamaged() || num < -1 || get.attitude(player, trigger.player) > 0)
+					//.set("choice", player.isDamaged() || num < -1 || get.attitude(player, trigger.player) > 0)
 					.forResult();
 			}
 		},
@@ -61,7 +61,7 @@ const skills = {
 					await player.gainPlayerCard(target, "he", true);
 				}
 			}
-			player.addTempSkill("dczhangguan_effect");
+			//player.addTempSkill("dczhangguan_effect");
 		},
 		subSkill: {
 			effect: {

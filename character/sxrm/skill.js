@@ -233,7 +233,7 @@ const skills = {
 					},
 					ai1:() => Math.random(),
 					ai2(target) {
-						return 1;
+						return Math.max(0.1, get.attitude(get.player(), target));
 					},
 				})
 				.forResult();

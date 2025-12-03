@@ -1062,8 +1062,8 @@ const skills = {
 	dcsbhengye: {
 		audio: 2,
 		trigger: {
-			source: "damageSource",
-			player: ["phaseUseBegin", "phaseDrawBegin2"],
+			source: ["damageSource", "dieAfter"],
+			player: ["phaseDrawBegin2"],
 		},
 		init(player, skill) {
 			player.setStorage(skill, [0, 0, 0]);
@@ -1075,7 +1075,7 @@ const skills = {
 		},
 		forced: true,
 		filter(event, player) {
-			if (event.name == "phaseUse") {
+			if (event.name == "die") {
 				return true;
 			}
 			const list = player.getStorage("dcsbhengye", [0, 0, 0]);
@@ -1085,12 +1085,11 @@ const skills = {
 			if (!event.hasNature()) {
 				return false;
 			}
-			return list.some(num => num < 3);
+			return true; //list.some(num => num < 3);
 		},
 		async content(event, trigger, player) {
 			const skill = event.name;
-			if (trigger.name == "phaseUse") {
-				await player.recover();
+			if (trigger.name == "die") {
 				get.info(skill).init(player, skill);
 				return;
 			}
@@ -1100,9 +1099,7 @@ const skills = {
 				trigger.num += list[0];
 				return;
 			}
-			if (!canAdd.length) {
-				return;
-			}
+			const recover = list.some(num => num >= 3);
 			const result =
 				canAdd.length > 1
 					? await player
@@ -1152,19 +1149,21 @@ const skills = {
 							})
 							.forResult()
 					: {
-							bool: true,
+							bool: canAdd.length > 0,
 						};
-			if (!result?.bool) {
-				return;
-			}
-			for (let i = 0; i < list.length; i++) {
-				if (result.links?.length && !result.links.includes(i)) {
-					continue;
+			if (result?.bool) {
+				for (let i = 0; i < list.length; i++) {
+					if (result.links?.length && !result.links.includes(i)) {
+						continue;
+					}
+					list[i] = Math.min(3, list[i] + 1);
 				}
-				list[i] = Math.min(3, list[i] + 1);
+				player.setStorage(skill, list);
+				player.addTip(skill, `${get.translation(skill)} ${player.getStorage(skill).join(" ")}`);
 			}
-			player.setStorage(skill, list);
-			player.addTip(skill, `${get.translation(skill)} ${player.getStorage(skill).join(" ")}`);
+			if (recover) {
+				await player.recover();
+			}
 		},
 		mod: {
 			maxHandcard(player, num) {
