@@ -10,22 +10,9 @@ const skills = {
 			global: "damageEnd",
 		},
 		filter(event, player) {
-			return (event.player == player || player.inRange(event.player)) && event.source && event.source != player && !!player.countDiscardableCards(player, "he");
+			return (event.player == player || player.inRange(event.player)) && event.source && event.source != player && (player.countDiscardableCards(player, "he") > 0 || event.source.countDiscardableCards(player, "he") > 0);
 		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseToDiscard(get.prompt2(event.skill, trigger.source), "chooseonly", "he")
-				.set("ai", card => {
-					const trigger = get.event().getTrigger();
-					const { source } = trigger;
-					const player = get.player();
-					if (get.effect(source, { name: "guohe_copy2" }, player, player) > 0) {
-						return 6 - get.value(card);
-					}
-					return 0;
-				})
-				.forResult();
-		},
+		check: (event, player) => get.effect(event.source, { name: "guohe_copy2" }, player, player) > 0,
 		logTarget: "source",
 		async assignCards(event, trigger, player) {
 			let { cards, goon, filterCard, filterButton, filterTarget, forced, position, complexCard, prompt, ai1, ai2, selectCard, selectButton, chooseonly, gaintag } = event;
@@ -166,10 +153,15 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const {
-				cards,
 				targets: [target],
 			} = event;
-			await player.discard(cards);
+			let cards = [];
+			if (player.countDiscardableCards(player, "he")) {
+				const result = await player.chooseToDiscard("he", true).forResult();
+				if (result?.cards?.length) {
+					cards.addArray(result.cards);
+				}
+			}
 			if (target.countDiscardableCards(player, "he")) {
 				const result = await player.discardPlayerCard(target, "he", true).forResult();
 				if (result?.cards?.length) {
@@ -214,6 +206,7 @@ const skills = {
 				},
 			},
 		},
+
 	},
 	clanmingdian: {
 		audio: 2,

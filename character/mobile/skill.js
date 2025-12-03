@@ -2250,7 +2250,7 @@ const skills = {
 			dialog(event, player) {
 				const list = [
 					["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
-					["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并恢复等量体力"],
+					["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并回复等量体力"],
 					["all", "背水！同时执行两项"],
 				];
 				return ui.create.dialog("净土：选择一项", [list, "textbutton"], "hidden");
@@ -2340,6 +2340,14 @@ const skills = {
 						player.markAuto("mbfozong", colors);
 					},
 				};
+			},
+			prompt(links, player) {
+				const map = {
+					red: "获得所有黑色“业”，然后对一名角色造成等量伤害",
+					black: "获得所有红色“业”，然后令一名角色增加等量点体力上限并回复等量体力",
+					all: "获得所有“业”，然后依次执行：1.对一名角色造成黑色“业”数点伤害；2.令一名角色增加红色“业”数点体力上限并回复等量体力",
+				}
+				return map[links[0]];
 			},
 		},
 		derivation: "mbfozong",
