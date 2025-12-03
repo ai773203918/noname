@@ -4059,7 +4059,7 @@ const skills = {
 							[target, cards[1]],
 						],
 					})
-					.setContent(get.info(event.name).loseToDiscardpileMultiple);
+					.setContent("loseToDiscardpileMultiple");
 				let gains = [[], []];
 				for (let i = 0; i < cards.length; i++) {
 					while (gains[i].length < cards[i].length) {
@@ -4228,7 +4228,7 @@ const skills = {
 				},
 			},
 		},
-		loseToDiscardpileMultiple() {
+		/*loseToDiscardpileMultiple() {
 			"step 0";
 			event.visible = true;
 			if (!event.position) {
@@ -4304,7 +4304,7 @@ const skills = {
 					game.delayx();
 				}
 			}
-		},
+		},*/
 	},
 	mbfeili: {
 		audio: 2,

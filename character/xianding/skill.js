@@ -898,7 +898,7 @@ const skills = {
 			if (get.type2(card1) == get.type2(card2)) {
 				player.popup("洗具");
 				player.when("damageBegin4").step(async (event, trigger, player) => {
-					player.removeskill(event.name);
+					player.removeSkill(event.name);
 					await target.loseHp();
 					trigger.cancel();
 				});
@@ -919,6 +919,142 @@ const skills = {
 			order: 5,
 			result: {
 				target: 1,
+			},
+		},
+	},
+	//新杀谋许攸
+	dcsbmoyou: {
+		audio: 2,
+		trigger: {
+			player: "useCardAfter",
+		},
+		filter(event, player) {
+			const lose = player.getAllHistory("lose", evt => (evt.relatedEvent || evt.getParent()).name == "useCard");
+			const index = player
+				.getAllHistory("useCard", evt => {
+					return lose.some(evtx => (evtx.relatedEvent || evtx.getParent()) == evt && evtx.hs?.length);
+				})
+				.indexOf(event);
+			return index >= 0 && (index + 1) % 2 == 0;
+		},
+		check: () => true,
+		async content(event, trigger, player) {
+			await player.draw(3);
+			const getCards = suit => player.getDiscardableCards(player, "h", { suit: suit });
+			const suits = lib.suit.filter(suit => getCards(suit).length > 0);
+			if (suits.length) {
+				const hs = player.getCards("h");
+				const types = hs.map(card => get.type2(card)).unique();
+				const choice = suits.slice().sort((a, b) => get.value(getCards(a)) - get.value(getCards(b)))[0];
+				const result = await player.chooseControl(suits).set("prompt", `谟猷：请弃置一种花色的所有手牌`).set("suit", choice).set("ai", () => get.event().suit).forResult();
+				if (result?.control) {
+					const suit = result.control;
+					const cards = getCards(suit);
+					await player.discard(cards);
+					if (
+						hs
+							.removeArray(cards)
+							.map(card => get.type2(card))
+							.unique().length < types.length
+					) {
+						player.addTempSkill(`${event.name}_effect`);
+					}
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				mod: {
+					cardUsable: () => Infinity,
+					targetInRange: () => true,
+				},
+				trigger: {
+					player: "useCard1",
+				},
+				forced: true,
+				charlotte: true,
+				popup: false,
+				firstDo: true,
+				content() {
+					player.removeSkill(event.name);
+					if (trigger.addCount !== false) {
+						trigger.addCount = false;
+						const stat = player.getStat().card,
+							name = trigger.card.name;
+						if (typeof stat[name] == "number") {
+							stat[name]--;
+						}
+					}
+				},
+				mark: true,
+				intro: {
+					content: "使用下一张牌无距离和次数限制",
+				},
+			},
+		},
+	},
+	dcsbshiao: {
+		audio: 2,
+		trigger: {
+			player: "loseAfter",
+			global: ["cardsDiscardAfter", "loseAsyncAfter"],
+		},
+		getIndex(event, player) {
+			let cards = [];
+			if (event.name.indexOf("lose") == 0) {
+				if (event.getlx === false || event.position != ui.discardPile) {
+					return [];
+				}
+				cards = event.getl?.(player)?.cards2 || [];
+			} else {
+				const evt = event.getParent(); //event.relatedEvent ||
+				if (evt.name != "orderingDiscard") {
+					return [];
+				}
+				if (player.hasHistory("lose", evtx => (evtx.relatedEvent || evtx.getParent()) == evt.relatedEvent && evtx.cards2?.length)) {
+					cards = event.cards;
+				}
+			}
+			return cards;
+		},
+		filter(event, player, name, card) {
+			return game.hasAllGlobalHistory("changeHp", evt => evt.getParent()?.name == "damage" && evt.getParent().cards?.includes(card)) || event.type == "discard";
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			player.addTempSkill(`${event.name}_draw`);
+			const card = event.indexedData;
+			if (game.hasAllGlobalHistory("changeHp", evt => evt.getParent()?.name == "damage" && evt.getParent().cards?.includes(card))) {
+				player.storage[`${event.name}_draw`]++;
+			}
+			if (trigger.type == "discard") {
+				player.storage[`${event.name}_draw`]--;
+			}
+			player.markSkill(`${event.name}_draw`);
+		},
+		subSkill: {
+			draw: {
+				audio: "dcsbshiao",
+				init(player, skill) {
+					player.storage[skill] = 0;
+				},
+				charlotte: true,
+				onremove: true,
+				forced: true,
+				trigger: {
+					player: "drawBegin",
+				},
+				filter(event, player) {
+					return player.storage.dcsbshiao_draw != 0;
+				},
+				async content(event, trigger, player) {
+					trigger.num = Math.max(0, trigger.num + player.storage[event.name]);
+				},
+				intro: {
+					content(storage, player) {
+						return `本回合你摸牌时摸牌数${storage >= 0 ? "+" + storage : storage}`;
+					},
+				},
 			},
 		},
 	},
@@ -3290,7 +3426,7 @@ const skills = {
 			const num = cards.length + 1;
 			const name = `${event.name}_effect`;
 			player.addMark(name, num, false);
-			player.setStorage(`${event.name}_shown`, [...cards.map(i => get.color(i)), ...cards.map(i => get.type2(i))]);
+			player.setStorage(`${event.name}_shown`, [...cards.map(i => get.color(i)), ...cards.map(i => get.type2(i))].unique());
 			player.addSkill(name);
 		},
 		subSkill: {

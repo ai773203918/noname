@@ -23,6 +23,12 @@ const characters = {
 		hp: 3,
 		skills: ["dcwangzi", "dcherong"],
 	},
+	dc_sb_xuyou: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["dcsbmoyou", "dcsbshiao"],
+	},
 	dc_sb_lvmeng: {
 		sex: "male",
 		group: "wu",

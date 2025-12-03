@@ -3763,7 +3763,8 @@ player.removeVirtualEquip(card);
 		if (
 			!card?.cards.some(card => {
 				return get.position(card, true) !== "o";
-			}) && target.canAddJudge(card)
+			}) &&
+			target.canAddJudge(card)
 		) {
 			target.addJudge(card, cards);
 		}
@@ -6355,6 +6356,371 @@ player.removeVirtualEquip(card);
 			}
 		}
 	},
+	addToExpansionMultiple: [
+		async (event, trigger, player) => {
+			if (event.animate == "give") {
+				event.visible = true;
+			}
+			event.type = "addToExpansion";
+			event.gaintag ??= [];
+			event.cards ??= [];
+			if (event.lose_list) {
+				var map = {},
+					map2 = {};
+				for (var list of event.lose_list) {
+					var player = list[0],
+						cards = list[1];
+					event.cards.addArray(cards);
+					var myId = player.playerid;
+					if (!map2[myId]) {
+						map2[myId] = [];
+					}
+					for (var i of cards) {
+						var owner = get.owner(i, "judge");
+						if (owner && (owner != player || get.position(i) != "x")) {
+							var id = owner.playerid;
+							if (!map[id]) {
+								map[id] = [[], [], []];
+							}
+							map[id][0].push(i);
+							map2[myId].push(i);
+							var position = get.position(i);
+							if (position == "h") {
+								map[id][1].push(i);
+							} else {
+								map[id][2].push(i);
+							}
+						} else if (!event.updatePile && get.position(i) == "c") {
+							event.updatePile = true;
+						}
+					}
+				}
+				event.losing_map = map;
+				event.gaining_map = map2;
+				for (var i in map) {
+					var owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+					var next = owner.lose(map[i][0], ui.special).set("forceDie", true).set("getlx", false);
+					next.set("relatedEvent", event.getParent());
+					next.set("forceDie", true);
+					next.set("getlx", false);
+					if (event.visible == true) {
+						next.set("visible", true);
+					}
+					await next;
+				}
+			} else {
+				return event.finish();
+			}
+		},
+		async (event, trigger, player) => {
+			let { cards: cardsx } = event;
+			/*event.cards = cards = cards.map(i => (i.cards ? i.cards : [i])).flat();*/
+			if (event.lose_list) {
+				var map = {};
+				for (var list of event.lose_list) {
+					var player = list[0],
+						cards = list[1];
+					for (var i = 0; i < cards.length; i++) {
+						if (cards[i].willBeDestroyed("expansion", player, event)) {
+							cards[i].selfDestroy(event);
+							cards.splice(i--, 1);
+							cardsx.remove(cards[i]);
+						} else if (event.losing_map) {
+							for (var id in event.losing_map) {
+								if (event.losing_map[id][0].includes(cards[i])) {
+									var source = (_status.connectMode ? lib.playerOL : game.playerMap)[id];
+									var hs = source.getCards("hejsx");
+									if (hs.includes(cards[i])) {
+										cards.splice(i--, 1);
+										cardsx.remove(cards[i]);
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if (cardsx.length == 0) {
+				event.finish();
+				return;
+			}
+		},
+		async (event, trigger, player) => {
+			let { lose_list } = event;
+			for (const [source, cards] of lose_list) {
+				for (const [key, value] of lib.commonArea) {
+					const list = (_status[value.areaStatusName] || []).filter(card => cards.includes(card));
+					if (event[value.fromName] || list.length) {
+						const next = game.createEvent("from_" + value.fromName);
+						next.setContent(value.removeHandeler);
+						next.cards = cards;
+						next.player = source;
+						next.type = event.type;
+						await next;
+					}
+				}
+			}
+		},
+		async (event, trigger, player) => {
+			var loopedCount = 0,
+				mapLength = Object.keys(event.gaining_map).length;
+			for (var j in event.gaining_map) {
+				loopedCount++;
+				var map = {};
+				var player = (_status.connectMode ? lib.playerOL : game.playerMap)[j],
+					cards = event.gaining_map[j];
+				var hs = player.getCards("x");
+				for (var i = 0; i < cards.length; i++) {
+					if (hs.includes(cards[i])) {
+						cards.splice(i--, 1);
+					}
+				}
+				for (var num = 0; num < cards.length; num++) {
+					if (_status.discarded) {
+						_status.discarded.remove(cards[num]);
+					}
+					for (var num2 = 0; num2 < cards[num].vanishtag.length; num2++) {
+						if (cards[num].vanishtag[num2][0] != "_") {
+							cards[num].vanishtag.splice(num2--, 1);
+						}
+					}
+				}
+				if (event.animate == "draw") {
+					player.$draw(cards.length);
+					if (event.log) {
+						game.log(player, "将", get.cnNumber(cards.length), "张牌置于了武将牌上");
+					}
+					game.pause();
+					setTimeout(
+						(player, cards, resume) => {
+							player.$addToExpansion(cards, null, event.gaintag);
+							for (var i of event.gaintag) {
+								player.markSkill(i);
+							}
+							if (resume) {
+								game.resume();
+							}
+						},
+						get.delayx(500, 500),
+						player,
+						cards,
+						loopedCount === mapLength
+					);
+				} else if (event.animate == "gain") {
+					player.$gain(cards, false);
+					game.pause();
+					setTimeout(
+						(player, cards, resume) => {
+							player.$addToExpansion(cards, null, event.gaintag);
+							for (var i of event.gaintag) {
+								player.markSkill(i);
+							}
+							if (resume) {
+								game.resume();
+							}
+						},
+						get.delayx(700, 700),
+						player,
+						cards,
+						loopedCount === mapLength
+					);
+				} else if (event.animate == "gain2" || event.animate == "draw2") {
+					var gain2t = 300;
+					if (player.$gain2(cards) && player == game.me) {
+						gain2t = 500;
+					}
+					game.pause();
+					setTimeout(
+						(player, cards, resume) => {
+							player.$addToExpansion(cards, null, event.gaintag);
+							for (var i of event.gaintag) {
+								player.markSkill(i);
+							}
+							if (resume) {
+								game.resume();
+							}
+						},
+						get.delayx(gain2t, gain2t),
+						player,
+						cards,
+						loopedCount === mapLength
+					);
+				} else if (event.animate == "give" || event.animate == "giveAuto") {
+					var evtmap = event.losing_map;
+					var entries = Object.entries(evtmap).map(entry => [entry[0], entry[1][0]]);
+					var getOwner = card => {
+						var entry = entries.find(entry => entry[1].includes(card));
+						if (entry) {
+							return (_status.connectMode ? lib.playerOL : game.playerMap)[entry[0]];
+						}
+						return null;
+					};
+					var gainmap = {};
+					for (var cardx of cards) {
+						var owner = getOwner(cardx);
+						if (owner) {
+							var id = owner.playerid;
+							if (!gainmap[id]) {
+								gainmap[id] = [];
+							}
+							gainmap[id].push(cardx);
+						}
+					}
+					if (event.animate == "give") {
+						for (var i in gainmap) {
+							var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+							source.$give(evtmap[i][0], player, false);
+							if (event.log) {
+								game.log(player, "将", evtmap[i][0], "置于了武将牌上");
+							}
+						}
+					} else {
+						for (var i in gainmap) {
+							var source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+							if (evtmap[i][1].length) {
+								source.$giveAuto(evtmap[i][1], player, false);
+								if (event.log) {
+									game.log(player, "将", get.cnNumber(evtmap[i][1].length), "张牌置于了武将牌上");
+								}
+							}
+							if (evtmap[i][2].length) {
+								source.$give(evtmap[i][2], player, false);
+								if (event.log) {
+									game.log(player, "将", evtmap[i][2], "置于了武将牌上");
+								}
+							}
+						}
+					}
+					game.pause();
+					setTimeout(
+						(player, cards, resume) => {
+							player.$addToExpansion(cards, null, event.gaintag);
+							for (var i of event.gaintag) {
+								player.markSkill(i);
+							}
+							if (resume) {
+								game.resume();
+							}
+						},
+						get.delayx(500, 500),
+						player,
+						cards,
+						loopedCount === mapLength
+					);
+				} else if (typeof event.animate == "function") {
+					var time = event.animate(event);
+					game.pause();
+					setTimeout(
+						(player, cards, resume) => {
+							player.$addToExpansion(cards, null, event.gaintag);
+							for (var i of event.gaintag) {
+								player.markSkill(i);
+							}
+							if (resume) {
+								game.resume();
+							}
+						},
+						get.delayx(time, time),
+						player,
+						cards,
+						loopedCount === mapLength
+					);
+				} else {
+					player.$addToExpansion(cards, null, event.gaintag);
+					for (var i of event.gaintag) {
+						player.markSkill(i);
+					}
+					event.finish();
+				}
+			}
+		},
+		async (event, trigger, player) => {
+			if (event.updatePile) {
+				game.updateRoundNumber();
+			}
+			await game.delayx();
+		},
+	],
+	loseToDiscardpileMultiple: [
+		async (event, trigger, player) => {
+			event.visible = true;
+			if (!event.position) {
+				event.position = ui.discardPile;
+			}
+			event.type = "loseToDiscardpile";
+			const cards = [];
+			event.cards = cards;
+			for (var i = 0; i < event.lose_list.length; i++) {
+				var next = event.lose_list[i][0].lose(event.lose_list[i][1], event.position);
+				game.log(event.lose_list[i][0], "将", event.lose_list[i][1], "置入了弃牌堆");
+				next.animate = false;
+				next.delay = false;
+				cards.addArray(event.lose_list[i][1]);
+				next.getlx = false;
+			}
+			var evt = event;
+			if (evt.animate != false) {
+				evt.discardid = lib.status.videoId++;
+				game.broadcastAll(
+					function (list, id, cards) {
+						for (var i of list) {
+							for (var j of i[1]) {
+								j.classList.remove("glow");
+								j.classList.remove("glows");
+							}
+							i[0].$throw(i[1], null, "nobroadcast");
+						}
+						var cardnodes = [];
+						cardnodes._discardtime = get.time();
+						for (var ix of list) {
+							var card = ix[1];
+							for (var i = 0; i < cards.length; i++) {
+								if (cards[i].clone) {
+									cardnodes.push(cards[i].clone);
+								}
+							}
+						}
+						ui.todiscard[id] = cardnodes;
+					},
+					event.lose_list,
+					evt.discardid,
+					cards
+				);
+				if (lib.config.sync_speed && cards[0] && cards[0].clone) {
+					if (evt.delay != false) {
+						var waitingForTransition = get.time();
+						evt.waitingForTransition = waitingForTransition;
+						cards[0].clone.listenTransition(function () {
+							if (_status.waitingForTransition == waitingForTransition && _status.paused) {
+								game.resume();
+							}
+							delete evt.waitingForTransition;
+						});
+					} else if (evt.getParent().discardTransition) {
+						delete evt.getParent().discardTransition;
+						var waitingForTransition = get.time();
+						evt.getParent().waitingForTransition = waitingForTransition;
+						cards[0].clone.listenTransition(function () {
+							if (_status.waitingForTransition == waitingForTransition && _status.paused) {
+								game.resume();
+							}
+							delete evt.getParent().waitingForTransition;
+						});
+					}
+				}
+			}
+		},
+		async (event, trigger, player) => {
+			if (event.delay != false) {
+				if (event.waitingForTransition) {
+					_status.waitingForTransition = event.waitingForTransition;
+					game.pause();
+				} else {
+					await game.delayx();
+				}
+			}
+		},
+	],
 	chooseToCompareLose: function () {
 		for (var i = 0; i < event.lose_list.length; i++) {
 			var next = event.lose_list[i][0].lose(event.lose_list[i][1], ui.ordering);
@@ -9032,7 +9398,7 @@ player.removeVirtualEquip(card);
 				if (!event.noOrdering) {
 					//有noOrdering属性亮出牌就不会把牌丢进处理区
 					//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
-					if (ownerLose.values()?.flat()?.length > 0) {
+					if (Array.from(ownerLose.values())?.flat()?.length > 0) {
 						const next = game.loseAsync({ lose_list: Array.from(ownerLose.entries()) }).set("relatedEvent", event.relatedEvent || event.getParent());
 						next.setContent("chooseToCompareLose");
 						await next;
@@ -9046,7 +9412,7 @@ player.removeVirtualEquip(card);
 				}
 				//创建动画，其实就跟judge的类似
 				game.broadcastAll(
-					function (player, cards, str, id) {
+					function (player, cards, str, id, cardid) {
 						var event;
 						if (game.online) {
 							event = {};
@@ -9056,7 +9422,6 @@ player.removeVirtualEquip(card);
 						event.nodes ??= [];
 						for (const card of cards) {
 							let node;
-							const cardid = get.id();
 							if (game.chess) {
 								node = card.copy("thrown", "center", ui.arena).addTempClass("start");
 							} else {
@@ -9077,7 +9442,8 @@ player.removeVirtualEquip(card);
 					player,
 					cards,
 					event.str,
-					event.videoId
+					event.videoId,
+					get.id()
 				);
 				if (event.log != false) {
 					const logList = event.log?.(cards, player) || [player, "亮出了", cards];
@@ -9095,22 +9461,24 @@ player.removeVirtualEquip(card);
 					game.broadcastAll("closeDialog", event.videoId);
 				}
 			} else {
-				game.broadcastAll(function (id) {
-					const dialog = get.idDialog(id);
-					if (dialog) {
-						dialog.close();
-					}
-					ui.arena.classList.remove("thrownhighlight");
-				}, event.videoId);
-				game.addVideo("judge2", null, event.videoId);
+				//亮出牌的还需要清理一次中央的区域残留的动画效果
+				if (event.clearArena !== false) {
+					game.broadcastAll(ui.clear);
+				}
+				if (event.removeHighlight !== false) {
+					game.broadcastAll(function (id) {
+						const dialog = get.idDialog(id);
+						if (dialog) {
+							dialog.close();
+						}
+						ui.arena.classList.remove("thrownhighlight");
+					}, event.videoId);
+					game.addVideo("judge2", null, event.videoId);
+				}
 			}
 		},
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
-			//亮出牌的还需要清理一次中央的区域残留的动画效果
-			if (event.clearArena != false && isFlash) {
-				game.broadcastAll(ui.clear);
-			}
+			const { cards, str } = event;
 			//新增callback事件
 			if (event.callback) {
 				const next = game.createEvent("showCardsCallback", false);
@@ -11610,16 +11978,17 @@ player.removeVirtualEquip(card);
 							cardx[j].destroyed = cardx[j]._destroy;
 							continue;
 						}
-					} else if ("destroyed" in cardx[j]) {
-						if (event.getlx !== false && event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
-							cardx[j].selfDestroy(event);
-							continue;
-						}
+					} else if (event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
+						cardx[j].selfDestroy(event);
+						continue;
+					}
+					/*else if ("destroyed" in cardx[j]) {
+						
 					} else if (info.destroy) {
 						cardx[j].delete();
 						cardx[j].destroyed = info.destroy;
 						continue;
-					}
+					}*/
 					if (event.position) {
 						if (_status.discarded) {
 							if (event.position == ui.discardPile) {

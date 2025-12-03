@@ -4,35 +4,6 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//新杀神孙权
 	dccangming: {
-		async addToExpansionMultiple(event, trigger, player) {
-			event.type = "addToExpansion";
-			const { animate, lose_list, fromStorage, gaintag, delay } = event;
-			if (animate == "give") {
-				event.visible = true;
-			}
-			const cards = [];
-			event.cards = cards;
-			for (let i = 0; i < lose_list.length; i++) {
-				const list = lose_list[i];
-				const next = list[0].addToExpansion(...list.slice(1), animate, false);
-				if (typeof fromStorage == "string" && Array.from(lib.commonArea.keys()).some(area => lib.commonArea.get(area)?.fromName == fromStorage)) {
-					next.fromStorage = true;
-					next[fromStorage] = true;
-				}
-				next.gaintag.addArray(gaintag);
-				cards.addArray(list[1]);
-				next.getlx = false;
-				await next;
-			}
-			if (delay != false) {
-				if (event.waitingForTransition) {
-					_status.waitingForTransition = event.waitingForTransition;
-					game.pause();
-				} else {
-					await game.delayx();
-				}
-			}
-		},
 		audio: 2,
 		trigger: {
 			global: "gameDrawAfter",
@@ -46,14 +17,14 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { name, targets } = event;
-			const lose_list = [];
-			targets.sortBySeat().forEach(target => lose_list.push([target, target.getCards("h")]));
+			const lose_list = targets.sortBySeat().map(target => [target, target.getCards("h")]);
 			await game.loseAsync({
 				lose_list: lose_list,
 				player: player,
+				log: true,
 				animate: "giveAuto",
 				gaintag: [name],
-			}).setContent(get.info(event.name).addToExpansionMultiple);
+			}).setContent("addToExpansionMultiple");
 			/*const func = async target => {
 				if (!target.countCards("h")) {
 					return;
@@ -277,9 +248,10 @@ const skills = {
 							await game.loseAsync({
 								lose_list: targets.sortBySeat().map(target => [target, getCards(target)]),
 								player: player,
+								log: true,
 								animate: "giveAuto",
 								gaintag: ["dccangming"],
-							}).setContent(get.info("dccangming").addToExpansionMultiple);
+							}).setContent("addToExpansionMultiple");
 						}
 						else {
 							const [target] = targets;
