@@ -108,7 +108,7 @@ const skills = {
 			},
 		},
 	},
-	dcsuishi: {
+	dcyxsuishi: {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
@@ -150,7 +150,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			game.broadcastAll(function (card) {
-				lib.skill.dcsuishi_backup.viewAs = card;
+				lib.skill.dcyxsuishi_backup.viewAs = card;
 			}, card);
 			const next = target.chooseToUse();
 			next.set("openskilldialog", `###${get.translation(event.name)}###是否将一张同字数牌当做【${get.translation(card.name)}】使用？`);
@@ -166,9 +166,9 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
-				audio: "dcsuishi",
+				audio: "dcyxsuishi",
 				filterCard(card) {
-					return get.itemtype(card) == "card" && get.cardNameLength(card) == get.cardNameLength(get.info("dcsuishi_backup").viewAs);
+					return get.itemtype(card) == "card" && get.cardNameLength(card) == get.cardNameLength(get.info("dcyxsuishi_backup").viewAs);
 				},
 				position: "hes",
 				selectCard: 1,
@@ -184,8 +184,8 @@ const skills = {
 								const targets = game.filterPlayer(target => target.hasHistory("damage", evt => evt.card == trigger.card));
 								player.line(targets, "yellow");
 								targets.forEach(target => {
-									target.addTempSkill("dcsuishi_debuff", { player: "phaseAfter" });
-									target.markAuto("dcsuishi_debuff", get.color(trigger.card));
+									target.addTempSkill("dcyxsuishi_debuff", { player: "phaseAfter" });
+									target.markAuto("dcyxsuishi_debuff", get.color(trigger.card));
 								});
 							});
 					};
@@ -196,12 +196,12 @@ const skills = {
 				onremove: true,
 				mod: {
 					cardEnabled(card, player) {
-						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcsuishi_debuff").includes(get.color(card))) {
+						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
-						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcsuishi_debuff").includes(get.color(card))) {
+						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
 							return false;
 						}
 					},

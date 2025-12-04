@@ -216,7 +216,9 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 					}
 				}
 			}
-			if (imgPrefixUrl) {
+			if (type === "character" && lib.config.skin[name] && arguments[2] !== "noskin") {
+				src = lib.config.skin[name][1];
+			} else if (imgPrefixUrl) {
 				src = imgPrefixUrl;
 			} else if (extimage) {
 				src = extimage.replace(/^ext:/, "extension/");
@@ -225,8 +227,6 @@ Reflect.defineProperty(HTMLDivElement.prototype, "setBackground", {
 				return this;
 			} else if (modeimage) {
 				src = `image/mode/${modeimage}/character/${name}${ext}`;
-			} else if (type === "character" && lib.config.skin[name] && arguments[2] !== "noskin") {
-				src = `image/skin/${name}/${lib.config.skin[name]}${ext}`;
 			} else if (type === "character") {
 				src = `image/character/${gzbool ? "gz_" : ""}${name}${ext}`;
 			} else {

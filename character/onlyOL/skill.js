@@ -368,7 +368,7 @@ const skills = {
 	},
 	//魔曹操
 	olbachao: {
-		audio: 2,
+		audio: 5,
 		trigger: {
 			player: "phaseUseBegin",
 		},
@@ -495,7 +495,7 @@ const skills = {
 		},
 	},
 	olfuzai: {
-		audio: 2,
+		audio: 5,
 		enable: "chooseToUse",
 		locked: true,
 		filter(event, player) {
@@ -589,6 +589,7 @@ const skills = {
 		group: "olfuzai_equip",
 		subSkill: {
 			equip: {
+				audio: "olfuzai",
 				trigger: {
 					global: ["phaseBefore", "loseAfter", "loseAsyncAfter", "equipAfter", "addToExpansionAfter", "addJudgeAfter", "gainAfter"],
 					player: ["enterGame", "expandEquipAfter", "disableEquipAfter", "enableEquipAfter", "changeHpAfter", "changeSkillsAfter"],
@@ -1903,7 +1904,7 @@ const skills = {
 			const target = event.targets[0];
 			const { result } = await player.discardPlayerCard(true, target, "he", Math.max(target.countCards("h") - target.hp, 1), "allowChooseAll");
 			if (result?.bool && result.cards?.length) {
-				const num = result.cards.reduce((sum, card) => (sum + get.type(card) != "equip" ? 1 : 0), 0);
+				const num = result.cards.filter(card => get.type(card) != "equip").length;
 				if (num == 0) {
 					return;
 				}
@@ -7366,7 +7367,7 @@ const skills = {
 	},
 	//OL谋公孙
 	olsbjiaodi: {
-		audio: 2,
+		audio: 3,
 		trigger: { player: "useCardToPlayer" },
 		filter(event, player) {
 			return event.card.name === "sha" && event.isFirstTarget && event.targets.length === 1;
@@ -7413,7 +7414,7 @@ const skills = {
 		mod: { attackRange: player => player.getHp() },
 	},
 	olsbbaojing: {
-		audio: 2,
+		audio: 3,
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.hasPlayer(target => target !== player);

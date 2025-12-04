@@ -1,5 +1,5 @@
 export default {
-	//ol_cuiyan: "",
+	ol_cuiyan: "时乎时乎",
 	//ol_yangfeng: "忠勇半途", //暂无称号
 	//ol_caizhenji: "舍心顾复", //暂无称号
 	//sunyuan: "孙鸢", //暂无称号

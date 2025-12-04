@@ -1,4 +1,5 @@
 export default {
+	mamiao: "退路自有",
 	re_panfeng: "联军上将",
 	xingdaorong: "零陵上将",
 	caoxing: "健儿",

@@ -233,7 +233,7 @@ const skills = {
 					},
 					ai1:() => Math.random(),
 					ai2(target) {
-						return 1;
+						return Math.max(0.1, get.attitude(get.player(), target));
 					},
 				})
 				.forResult();
@@ -1340,7 +1340,8 @@ const skills = {
 				// 红桃牌很难获得
 				return false;
 			}
-			return (
+			return true; //跟你爆了 TODO: 一个考虑大局的枯心ai
+			/*return (
 				game.countPlayer(current => {
 					if (current === player) {
 						return 0;
@@ -1355,7 +1356,7 @@ const skills = {
 					return 0.5;
 				}) >=
 				6 / (1 + player.getHp())
-			);
+			);*/
 		},
 		logTarget(event, player) {
 			return game.filterPlayer(current => current !== player).sortBySeat(_status.currentPhase);

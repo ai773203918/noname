@@ -4,7 +4,13 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//sp钟会 by柴油鹿鹿
 	mbsizi: {
-		audio: 2,
+		audio: 7,
+		logAudio(event) {
+			if (typeof event == "number") {
+				return `mbsizi${event}.mp3`;
+			}
+			return 2;
+		},
 		enable: "phaseUse",
 		usable: 1,
 		beginMarkCount: 4,
@@ -26,6 +32,7 @@ const skills = {
 			backup(result, player) {
 				return {
 					audio: "mbsizi",
+					logAudio: () => 2,
 					control: result.control,
 					async content(event, trigger, player) {
 						const { control: num } = get.info(event.name),
@@ -53,6 +60,7 @@ const skills = {
 			backup: {},
 			init: {
 				audio: "mbsizi",
+				logAudio: () => "mbsizi3.mp3",
 				trigger: {
 					player: "enterGame",
 					global: "phaseBefore",
@@ -106,6 +114,7 @@ const skills = {
 						player.removeMark(event.skill, 1, false);
 						event.result = {
 							bool: true,
+							skill_popup: false,
 						};
 					} else {
 						trigger.num++;
@@ -125,11 +134,13 @@ const skills = {
 						}
 						await target.loseHp();
 					};
+					player.logSkill("mbsizi", null, null, null, [get.rand(4, 5)]);
 					if (targets.length) {
 						await game.doAsyncInOrder(targets, func);
 					}
 					await player.draw(2);
 					if (player.hasSkill("mbsizi_extra") && !targets?.length) {
+						player.logSkill("mbsizi", null, null, null, [get.rand(6, 7)]);
 						await game.doAsyncInOrder([_status.currentPhase, player], func);
 					}
 				},
@@ -188,7 +199,7 @@ const skills = {
 		},
 	},
 	mbyunan: {
-		audio: 2,
+		audio: 4,
 		trigger: {
 			source: "dying",
 		},
@@ -967,6 +978,12 @@ const skills = {
 	//礼·卢毓
 	mbbingfa: {
 		audio: 4,
+		logAudio(event) {
+			if (typeof event == "number") {
+				return `mbbingfa${event}.mp3`;
+			}
+			return 2;
+		},
 		trigger: {
 			global: "roundStart",
 		},
@@ -1014,7 +1031,10 @@ const skills = {
 					.when({
 						global: "roundEnd",
 					})
-					.step(get.info(name).effect[index]);
+					.step(async (event, trigger, player) => {
+						player.logSkill(name, null, null, null, [get.rand(3, 4)]);
+						await get.info(name).effect[index](event, trigger, player);
+					});
 			};
 			await game.doAsyncInOrder(lvfas, enact, () => 1);
 		},
@@ -1720,6 +1740,10 @@ const skills = {
 					},
 				};
 			},
+			prompt(result, player) {
+				const num = result.index + 1;
+				return `摸${get.cnNumber(num)}张牌并失去${num}点体力`;
+			},
 		},
 		ai: {
 			order: 10,
@@ -2244,16 +2268,12 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				let dialog = ui.create.dialog("净土：选择一项", "hidden");
-				dialog.add([
-					[
-						["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
-						["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并恢复等量体力"],
-						["all", "背水！同时执行两项"],
-					],
-					"textbutton",
-				]);
-				return dialog;
+				const list = [
+					["red", "获得所有黑色“业”，然后对一名角色造成等量伤害"],
+					["black", "获得所有红色“业”，然后令一名角色增加等量点体力上限并回复等量体力"],
+					["all", "背水！同时执行两项"],
+				];
+				return ui.create.dialog("净土：选择一项", [list, "textbutton"], "hidden");
 			},
 			filter(button) {
 				const player = get.player(),
@@ -2262,7 +2282,7 @@ const skills = {
 				if (link != "all") {
 					return count(link) > 0;
 				}
-				return count("red") > 1 && count("red") == count("black");
+				return count("red") > 0 && count("red") == count("black");
 			},
 			check(button) {
 				switch (button.link) {
@@ -2340,6 +2360,14 @@ const skills = {
 						player.markAuto("mbfozong", colors);
 					},
 				};
+			},
+			prompt(links, player) {
+				const map = {
+					red: "获得所有黑色“业”，然后对一名角色造成等量伤害",
+					black: "获得所有红色“业”，然后令一名角色增加等量点体力上限并回复等量体力",
+					all: "获得所有“业”，然后依次执行：1.对一名角色造成黑色“业”数点伤害；2.令一名角色增加红色“业”数点体力上限并回复等量体力",
+				}
+				return map[links[0]];
 			},
 		},
 		derivation: "mbfozong",

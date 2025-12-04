@@ -1020,7 +1020,7 @@ const translates = {
 	mbfutu: "浮图",
 	mbfutu_info: "①一名角色的回合结束时，若你本回合造成的伤害值/令任意角色回复的体力值为全场最高，你将牌堆顶首张黑色/红色牌置于武将牌上，称为“业”。②你受到伤害时，可以弃置一张“业”并防止此伤害。",
 	mbjingtu: "净土",
-	mbjingtu_info: `限定技，出牌阶段，你可选择一项：1.获得所有黑色“业”并对一名角色造成等量伤害；2.获得所有红色“业”，令一名角色增加等量点体力上限并恢复等量体力；3.${get.poptip("rule_beishui")}，两种颜色的“业”数量均大于1且相同。然后你失去〖浮图〗并获得${get.poptip("mbfozong")}。`,
+	mbjingtu_info: `限定技，出牌阶段，你可选择一项：1.获得所有黑色“业”并对一名角色造成等量伤害；2.获得所有红色“业”，令一名角色增加等量点体力上限并恢复等量体力；3.${get.poptip("rule_beishui")}，两种颜色的“业”数量相同。然后你失去〖浮图〗并获得${get.poptip("mbfozong")}。`,
 	mbjiebian: "劫辩",
 	mbjiebian_info: "一名角色的出牌阶段结束时，若本阶段没有角色受到过伤害，你可与当前回合角色或体力值最低的角色拼点（你因此拼点时可以使用“业”进行拼点），若你赢，你选择一项：1.对没赢的角色造成1点伤害；2.令没赢的角色恢复1点体力并摸一张牌，然后获得其至多两张牌。",
 	mbfozong: "佛宗",
@@ -1079,7 +1079,7 @@ const translates = {
 	mbxiezhi: "挟志",
 	mbxiezhi_info: "锁定技，当你的体力值变化后，你获得X点蓄力点（X为本次变化的值）。若你有因此未获得的蓄力点，你的手牌上限与使用【杀】的次数永久+1。",
 	mbyunan: "迂难",
-	mbyunan_info: `觉醒技，当你令一名角色进入濒死状态时，若本轮已有角色死亡，若你没有${get.poptip("mbkechang")}，你获得${get.poptip("mbkechang")}，否则你升级${get.poptip({
+	mbyunan_info: `觉醒技，当你令一名角色进入濒死状态时，若本轮已有角色死亡，你获得${get.poptip("mbkechang")}，已有则改为升级${get.poptip({
 		id: "yunan_kechang",
 		name: "〖克昌〗",
 		type: "character",

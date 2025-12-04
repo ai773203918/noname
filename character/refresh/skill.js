@@ -10838,6 +10838,111 @@ const skills = {
 			noe: true,
 		},
 	},
+	reyongjin: {
+		audio: "yongjin",
+		trigger: {
+			global: "phaseAnyEnd",
+		},
+		filter(event, player) {
+			const count = current => {
+				let cards = [];
+				current.getHistory("lose", evt => {
+					if (evt.getParent(event.name) == event) {
+						cards.addArray(evt.cards2);
+					}
+				});
+				return cards.length;
+			};
+			const num = count(player),
+				card = new lib.element.VCard({ name: "sha", isCard: true });
+			return (
+				num > 0 &&
+				game.hasPlayer(current => {
+					return count(current) == num && player.canUse(card, current, false);
+				})
+			);
+		},
+		async cost(event, trigger, player) {
+			const count = current => {
+				let cards = [];
+				current.getHistory("lose", evt => {
+					if (evt.getParent(trigger.name) == trigger) {
+						cards.addArray(evt.cards2);
+					}
+				});
+				return cards.length;
+			};
+			const num = count(player),
+				card = new lib.element.VCard({ name: "sha", isCard: true });
+			const targets = game.filterPlayer(current => {
+				return count(current) == num && player.canUse(card, current, false);
+			});
+			event.result = await player
+				.chooseTarget(
+					get.prompt2(event.skill),
+					(card, player, target) => {
+						return get.event("targetx").includes(target);
+					},
+					[1, Infinity]
+				)
+				.set("targetx", targets)
+				.set("ai", target => {
+					const card = new lib.element.VCard({ name: "sha", isCard: true }),
+						player = get.player();
+					return get.effect(target, card, player, player);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const card = new lib.element.VCard({ name: "sha", storage: { reyongjin: true }, isCard: true }),
+				targets = event.targets.filter(target => player.canUse(card, target, false));
+			if (!targets.length) {
+				return;
+			}
+			const skill = "reyongjin_effect";
+			player.addSkill(skill);
+			const next = player.useCard(card, targets, false);
+			player.markAuto(skill, next);
+			await next;
+		},
+		subSkill: {
+			effect: {
+				trigger: {
+					player: "useCardAfter",
+					source: "damageSource",
+				},
+				charlotte: true,
+				filter(event, player) {
+					const evt = event.name == "damage" ? event.getParent(2) : event;
+					return player.getStorage("reyongjin_effect").includes(evt);
+				},
+				async cost(event, trigger, player) {
+					if (trigger.name == "useCard") {
+						player.unmarkAuto(event.skill, trigger);
+						return;
+					}
+					event.result = {
+						bool: true,
+					};
+				},
+				async content(event, trigger, player) {
+					const slots = Array.from(Array(13))
+						.map((v, i) => `equip${parseFloat(i + 1)}`)
+						.filter(i => player.hasDisabledSlot(i));
+					if (slots.length) {
+						const slot = slots.randomGet();
+						await player.enableEquip(slot);
+						return;
+					}
+					const card = get.discardPile(card => get.type(card) == "equip" && player.canEquip(card) && !get.tag(card, "gifts"));
+					if (card) {
+						player.$gain2(card, false);
+						await player.equip(card);
+					}
+				},
+			},
+		},
+	},
 	rechunlao: {
 		trigger: { player: "phaseUseEnd" },
 		direct: true,
@@ -17564,3 +17669,4 @@ const skills = {
 };
 
 export default skills;
+ 

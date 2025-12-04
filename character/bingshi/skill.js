@@ -3981,6 +3981,7 @@ const skills = {
 			if (player.isMinHandcard()) {
 				player.logSkill("potfuji", null, null, null, [3]);
 				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
+				get.info(event.name).dynamic(player);
 				await player.draw(2);
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
@@ -3991,7 +3992,42 @@ const skills = {
 				})
 				.then(() => {
 					player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+					game.broadcastAll(function (player) {
+						if (player.node.potfuji_dynamic) {
+							player.node.potfuji_dynamic.delete();
+							player.node.potfuji_dynamic2.delete();
+							delete player.node.potfuji_dynamic;
+							delete player.node.potfuji_dynamic2;
+						}
+					}, player);
 				});
+		},
+		dynamic(player) {
+			game.broadcastAll(function (player) {
+				if (
+					(() => {
+						for (const sheet of document.styleSheets) {
+							try {
+								const rules = sheet.cssRules || sheet.rules;
+								for (const rule of rules) {
+									if (rule.selectorText === ".player .player_fuji") {
+										return false;
+									}
+								}
+							} catch (e) {
+								continue;
+							}
+						}
+						return true;
+					})()
+				) {
+					lib.init.sheet(".player .player_fuji { animation: game_start 0.5s; -webkit-animation: game_start 0.5s; position: absolute; width: 100%; height: 100%; left: 0; top: 0; z-index: 4; pointer-events: none; background: linear-gradient( to top, rgba(0, 255, 255, 0.3) 0%, rgba(0, 255, 255, 0.3) 60%, rgba(0, 255, 255, 0) 80%, rgba(0, 255, 255, 0) 100% );}");
+				}
+				if (!player.node.potfuji_dynamic) {
+					player.node.potfuji_dynamic = ui.create.div(".player_fuji", player.node.avatar);
+					player.node.potfuji_dynamic2 = ui.create.div(".player_fuji", player.node.avatar2);
+				}
+			}, player);
 		},
 		ai: {
 			order: 10,

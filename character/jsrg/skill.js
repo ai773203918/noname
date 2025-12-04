@@ -4196,8 +4196,8 @@ const skills = {
 				ai: {
 					order: 10,
 					result: {
-						player(player, target) {
-							return target.countCards("e") - player.countCards("e");
+						target(player, target) {
+							return player.countCards("e") - target.countCards("e");
 						},
 					},
 				},

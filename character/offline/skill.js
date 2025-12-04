@@ -5997,16 +5997,19 @@ const skills = {
 			} else {
 				cards.addArray(trigger.getg(player));
 			}
+			const canUse = card => {
+				if (player.hasUseTarget(card)) {
+					return true;
+				}
+				return get.info(card).notarget && lib.filter.cardEnabled(card, player);
+			};
+			const cardx = cards.filter(canUse);
 			const result = await player
 				.chooseButton([get.prompt2(event.skill), cards])
 				.set("filterButton", button => {
-					const player = get.player(),
-						card = button.link;
-					if (player.hasUseTarget(card)) {
-						return true;
-					}
-					return get.info(card).notarget && lib.filter.cardEnabled(card, player);
+					return get.event("cardx").includes(button.link);
 				})
+				.set("cardx", cardx)
 				.set("ai", button => {
 					const player = get.player(),
 						val = player.getUseValue(button.link);
@@ -6027,7 +6030,7 @@ const skills = {
 			const card = event.cards[0];
 			await player.showCards(card, `${get.translation(player)}发动了【不戢】`);
 			await player.chooseUseTarget(card, true, false);
-			if (!player.hasHistory("sourceDamage", evt => evt?.cards.includes(card))) {
+			if (!player.hasHistory("sourceDamage", evt => evt.cards?.includes(card) && evt.getParent(event.name) == event)) {
 				await player.loseHp();
 			}
 		},
