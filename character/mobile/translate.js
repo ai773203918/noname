@@ -1079,7 +1079,7 @@ const translates = {
 	mbxiezhi: "挟志",
 	mbxiezhi_info: "锁定技，当你的体力值变化后，你获得X点蓄力点（X为本次变化的值）。若你有因此未获得的蓄力点，你的手牌上限与使用【杀】的次数永久+1。",
 	mbyunan: "迂难",
-	mbyunan_info: `觉醒技，当你令一名角色进入濒死状态时，若本轮已有角色死亡，若你没有${get.poptip("mbkechang")}，你获得${get.poptip("mbkechang")}，否则你升级${get.poptip({
+	mbyunan_info: `觉醒技，当你令一名角色进入濒死状态时，若本轮已有角色死亡，你获得${get.poptip("mbkechang")}，已有则改为升级${get.poptip({
 		id: "yunan_kechang",
 		name: "〖克昌〗",
 		type: "character",

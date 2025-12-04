@@ -1,12 +1,12 @@
 export default {
-	//houzhaoning: "",
+	houzhaoning: "贤助抚外",
 	//dc_sb_xuyou: "",
-	//liuyijun: "",
+	liuyijun: "恶嫉蔑死",
 	//taohuang: "",
 	//dc_sb_xusheng: "",
 	//suyue: ""
-	//guotiying: "",
-	//dc_sb_lvmeng: "",
+	guotiying: "逆运定势",
+	dc_sb_lvmeng: "诡识渐近",
 	//dc_sb_pangtong: "",
 	//dc_sb_wuyi: "",
 	//dc_sb_fazheng: "",
