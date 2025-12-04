@@ -10899,21 +10899,32 @@ const skills = {
 			if (!targets.length) {
 				return;
 			}
-			player.addTempSkill("reyongjin_effect");
-			await player.useCard(card, targets, false);
-			player.removeSkill("reyongjin_effect");
+			const skill = "reyongjin_effect";
+			player.addSkill(skill);
+			const next = player.useCard(card, targets, false);
+			player.markAuto(skill, next);
+			await next;
 		},
 		subSkill: {
 			effect: {
 				trigger: {
+					player: "useCardAfter",
 					source: "damageSource",
 				},
 				charlotte: true,
 				filter(event, player) {
-					return event.card?.storage?.reyongjin;
+					const evt = event.name == "damage" ? event.getParent(2) : event;
+					return player.getStorage("reyongjin_effect").includes(evt);
 				},
-				forced: true,
-				locked: false,
+				async cost(event, trigger, player) {
+					if (trigger.name == "useCard") {
+						player.unmarkAuto(event.skill, trigger);
+						return;
+					}
+					event.result = {
+						bool: true,
+					};
+				},
 				async content(event, trigger, player) {
 					const slots = Array.from(Array(13))
 						.map((v, i) => `equip${parseFloat(i + 1)}`)

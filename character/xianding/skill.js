@@ -111,7 +111,7 @@ const skills = {
 					if (gaintag.includes("dcsbyinmou_shadow")) {
 						const num = Math.min(player.countDiscardableCards(player, "h"), player.getHp());
 						if (num > 0) {
-							await player.chooseToDiscard(num, "h", true);
+							await player.chooseToDiscard(num, "h", true, "allowChooseAll");
 						}
 					}
 				},
@@ -731,52 +731,72 @@ const skills = {
 				await player.viewHandcards(target);
 			}
 			player.setStorage("dcsbxixing_record", target);
-			player
-				.when({
-					player: "useCardAfter",
-					global: "phaseAnyAfter",
-				})
-				.assign({
-					mod: {
-						aiOrder(player, card, num) {
-							const target = player.getStorage("dcsbxixing_record");
-							if (!target?.isIn()) {
-								return num;
-							}
-							if (get.tag(card, "damage") && !player.hasSkillTag("jueqing", false, target)) {
-								return num * 10;
-							}
-						},
-					},
-					ai: {
-						effect: {
-							player(card, player, target) {
-								if (target != player.getStorage("dcsbxixing_record")) {
-									return;
-								}
-								if (!get.tag(card, "damage")) {
-									return;
-								}
-								if (player.hasSkillTag("jueqing", false, target)) {
-									return;
-								}
-								return [1, 114514];
-							},
-						},
-					},
-				})
-				.step(async (event, trigger, player) => {
-					player.setStorage("dcsbxixing_record", null);
-					if (trigger.name != "useCard") {
-						return;
+			player.addTempSkill("dcsbxixing_record", { global: "phaseAnyAfter" });
+		},
+		subSkill: {
+			record: {
+				trigger: {
+					player: "useCard1",
+				},
+				init(player, skill) {
+					const target = player.getStorage(skill);
+					if (get.itemtype(target) == "player") {
+						player.addTip(skill, `悉性 ${get.translation(target)}`);
 					}
-					if (target.hasHistory("damage", evt => evt.card == trigger.card)) {
-						if (player.getStat("skill")[name]) {
-							delete player.getStat("skill")[name];
-							game.log(player, "重置了", "#g【悉性】");
+				},
+				charlotte: true,
+				onremove(player, skill) {
+					player.removeTip(skill);
+					player.setStorage(skill, null);
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					const target = player.getStorage(event.name),
+						name = "dcsbxixing";
+					player
+						.when("useCardAfter")
+						.filter(evt => evt == trigger)
+						.step(async (event, trigger, player) => {
+							if (get.itemtype(target) != "player") {
+								return;
+							}
+							if (target.hasHistory("damage", evt => evt.card == trigger.card)) {
+								if (player.getStat("skill")[name]) {
+									delete player.getStat("skill")[name];
+									game.log(player, "重置了", "#g【悉性】");
+								}
+							}
+						});
+					player.removeSkill(event.name);
+				},
+				mod: {
+					aiOrder(player, card, num) {
+						const target = player.getStorage("dcsbxixing_record");
+						if (!target?.isIn()) {
+							return num;
 						}
-					}
-				});
+						if (get.tag(card, "damage") && !player.hasSkillTag("jueqing", false, target)) {
+							return num * 10;
+						}
+					},
+				},
+				ai: {
+					effect: {
+						player(card, player, target) {
+							if (target != player.getStorage("dcsbxixing_record")) {
+								return;
+							}
+							if (!get.tag(card, "damage")) {
+								return;
+							}
+							if (player.hasSkillTag("jueqing", false, target)) {
+								return;
+							}
+							return [1, 2499];
+						},
+					},
+				},
+			},
 		},
 		ai: {
 			order: 9,

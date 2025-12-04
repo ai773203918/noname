@@ -206,7 +206,6 @@ const skills = {
 				},
 			},
 		},
-
 	},
 	clanmingdian: {
 		audio: 2,

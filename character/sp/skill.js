@@ -3235,7 +3235,7 @@ const skills = {
 			const { result } = await player
 				.chooseControl(nums)
 				.set("prompt", "奉蔚：请选择摸牌数")
-				.set("ai", () => 2);
+				.set("ai", () => 3);
 			const next = player.draw(result.index + 1);
 			next.gaintag.add("olfengwei_debuff");
 			await next;
