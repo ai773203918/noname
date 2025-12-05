@@ -3364,7 +3364,7 @@ export class Click {
 							});
 						};
 					}
-				});
+				}, () => {});
 			}
 		}
 		var ban = ui.create.div(".menubutton.large.ban.character", uiintro, "禁用", function (e) {
