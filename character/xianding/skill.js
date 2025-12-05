@@ -2486,7 +2486,7 @@ const skills = {
 						},
 					])
 					.set("filterOk", event => {
-						return event.numbers.unique()?.length == 2;
+						return event.numbers.toUniqued()?.length == 2;
 					})
 					.set("processAI", () => {
 						const list = Array.from({ length: 13 }).map((val, idx) => idx + 1);
@@ -2630,7 +2630,7 @@ const skills = {
 				if (sames.length) {
 					exps.removeArray(sames);
 					await player.loseToDiscardpile(sames);
-					await player.draw(2);
+					await player.draw(sames.length);
 				}
 			}
 			if (allNum.length >= 13) {
