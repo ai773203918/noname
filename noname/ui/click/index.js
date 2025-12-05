@@ -3361,7 +3361,7 @@ export class Click {
 									return [file, src];
 								})
 								createButtons(list);
-							});
+							}, () => {});
 						};
 					}
 				}, () => {});

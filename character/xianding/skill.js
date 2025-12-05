@@ -1019,32 +1019,21 @@ const skills = {
 			player: "loseAfter",
 			global: ["cardsDiscardAfter", "loseAsyncAfter"],
 		},
-		getIndex(event, player) {
-			let cards = [];
-			if (event.name.indexOf("lose") == 0) {
-				if (event.getlx === false || event.position != ui.discardPile) {
-					return [];
-				}
-				cards = event.getl?.(player)?.cards2 || [];
-			} else {
-				const evt = event.getParent(); //event.relatedEvent ||
-				if (evt.name != "orderingDiscard") {
-					return [];
-				}
-				if (player.hasHistory("lose", evtx => (evtx.relatedEvent || evtx.getParent()) == evt.relatedEvent && evtx.cards2?.length)) {
-					cards = event.cards;
-				}
+		filter(event, player) {
+			if (event.type == "discard") {
+				return true;
 			}
-			return cards;
+			return get.info("dcsbshiao").isDamaged(event, player);
 		},
-		filter(event, player, name, card) {
-			return game.hasAllGlobalHistory("changeHp", evt => evt.getParent()?.name == "damage" && evt.getParent().cards?.includes(card)) || event.type == "discard";
+		isDamaged(event, player) {
+			const cards = event.getd(player, "cards2");
+			const damageCards = game.getAllGlobalHistory("changeHp", evt => evt.getParent()?.name == "damage" && evt.getParent().cards?.length).flatMap(evt => evt.getParent().cards);
+			return damageCards.containsSome(...cards);
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			player.addTempSkill(`${event.name}_draw`);
-			const card = event.indexedData;
-			if (game.hasAllGlobalHistory("changeHp", evt => evt.getParent()?.name == "damage" && evt.getParent().cards?.includes(card))) {
+			if (get.info(event.name).isDamaged(trigger, player)) {
 				player.storage[`${event.name}_draw`]++;
 			}
 			if (trigger.type == "discard") {
