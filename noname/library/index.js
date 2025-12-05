@@ -14130,6 +14130,13 @@ export class Library {
 			}
 		],
 		[
+			"射",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
 			"TW",
 			{
 				getSpan: () => {
