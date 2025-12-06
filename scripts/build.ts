@@ -21,6 +21,7 @@ const importMap: Record<string, string> = {
 const staticModules: Target[] = [
 	{ src: "character", dest: "" },
 	{ src: "card", dest: "" },
+	{ src: "docs", dest: "" },
 	{ src: "mode", dest: "" },
 	{ src: "layout", dest: "" },
 	{ src: "font", dest: "" },
@@ -28,6 +29,7 @@ const staticModules: Target[] = [
 	{ src: "game", dest: "" },
 	{ src: "LICENSE", dest: "" },
 	{ src: "README.md", dest: "" },
+	{ src: ".nomedia", dest: "" },
 	// step 无法编译，需要覆盖
 	// 重构之后请删除
 	{ src: "noname/get/pinyins/index.js", dest: "noname/get/pinyins" },
