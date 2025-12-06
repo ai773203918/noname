@@ -28,10 +28,10 @@ const skills = {
 				bool2 = get.suit(evt.card) == get.suit(trigger.card),
 				bool3 = get.name(evt.card) == get.name(trigger.card);
 			if (bool1) {
-				await player.gain(get.cards(1, true), "gain2");
+				await player.gain(get.cards(1, true), "gain2", false);
 			}
 			if (bool2) {
-				await player.gain(get.bottomCards(1, true), "gain2");
+				await player.gain(get.bottomCards(1, true), "gain2", false);
 			}
 			if (bool1 && bool2) {
 				player.popup("乘势", "fire");
