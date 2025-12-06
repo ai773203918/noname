@@ -5202,7 +5202,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				td = document.createElement("td");
 
 				(function () {
-					num = 0;
+					let num = 0;
 					for (var j = 0; j < node.stat.length; j++) {
 						if (typeof node.stat[j].damage == "number") {
 							num += node.stat[j].damage;
