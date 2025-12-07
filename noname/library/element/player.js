@@ -196,7 +196,7 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	/**
-	 * @type { Array<[string,string,number]|[string,string,number,Function]> }
+	 * @type { Array<Array<string,string,number,Function|undefined>> }
 	 */
 	extraEquip;
 	/** @type { SMap<HTMLDivElement> } */
