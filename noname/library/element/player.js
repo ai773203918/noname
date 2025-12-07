@@ -406,11 +406,26 @@ export class Player extends HTMLDivElement {
 	 * @param {Function} [preserve] 视为装备的条件,用于八阵类视为装备
 	 */
 	addExtraEquip(id, name, subtype, preserve) {
+		const player = this;
 		if (typeof subtype == "string") {
 			subtype = parseInt(subtype.slice(-1));
 		}
-		this.removeExtraEquip(id);
-		this.extraEquip.add([id, name, subtype, preserve]);
+		player.removeExtraEquip(id);
+		player.extraEquip.add([id, name, subtype, preserve]);
+		game.broadcast(
+			(player, id, name, subtype, preserve) => {
+				if (typeof subtype == "string") {
+					subtype = parseInt(subtype.slice(-1));
+				}
+				player.removeExtraEquip(id);
+				player.extraEquip.add([id, name, subtype, preserve]);
+			},
+			player,
+			id,
+			name,
+			subtype,
+			preserve
+		);
 	}
 
 	/**
@@ -418,22 +433,45 @@ export class Player extends HTMLDivElement {
 	 * @param {Array<string>|string} id 视为装备的id
 	 */
 	removeExtraEquip(id) {
+		const player = this;
 		if (typeof id == "string") {
 			id = [id];
 		}
-		let equips = this.extraEquip.filter(info => id.includes(info[0]));
-		this.extraEquip.removeArray(equips);
+		let equips = player.extraEquip.filter(info => id.includes(info[0]));
+		player.extraEquip.removeArray(equips);
 		equips = equips.map(info => info[1]);
-		const cards = Array.from(this.node.equips.childNodes);
+		const cards = Array.from(player.node.equips.childNodes);
 		cards.forEach(card => {
 			const num = get.equipNum(card);
 			const str = get.translation("equip" + num) + " 已废除";
 			if (card.classList.contains("feichu")) {
 				card.node.name2.innerHTML = str;
 			} else if (equips.includes(card.node.name2.innerHTML)) {
-				this.node.equips.removeChild(card);
+				player.node.equips.removeChild(card);
 			}
 		});
+		game.broadcast(
+			(player, id) => {
+				if (typeof id == "string") {
+					id = [id];
+				}
+				let equips = player.extraEquip.filter(info => id.includes(info[0]));
+				player.extraEquip.removeArray(equips);
+				equips = equips.map(info => info[1]);
+				const cards = Array.from(player.node.equips.childNodes);
+				cards.forEach(card => {
+					const num = get.equipNum(card);
+					const str = get.translation("equip" + num) + " 已废除";
+					if (card.classList.contains("feichu")) {
+						card.node.name2.innerHTML = str;
+					} else if (equips.includes(card.node.name2.innerHTML)) {
+						player.node.equips.removeChild(card);
+					}
+				});
+			},
+			player,
+			id
+		);
 	}
 
 	/**

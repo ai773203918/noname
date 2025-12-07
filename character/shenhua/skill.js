@@ -6435,7 +6435,7 @@ const skills = {
 		sourceSkill: "bazhen",
 		init(player, skill) {
 			player.addExtraEquip(skill, `${get.translation(skill)} 八卦阵`, 2, player => player.hasEmptySlot(2) && lib.card.bagua && player.hasSkill(skill));
-			player.$handleEquipChange();
+			game.broadcastAll(player => player.$handleEquipChange(), player);
 		},
 		filter(event, player) {
 			if (!lib.skill.bagua_skill.filter(event, player)) {

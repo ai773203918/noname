@@ -703,7 +703,7 @@ const skills = {
 							skills.addArray(info.skills);
 						}
 					}
-					player.$handleEquipChange();
+					game.broadcastAll(player => player.$handleEquipChange(), player);
 					if (skills.length) {
 						player.addAdditionalSkill("olfuzai", skills);
 					}

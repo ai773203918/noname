@@ -3730,7 +3730,7 @@ const skills = {
 					const str = get.translation(event.name) + " " + get.translation(name[2]);
 					player.addExtraEquip(`${event.name}_equip_${info.subtype}`, str, info.subtype);
 				});
-				player.$handleEquipChange();
+				game.broadcastAll(player => player.$handleEquipChange(), player);
 			}
 		},
 		subSkill: {
@@ -3782,7 +3782,7 @@ const skills = {
 						return `${event.name}_${subtype}`;
 					});
 					player.removeExtraEquip(list);
-					player.$handleEquipChange();
+					game.broadcastAll(player => player.$handleEquipChange(), player);
 					player.unmarkAuto(
 						event.name,
 						player.getStorage(event.name).filter(name => trigger.slots.some(t => get.subtypes(name[2]).includes(t)))

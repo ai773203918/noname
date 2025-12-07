@@ -10199,7 +10199,7 @@ const skills = {
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
 				init(player, skill) {
 					player.addExtraEquip(skill, `${get.translation(skill)} 贯石斧`, 1, player => player.hasEmptySlot(1) && lib.card.guanshi && player.hasSkill(skill));
-					player.$handleEquipChange();
+					game.broadcastAll(player => player.$handleEquipChange(), player);
 				},
 				filter(event, player) {
 					if (!player.hasEmptySlot(1) || !lib.card.guanshi || player.hasSkillTag("unequip_equip1")) {
