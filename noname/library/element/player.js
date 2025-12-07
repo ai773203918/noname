@@ -14107,8 +14107,8 @@ export class Player extends HTMLDivElement {
 			const num = get.equipNum(card);
 			const str = get.translation("equip" + num) + " 已废除";
 			const info = extraEquip.find(info => info[2] == num);
-			if (info?.[3] && !info[3](player)) {
-				player.removeExtraEquip(info[0]);
+			if (card.nodeName.name2 == info?.[1] && info?.[3] && !info[3](player)) {
+				card.classList.add("hidden");
 			} else if (card.classList.contains("feichu")) {
 				card.node.name2.innerHTML = info ? info[1] : str;
 			}
