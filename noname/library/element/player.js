@@ -195,10 +195,6 @@ export class Player extends HTMLDivElement {
 			}
 		}
 	}
-	/**
-	 * @type { Array<Array<string,string,number,Function|undefined>> }
-	 */
-	extraEquip;
 	/** @type { SMap<HTMLDivElement> } */
 	// eslint-disable-next-line no-unreachable
 	node;
@@ -210,6 +206,10 @@ export class Player extends HTMLDivElement {
 	 * @type { string[] }
 	 */
 	skipList;
+	/**
+	 * @type { Array<[string,string,number,Function|undefined]> }
+	 */
+	extraEquip;
 	/**
 	 * @type { string[] }
 	 */
