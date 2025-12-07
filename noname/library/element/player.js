@@ -426,7 +426,11 @@ export class Player extends HTMLDivElement {
 		equips = equips.map(info => info[1]);
 		const cards = Array.from(this.node.equips.childNodes);
 		cards.forEach(card => {
-			if (equips.includes(card.node.name2.innerHTML)) {
+			const num = get.equipNum(card);
+			const str = get.translation("equip" + num) + " 已废除";
+			if (card.classList.contains("feichu")) {
+				card.node.name2.innerHTML = str;
+			} else if (equips.includes(card.node.name2.innerHTML)) {
 				this.node.equips.removeChild(card);
 			}
 		});
@@ -14046,14 +14050,6 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		});
-		for (let card of cards) {
-			const num = get.equipNum(card);
-			const str = get.translation("equip" + num) + " 已废除";
-			const info = extraEquip.find(info => info[2] == num);
-			if (info && card.classList.contains("feichu") && card.node.name2.innerHTML != str) {
-				card.node.name2.innerHTML = info[1];
-			}
-		}
 		for (let i = 1; i <= 5; i++) {
 			let add = false;
 			let extra = extraEquip.filter(info => i == info[2]);
@@ -14063,8 +14059,8 @@ export class Player extends HTMLDivElement {
 				add = player.hasEmptySlot(i) && !player.getEquips(i).length;
 			}
 			if (
-				extra.length ||
-				(add &&
+				add &&
+				(extra.length ||
 					!cardsResume.some(card => {
 						let num = get.equipNum(card);
 						if ((i == 4 || i == 3) && get.is.mountCombined()) {
@@ -14110,11 +14106,11 @@ export class Player extends HTMLDivElement {
 		for (let card of cards) {
 			const num = get.equipNum(card);
 			const str = get.translation("equip" + num) + " 已废除";
-			const info = extraEquip.find(info => card.node.name2.innerHTML == info[1]);
+			const info = extraEquip.find(info => info[2] == num);
 			if (info?.[3] && !info[3](player)) {
 				player.removeExtraEquip(info[0]);
-			} else if (card.classList.contains("feichu") && !info) {
-				card.node.name2.innerHTML = str;
+			} else if (card.classList.contains("feichu")) {
+				card.node.name2.innerHTML = info ? info[1] : str;
 			}
 		}
 	}

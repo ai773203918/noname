@@ -3727,7 +3727,7 @@ const skills = {
 				);
 				player.getStorage(equip).forEach(name => {
 					const info = lib.card[name[2]];
-					const str = get.translation(event.name) + get.translation(info.name);
+					const str = get.translation(event.name) + " " + get.translation(name[2]);
 					player.addExtraEquip(`${event.name}_equip_${info.subtype}`, str, info.subtype);
 				});
 				player.$handleEquipChange();
@@ -3778,9 +3778,8 @@ const skills = {
 				forced: true,
 				popup: false,
 				content() {
-					const list = trigger.slots.map(name => {
-						const info = lib.card[name[2]];
-						return `${event.name}_${info.subtype}`;
+					const list = trigger.slots.map(subtype => {
+						return `${event.name}_${subtype}`;
 					});
 					player.removeExtraEquip(list);
 					player.$handleEquipChange();
