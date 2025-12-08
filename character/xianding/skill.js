@@ -2966,8 +2966,8 @@ const skills = {
 				const { name } = evt.card;
 				const card = (event.card = { name, storage: { dcmohua: [evt, evt.player] } });
 				const next = player.chooseToUse(function (card, player, target) {
-					const { name } = get.event().cardx;
-					if (get.name(card) !== name) {
+					const { cardx } = get.event();
+					if (!cardx || get.name(card) !== cardx.name) {
 						return false;
 					}
 					return lib.filter.filterCard.apply(this, arguments);
@@ -2978,8 +2978,9 @@ const skills = {
 				next.set("complexSelect", true);
 				next.set("complexTarget", true);
 				next.set("filterTarget", function (card, player, target) {
-					const source = get.event().cardx.storage.dcmohua[1];
-					return lib.filter.filterTarget(card, source, target);
+					const { cardx } = get.event();
+					const source = cardx?.storage?.dcmohua[1];
+					return source?.isIn() && lib.filter.filterTarget(card, source, target);
 				});
 				next.set("cardx", card);
 				next.set("addCount", false);

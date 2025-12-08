@@ -3488,10 +3488,29 @@ export class Click {
 						spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
 					}
 					// 获取武将称号
-					var charactertitle = lib.characterTitle[name] || "";
+					var charactertitle = get.characterTitle(name);
 					var titleHtml = "";
-					if (charactertitle) {
+					if (charactertitle.length) {
 						titleHtml = '<div class="character-title">' + get.colorspan(charactertitle) + '</div>';
+					}
+					let packName;
+					for (let packname in lib.characterPack) {
+						if (name in lib.characterPack[packname]) {
+							let pack = lib.translate[packname + '_character_config'],
+								sort;
+							if (lib.characterSort[packname]) {
+								let sorted = lib.characterSort[packname];
+								for (let sortname in sorted) {
+									if (sorted[sortname].includes(name)) {
+										sort = `<span style = "font-size:small">[${lib.translate[sortname]}]</span>`;
+										break;
+									}
+								}
+							}
+							packName = `${pack}${sort ? `${sort}` : ""}`;
+							titleHtml = `${titleHtml}<div class="character-title">${packName}</div>`;
+							break;
+						}
 					}
 					intro.innerHTML = titleHtml + '<span style="font-weight:bold;margin-right:5px">' + charactername + "</span>" + '<span style="font-size:14px;font-family:SimHei,STHeiti,sans-serif">' + "[" + characterpinyin + "]" + "</span>" + spacemark + charactersex + spacemark + charactergroup + spacemark + characterhp + '<span style="line-height:2"></span>' + "<br>" + characterintroinfo;
 
@@ -3652,10 +3671,33 @@ export class Click {
 					showCharacterNamePinyin = lib.config.show_characternamepinyin;
 				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", uiintro);
 				// 添加武将称号
-				if (lib.characterTitle[name]) {
+				let characterTitle = get.characterTitle(name), packName;
+				for (let packname in lib.characterPack) {
+					if (name in lib.characterPack[packname]) {
+						let pack = lib.translate[packname + '_character_config'],
+							sort;
+						if (lib.characterSort[packname]) {
+							let sorted = lib.characterSort[packname];
+							for (let sortname in sorted) {
+								if (sorted[sortname].includes(name)) {
+									sort = `<span style = "font-size:small">[${lib.translate[sortname]}]</span>`;
+									break;
+								}
+							}
+						}
+						packName = `${pack}${sort ? `${sort}` : ""}`;
+						if (characterTitle.length) {
+							characterTitle = `${characterTitle} | ${packName}`;
+						} else {
+							characterTitle = pachName;
+						}
+						break;
+					}
+				}
+				if (characterTitle.length) {
 					const titleDiv = document.createElement("div");
 					titleDiv.className = "character-title";
-					titleDiv.innerHTML = get.colorspan(lib.characterTitle[name]);
+					titleDiv.innerHTML = characterTitle;
 					intro.appendChild(titleDiv);
 					// 添加分隔线
 					const hr = document.createElement("hr");
