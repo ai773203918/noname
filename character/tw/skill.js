@@ -3728,7 +3728,7 @@ const skills = {
 				player.getStorage(equip).forEach(name => {
 					const info = lib.card[name[2]];
 					const str = get.translation(event.name) + " " + get.translation(name[2]);
-					player.addExtraEquip(`${event.name}_equip_${info.subtype}`, str, info.subtype);
+					player.addExtraEquip(`${event.name}_equip_${info.subtype}`, str, name[2], info.subtype);
 				});
 				game.broadcastAll(player => player.$handleEquipChange(), player);
 			}

@@ -637,7 +637,7 @@ const skills = {
 							const skills = [];
 							for (const name of list) {
 								const info = lib.card[name];
-								player.addExtraEquip(`olfuzai_${info.subtype}`, `覆载 ${get.translation(name)}`, info.subtype);
+								player.addExtraEquip(`olfuzai_${info.subtype}`, `覆载 ${get.translation(name)}`, name, info.subtype);
 								if (info?.skills && Array.isArray(info.skills)) {
 									skills.addArray(info.skills);
 								}
@@ -698,7 +698,7 @@ const skills = {
 					const skills = [];
 					for (const name of cards) {
 						const info = lib.card[name];
-						player.addExtraEquip(`olfuzai_${info.subtype}`, `覆载 ${get.translation(name)}`, info.subtype);
+						player.addExtraEquip(`olfuzai_${info.subtype}`, `覆载 ${get.translation(name)}`, name, info.subtype);
 						if (info?.skills && Array.isArray(info.skills)) {
 							skills.addArray(info.skills);
 						}
