@@ -14086,7 +14086,7 @@ export class Player extends HTMLDivElement {
 				} else if (!player.hasEmptySlot(num) || player.getEquips(num).length) {
 					remove = true;
 				}
-				if (remove) {
+				if (remove || card.extraEquip) {
 					player.node.equips.removeChild(card);
 					cardsResume.remove(card);
 				}
@@ -14153,7 +14153,8 @@ export class Player extends HTMLDivElement {
 			const num = get.equipNum(card);
 			const str = get.translation("equip" + num) + " 已废除";
 			const info = extraEquip.find(info => info[3] == num);
-			if (card.nodeName.name2 == info?.[1] && info?.[4] && !info[4](player)) {
+			console.log(card.node.name2,info?.[1])
+			if (card.node.name2.innerHTML == info?.[1] && info?.[4] && !info[4](player)) {
 				card.classList.add("hidden");
 				delete card.extraEquip;
 			} else if (card.classList.contains("feichu")) {
