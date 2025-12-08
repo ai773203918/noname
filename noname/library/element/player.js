@@ -207,7 +207,7 @@ export class Player extends HTMLDivElement {
 	 */
 	skipList;
 	/**
-	 * @type { Array<[string,string,string,number,Function|undefined]> }
+	 * @type { Array<[string,string,string,Function|undefined]> }
 	 */
 	extraEquip;
 	/**
@@ -402,30 +402,22 @@ export class Player extends HTMLDivElement {
 	 * 添加视为装备
 	 * @param {string} id 视为装备的id
 	 * @param {string} name 视为装备的显示文字
-	 * @param {string} equip 视为装备的名称
-	 * @param {number|string} subtype 视为装备的副类别
+	 * @param {string} equip 视为装备的牌名
 	 * @param {Function} [preserve] 视为装备的条件,用于八阵类视为装备
 	 */
-	addExtraEquip(id, name, equip, subtype, preserve) {
+	addExtraEquip(id, name, equip, preserve) {
 		const player = this;
-		if (typeof subtype == "string") {
-			subtype = parseInt(subtype.slice(-1));
-		}
 		player.removeExtraEquip(id);
-		player.extraEquip.add([id, name, equip, subtype, preserve]);
+		player.extraEquip.add([id, name, equip, preserve]);
 		game.broadcast(
-			(player, id, name, equip, subtype, preserve) => {
-				if (typeof subtype == "string") {
-					subtype = parseInt(subtype.slice(-1));
-				}
+			(player, id, name, equip, preserve) => {
 				player.removeExtraEquip(id);
-				player.extraEquip.add([id, name, equip, subtype, preserve]);
+				player.extraEquip.add([id, name, equip, preserve]);
 			},
 			player,
 			id,
 			name,
 			equip,
-			subtype,
 			preserve
 		);
 	}
@@ -14094,7 +14086,12 @@ export class Player extends HTMLDivElement {
 		});
 		for (let i = 1; i <= 5; i++) {
 			let add = false;
-			let extra = extraEquip.filter(info => i == info[3]);
+			let extra = extraEquip.filter(info =>
+				get
+					.subtypes(info[2])
+					.map(subtype => subtype.slice(-1))
+					.includes(i)
+			);
 			if ((i == 4 || i == 3) && get.is.mountCombined()) {
 				add = player.hasEmptySlot("equip3_4") && !player.getEquips("equip3_4").length;
 			} else {
@@ -14149,18 +14146,26 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
+		const checked = [];
 		for (let card of cards) {
 			const num = get.equipNum(card);
 			const str = get.translation("equip" + num) + " 已废除";
-			const info = extraEquip.find(info => info[3] == num);
-			console.log(card.node.name2,info?.[1])
+			const info = extraEquip.find(
+				info =>
+					get
+						.subtypes(info[2])
+						.map(subtype => subtype.slice(-1))
+						.includes(i) && checked.includes(info)
+			);
 			if (card.node.name2.innerHTML == info?.[1] && info?.[4] && !info[4](player)) {
 				card.classList.add("hidden");
+				checked.push(info);
 				delete card.extraEquip;
 			} else if (card.classList.contains("feichu")) {
 				if (info) {
 					card.node.name2.innerHTML = info[1];
 					card.extraEquip = info[2];
+					checked.push(info);
 				} else {
 					card.node.name2.innerHTML = str;
 				}
