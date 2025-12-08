@@ -2315,9 +2315,6 @@ const skills = {
 				["牌堆底", [bottom]],
 				["获得", []],
 			]);
-			next.set("filterOk", moved => {
-				return !moved[1].length;
-			});
 			next.set("processAI", list => {
 				let player = get.player(),
 					trigger = get.event().getTrigger(),

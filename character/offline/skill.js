@@ -4021,7 +4021,7 @@ const skills = {
 			trigger.cancel();
 			const target = event.targets[0],
 				card = new lib.element.VCard({ name: "sha", isCard: true });
-			await target.chooseUseTarget(card, false, true);
+			await target.chooseUseTarget(card, false, true, "nodistance");
 		},
 	},
 	//张闿
