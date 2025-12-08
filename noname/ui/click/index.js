@@ -3689,7 +3689,7 @@ export class Click {
 						if (characterTitle.length) {
 							characterTitle = `${characterTitle} | ${packName}`;
 						} else {
-							characterTitle = pachName;
+							characterTitle = packName;
 						}
 						break;
 					}
