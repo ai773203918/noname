@@ -207,7 +207,7 @@ export class Player extends HTMLDivElement {
 	 */
 	skipList;
 	/**
-	 * @type { Array<[string,string,string,Function|undefined]> }
+	 * @type { Array<[string,string,Function|undefined]> }
 	 */
 	extraEquip;
 	/**
@@ -400,73 +400,57 @@ export class Player extends HTMLDivElement {
 
 	/**
 	 * 添加视为装备
-	 * @param {string} id 视为装备的id
-	 * @param {string} name 视为装备的显示文字
-	 * @param {string} equip 视为装备的牌名
+	 * @param {string} skill 视为装备的技能
+	 * @param {Array<string>|string} equip 视为装备的牌名
+	 * @param {boolean} replace 是否清除该skill原有视为装备
 	 * @param {Function} [preserve] 视为装备的条件,用于八阵类视为装备
 	 */
-	addExtraEquip(id, name, equip, preserve) {
+	addExtraEquip(skill, equip, replace = false, preserve) {
 		const player = this;
-		player.removeExtraEquip(id);
-		player.extraEquip.add([id, name, equip, preserve]);
+		if (replace) {
+			player.removeExtraEquip(skill);
+		}
+		let list;
+		if (typeof equip == "string") {
+			list = [[skill, equip, preserve]];
+		} else {
+			list = equip.map(card => [skill, card, preserve]);
+		}
+		player.extraEquip.add(...list);
+		player.$handleEquipChange();
 		game.broadcast(
-			(player, id, name, equip, preserve) => {
-				player.removeExtraEquip(id);
-				player.extraEquip.add([id, name, equip, preserve]);
+			(player, list) => {
+				player.extraEquip.add(...list);
+				player.$handleEquipChange();
 			},
 			player,
-			id,
-			name,
-			equip,
-			preserve
+			list
 		);
 	}
 
 	/**
 	 * 移除视为装备
-	 * @param {Array<string>|string} id 视为装备的id
+	 * @param {string} skill 移除的技能
+	 * @param {Array<string>|string} equip 移除的装备
 	 */
-	removeExtraEquip(id) {
+	removeExtraEquip(skill, equip = "noequip") {
 		const player = this;
-		if (typeof id == "string") {
-			id = [id];
+		if (equip != "noequip" && typeof equip == "string") {
+			equip = [equip];
 		}
-		let equips = player.extraEquip.filter(info => id.includes(info[0]));
-		player.extraEquip.removeArray(equips);
-		equips = equips.map(info => info[1]);
-		const cards = Array.from(player.node.equips.childNodes);
-		cards.forEach(card => {
-			const num = get.equipNum(card);
-			const str = get.translation("equip" + num) + " 已废除";
-			if (card.classList.contains("feichu")) {
-				card.node.name2.innerHTML = str;
-				delete card.extraEquip;
-			} else if (equips.includes(card.node.name2.innerHTML)) {
-				player.node.equips.removeChild(card);
-				delete card.extraEquip;
-			}
-		});
+		let equips = player.extraEquip.filter(info => info[0] != skill);
+		if (equip != "noequip") {
+			equips = equips.filter(info => !equip.includes(info[1]));
+		}
+		player.extraEquip = equips;
+		player.$handleEquipChange();
 		game.broadcast(
-			(player, id) => {
-				if (typeof id == "string") {
-					id = [id];
-				}
-				let equips = player.extraEquip.filter(info => id.includes(info[0]));
-				player.extraEquip.removeArray(equips);
-				equips = equips.map(info => info[1]);
-				const cards = Array.from(player.node.equips.childNodes);
-				cards.forEach(card => {
-					const num = get.equipNum(card);
-					const str = get.translation("equip" + num) + " 已废除";
-					if (card.classList.contains("feichu")) {
-						card.node.name2.innerHTML = str;
-					} else if (equips.includes(card.node.name2.innerHTML)) {
-						player.node.equips.removeChild(card);
-					}
-				});
+			(player, equips) => {
+				player.extraEquip = equips;
+				player.$handleEquipChange();
 			},
 			player,
-			id
+			equips
 		);
 	}
 
@@ -14068,30 +14052,53 @@ export class Player extends HTMLDivElement {
 		const player = this;
 		const cards = Array.from(player.node.equips.childNodes);
 		const cardsResume = cards.slice(0);
-		const extraEquip = player.extraEquip;
+		const extraEquip = [],
+			extraEquips = [];
+		player.extraEquip.forEach(info => {
+			const extra = `${get.translation(info[0])} ${get.translation(info[1])}`;
+			const subtypes = get.subtypes(info[1]);
+			extraEquips.add(extra);
+			let preserve = info[2] && !info[2](player);
+			if (!preserve && !extraEquip.map(info => info[1]).includes(info[1])) {
+				extraEquip.add([info, extra, subtypes]);
+			}
+		});
 		cards.forEach(card => {
+			let num = get.equipNum(card);
+			let remove = false;
 			if (card.name.indexOf("empty_equip") == 0) {
-				let num = get.equipNum(card);
-				let remove = false;
 				if ((num == 4 || num == 3) && get.is.mountCombined()) {
 					remove = !player.hasEmptySlot("equip3_4") || player.getEquips("equip3_4").length;
 				} else if (!player.hasEmptySlot(num) || player.getEquips(num).length) {
 					remove = true;
 				}
-				if (remove || card.extraEquip) {
+				if (remove) {
 					player.node.equips.removeChild(card);
 					cardsResume.remove(card);
+				}
+			}
+			if (card.extraEquip && !remove) {
+				const extra = `${get.translation(card.extraEquip[0])} ${get.translation(card.extraEquip[1])}`;
+				let preserve = card.extraEquip[2] && !card.extraEquip[2](player);
+				if ((!extraEquips.includes(extra) || preserve) && card.classList.contains("feichu")) {
+					card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
+					delete card.extraEquip;
+				} else if (!card.classList.contains("feichu")) {
+					player.node.equips.removeChild(card);
+					cardsResume.remove(card);
+					delete card.extraEquip;
+				}
+			} else if (card.classList.contains("feichu")) {
+				let extra = extraEquip.find(info => info[2].includes("equip" + num));
+				if (extra) {
+					card.node.name2.innerHTML = extra[1];
+					card.extraEquip = extra[0];
+					extraEquip.remove(extra);
 				}
 			}
 		});
 		for (let i = 1; i <= 5; i++) {
 			let add = false;
-			let extra = extraEquip.filter(info =>
-				get
-					.subtypes(info[2])
-					.map(subtype => subtype.slice(-1))
-					.includes(i)
-			);
 			if ((i == 4 || i == 3) && get.is.mountCombined()) {
 				add = player.hasEmptySlot("equip3_4") && !player.getEquips("equip3_4").length;
 			} else {
@@ -14099,39 +14106,26 @@ export class Player extends HTMLDivElement {
 			}
 			if (
 				add &&
-				(extra.length ||
-					!cardsResume.some(card => {
-						let num = get.equipNum(card);
-						if ((i == 4 || i == 3) && get.is.mountCombined()) {
-							return num == 4 || num == 3;
-						} else {
-							return num == i;
-						}
-					}))
+				!cardsResume.some(card => {
+					let num = get.equipNum(card);
+					if ((i == 4 || i == 3) && get.is.mountCombined()) {
+						return num == 4 || num == 3;
+					} else {
+						return num == i;
+					}
+				})
 			) {
-				let card;
-				card = game.createCard("empty_equip" + i, "", "");
+				const card = game.createCard("empty_equip" + i, "", "");
 				card.fix();
 				//console.log('add '+card.name);
 				card.style.transform = "";
 				card.classList.remove("drawinghidden");
 				card.classList.add("emptyequip");
-				if (extra.length) {
-					const info = extra.shift();
-					card.node.name2.innerHTML = info[1];
-					card.extraEquip = info[2];
-				} else {
-					card.classList.add("hidden");
-				}
+				card.classList.add("hidden");
 				delete card._transform;
 				const equipNum = get.equipNum(card);
 				let equipped = false;
 				for (let j = 0; j < player.node.equips.childNodes.length; j++) {
-					if (extra.length) {
-						const info = extra.shift();
-						card.node.name2.innerHTML = info[1];
-						card.extraEquip = info[2];
-					}
 					if (get.equipNum(player.node.equips.childNodes[j]) >= equipNum) {
 						player.node.equips.insertBefore(card, player.node.equips.childNodes[j]);
 						equipped = true;
@@ -14146,31 +14140,43 @@ export class Player extends HTMLDivElement {
 				}
 			}
 		}
-		const checked = [];
-		for (let card of cards) {
-			const num = get.equipNum(card);
-			const str = get.translation("equip" + num) + " 已废除";
-			const info = extraEquip.find(
-				info =>
-					get
-						.subtypes(info[2])
-						.map(subtype => subtype.slice(-1))
-						.includes(i) && checked.includes(info)
-			);
-			if (card.node.name2.innerHTML == info?.[1] && info?.[4] && !info[4](player)) {
-				card.classList.add("hidden");
-				checked.push(info);
-				delete card.extraEquip;
-			} else if (card.classList.contains("feichu")) {
-				if (info) {
-					card.node.name2.innerHTML = info[1];
-					card.extraEquip = info[2];
-					checked.push(info);
-				} else {
-					card.node.name2.innerHTML = str;
+		extraEquip.forEach(info => {
+			const subtype = info[2][0].at(-1);
+			if (player.hasEmptySlot(subtype)) {
+				const card = game.createCard("empty_equip" + subtype, "", "");
+				card.fix();
+				//console.log('add '+card.name);
+				card.style.transform = "";
+				card.classList.remove("drawinghidden");
+				card.classList.add("emptyequip");
+				card.node.name2.innerHTML = info[1];
+				card.extraEquip = info[0];
+				delete card._transform;
+				const equipNum = get.equipNum(card);
+				let equipped = false;
+				for (let j = 0; j < player.node.equips.childNodes.length; j++) {
+					const node = player.node.equips.childNodes[j];
+					if (get.equipNum(node) == subtype && info && node.classList.contains("emptyequip") && !node.extraEquip) {
+						node.node.name2.innerHTML = info[1];
+						node.extraEquip = info[0];
+						node.classList.remove("hidden");
+						equipped = true;
+						break;
+					}
+					if (get.equipNum(node) >= equipNum) {
+						player.node.equips.insertBefore(card, node);
+						equipped = true;
+						break;
+					}
+				}
+				if (!equipped) {
+					player.node.equips.appendChild(card);
+					if (_status.discarded) {
+						_status.discarded.remove(card);
+					}
 				}
 			}
-		}
+		});
 	}
 	addVirtualJudge(card, cards) {
 		let cardx;

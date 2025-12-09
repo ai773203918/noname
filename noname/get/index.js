@@ -5616,8 +5616,8 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 				name = trueCard.viewAs;
 			} else {
 				if (node.extraEquip) {
-					name = node.extraEquip;
-					uiintro.add(node.node.name2.innerHTML);
+					name = node.extraEquip[1];
+					uiintro.add(`${get.translation(node.extraEquip[0])} ${get.translation(node.extraEquip[1])}`);
 				} else {
 					uiintro.add(get.translation(node));
 				}

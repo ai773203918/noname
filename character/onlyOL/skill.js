@@ -637,17 +637,17 @@ const skills = {
 							const skills = [];
 							for (const name of list) {
 								const info = lib.card[name];
-								player.addExtraEquip(`olfuzai_${info.subtype}`, `覆载 ${get.translation(name)}`, name);
 								if (info?.skills && Array.isArray(info.skills)) {
 									skills.addArray(info.skills);
 								}
 							}
+							player.addExtraEquip(`olfuzai`, list, true);
 							if (skills.length) {
 								player.addAdditionalSkill("olfuzai", skills);
 							}
 							player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 						} else {
-							player.removeExtraEquip(["olfugau_equip1", "olfugau_equip2"]);
+							player.removeExtraEquip("olfuzai");
 							player.setStorage("olfuzai", [], true);
 							player.removeAdditionalSkill("olfuzai");
 							player.removeTip("olfuzai");
@@ -698,12 +698,11 @@ const skills = {
 					const skills = [];
 					for (const name of cards) {
 						const info = lib.card[name];
-						player.addExtraEquip(`olfuzai_${info.subtype}`, `覆载 ${get.translation(name)}`, name);
 						if (info?.skills && Array.isArray(info.skills)) {
 							skills.addArray(info.skills);
 						}
 					}
-					game.broadcastAll(player => player.$handleEquipChange(), player);
+					player.addExtraEquip(`olfuzai`, cards, true);
 					if (skills.length) {
 						player.addAdditionalSkill("olfuzai", skills);
 					}
