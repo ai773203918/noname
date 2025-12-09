@@ -14080,13 +14080,19 @@ export class Player extends HTMLDivElement {
 			if (card.extraEquip && !remove) {
 				const extra = `${get.translation(card.extraEquip[0])} ${get.translation(card.extraEquip[1])}`;
 				let preserve = card.extraEquip[2] && !card.extraEquip[2](player);
-				if ((!extraEquips.includes(extra) || preserve) && card.classList.contains("feichu")) {
-					card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
-					delete card.extraEquip;
-				} else if (!card.classList.contains("feichu")) {
-					player.node.equips.removeChild(card);
-					cardsResume.remove(card);
-					delete card.extraEquip;
+				const disable = card.classList.contains("feichu");
+				if (!extraEquips.includes(extra) || preserve) {
+					if (disable) {
+						card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
+						delete card.extraEquip;
+					} else {
+						player.node.equips.removeChild(card);
+						cardsResume.remove(card);
+						delete card.extraEqui;
+					}
+				} else {
+					let remove = extraEquip.find(info => info[1] == extra);
+					extraEquip.remove(remove);
 				}
 			} else if (card.classList.contains("feichu")) {
 				let extra = extraEquip.find(info => info[2].includes("equip" + num));
