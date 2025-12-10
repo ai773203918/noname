@@ -1229,6 +1229,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["tyqingshi", "tyyilin", "tychengming"],
+		isZhugong: true,
 	},
 	ty_sunquan: {
 		sex: "male",
