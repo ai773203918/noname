@@ -244,8 +244,6 @@ const translates = {
 	re_zuoci_prefix: "界",
 	reguhuo: "蛊惑",
 	reguhuo_info: "每名角色的回合限一次，你可以扣置一张手牌当作一张基本牌或普通锦囊牌使用或打出。其他角色同时选择是否质疑。然后，你展示此牌。若有质疑的角色：若此牌为假，则此牌作废，且所有质疑者各摸一张牌；为真，则所有质疑角色于此牌结算完成后依次弃置一张牌或失去1点体力，并获得技能〖缠怨〗。",
-	reguhuo_guess: "蛊惑",
-	reguhuo_guess_info: "",
 	rechanyuan: "缠怨",
 	rechanyuan_info: "锁定技，你不能于〖蛊惑〗的结算流程中进行质疑。当你的体力值不大于1时，你的其他技能失效。",
 	reguhuo_ally: "信任",
