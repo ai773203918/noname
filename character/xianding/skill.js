@@ -15,7 +15,7 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage, player) {
-				if (!storage) {
+				if (storage) {
 					return `一名角色的回合结束时，若其本回合失去手牌数大于手牌数，你可观看牌堆顶三张牌并交给其其中一张，其失去此牌时，弃置体力值张手牌。`;
 				}
 				return `一名角色的回合结束时，若其本回合失去手牌数大于手牌数，你可观看牌堆顶三张牌并交给其其中一张，其失去此牌时，将手牌摸至体力上限（至多摸五）。`;
