@@ -20068,7 +20068,7 @@ const skills = {
 			if (!event.source || get.distance(player, event.player) > 1 || !player.canUse("sha", event.source, false, false)) {
 				return false;
 			}
-			return player.countCards("hes") > 0;
+			return player.hasUsableCard("sha", "use");
 		},
 		direct: true,
 		clearTime: true,

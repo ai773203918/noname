@@ -2309,34 +2309,33 @@ const skills = {
 			const {
 				cards: [top, bottom],
 			} = await game.cardsGotoOrdering([...get.cards(), ...get.bottomCards()]);
-			const next = player.chooseToMove(get.translation(event.name), true);
+			const next = player.chooseToMove_new(get.translation(event.name), true);
 			next.set("list", [
-				["牌堆顶", [top]],
-				["牌堆底", [bottom]],
 				["获得", []],
+				[["牌堆顶", [top]], ["牌堆底", [bottom]]],
 			]);
 			next.set("processAI", list => {
 				let player = get.player(),
 					trigger = get.event().getTrigger(),
-					cards = list.map(i => i[1]).flat();
+					cards = list[1].map(i => i[1]).flat();
 				//只要贪不死就往死里贪
 				if (!trigger?.judge || !trigger.player) {
-					return [[], [], cards];
+					return [cards, [], []];
 				}
 				let att = get.sgnAttitude(player, trigger.player);
 				cards.sort((a, b) => {
 					return (trigger.judge(b) - trigger.judge(a)) * att;
 				});
 				if (trigger.judge(cards[0]) > 0) {
-					return [cards, [], cards.splice(1)];
+					return [cards.slice(1), cards.slice(0, 1), []];
 				}
-				return [[], [], cards];
+				return [cards, [], []];
 			});
 			const result = await next.forResult();
 			if (!result?.bool) {
 				return;
 			}
-			const [tops, bottoms, gains] = result.moved;
+			const [gains, tops, bottoms] = result.moved;
 			if (gains.length) {
 				await player.gain(gains, "gain2");
 				const name = `${event.name}_tiandu`,
