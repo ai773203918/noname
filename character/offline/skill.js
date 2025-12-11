@@ -17581,7 +17581,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.countCards("h") > 0 || game.hasPlayer(current => get.info("hm_zhouyuan").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
 			if (player == target) {
@@ -17592,6 +17592,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets } = event,
 				target = targets[0];
+			if (!target.countCards("h", card => ["red", "black"].includes(get.color(card, false)))) {
+				return;
+			}
 			const dialog = [
 				"请选择一项",
 				[
@@ -17616,10 +17619,14 @@ const skills = {
 					cards1 = target.getCards("h", { color: color1 }),
 					cards2 = player.getCards("h", { color: color1 == "black" ? "red" : "black" });
 				game.log(target, "选择了", color1);
-				await target.addToExpansion(cards1, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
-				target.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
-				await player.addToExpansion(cards2, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
-				player.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
+				if (cards1.length) {
+					await target.addToExpansion(cards1, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
+					target.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
+				}
+				if (cards2.length) {
+					await player.addToExpansion(cards2, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
+					player.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
+				}
 			}
 		},
 		subSkill: {
