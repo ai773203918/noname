@@ -413,6 +413,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["sbbenxi"],
+		clans: ["陈留吴氏"],
 	},
 	yangfu: {
 		sex: "male",

@@ -158,6 +158,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["xy_jianzu", "xy_dishou"],
+		clans: ["颍川荀氏"],
 	},
 	xy_chengong: {
 		sex: "male",
