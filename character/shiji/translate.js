@@ -70,8 +70,6 @@ const translates = {
 	spsanchen: "三陈",
 	spsanchen_info: `觉醒技，结束阶段，若你的“武库”数大于2，则你加1点体力上限并回复1点体力，然后获得${get.poptip("spmiewu")}。`,
 	spmiewu: "灭吴",
-	spmiewu2: "灭吴",
-	spmiewu_backup: "灭吴",
 	spmiewu_info: "每回合限一次。你可弃置一枚“武库”并将一张牌当做任意基本牌或锦囊牌使用，然后摸一张牌。",
 	sp_bianfuren: "手杀卞夫人",
 	spwanwei: "挽危",

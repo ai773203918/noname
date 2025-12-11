@@ -836,7 +836,6 @@ const translates = {
 	pksanchen: "三陈",
 	pksanchen_info: "觉醒技。结束阶段，若你的“武库”数大于2，则你加1点体力上限并回复1点体力，然后获得〖灭吴〗。",
 	pkmiewu: "灭吴",
-	pkmiewu2: "灭吴",
 	pkmiewu_info: "每回合限一次。你可移去1枚“武库”，视为使用或打出任意一张基本牌或普通锦囊牌，然后摸一张牌。",
 	//天书乱斗虚拟偶像
 	vtb_xiaosha: "小杀",
