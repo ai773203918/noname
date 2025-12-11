@@ -4296,7 +4296,7 @@ const skills = {
 				},
 			},
 		},
-		/*loseToDiscardpileMultiple() {
+		loseToDiscardpileMultiple() {
 			"step 0";
 			event.visible = true;
 			if (!event.position) {
@@ -4372,7 +4372,7 @@ const skills = {
 					game.delayx();
 				}
 			}
-		},*/
+		},
 	},
 	mbfeili: {
 		audio: 2,

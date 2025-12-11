@@ -12934,10 +12934,10 @@ const skills = {
 		derivation: "rechanyuan",
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
-			return lib.inpile.includes(name) && player.countCards("h") > 0 && !player.hasSkill("reguhuo_phase");
+			return lib.inpile.includes(name) && player.countCards("h") > 0 && !player.hasSkill("reguhuo_used");
 		},
 		filter(event, player) {
-			if (!player.countCards("hs") || player.hasSkill("reguhuo_phase")) {
+			if (!player.countCards("hs") || player.hasSkill("reguhuo_used")) {
 				return false;
 			}
 			for (var i of lib.inpile) {
@@ -13061,7 +13061,7 @@ const skills = {
 			respondShan: true,
 			respondSha: true,
 			skillTagFilter(player) {
-				if (!player.countCards("hs") || player.hasSkill("reguhuo_phase")) {
+				if (!player.countCards("hs") || player.hasSkill("reguhuo_used")) {
 					return false;
 				}
 			},
@@ -13087,7 +13087,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.addTempSkill("reguhuo_phase");
+			player.addTempSkill("reguhuo_used");
 			event.fake = false;
 			var card = trigger.cards[0];
 			if (card.name != trigger.card.name || (card.name == "sha" && !get.is.sameNature(trigger.card, card))) {
@@ -13194,7 +13194,7 @@ const skills = {
 		},
 	},
 	reguhuo_backup: {},
-	reguhuo_phase: {
+	reguhuo_used: {
 		charlotte: true,
 	},
 	rechanyuan: {

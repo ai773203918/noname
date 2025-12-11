@@ -592,6 +592,7 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["stdyunji", "stdzongji"],
+		clans: ["太原王氏"],
 	},
 };
 

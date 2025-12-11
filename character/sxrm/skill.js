@@ -168,7 +168,7 @@ const skills = {
 						if (player.storage.hujiaing) {
 							return false;
 						}
-						return game.hasPlayer(current => current != player && current.group == "wei");
+						return game.hasPlayer(current => current != player);
 					},
 				},
 				marktext: "标",

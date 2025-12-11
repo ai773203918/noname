@@ -130,6 +130,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["dcsbjunmou", "dcsbzhanyan"],
+		clans: ["吴郡陆氏"],
 	},
 	dc_sb_dengai: {
 		sex: "male",
@@ -193,6 +194,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dczhidui", "dcjiesi"],
+		clans: ["颍川钟氏"],
 	},
 	dc_xiahouhui: {
 		sex: "female",
