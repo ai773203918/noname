@@ -43,9 +43,13 @@ const skills = {
 			await next;
 		},
 		getSelected(player) {
-			const historys = game.getRoundHistory("everything", evt => {
-				return evt.player == player && evt.name == "sxrmhanguo";
-			}, 1);
+			const historys = game.getRoundHistory(
+				"everything",
+				evt => {
+					return evt.player == player && evt.name == "sxrmhanguo";
+				},
+				1
+			);
 			if (!historys.length) {
 				return [];
 			}
@@ -100,7 +104,7 @@ const skills = {
 					return game.hasPlayer(current => current != player);
 				},
 				async content(event, trigger, player) {
-					const start = _status.currentPhase == player ? _status.currentPhase.getNext() : (_status.currentPhase || player);
+					const start = _status.currentPhase == player ? _status.currentPhase.getNext() : _status.currentPhase || player;
 					while (true) {
 						let bool;
 						if (!event.current) {
@@ -139,19 +143,22 @@ const skills = {
 							if (!targets.length) {
 								return;
 							}
-							const result = targets.length > 1 ? await event.current
-								.chooseTarget(`撼国：获得${get.translation(targets)}中的一名角色一张牌`, true, (card, player, target) => {
-									return get.event("selectTargets").includes(target);
-								})
-								.set("selectTargets", targets)
-								.set("ai", target => {
-									const player = get.player();
-									return get.effect(target, { name: "shunshou_copy2" }, player, player);
-								})
-								.forResult() : {
-									bool: true,
-									targets: targets,
-								};
+							const result =
+								targets.length > 1
+									? await event.current
+											.chooseTarget(`撼国：获得${get.translation(targets)}中的一名角色一张牌`, true, (card, player, target) => {
+												return get.event("selectTargets").includes(target);
+											})
+											.set("selectTargets", targets)
+											.set("ai", target => {
+												const player = get.player();
+												return get.effect(target, { name: "shunshou_copy2" }, player, player);
+											})
+											.forResult()
+									: {
+											bool: true,
+											targets: targets,
+										};
 							if (result?.bool) {
 								const target = result.targets[0];
 								await event.current.gainPlayerCard(target, "he", true);
@@ -231,7 +238,7 @@ const skills = {
 						}
 						return "";
 					},
-					ai1:() => Math.random(),
+					ai1: () => Math.random(),
 					ai2(target) {
 						return Math.max(0.1, get.attitude(get.player(), target));
 					},
@@ -499,7 +506,7 @@ const skills = {
 		filter(event, player) {
 			const evts = game.getGlobalHistory("everything", evt => {
 				return evt?.sxrmConnectCardsMap?.has?.(player);
-			})
+			});
 			return evts.indexOf(event) == 0;
 		},
 		forced: true,
@@ -512,7 +519,7 @@ const skills = {
 			const targets = event.targets;
 			const func = async target => {
 				await target.draw(Math.min(5, targets.length));
-			}
+			};
 			await game.doAsyncInOrder(targets, func);
 		},
 		global: "sxrmyinmou_global",
@@ -527,7 +534,7 @@ const skills = {
 					}
 					return game.hasPlayer(current => {
 						return current.hasSkill("sxrmyinmou") && current.countCards("h", card => !get.info("_sxrm_connect").isConnect(card));
-					})
+					});
 				},
 				async cost(event, trigger, player) {
 					event.result = await player
@@ -543,12 +550,19 @@ const skills = {
 					const target = event.targets[0],
 						connects = [];
 					for (const current of [target, player].toUniqued()) {
-						const result = await player
-							.choosePlayerCard(current, "h", true, target == player ? 2 : 1)
-							.set("filterButton", button => {
-								return !get.info("_sxrm_connect").isConnect(button.link);
-							})
-							.forResult();
+						const cards = current.getCards("h", card => !get.info("_sxrm_connect").isConnect(card));
+						if (!target.isIn() || !cards.length) {
+							continue;
+						}
+						const result =
+							cards.length == 1
+								? { bool: true, links: cards }
+								: await player
+										.choosePlayerCard(current, "h", true)
+										.set("filterButton", button => {
+											return !get.info("_sxrm_connect").isConnect(button.link);
+										})
+										.forResult();
 						if (result?.bool) {
 							connects.addArray(result.links);
 						}
@@ -593,9 +607,11 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name == "useCard") {
-				if ([player, event.player].some(current => {
-					return !get.info("_sxrm_connect").isConnect(current.getCards("h")).length;
-				})) {
+				if (
+					[player, event.player].some(current => {
+						return !get.info("_sxrm_connect").isConnect(current.getCards("h")).length;
+					})
+				) {
 					return false;
 				}
 				const evts = event.player.getHistory("useCard", evt => get.tag(evt.card, "damage"));
@@ -608,7 +624,7 @@ const skills = {
 				event.result = {
 					bool: true,
 					targets: [trigger.player],
-				}
+				};
 			} else {
 				event.result = await player
 					.chooseTarget(get.prompt(event.skill), "连接至多四名角色各一张手牌", [1, 4], (card, player, target) => {
@@ -678,10 +694,14 @@ const skills = {
 		async cost(event, trigger, player) {
 			const card = new lib.element.VCard({ name: "huogong", isCard: true });
 			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					const { huogong } = get.event();
-					return target != player && player.canUse(huogong, target);
-				}, [1, 4])
+				.chooseTarget(
+					get.prompt2(event.skill),
+					(card, player, target) => {
+						const { huogong } = get.event();
+						return target != player && player.canUse(huogong, target);
+					},
+					[1, 4]
+				)
 				.set("huogong", card)
 				.set("ai", target => {
 					const { huogong, player } = get.event();
@@ -696,9 +716,11 @@ const skills = {
 			const next = player.useCard(card, targets);
 			await next;
 			player.removeSkill("sxrmhuoe_effect");
-			const cards = game.getGlobalHistory("everything", evt => {
-				return evt.name == "showCards" && evt.getParent(evtx => evtx == next, true);
-			}).reduce((arr, evt) => arr.concat(evt.cards ?? []), []);
+			const cards = game
+				.getGlobalHistory("everything", evt => {
+					return evt.name == "showCards" && evt.getParent(evtx => evtx == next, true);
+				})
+				.reduce((arr, evt) => arr.concat(evt.cards ?? []), []);
 			if (!cards.length) {
 				return;
 			}
@@ -739,12 +761,14 @@ const skills = {
 					return evt.name == "huogong" && evt.card?.storage?.huoe;
 				},
 				async cost(event, trigger, player) {
-					if (player.countCards(trigger.position, card => {
-						if (!lib.filter.cardDiscardable(card, player, trigger)) {
-							return false;
-						}
-						return trigger.filterCard(card, player);
-					})) {
+					if (
+						player.countCards(trigger.position, card => {
+							if (!lib.filter.cardDiscardable(card, player, trigger)) {
+								return false;
+							}
+							return trigger.filterCard(card, player);
+						})
+					) {
 						trigger.forced = true;
 						const evt = trigger.getParent(2);
 						evt.targets.splice(evt.num + 1);
@@ -817,7 +841,7 @@ const skills = {
 			for (const key of ["Draw", "Use", "Discard"]) {
 				current.addTempSkill(`${event.name}_${key}`, { player: `phase${key}After` });
 				current.setStorage(`${event.name}_${key}`, red);
-				current.markSkill(`${event.name}_${key}`)
+				current.markSkill(`${event.name}_${key}`);
 			}
 		},
 		subSkill: {
@@ -874,7 +898,7 @@ const skills = {
 									return storage;
 								},
 							},
-						})
+						});
 				},
 			},
 			Discard: {
@@ -908,7 +932,7 @@ const skills = {
 									return storage;
 								},
 							},
-						})
+						});
 				},
 			},
 		},
@@ -929,7 +953,10 @@ const skills = {
 			}
 			[player, target].forEach(current => {
 				const num = Math.min(...current.getCards("h").map(card => get.number(card, current)));
-				current.addGaintag(current.getCards("h", card => get.number(card, current) <= num), "sxrmchanyu_tag");
+				current.addGaintag(
+					current.getCards("h", card => get.number(card, current) <= num),
+					"sxrmchanyu_tag"
+				);
 			});
 			const next = player.chooseToCompare(target);
 			next.set("filterCard", (card, player) => {
@@ -950,34 +977,37 @@ const skills = {
 					.chooseControl("red", "black", "basic", "equip", "trick", "cancel2")
 					.set("dialog", dialog)
 					.set("ai", () => get.event("resultx"))
-					.set("resultx", (() => {
-						const getFilter = (card, key) => {
-							if (["red", "black"].includes(key)) {
-								return get.color(card) == key;
-							}
-							return get.type2(card) == key;
-						}
-						const getV = key => {
-							if (key === "cancel2") {
-								return 0;
-							}
-							const cards1 = winner.getCards("h", card => getFilter(card, key)),
-								cards2 = loser.getCards("h", card => getFilter(card, key));
-							let sum1 = cards1.reduce((sum, card) => {
-								sum += get.value(card, winner);
-								return sum;
-							}, 0);
-							let sum2 = cards2.reduce((sum, card) => {
-								sum += get.value(card, loser);
-								return sum;
-							}, 0);
-							if (get.attitude(winner, loser) > 0) {
-								return Math.abs(sum1 - sum2);
-							}
-							return sum2 - sum1;
-						}
-						return ["red", "black", "basic", "equip", "trick", "cancel2"].maxBy(getV);
-					})())
+					.set(
+						"resultx",
+						(() => {
+							const getFilter = (card, key) => {
+								if (["red", "black"].includes(key)) {
+									return get.color(card) == key;
+								}
+								return get.type2(card) == key;
+							};
+							const getV = key => {
+								if (key === "cancel2") {
+									return 0;
+								}
+								const cards1 = winner.getCards("h", card => getFilter(card, key)),
+									cards2 = loser.getCards("h", card => getFilter(card, key));
+								let sum1 = cards1.reduce((sum, card) => {
+									sum += get.value(card, winner);
+									return sum;
+								}, 0);
+								let sum2 = cards2.reduce((sum, card) => {
+									sum += get.value(card, loser);
+									return sum;
+								}, 0);
+								if (get.attitude(winner, loser) > 0) {
+									return Math.abs(sum1 - sum2);
+								}
+								return sum2 - sum1;
+							};
+							return ["red", "black", "basic", "equip", "trick", "cancel2"].maxBy(getV);
+						})()
+					)
 					.forResult();
 				if (result2?.control != "cancel2") {
 					const control = result2.control,
@@ -991,7 +1021,6 @@ const skills = {
 						};
 					await winner.swapHandcards(loser, getC(winner), getC(loser));
 				}
-
 			}
 		},
 		ai: {
@@ -1089,7 +1118,7 @@ const skills = {
 					if (get.name(card) == "sha") {
 						return 0.3;
 					}
-				}
+				},
 			},
 		},
 	},
@@ -1104,15 +1133,18 @@ const skills = {
 			if (!targets.length) {
 				return;
 			}
-			const result = targets.length > 1 ? await player
-				.chooseTarget("鄙诈：与一名角色拼点", true, (card, player, target) => player.canCompare(target))
-				.set("ai", target => {
-					return -get.attitude(get.player(), target);
-				})
-				.forResult() : {
-					bool: true,
-					targets: targets,
-				};
+			const result =
+				targets.length > 1
+					? await player
+							.chooseTarget("鄙诈：与一名角色拼点", true, (card, player, target) => player.canCompare(target))
+							.set("ai", target => {
+								return -get.attitude(get.player(), target);
+							})
+							.forResult()
+					: {
+							bool: true,
+							targets: targets,
+						};
 			if (result?.bool) {
 				const target = result.targets[0];
 				const result2 = await player.chooseToCompare(target).forResult();
@@ -1176,10 +1208,11 @@ const skills = {
 				if (!names.length) {
 					return;
 				}
-				const result = await target.chooseButton(["声明一种伤害类牌", [names, "vcard"]], true)
+				const result = await target
+					.chooseButton(["声明一种伤害类牌", [names, "vcard"]], true)
 					.set("ai", button => {
 						const { player, kuangtu } = get.event(),
-							card = new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true});
+							card = new lib.element.VCard({ name: button.link[2], nature: button.link[3], isCard: true });
 						let eff = Math.max(get.effect(player, card, kuangtu, kuangtu), get.effect(kuangtu, card, player, kuangtu));
 						return eff;
 					})
@@ -1189,28 +1222,35 @@ const skills = {
 					return;
 				}
 				const card = new lib.element.VCard({ name: result.links[0][2], nature: result.links[0][3], isCard: true });
-				const targets = [player, target].filter(current => current.canUse(card, current == player ? target: player, false));
+				const targets = [player, target].filter(current => current.canUse(card, current == player ? target : player, false));
 				if (!targets?.length) {
 					return;
 				}
-				const result2 = targets.length > 1 ? await player
-					.chooseTarget(`选择${get.translation(card)}的使用者`, (card, player, target) => {
-						return get.event("canUse").includes(target);
-					}, true)
-					.set("canUse", targets)
-					.set("targetx", target)
-					.set("willUse", card)
-					.set("ai", target => {
-						const { player, targetx, willUse } = get.event();
-						if (target == player) {
-							return get.effect(targetx, willUse, target, player);
-						}
-						return get.effect(player, willUse, target, player);
-					})
-					.forResult() : {
-						bool: true,
-						targets: targets,
-					};
+				const result2 =
+					targets.length > 1
+						? await player
+								.chooseTarget(
+									`选择${get.translation(card)}的使用者`,
+									(card, player, target) => {
+										return get.event("canUse").includes(target);
+									},
+									true
+								)
+								.set("canUse", targets)
+								.set("targetx", target)
+								.set("willUse", card)
+								.set("ai", target => {
+									const { player, targetx, willUse } = get.event();
+									if (target == player) {
+										return get.effect(targetx, willUse, target, player);
+									}
+									return get.effect(player, willUse, target, player);
+								})
+								.forResult()
+						: {
+								bool: true,
+								targets: targets,
+							};
 				if (!result2?.bool) {
 					return;
 				}
@@ -1220,16 +1260,22 @@ const skills = {
 				next.baseDamage ??= 1;
 				next.baseDamage++;
 				await next;
-				if (next.targets?.length && next.targets.some(current => {
-					return current.hasHistory("damage", evt => evt.card == next.card);
-				})) {
+				if (
+					next.targets?.length &&
+					next.targets.some(current => {
+						return current.hasHistory("damage", evt => evt.card == next.card);
+					})
+				) {
 					break;
 				}
 				await user.loseHp();
 				if (!player?.isIn() || !target?.isIn()) {
 					return;
 				}
-				const bool = await player.chooseBool(`是否继续对${get.translation(target)}搦战？`).set("choice", player.hp > 1).forResultBool();
+				const bool = await player
+					.chooseBool(`是否继续对${get.translation(target)}搦战？`)
+					.set("choice", player.hp > 1)
+					.forResultBool();
 				if (!bool) {
 					break;
 				}
@@ -1248,10 +1294,12 @@ const skills = {
 				return false;
 			}
 			const { useCard, lose } = historys[historys.length - 2];
-			return useCard.some(evt => lose.some(evtx => {
-				const evtxx = evtx.relatedEvent || evtx.getParent();
-				return evtx.hs.length > 0 && evtxx == evt;
-			}));
+			return useCard.some(evt =>
+				lose.some(evtx => {
+					const evtxx = evtx.relatedEvent || evtx.getParent();
+					return evtx.hs.length > 0 && evtxx == evt;
+				})
+			);
 		},
 		forced: true,
 		locked: false,
@@ -2898,7 +2946,7 @@ const skills = {
 			game.broadcastAll(connect => {
 				connect.forEach(card => {
 					card.addGaintag("visible_sxrm_connect_tag");
-				})
+				});
 				_status.sxrmConnectCards.addArray(connect);
 			}, connect);
 			connect.forEach(card => {
@@ -2906,7 +2954,7 @@ const skills = {
 				if (owner?.isIn()) {
 					owner.markSkill("_sxrm_connect");
 				}
-			})
+			});
 			get.info("_sxrm_connect").refreshMark();
 			return cards;
 		},
@@ -2919,7 +2967,7 @@ const skills = {
 			game.broadcastAll(cards => {
 				cards.forEach(card => {
 					card.removeGaintag("visible_sxrm_connect_tag");
-				})
+				});
 			}, cards);
 			get.info("_sxrm_connect").refreshMark();
 			return cards;
@@ -2927,11 +2975,11 @@ const skills = {
 		refreshMark() {
 			game.filterPlayer(current => {
 				if (get.info("_sxrm_connect").isConnect(current.getCards("h")).length) {
-					current.markSkill("_sxrm_connect")
+					current.markSkill("_sxrm_connect");
 				} else {
 					current.unmarkSkill("_sxrm_connect");
 				}
-			})
+			});
 		},
 		trigger: {
 			player: "loseAfter",
@@ -2949,13 +2997,16 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const lose_map = new Map();
-			const cards = game.filterPlayer().map(current => {
-				const lose = (trigger.getl(current).hs ?? []).filter(card => get.info(event.skill).isConnect(card));
-				if (lose.length) {
-					lose_map.set(current, lose);
-				}
-				return lose;
-			}).flat();
+			const cards = game
+				.filterPlayer()
+				.map(current => {
+					const lose = (trigger.getl(current).hs ?? []).filter(card => get.info(event.skill).isConnect(card));
+					if (lose.length) {
+						lose_map.set(current, lose);
+					}
+					return lose;
+				})
+				.flat();
 			if (!cards.length) {
 				return;
 			}
@@ -2996,7 +3047,7 @@ const skills = {
 				if (cards?.length) {
 					await target.modedDiscard(cards);
 				}
-			}
+			};
 			await game.doAsyncInOrder(targets, func);
 		},
 	},
