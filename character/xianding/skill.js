@@ -13356,8 +13356,8 @@ const skills = {
 						game.log(trigger.card, "对", player, "无效");
 						break;
 					case "防伤":
-						player.addTempSkill("dccilv_effect");
-						player.markAuto("dccilv_effect", [trigger.card]);
+						trigger.player.addTempSkill("dccilv_effect");
+						trigger.player.markAuto("dccilv_effect", [trigger.card]);
 						break;
 					case "获得":
 						player
@@ -13383,7 +13383,8 @@ const skills = {
 			effect: {
 				audio: "dccilv",
 				charlotte: true,
-				trigger: { player: "damageBegin4" },
+				onremove: true,
+				trigger: { source: "damageBegin2" },
 				filter(event, player) {
 					const evt = event.getParent(2);
 					return evt && evt.name == "useCard" && player.getStorage("dccilv_effect").includes(evt.card);
@@ -13393,8 +13394,12 @@ const skills = {
 					trigger.cancel();
 				},
 				ai: {
+					notricksource: true,
+					skillTagFilter(player, tag, arg) {
+						return player.getStorage("dccilv_effect").includes(arg.card);	
+					},
 					effect: {
-						target(card, player, target) {
+						player(card, player, target) {
 							if (player.getStorage("dccilv_effect").includes(card)) {
 								return "zeroplayertarget";
 							}

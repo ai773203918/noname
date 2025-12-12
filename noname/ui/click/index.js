@@ -3488,7 +3488,7 @@ export class Click {
 						spacemark = '<span style="font-size:7px">' + " " + "</span>" + "|" + '<span style="font-size:7px">' + " " + "</span>";
 					}
 					// 获取武将称号
-					var charactertitle = get.characterTitle(name);
+					var charactertitle = get.characterTitle(name, false, false);
 					var titleHtml = "";
 					if (charactertitle.length) {
 						titleHtml = '<div class="character-title">' + get.colorspan(charactertitle) + '</div>';
@@ -3671,7 +3671,7 @@ export class Click {
 					showCharacterNamePinyin = lib.config.show_characternamepinyin;
 				intro = uiintro.querySelector(".characterintro") || ui.create.div(".characterintro", uiintro);
 				// 添加武将称号
-				let characterTitle = get.characterTitle(name), packName;
+				let characterTitle = get.colorspan(get.characterTitle(name, false, false)), packName;
 				for (let packname in lib.characterPack) {
 					if (name in lib.characterPack[packname]) {
 						let pack = lib.translate[packname + '_character_config'],
@@ -3687,9 +3687,9 @@ export class Click {
 						}
 						packName = `${pack}${sort ? `${sort}` : ""}`;
 						if (characterTitle.length) {
-							characterTitle = `${characterTitle} | ${packName}`;
+							characterTitle = `${characterTitle}<span style="color: white"> | ${packName}</span>`;
 						} else {
-							characterTitle = packName;
+							characterTitle = `<span style="color: white">${packName}</span>`;
 						}
 						break;
 					}
