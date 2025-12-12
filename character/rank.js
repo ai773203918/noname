@@ -302,6 +302,8 @@ window.noname_character_rank = {
 		"bigsb_dengai",
 	],
 	am: [
+		"dc_sb_jianggan",
+		"dc_sb_chunyuqiong",
 		"zj_lukang",
 		"zj_zhugezhan",
 		"zj_liuyin",
@@ -3046,6 +3048,8 @@ window.noname_character_rank = {
 			"shinin_lvlingqi",
 			"shinin_dongwan",
 			"guotiying",
+			"dc_sb_jianggan",
+			"dc_sb_chunyuqiong",
 		],
 		rare: [
 			"bozai",
