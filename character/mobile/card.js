@@ -1,6 +1,15 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	cz_liulongcanjia: {
+		fullskin: true,
+		cardimage: "liulongcanjia",
+		derivation: "mb_caozhi",
+		cardcolor: "club",
+		type: "equip",
+		subtype: "equip5",
+		skills: ["cz_liulongcanjia_skill"],
+	},
 	ly_piliche: {
 		fullskin: true,
 		//vanish:true,

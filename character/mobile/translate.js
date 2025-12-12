@@ -1101,6 +1101,22 @@ const translates = {
 	mbkubai_suit_info: "你于回合内使用每种花色的第一张牌时，摸一张牌；你的回合内，其他角色只能使用你使用过的花色的牌。",
 	mbkubai_number: "枯白·三级",
 	mbkubai_number_info: "你于回合内使用每种点数的第一张牌时，摸一张牌；你的回合内，其他角色只能使用你使用过的点数的牌。",
+	mb_caozhi: "御曹植",
+	mb_caozhi_prefix: "御",
+	mbchongsi: "冲司",
+	mbchongsi_info: `准备阶段，若你未选择过最后一项，你可选择一名其他角色并执行一项，然后令其选择一项执行：1.使用一张【杀】；2.弃置两张手牌；3.对自己或装备${get.poptip("cz_liulongcanjia")}的角色造成1点伤害。`,
+	mbpeidong: "辔东",
+	mbpeidong_info: `你可按以下方式操作${get.poptip("cz_liulongcanjia")}并视为使用对应牌：【杀】，从装备区移动至下家；【闪】，从其他角色场上获得；【桃】，从手牌或牌堆中亮出；【酒】，从游戏外置入宝物栏。`,
+	cz_liulongcanjia: "六龙骖驾",
+	cz_liulongcanjia_info: "你计算与其他角色的距离-X，其他角色计算与你的距离+X（X为所有角色场上点数为K的牌数）。",
+	cz_liulongcanjia_skill: "六龙骖驾",
+	cz_liulongcanjia_skill_info: "你计算与其他角色的距离-X，其他角色计算与你的距离+X（X为所有角色场上点数为K的牌数）。",
+	mb_zhouyu: "手杀乐周瑜",
+	mb_zhouyu_prefix: "手杀乐",
+	mbshouyue: "授乐",
+	mbshouyue_info: `摸牌阶段开始时，或你的体力值减少后，你可选择一项：1.摸一张牌，令一名角色获得${get.poptip("qinyin")}（已有则改为摸一张牌）；2.令一名角色复原武将牌。`,
+	mbdieyin: "叠音",
+	mbdieyin_info: "出牌阶段限一次，你可将武将牌翻至背面，于此阶段结束后执行一个指定的额外阶段。",
 };
 
 export default translates;
