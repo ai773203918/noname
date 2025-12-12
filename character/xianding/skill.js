@@ -3134,7 +3134,7 @@ const skills = {
 			const hp = player.getHp(),
 				num = player.countCards("h") - (toOther ? 1 : 0);
 			if (num > hp) {
-				return [["jiu"], player.countCards("hes", { color: "black" }) >= 2];
+				return [["jiu"], player.countCards("hes", { color: "black" }) >= 1];
 			} else if (num == hp) {
 				return [["juedou"], player.countCards("hes")];
 			}
