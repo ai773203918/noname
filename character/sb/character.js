@@ -76,6 +76,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["sbquhu", "sbjieming"],
+		clans: ["颍川荀氏"],
 	},
 	sb_caopi: {
 		sex: "male",

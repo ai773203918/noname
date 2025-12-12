@@ -82,6 +82,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["mbrunwei", "mbshuanghuai"],
+		clans: ["吴郡陆氏"],
 	},
 	mb_yanghong: {
 		sex: "male",

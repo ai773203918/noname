@@ -10489,7 +10489,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.changeSkin({ characterName: "ol_sb_yuanshao" }, "ol_sb_yuanshao_shadow");
-			player.addTempSkill("olsbshenli_used", "phaseUseAfter");
+			player.addTempSkill(event.name + "_used", "phaseUseAfter");
 			trigger.getParent().targets.addArray(
 				game.filterPlayer(target => {
 					return !trigger.targets.includes(target) && player.canUse(trigger.card, target, false);
@@ -10498,7 +10498,7 @@ const skills = {
 			player
 				.when("useCardAfter")
 				.filter(evt => evt == trigger.getParent())
-				.then(() => {
+				.step(async (event, trigger, player) => {
 					const sum = player
 						.getHistory("sourceDamage", evt => evt.card && evt.card == trigger.card)
 						.reduce((num, evt) => {
@@ -10507,7 +10507,7 @@ const skills = {
 					const bool = sum > player.countCards("h"),
 						goon = sum > player.getHp();
 					if (bool) {
-						player.draw(Math.min(5, sum));
+						await player.draw(Math.min(5, sum));
 					}
 					if (goon) {
 						const targets = game.filterPlayer(target => trigger.targets.includes(target) && player.canUse(trigger.card, target, false));
@@ -10519,7 +10519,7 @@ const skills = {
 									return !get.owner(card);
 								}))
 						) {
-							player.useCard(trigger.card, targets, false);
+							await player.useCard(trigger.card, trigger.cards, targets, false);
 						}
 					}
 				});

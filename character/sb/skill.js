@@ -4558,7 +4558,7 @@ const skills = {
 	//卢植
 	sbmingren: {
 		inherit: "nzry_mingren",
-		group: ["sbmingren_1", "sbmingren_2"],
+		drawNum: 3,
 	},
 	sbzhenliang: {
 		inherit: "nzry_zhenliang",
