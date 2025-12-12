@@ -10,6 +10,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["mbsizi", "mbxiezhi", "mbyunan", "mbkechang"],
+		isZhugong: true,
 		clans: ["颍川钟氏"],
 	},
 	mb_cuilingyi: {
