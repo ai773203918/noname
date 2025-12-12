@@ -197,6 +197,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["reyanzhu", "rexingxue", "xinzhaofu"],
+		isZhugong: true,
 	},
 	ol_sb_zhangxiu: {
 		sex: "male",
