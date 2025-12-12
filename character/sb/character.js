@@ -2,7 +2,7 @@ const characters = {
 	sb_lvbu: {
 		sex: "male",
 		group: "qun",
-		hp: 4,
+		hp: 5,
 		skills: ["sbwushuang", "sbliyu"],
 	},
 	sb_xiahouyuan: {

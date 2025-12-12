@@ -6180,7 +6180,7 @@ const skills = {
 			if (!list.includes("gain") && player.hasCard(i => get.type(i) == "equip", "he") && game.hasPlayer(current => current != player && current.countCards("h") > 0)) {
 				return true;
 			}
-			if (!list.includes("give") && player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0)) {
+			if (!list.includes("give") && player.countCards("he") > 0 && game.hasPlayer(current => current != player && current.countCards("e") > 0)) {
 				return true;
 			}
 			return !list.includes("draw") && game.hasPlayer(current => current != player);
@@ -6189,7 +6189,7 @@ const skills = {
 			dialog(event, player) {
 				const list = [
 					["gain", "将一张装备牌置于其他角色的装备区内并获得其一张手牌"],
-					["give", "将两张牌交给一名其他角色并获得其装备区内的一张牌"],
+					["give", "将至多两张牌交给一名其他角色并获得其装备区内的一张牌"],
 					["draw", "你可以选择任意名其他角色，这些角色手牌数和装备区牌数每有一项与你相同，其摸一张牌，若这些角色均摸了两张牌，你摸选择角色数张牌"],
 				];
 				return ui.create.dialog("睦阵：请选择一项", [list, "textbutton"], "hidden");
@@ -6203,7 +6203,7 @@ const skills = {
 					return player.hasCard(i => get.type(i) == "equip", "he") && game.hasPlayer(current => current != player && current.countCards("h") > 0);
 				}
 				if (button.link == "give") {
-					return player.countCards("he") > 1 && game.hasPlayer(current => current != player && current.countCards("e") > 0);
+					return player.countCards("he") > 0 && game.hasPlayer(current => current != player && current.countCards("e") > 0);
 				}
 				return game.hasPlayer(current => current != player);
 			},
@@ -6240,7 +6240,7 @@ const skills = {
 						true,
 						() => false,
 					][index],
-					selectCard: [1, 2, -1][index],
+					selectCard: [1, [1, 2], -1][index],
 					ai1(card) {
 						return 8 - get.value(card);
 					},
