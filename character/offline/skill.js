@@ -2772,7 +2772,7 @@ const skills = {
 				onEnd01();
 			};
 			game.broadcastAll(
-				function (player, throwc, card1, card2) {
+				function (player, throwc, card1, card2, cardsetions) {
 					const node1 = player.$throwxy2(card1, "calc(50% - 114px)", "calc(50% - 52px)", "perspective(600px) rotateY(90deg) translateX(0px)", true);
 					throwc(node1);
 					const node2 = player.$throwxy2(card2, "50%", "calc(50% - 52px)", "perspective(600px) rotateY(90deg) translateX(0px)", true);
@@ -2781,7 +2781,8 @@ const skills = {
 				player,
 				throwc,
 				shengBei1,
-				shengBei2
+				shengBei2,
+				cardsetions
 			);
 			game.addVideo("compare", player, [get.cardInfo(shengBei1), player.dataset.position, get.cardInfo(shengBei2)]);
 			//等待一会儿
@@ -4021,7 +4022,7 @@ const skills = {
 			trigger.cancel();
 			const target = event.targets[0],
 				card = new lib.element.VCard({ name: "sha", isCard: true });
-			await target.chooseUseTarget(card, false, true);
+			await target.chooseUseTarget(card, false, true, "nodistance");
 		},
 	},
 	//张闿
@@ -17600,7 +17601,7 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") > 0;
+			return player.countCards("h") > 0 || game.hasPlayer(current => get.info("hm_zhouyuan").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
 			if (player == target) {
@@ -17611,6 +17612,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets } = event,
 				target = targets[0];
+			if (!target.countCards("h", card => ["red", "black"].includes(get.color(card, false)))) {
+				return;
+			}
 			const dialog = [
 				"请选择一项",
 				[
@@ -17635,10 +17639,14 @@ const skills = {
 					cards1 = target.getCards("h", { color: color1 }),
 					cards2 = player.getCards("h", { color: color1 == "black" ? "red" : "black" });
 				game.log(target, "选择了", color1);
-				await target.addToExpansion(cards1, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
-				target.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
-				await player.addToExpansion(cards2, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
-				player.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
+				if (cards1.length) {
+					await target.addToExpansion(cards1, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
+					target.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
+				}
+				if (cards2.length) {
+					await player.addToExpansion(cards2, "draw").set("gaintag", ["hm_zhouyuan_expansion"]);
+					player.addTempSkill("hm_zhouyuan_expansion", ["phaseChange", "phaseAfter", "phaseBeforeStart"]);
+				}
 			}
 		},
 		subSkill: {
@@ -29628,48 +29636,31 @@ const skills = {
 		audio: "spmiewu",
 		enable: ["chooseToUse", "chooseToRespond"],
 		filter(event, player) {
-			if (!player.countMark("pkwuku") || player.hasSkill("pkmiewu2")) {
+			if (!player.countMark("pkwuku") || player.hasSkill("pkmiewu_used")) {
 				return false;
 			}
-			for (var i of lib.inpile) {
-				var type = get.type(i);
-				if ((type == "basic" || type == "trick") && event.filterCard(get.autoViewAs({ name: i }, "unsure"), player, event)) {
-					return true;
+			return get.inpileVCardList(info => {
+				if (!["basic", "trick"].includes(info[0])) {
+					return false;
 				}
-			}
-			return false;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+			}).length;
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
-				for (var i = 0; i < lib.inpile.length; i++) {
-					var name = lib.inpile[i];
-					if (name == "sha") {
-						if (event.filterCard(get.autoViewAs({ name }, "unsure"), player, event)) {
-							list.push(["基本", "", "sha"]);
-						}
-						for (var nature of lib.inpile_nature) {
-							if (event.filterCard(get.autoViewAs({ name, nature }, "unsure"), player, event)) {
-								list.push(["基本", "", "sha", nature]);
-							}
-						}
-					} else if (get.type(name) == "trick" && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event)) {
-						list.push(["锦囊", "", name]);
-					} else if (get.type(name) == "basic" && event.filterCard(get.autoViewAs({ name }, "unsure"), player, event)) {
-						list.push(["基本", "", name]);
+				const list = get.inpileVCardList(info => {
+					if (!["basic", "trick"].includes(info[0])) {
+						return false;
 					}
-				}
+					return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+				});
 				return ui.create.dialog("灭吴", [list, "vcard"]);
 			},
-			//これ  要らない（そよりん声线）
-			//filter:function(button,player){
-			//	return _status.event.getParent().filterCard({name:button.link[2]},player,_status.event.getParent());
-			//},
 			check(button) {
 				if (_status.event.getParent().type != "phase") {
 					return 1;
 				}
-				var player = _status.event.player;
+				const player = get.player();
 				if (["wugu", "zhulu_card", "yiyi", "lulitongxin", "lianjunshengyan", "diaohulishan"].includes(button.link[2])) {
 					return 0;
 				}
@@ -29684,9 +29675,18 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
-					viewAs: { name: links[0][2], nature: links[0][3] },
-					precontent() {
-						player.addTempSkill("pkmiewu2");
+					viewAs: { name: links[0][2], nature: links[0][3], isCard: true },
+					log: false,
+					async precontent(event, trigger, player) {
+						player
+							.when({ player: ["useCardAfter", "respondAfter"] })
+							.filter(evt => evt.getParent() == event.getParent())
+							.step(async (event, trigger, player) => {
+								player.removeSkill(event.name);
+								await player.draw();
+							});
+						player.addTempSkill("pkmiewu_used");
+						player.logSkill("pkmiewu");
 						player.removeMark("pkwuku", 1);
 					},
 				};
@@ -29699,8 +29699,8 @@ const skills = {
 			if (!lib.inpile.includes(name)) {
 				return false;
 			}
-			var type = get.type(name);
-			return (type == "basic" || type == "trick") && player.countMark("pkwuku") > 0 && !player.hasSkill("pkmiewu2");
+			const type = get.type(name);
+			return ["basic", "trick"].includes(type) && player.countMark("pkwuku") > 0 && !player.hasSkill("pkmiewu_used");
 		},
 		ai: {
 			combo: "pkwuku",
@@ -29708,11 +29708,11 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player) {
-				if (!player.countMark("pkwuku") || player.hasSkill("pkmiewu2")) {
+				if (!player.countMark("pkwuku") || player.hasSkill("pkmiewu_used")) {
 					return false;
 				}
 			},
-			order: 1,
+			order: 7,
 			result: {
 				player(player) {
 					if (_status.event.dying) {
@@ -29722,21 +29722,11 @@ const skills = {
 				},
 			},
 		},
-	},
-	pkmiewu2: {
-		trigger: { player: ["useCardAfter", "respondAfter"] },
-		forced: true,
-		charlotte: true,
-		popup: false,
-		sourceSkill: "pkmiewu",
-		filter(event, player) {
-			return event.skill == "pkmiewu_backup";
-		},
-		content() {
-			player.draw();
+		subSkill: {
+			backup: {},
+			used: { charlotte: true },
 		},
 	},
-	pkmiewu_backup: { audio: "pkmiewu" },
 	//官盗S系列关羽
 	pszhonghun: {
 		audio: "zhongyi",

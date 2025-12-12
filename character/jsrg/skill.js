@@ -10944,21 +10944,21 @@ const skills = {
 			if (name == "damageBegin4") {
 				return player.hp > 0;
 			}
-			return game.hasPlayer(current => current.isMinHp() && player.getStorage("jsrgjishan").includes(current));
+			return game.hasPlayer(current => current.isMinHp() && player.getStorage("jsrgjishan").includes(current) && current.isDamaged());
 		},
 		async cost(event, trigger, player) {
 			const { triggername, skill } = event,
 				{ player: target } = trigger;
 			if (triggername == "damageBegin4") {
-				const bool = await player.chooseBool(get.prompt(skill, target), "失去1点体力并防止此伤害，然后你与其各摸一张牌").set("choice", get.info(skill).check(trigger, player)).forResultBool();
+				const { result } = await player.chooseBool(get.prompt(skill, target), "失去1点体力并防止此伤害，然后你与其各摸一张牌").set("choice", get.info(skill).check(trigger, player));
 				event.result = {
-					bool: bool,
+					bool: result?.bool,
 					targets: [target],
 				};
 			} else {
 				event.result = await player
 					.chooseTarget(get.prompt(skill), "令一名体力值最小且你对其发动过〖积善①〗的角色回复1点体力", (card, player, target) => {
-						return target.isMinHp() && player.getStorage("jsrgjishan").includes(target);
+						return target.isMinHp() && player.getStorage("jsrgjishan").includes(target) && target.isDamaged();
 					})
 					.set("ai", target => {
 						const player = get.player();

@@ -657,9 +657,9 @@ const skills = {
 				audio: 4,
 				logAudio(event, player) {
 					if (event.name == "faceUpCard") {
-						return ["mbweizhuang_guidian3.mp3", "mbweizhuang_guidian4.mp3"];
+						return ["mbweizhuang_guidian1.mp3", "mbweizhuang_guidian4.mp3"];
 					}
-					return 2;
+					return ["mbweizhuang_guidian2.mp3", "mbweizhuang_guidian3.mp3"];
 				},
 				trigger: {
 					global: ["faceUpCardAfter", "phaseJieshuBegin"],
@@ -838,10 +838,10 @@ const skills = {
 				},
 				logAudio(event, player, name) {
 					if (name == "useCardAfter") {
-						return ["mbweizhuang_dongjiao3.mp3", "mbweizhuang_dongjiao4.mp3"];
+						return ["mbweizhuang_dongjiao3.mp3", "mbweizhuang_dongjiao6.mp3"];
 					}
 					if (name == "useCardToPlayered") {
-						return ["mbweizhuang_dongjiao5.mp3", "mbweizhuang_dongjiao6.mp3"];
+						return ["mbweizhuang_dongjiao4.mp3", "mbweizhuang_dongjiao5.mp3"];
 					}
 					return 2;
 				},
@@ -858,17 +858,19 @@ const skills = {
 						.getFaceupCards(player)
 						?.map(card => get.type2(card))
 						?.toUniqued()?.length;
+					const type = get.type2(event.card),
+						list = player.getStorage("mbweizhuang_block");
+					if (list.includes(type)) {
+						return false;
+					}
 					if (name == "useCard") {
-						return num >= 1 && get.type(event.card) == "basic";
+						return num >= 1 && type == "basic";
 					}
 					if (name == "useCardAfter") {
 						return (
 							num >= 3 &&
-							get.type(event.card) == "equip" &&
+							type == "equip" &&
 							game.hasPlayer(current => {
-								if (player.getStorage("mbweizhuang_block").includes(current)) {
-									return false;
-								}
 								return get.info("mbweizhuang").getFaceupCards(current).length;
 							})
 						);
@@ -876,7 +878,7 @@ const skills = {
 					return (
 						event.isFirstTarget &&
 						num >= 2 &&
-						get.type2(event.card) == "trick" &&
+						type == "trick" &&
 						event.targets?.length &&
 						event.targets.some(target => {
 							const pos = target == player ? "e" : "he";
@@ -894,9 +896,6 @@ const skills = {
 						}
 						case "useCardAfter": {
 							const targets = game.filterPlayer(current => {
-								if (player.getStorage("mbweizhuang_block").includes(current)) {
-									return false;
-								}
 								return get.info("mbweizhuang").getFaceupCards(current).length;
 							});
 							if (!targets?.length) {
@@ -938,6 +937,8 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const { targets, triggername: name } = event;
+					player.addTempSkill("mbweizhuang_block");
+					player.markAuto("mbweizhuang_block", get.type2(trigger.card));
 					switch (name) {
 						case "useCard": {
 							trigger.baseDamage ??= 1;
@@ -945,8 +946,6 @@ const skills = {
 							break;
 						}
 						case "useCardAfter": {
-							player.addTempSkill("mbweizhuang_block");
-							player.markAuto("mbweizhuang_block", targets);
 							await game.doAsyncInOrder(targets, async target => await target.draw(2));
 							break;
 						}
@@ -967,12 +966,11 @@ const skills = {
 			},
 			xiuge: {
 				audio: 6,
-				logAudio(event, player) {
-					if (typeof event == "string") {
-						const index = ["sha", "jiu", "tao", "shan"].indexOf(event) + 3;
-						return `mbweizhuang_xiuge${index}.mp3`;
+				logAudio(event) {
+					if (typeof event == "number") {
+						return `mbweizhuang_xiuge${event}.mp3`;
 					}
-					return 2;
+					return 6;
 				},
 				enable: "chooseToUse",
 				hiddenCard(player, name) {
@@ -1037,7 +1035,7 @@ const skills = {
 				},
 				viewAs(cards, player) {
 					if (cards.length) {
-						let name = false;
+						let name;
 						const subtype = get.subtype(cards[0], player);
 						if (typeof subtype == "string") {
 							name = ["sha", "shan", "tao", "jiu"][subtype.slice(5) - 1];
@@ -1111,15 +1109,17 @@ const skills = {
 					player.markAuto("mbweizhuang_blocker", name);
 					//delete event.result.skill;
 					event.getParent().addCount = false;
-					player.logSkill("mbweizhuang_xiuge", null, null, null, [name]);
 					const count = get
 						.info("mbweizhuang")
 						.getFaceupCards(player)
 						?.map(card => get.suit(card))
 						?.toUniqued()?.length;
 					if (count >= 4) {
+						player.logSkill("mbweizhuang_xiuge", null, null, null, [get.rand(1, 2)]);
 						await player.showCards(cards, `${get.translation(player)}发动了【褽装】`);
 					} else {
+						const index = ["sha", "jiu", "tao", "shan"].indexOf(name) + 3;
+						player.logSkill("mbweizhuang_xiuge", null, null, null, [index]);
 						await player.modedDiscard(cards);
 					}
 					event.result.card = new lib.element.VCard({ name: name, isCard: true, storage: { wzxiuge: true } });
@@ -1128,7 +1128,6 @@ const skills = {
 						.when("useCardAfter")
 						.filter(evt => evt.getParent() == event.getParent())
 						.step(async (event, trigger, player) => {
-							player.logSkill("mbweizhuang_xiuge");
 							const card = get.cardPile(card => get.suit(card) == get.suit(cards[0]));
 							if (card) {
 								await player.gain(card, "gain2");
@@ -4485,7 +4484,7 @@ const skills = {
 				},
 			},
 		},
-		/*loseToDiscardpileMultiple() {
+		loseToDiscardpileMultiple() {
 			"step 0";
 			event.visible = true;
 			if (!event.position) {
@@ -4561,7 +4560,7 @@ const skills = {
 					game.delayx();
 				}
 			}
-		},*/
+		},
 	},
 	mbfeili: {
 		audio: 2,

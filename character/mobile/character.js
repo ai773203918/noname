@@ -10,6 +10,8 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["mbsizi", "mbxiezhi", "mbyunan", "mbkechang"],
+		isZhugong: true,
+		clans: ["颍川钟氏"],
 	},
 	mb_cuilingyi: {
 		sex: "female",
@@ -418,6 +420,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["sbbenxi"],
+		clans: ["陈留吴氏"],
 	},
 	yangfu: {
 		sex: "male",

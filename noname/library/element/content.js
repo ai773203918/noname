@@ -11981,14 +11981,14 @@ player.removeVirtualEquip(card);
 					} else if (event.position && cardx[j].willBeDestroyed(event.position.id, null, event)) {
 						cardx[j].selfDestroy(event);
 						continue;
-					}
-					/*else if ("destroyed" in cardx[j]) {
-						
 					} else if (info.destroy) {
 						cardx[j].delete();
 						cardx[j].destroyed = info.destroy;
 						continue;
-					}*/
+					}
+					/*else if ("destroyed" in cardx[j]) {
+						
+					}*/ 
 					if (event.position) {
 						if (_status.discarded) {
 							if (event.position == ui.discardPile) {

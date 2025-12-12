@@ -80,7 +80,7 @@ const translates = {
 			<br><li>一名角色因为使用、打出、弃置而失去连接牌时，所有角色依次弃置被连接的手牌（不可嵌套）
 			<br><li>一张连接牌再次被连接或离开手牌区时，重置为正常状态
 		`,
-	})}的手牌。你每回合首次失去${get.poptip("sxrm_connect")}牌后，本次同时失去${get.poptip("sxrm_connect")}牌的角色依次摸X张牌（X为这些角色数且至多为5）`,
+	})}的手牌。你每回合首次失去${get.poptip("sxrm_connect")}牌后，本次同时失去${get.poptip("sxrm_connect")}牌的角色依次摸X张牌（X为这些角色数且至多为5）。`,
 	sxrmquchi: "驱斥",
 	sxrmquchi_info: `出牌阶段限一次，你可以对一名角色造成1点火焰伤害，若其有${get.poptip("sxrm_connect")}牌，重置这些牌并令此伤害+1。`,
 	sxrm_yujin: "慢于禁",

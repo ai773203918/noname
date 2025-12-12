@@ -16560,20 +16560,18 @@ const skills = {
 		filter(event, player) {
 			return (event.name != "phase" || game.phaseNumber == 0) && !player.getExpansions("twmingren").length;
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
+		async content(event, trigger, player) {
+			await player.draw();
 			if (!player.countCards("h")) {
-				event.finish();
-			} else {
-				player.chooseCard("h", "明任：将一张手牌置于武将牌上，称为“任”", true).set("ai", function (card) {
-					return 6 - get.value(card);
-				});
+				return;
 			}
-			"step 2";
+			const { result } = await player.chooseCard("h", "明任：将一张手牌置于武将牌上，称为“任”", true).set("ai", function (card) {
+				return 6 - get.value(card);
+			});
 			if (result.bool) {
-				player.addToExpansion(result.cards[0], player, "give", "log").gaintag.add("twmingren");
+				const next = player.addToExpansion(result.cards[0], player, "give", "log");
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 		subSkill: {
@@ -16583,54 +16581,53 @@ const skills = {
 				filter(event, player) {
 					return player.countCards("he") && player.getExpansions("twmingren").length;
 				},
-				direct: true,
-				content() {
-					"step 0";
-					player.chooseCard("he", get.prompt("twmingren"), "用一张牌替换“任”（" + get.translation(player.getExpansions("twmingren")[0]) + "）").set("ai", function (card) {
-						var player = _status.event.player;
-						var color = get.color(card);
-						if (color == get.color(player.getExpansions("twmingren")[0])) {
-							return false;
-						}
-						var num = 0;
-						var list = [];
-						player.countCards("he", function (cardx) {
-							if (cardx != card || get.color(cardx) != color) {
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseCard("he", get.prompt(event.skill), "选择一张牌替换“任”（" + get.translation(player.getExpansions("twmingren")[0]) + "）")
+						.set("ai", card => {
+							const player = _status.event.player;
+							const color = get.color(card);
+							if (color == get.color(player.getExpansions("twmingren")[0])) {
 								return false;
 							}
-							if (list.includes(cardx.name)) {
-								return false;
-							}
-							list.push(cardx.name);
-							switch (cardx.name) {
-								case "wuxie":
-									num += game.countPlayer() / 2.2;
-									break;
-								case "caochuan":
-									num += 1.1;
-									break;
-								case "shan":
-									num += 1;
-									break;
-							}
-						});
-						return num * (30 - get.value(card));
-					});
-					"step 1";
-					if (result.bool) {
-						player.logSkill("twmingren");
-						player.addToExpansion(result.cards[0], "log", "give", player).gaintag.add("twmingren");
-						var card = player.getExpansions("twmingren")[0];
-						if (card) {
-							player.gain(card, "gain2");
-						}
+							let num = 0;
+							const list = [];
+							player.countCards("he", function (cardx) {
+								if (cardx != card || get.color(cardx) != color) {
+									return false;
+								}
+								if (list.includes(cardx.name)) {
+									return false;
+								}
+								list.push(cardx.name);
+								switch (cardx.name) {
+									case "wuxie":
+										num += game.countPlayer() / 2.2;
+										break;
+									case "caochuan":
+										num += 1.1;
+										break;
+									case "shan":
+										num += 1;
+										break;
+								}
+							});
+							return num * (30 - get.value(card));
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const card = player.getExpansions("twmingren")[0];
+					const next = player.addToExpansion(event.cards[0], "log", "give", player);
+					next.gaintag.add("twmingren");
+					await next;
+					if (card) {
+						await player.gain(card, "gain2");
 					}
 				},
 			},
 		},
-		ai: {
-			combo: "twzhenliang",
-		},
+		ai: { combo: "twzhenliang" },
 	},
 	twzhenliang: {
 		inherit: "nzry_zhenliang",
@@ -20068,7 +20065,7 @@ const skills = {
 			if (!event.source || get.distance(player, event.player) > 1 || !player.canUse("sha", event.source, false, false)) {
 				return false;
 			}
-			return player.countCards("h") > 0;
+			return player.hasUsableCard("sha", "use");
 		},
 		direct: true,
 		clearTime: true,

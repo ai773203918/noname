@@ -598,6 +598,7 @@ const characters = {
 		hp: 3,
 		skills: ["twweipo", "mjchenshi", "twmouzhi"],
 		dieAudios: ["sp_xunchen"],
+		clans: ["颍川荀氏"],
 	},
 	tw_jiangqing: {
 		sex: "male",
