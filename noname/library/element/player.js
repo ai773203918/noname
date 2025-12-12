@@ -478,7 +478,7 @@ export class Player extends HTMLDivElement {
 		}
 		const keys = get.canRespond(evt.card);
 		if (get.type(evt?.card) == "trick") {
-			keys.addArray(get.canRespond("trcik"));
+			keys.addArray(get.canRespond("trick"));
 		}
 		if (get.tag(evt?.card, "damage")) {
 			keys.addArray(get.canRespond("damage"));
@@ -10397,6 +10397,7 @@ export class Player extends HTMLDivElement {
 			}
 			if (info.round && player.storage[skill + "_roundcount"]) {
 				delete player.storage[skill + "_roundcount"];
+				player.unmarkSkill(skill + "_roundcount");
 				resetSkills.add(skill);
 			}
 			if (player.storage[`temp_ban_${skill}`]) {
