@@ -1286,8 +1286,16 @@ const skills = {
 		locked: false,
 		popup: false,
 		group: "olhuoji_viewAs",
-		content() {
-			trigger.setContent(lib.skill.olhuoji.huogongContent);
+		async content(event, trigger, player) {
+			trigger.set("chooseToShow", async (event, player, target) => {
+				const { showPosition = "h" } = event;
+				const cards = target.getCards(showPosition).randomGets(1);
+				return { bool: true, cards: cards };
+			});
+			trigger.set("filterDiscard", card => {
+				const { cards2 } = get.event().getParent();
+				return get.color(card) == get.color(cards2[0]);
+			})
 		},
 		async huogongContent(event, trigger, player) {
 			const { target } = event;
