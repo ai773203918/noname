@@ -21,20 +21,16 @@ const skills = {
 			player: "useCardAfter",
 		},
 		filter(event, player) {
-			if (event.card.name == "sha") {
-				return !player.hasSkill("olsbliduan_trick");
-			}
-			if (get.type2(event.card) == "trick") {
-				return !player.hasSkill("olsbliduan_sha");
-			}
-			return false;
+			return event.card.name == "sha" || get.type2(event.card) == "trick";
 		},
 		async content(event, trigger, player) {
 			if (trigger.card.name == "sha") {
 				player.addSkill("olsbliduan_trick");
+				player.addMark("olsbliduan_trick", 1, false);
 			}
 			if (get.type2(trigger.card) == "trick") {
 				player.addSkill("olsbliduan_sha");
+				player.addMark("olsbliduan_sha", 1, false);
 			}
 		},
 		subSkill: {
@@ -48,7 +44,9 @@ const skills = {
 				filter(event, player) {
 					return event.card.name == "sha";
 				},
+				onremove: true,
 				async content(event, trigger, player) {
+					const num = player.countMark(event.name);
 					player.removeSkill(event.name);
 					const { card, targets } = trigger;
 					const info = get.info(card);
@@ -62,7 +60,7 @@ const skills = {
 							})
 						) {
 							const result = await player
-								.chooseTarget(`戾断：可以为${get.translation(card)}额外选择一个目标`, (_, player, target) => {
+								.chooseTarget(`戾断：可以为${get.translation(card)}额外选择至多${num}个目标`, [1, num], (_, player, target) => {
 									const { card, targets } = get.event();
 									return !targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
 								})
@@ -84,7 +82,7 @@ const skills = {
 				mark: true,
 				marktext: "杀",
 				intro: {
-					content: "你使用的下张【杀】目标+1",
+					content: "你使用的下张【杀】目标+#",
 				},
 			},
 			trick: {
@@ -94,7 +92,7 @@ const skills = {
 				},
 				marktext: "锦",
 				intro: {
-					content: "你使用的下张锦囊牌目标+1",
+					content: "你使用的下张锦囊牌目标+#",
 				},
 			},
 		},
@@ -145,7 +143,7 @@ const skills = {
 			const sourcex = player;
 			source
 				.when({
-					global: ["phaseBeforeStart", "phaseAfter"],
+					global: ["phaseBeforeStart", "phaseAfter", "phaseEnd"],
 					player: "useCard",
 				})
 				.filter(evt => true)
@@ -180,6 +178,12 @@ const skills = {
 								await action[1]();
 							}
 						});
+					}
+					else if (event.triggername == "phaseEnd") {
+						const sha = get.autoViewAs({ name: "sha", isCard: true });
+						if (player.hasUseTarget(sha, true, false)) {
+							await player.chooseUseTarget(sha, true, false);
+						}
 					}
 				});
 		},
@@ -4215,7 +4219,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const { targets, cards: links } = event;
 			await player.showCards(links, get.translation(player) + "发动了【" + get.translation(event.name) + "】");
-			const gain_list = targets.map((target, i) => [target, [links[i]]]);
+			const gain_list = targets.reduce((list, target, i) => {
+				const card = links[i];
+				if (get.owner(card) == player && "he".includes(get.position(card))) {
+					return [...list, [target, card]];
+				}
+				return list;
+			}, []);
 			await game
 				.loseAsync({
 					gain_list: gain_list,

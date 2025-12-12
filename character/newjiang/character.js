@@ -30,7 +30,7 @@ const characters = {
 	v_sunce: {
 		sex: "male",
 		group: "wu",
-		hp: 4,
+		hp: 5,
 		skills: ["dczhifeng", "dcweijing"],
 	},
 	yao_yuanshu: {
