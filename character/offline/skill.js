@@ -13103,6 +13103,52 @@ const skills = {
 	hschenzhi: {
 		//初始化扑克牌堆
 		init(player, skill) {
+			if (!lib.commonArea.has("pokerPile")) {
+				lib.commonArea.set("pokerPile", {
+					translate: "扑克牌堆",
+					areaStatusName: "pokerPile",
+					isUnseen: true,
+					toName: "toPokerPile",
+					fromName: "fromPokerPile",
+					async addHandeler(event, trigger, player) {
+						const { cards } = event;
+						_status.pokerPile.addArray(
+							cards.filter(function (card) {
+								return !card.willBeDestroyed("pokerPile", null, event.relatedEvent);
+							})
+						);
+						lib.skill.hschenzhi.update();
+					},
+					/** 处理从相应区域中移出的卡牌*/
+					async removeHandeler(event, trigger, player) {
+						_status.pokerPile.removeArray(event.cards);
+						lib.skill.hschenzhi.update();
+					},
+				})
+			}
+			if (!lib.commonArea.has("pokerDiscarded")) {
+				lib.commonArea.set("pokerDiscarded", {
+					translate: "扑克弃牌堆",
+					areaStatusName: "pokerDiscarded",
+					toName: "toPokerDiscarded",
+					fromName: "fromPokerDiscarded",
+					async addHandeler(event, trigger, player) {
+						const { cards } = event;
+						_status.pokerDiscarded.addArray(
+							cards.filter(function (card) {
+								return !card.willBeDestroyed("pokerDiscarded", null, event.relatedEvent);
+							})
+						);
+						game.log(cards, "被移入扑克弃牌堆");
+						lib.skill.hschenzhi.update();
+					},
+					/** 处理从相应区域中移出的卡牌*/
+					async removeHandeler(event, trigger, player) {
+						_status.pokerDiscarded.removeArray(event.cards);
+						lib.skill.hschenzhi.update();
+					},
+				})
+			}
 			player.addSkill("poker_record");
 			if (!_status.pokerPile) {
 				lib.skill[skill].initPile();
@@ -13130,38 +13176,24 @@ const skills = {
 		},
 		//初始化牌堆
 		initPile(nocardpile) {
-			const suits = lib.suit.slice().randomSort(),
+			const suits = lib.suit.slice(),
 				cards = [];
 			if (nocardpile) {
 				game.broadcastAll(() => {
-					if (!_status.pokerPile) {
-						_status.pokerPile = [];
-					}
-					if (!_status.pokerDiscarded) {
-						_status.pokerDiscarded = [];
-					}
+					_status.pokerPile ??= [];
+					_status.pokerDiscarded ??= [];
 				});
 			} else {
-				game.broadcastAll(
-					(cards, suits) => {
-						for (let suit of suits) {
-							for (let i = 1; i < 14; i++) {
-								const card = lib.skill.hschenzhi.initPoker(suit, i);
-								cards.add(card);
-							}
-						}
-						cards.randomSort();
-						if (!_status.pokerPile) {
-							_status.pokerPile = cards;
-						}
-						if (!_status.pokerDiscarded) {
-							_status.pokerDiscarded = [];
-						}
-						game.cardsGotoSpecial(cards);
-					},
-					cards,
-					suits
-				);
+				for (let suit of suits) {
+					for (let i = 1; i < 14; i++) {
+						const card = lib.skill.hschenzhi.initPoker(suit, i);
+						cards.add(card);
+					}
+				}
+				cards.randomSort();
+				_status.pokerPile ??= cards;
+				_status.pokerDiscarded ??= [];
+				game.cardsGotoSpecial(cards);
 			}
 			lib.skill.hschenzhi.update();
 		},
@@ -13174,24 +13206,18 @@ const skills = {
 				return;
 			}
 			const cards = _status.pokerPile.concat(_status.pokerDiscarded);
-			game.broadcastAll(cards => {
-				_status.pokerDiscarded = [];
-				cards.randomSort();
-				_status.pokerPile = cards;
-			}, cards);
+			_status.pokerDiscarded = [];
+			cards.randomSort();
+			_status.pokerPile = cards;
 			lib.skill.hschenzhi.update();
 		},
 		//更新扑克牌堆
-		update(discarded, nobroadcast) {
-			if (discarded?.length) {
-				game.broadcastAll(list => {
-					_status.pokerDiscarded.addArray(list);
-					game.log(list, "移入专属弃牌堆");
-				}, discarded);
-			}
-			if (!nobroadcast) {
-				game.filterPlayer(target => target.hasSkill("poker_record")).forEach(target => target.markSkill("poker_record"));
-			}
+		update() {
+			game.broadcast((pile, discard) => {
+				_status.pokerPile = pile;
+				_status.pokerDiscarded = discard;
+			},_status.pokerPile, _status.pokerDiscarded);
+			game.filterPlayer(target => target.hasSkill("poker_record")).forEach(target => target.markSkill("poker_record"));
 		},
 		//从扑克牌堆获得牌
 		getCards(num) {
@@ -13209,10 +13235,7 @@ const skills = {
 				if (!_status.pokerPile.length) {
 					break;
 				}
-				game.broadcastAll(() => {
-					_status.onePoker = _status.pokerPile.shift();
-				});
-				const cardx = _status.onePoker;
+				const cardx = _status.pokerPile.shift();
 				if (!cardx) {
 					break;
 				}
@@ -13220,11 +13243,11 @@ const skills = {
 				list.push(cardx);
 				num--;
 			}
+			list.slice().reverse().forEach(card => _status.pokerPile.unshift());
 			//数量不够，用牌堆补一下
 			if (num > 0) {
-				list.addArray(get.cards(num));
+				list.addArray(get.cards(num, true));
 			}
-			delete _status.onePoker;
 			lib.skill.hschenzhi.update();
 			return list;
 		},
@@ -13235,14 +13258,10 @@ const skills = {
 				return;
 			}
 			if (noinsert) {
-				game.cardsGotoSpecial(card);
-				//更新弃牌堆
-				lib.skill.hschenzhi.update([card]);
+				game.cardsGotoSpecial(card, "toPokerDiscarded");
 			} else {
 				ui.special.appendChild(card);
-				game.broadcastAll(card => {
-					_status.pokerPile.splice(get.rand(0, _status.pokerPile.length - 1), 0, card);
-				}, card);
+				_status.pokerPile.splice(get.rand(0, _status.pokerPile.length - 1), 0, card);
 				lib.skill.hschenzhi.update();
 			}
 		},

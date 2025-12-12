@@ -882,6 +882,7 @@ export class Library {
 		["挟令", "挟天子以令诸侯"],
 		["霹雳投石车", "霹雳车"],
 		["金箍棒", "如意金箍棒"],
+		["扑克", ""],
 	]);
 	/**
 	 * the cards which can respond card
