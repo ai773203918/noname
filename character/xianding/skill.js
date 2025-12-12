@@ -8706,7 +8706,7 @@ const skills = {
 					if (target !== source) {
 						return false;
 					}
-					return lib.filter.filterTarget.apply(this, arguments);
+					return lib.filter.targetEnabled.apply(this, arguments);
 				})
 				.set("ai1", card => {
 					const player = get.player();
