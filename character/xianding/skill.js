@@ -3117,6 +3117,16 @@ const skills = {
 	dcfuhui: {
 		audio: 2,
 		enable: "chooseToUse",
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const player = event.player;
+			const used = player.getHistory("useCard", evt => {
+				return (evt.cards ?? []).length == 2;
+			}).map(evt => evt.cards.map(card => get.suit(card, player)).toUniqued());
+			event.set("usedSuit", used);
+		},
 		filter(event, player) {
 			/*if (
 				player
@@ -3188,7 +3198,28 @@ const skills = {
 			},
 			prompt(links, player) {
 				//花色各不相同的
-				return "将两张手牌当作" + get.translation(links[0][3] || "") + "【" + get.translation(links[0][2]) + "】使用";
+				let prompt = `将两张手牌当作${get.translation(links[0][3] || "")}【${get.translation(links[0][2])}】使用`,
+					prompt2 = [];
+				const used = get.event().usedSuit;
+				const suits = lib.suit.slice(0).addArray(player.getCards("hs").map(card => get.suit(card)));
+				for (const suit1 of suits) {
+					let list = [];
+					for (const suit2 of suits) {
+						const combo = [suit1, suit2].toUniqued();
+						if (used?.length && used.some(record => {
+							if (record.length != combo.length) {
+								return false;
+							}
+							return record.containsAll(...combo);
+						})) {
+							list.add(`<span style="opacity:0.5">${get.translation(suit1)}${get.translation(suit2)}</span>`);
+						} else {
+							list.add(`<span class="greentext">${get.translation(suit1)}${get.translation(suit2)}</span>`);
+						}
+					}
+					prompt2.add(`<div class="text center">${list.join(" ")}</div>`);
+				}
+				return `###${prompt}###${prompt2.join("<br>")}`;
 			},
 		},
 		hiddenCard(player, name) {

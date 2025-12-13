@@ -785,6 +785,12 @@ const skills = {
 				}
 			}
 		},
+		init(player, skill) {
+			player.addSkill(`${skill}_record`);
+		},
+		onremove(player, skill) {
+			player.removeSkill(`${skill}_record`);
+		},
 		mod: {
 			aiOrder(player, card, num) {
 				if (typeof card == "object") {
@@ -809,6 +815,63 @@ const skills = {
 			},
 		},
 		derivation: ["mbkubai"],
+		subSkill: {
+			record: {
+				charlotte: true,
+				trigger: {
+					global: "useCard1",
+				},
+				async cost(event, trigger, player) {
+					get.info(event.skill).init(player, event.skill);
+				},
+				intro: {
+					markcount() {
+						const history = game.getAllGlobalHistory("useCard");
+						if (history.length) {
+							const evt = history.at(-1);
+							if (evt) {
+								return get.translation(get.suit(evt.card));
+							}
+						}
+						return 0;
+					},
+					content() {
+						const history = game.getAllGlobalHistory("useCard");
+						if (history.length) {
+							const evt = history.at(-1);
+							if (evt) {
+								return `
+									上一张被使用的牌：${get.translation(evt.card.name)}<br>
+									花色：${get.translation(get.suit(evt.card))}<br>
+									类型：${get.translation(get.type2(evt.card))}
+								`;
+							}
+						}
+						return "无效果";
+					},
+				},
+				init(player, skill) {
+					const history = game.getAllGlobalHistory("useCard");
+					if (history.length) {
+						const evt = history.at(-1);
+						if (!evt) {
+							return;
+						}
+						player.addTip(skill, `势举 ${get.translation(evt.card.name)}${get.translation(get.suit(evt.card))}`);
+						player.markSkill(skill);
+						game.broadcastAll((evt, player) => {
+							const mark = player.marks.mbshiju_record;
+							if (mark) {
+								mark.firstChild.innerHTML = get.translation(get.type2(evt.card));
+							}
+						}, evt, player);
+					}
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
+			},
+		},
 	},
 	mbkubai: {
 		audio: 6,
