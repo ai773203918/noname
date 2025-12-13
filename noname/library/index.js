@@ -14154,6 +14154,13 @@ export class Library {
 			}
 		],
 		[
+			"数",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
 			"御",
 			{
 				color: "#f0cf13",

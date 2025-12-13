@@ -8714,7 +8714,7 @@ export class Player extends HTMLDivElement {
 				return;
 			}
 			for (let iwhile = 0; iwhile < 20; iwhile++) {
-				if (target.canAddJudge(card)) {
+				if (lib.filter.judge(card, target, target)) {
 					bool = true;
 					break;
 				}

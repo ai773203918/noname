@@ -1117,6 +1117,12 @@ const translates = {
 	mbshouyue_info: `摸牌阶段开始时，或你的体力值减少后，你可选择一项：1.摸一张牌，令一名角色获得${get.poptip("qinyin")}（已有则改为摸一张牌）；2.令一名角色复原武将牌。`,
 	mbdieyin: "叠音",
 	mbdieyin_info: "出牌阶段限一次，你可将武将牌翻至背面，于此阶段结束后执行一个指定的额外阶段。",
+	mb_liuhui: "数刘徽",
+	mb_liuhui_prefix: "数",
+	mbgeyuan: "割圆",
+	mbgeyuan_info: "当你使用点数为X的牌时（X为圆周率中小数点后第一位的值），你可以摸Y张牌并令X改为后移一位的值（Y为你本回合本技能发动的次数+1，且至多为π)。",
+	mbchongcha: "重差",
+	mbchongcha_info: "①你的点数大于等于10的牌不计入手牌上限，且使用时视为满足〖割圆〗中的点数0。②出牌阶段限一次，你可以弃置一张牌，令〖割圆〗中的X改为后移一位的值。",
 };
 
 export default translates;

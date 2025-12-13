@@ -2,6 +2,188 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//数刘徽 by流年
+	mbgeyuan: {
+		audio: 2,
+		init(player, skill) {
+			let index = 0;
+			player.setStorage(skill, index, true);
+			player.addTip(skill, `${get.translation(skill)} ${get.info(skill).getNumList(index, true)}`);
+		},
+		onremove(player, skill) {
+			player.setStorage(skill, undefined, true);
+			player.removeTip(skill);
+		},
+		mark: true,
+		marktext: "◯", //⚪
+		intro: {
+			markcount(storage) {
+				storage = storage || 0;
+				return Number(get.info("mbgeyuan").PI[storage]);
+			},
+			mark(dialog, storage, player, evt, skill) {
+				let str = get.info(skill).getNumList(storage);
+				dialog.addText(str);
+			},
+		},
+		mod: {
+			aiOrder(player, card, order) {
+				let number = get.number(card, player),
+					index = player.getStorage("mbgeyuan", 0);
+				let num = Number(get.info("mbgeyuan").PI[index]);
+				if (typeof number !== "number") {
+					return;
+				}
+				if (num == number || (player.hasSkill("mbchongcha") && num == 0 && number > 9)) {
+					return order + 10;
+				}
+			},
+			aiUseful(player, card, useful) {
+				let number = get.number(card, player),
+					index = player.getStorage("mbgeyuan", 0);
+				let num = Number(get.info("mbgeyuan").PI[index]);
+				if (typeof number !== "number") {
+					return;
+				}
+				if (num == number || (player.hasSkill("mbchongcha") && num == 0 && number > 9)) {
+					return useful + 10;
+				}
+			},
+		},
+		trigger: { player: "useCard" },
+		filter(event, player) {
+			let index = player.getStorage("mbgeyuan", 0);
+			let num = Number(get.info("mbgeyuan").PI[index]),
+				number = get.number(event.card);
+			if (num == number) {
+				return true;
+			}
+			if (typeof number == "number" && number > 9) {
+				return player.hasSkill("mbchongcha") && num == 0;
+			}
+			return false;
+		},
+		prompt2(event, player) {
+			let draw = Math.min(3, player.getHistory("useSkill", evt => evt.skill === "mbgeyuan").length + 1);
+			return `摸${get.cnNumber(draw)}张牌并调整“割圆”中X的值`;
+		},
+		frequent: "check",
+		check(event, player) {
+			return get.effect(player, { name: "draw" }, player, player) > 0;
+		},
+		async content(event, trigger, player) {
+			await player.draw(Math.min(3, player.getHistory("useSkill", evt => evt.skill === event.name).length));
+			let index = player.getStorage(event.name, 0);
+			index++;
+			const { PI, getNumList } = get.info(event.name);
+			if (index >= PI.length) {
+				index -= PI.length;
+			}
+			player.setStorage(event.name, index, true);
+			player.addTip(event.name, `${get.translation(event.name)} ${getNumList(index, true)}`);
+		},
+		getNumList(index, isTip) {
+			const { PI } = get.info("mbgeyuan");
+			index = index || 0;
+			function getNexts(index) {
+				let result = "",
+					cnt = 0;
+				while (cnt++ < 3) {
+					let index2 = index + cnt - 1;
+					if (index2 >= PI.length) {
+						index2 - PI.length;
+					}
+					result += PI[index2];
+				}
+				return result;
+			}
+			let first = isTip ? PI[index] : `<span data-nature="fire">${PI[index]}</span>`,
+				nextNums = getNexts(index + 1);
+			return first + nextNums;
+		},
+		PI: "1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679",
+	},
+	mbchongcha: {
+		audio: 2,
+		mod: {
+			ignoredHandcard(card, player) {
+				let number = get.number(card, player);
+				if (typeof number == "number" && number > 9) {
+					return true;
+				}
+			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard") {
+					let number = get.number(card, player);
+					if (typeof number == "number" && number > 9) {
+						return true;
+					}
+				}
+			},
+		},
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			if (!player.hasSkill("mbgeyuan", null, false, false)) {
+				return false;
+			}
+			return player.countDiscardableCards(player, "he") > 0;
+		},
+		position: "he",
+		filterCard: lib.filter.cardDiscardable,
+		check(card) {
+			const player = get.player();
+			let index = player.getStorage("mbgeyuan", 0);
+			const { getNumList } = get.info("mbgeyuan");
+			let next = Number(getNumList(index, true).slice(1, 2));
+			if (get.number(card, player) == next) {
+				return 0;
+			}
+			return 10 - get.value(card);
+		},
+		selectTarget: 0,
+		prompt(event) {
+			const player = get.player();
+			let index = player.getStorage("mbgeyuan", 0);
+			const { PI, getNumList } = get.info("mbgeyuan");
+			let num = PI[index],
+				next = getNumList(index, true).slice(1, 2);
+			return `弃一张牌并调整“割圆”中X的值（当前为${num}，调整后为${next}）`;
+		},
+		async content(event, trigger, player) {
+			let index = player.getStorage("mbgeyuan", 0);
+			index++;
+			const { PI, getNumList } = get.info("mbgeyuan");
+			if (index >= PI.length) {
+				index -= PI.length;
+			}
+			player.setStorage("mbgeyuan", index, true);
+			player.addTip("mbgeyuan", `${get.translation("mbgeyuan")} ${getNumList(index, true)}`);
+		},
+		ai: {
+			order(item, player) {
+				player = player || get.player();
+				let index = player.getStorage("mbgeyuan", 0),
+					hs = player.getCards("hs", card => player.getUseValue(card));
+				if (!hs.length) {
+					return 0;
+				}
+				const { getNumList } = get.info("mbgeyuan");
+				const numList = getNumList(index, true);
+				let first = Number(numList.slice(0, 1)),
+					next = Number(numList.slice(1, 2));
+				if (hs.some(card => get.number(card, player) == first)) {
+					return 0;
+				} else if (!hs.some(card => get.number(card, player) == next)) {
+					return 0;
+				}
+				return 10;
+			},
+			result: {
+				player: 1,
+			},
+		},
+	},
 	//乐周瑜
 	mbshouyue: {
 		audio: 2,
@@ -859,12 +1041,16 @@ const skills = {
 						}
 						player.addTip(skill, `势举 ${get.translation(evt.card.name)}${get.translation(get.suit(evt.card))}`);
 						player.markSkill(skill);
-						game.broadcastAll((evt, player) => {
-							const mark = player.marks.mbshiju_record;
-							if (mark) {
-								mark.firstChild.innerHTML = get.translation(get.type2(evt.card));
-							}
-						}, evt, player);
+						game.broadcastAll(
+							(evt, player) => {
+								const mark = player.marks.mbshiju_record;
+								if (mark) {
+									mark.firstChild.innerHTML = get.translation(get.type2(evt.card));
+								}
+							},
+							evt,
+							player
+						);
 					}
 				},
 				onremove(player, skill) {
