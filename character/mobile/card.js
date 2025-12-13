@@ -5,7 +5,7 @@ const cards = {
 		fullskin: true,
 		cardimage: "liulongcanjia",
 		derivation: "mb_caozhi",
-		cardcolor: "club",
+		cardcolor: "heart",
 		type: "equip",
 		subtype: "equip5",
 		skills: ["cz_liulongcanjia_skill"],

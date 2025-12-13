@@ -324,219 +324,217 @@ const skills = {
 	//御曹植
 	mbchongsi: {
 		audio: 2,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		enable: "phaseUse",
 		filter(event, player) {
 			if (player.hasSkill("mbchongsi_damage")) {
 				return false;
 			}
-			return true;
+			return game.hasPlayer(current => current != player);
 		},
-		async cost(event, trigger, player) {
-			const result = await player
-				.chooseButtonTarget({
-					createDialog: [
-						get.prompt(event.skill),
-						[
-							[
-								["sha", "使用一张【杀】"],
-								["discard", "弃置两张手牌"],
-								["damage", "对自己或装备【六龙骖驾】的角色造成1点伤害"],
-							],
-							"textbutton",
-						],
+		chooseButton: {
+			dialog(event, player) {
+				return ui.create.dialog("冲司", [
+					[
+						["sha", "使用一张【杀】"],
+						["discard", "弃置两张手牌"],
+						["damage", "对自己或装备【六龙骖驾】的角色造成1点伤害"],
 					],
-					filterButton(button) {
-						const player = get.player();
-						switch (button.link) {
-							case "sha": {
-								return player.hasUsableCard("sha", "use");
-							}
-							case "discard": {
-								return player.countDiscardableCards(player, "h") > 1;
-							}
-							default: {
-								return true;
-							}
-						}
-					},
+					"textbutton",
+				], "hidden");
+			},
+			filter(button, player) {
+				switch (button.link) {
+					case "sha": {
+						return player.hasUsableCard("sha", "use");
+					}
+					case "discard": {
+						return player.countDiscardableCards(player, "h") > 1;
+					}
+					default: {
+						return true;
+					}
+				}
+			},
+			check(button) {
+				const player = get.player();
+				switch (button.link) {
+					case "sha": {
+						const card = get.autoViewAs({ name: "sha" }, "unsure");
+						return player.getUseValue(card);
+					}
+					case "discard": {
+						return 2 * get.effect(player, { name: "guohe_copy", position: "h" }, player, player);
+					}
+					default: {
+						return 0;
+					}
+				}
+			},
+			prompt(links, player) {
+				return "执行你选择的项，并选择一名其他角色，令其也选择一项执行";
+			},
+			backup(links, player) {
+				return {
 					filterTarget: lib.filter.notMe,
-					ai1(button) {
-						const player = get.player();
-						switch (button.link) {
-							case "sha": {
-								const card = get.autoViewAs({ name: "sha" }, "unsure");
-								return player.getUseValue(card);
-							}
-							case "discard": {
-								return 2 * get.effect(player, { name: "guohe_copy", position: "h" }, player, player);
-							}
-							default: {
-								return 0;
-								/*const targets = game.filterPlayer(current => {
-									return current == player || Boolean(current.getEquip("cz_liulongcanjia"));
-								}),
-									getE = current => get.damageEffect(current, player, player);
-								return getE(targets.maxBy(getE));*/
-							}
-						}
-					},
+					ai1: () => 1,
 					ai2(target) {
 						const player = get.player();
 						const targets = game.filterPlayer(current => {
-								return current == player || Boolean(current.getEquip("cz_liulongcanjia"));
+								return current == target || Boolean(current.getEquip("cz_liulongcanjia"));
 							}),
-							getE = current => get.damageEffect(current, player, player);
-						if (getE(targets.maxBy(getE)) > 0) {
+							getE = current => get.damageEffect(current, target, target);
+						if (get.damageEffect(targets.maxBy(getE), target, player) > 0) {
 							return Math.max(0.1, get.attitude(player, target));
 						}
 						return -get.attitude(player, target);
 					},
-				})
-				.forResult();
-			if (result?.bool && result.targets?.length) {
-				event.result = {
-					bool: true,
-					targets: result.targets,
-					cost_data: result.links[0],
-				};
-			}
-		},
-		async content(event, trigger, player) {
-			const {
-				targets: [target],
-				cost_data: link,
-			} = event;
-			const func = async (current, link) => {
-				let mustDamage;
-				if (link == "sha") {
-					const { result } = await current.chooseToUse(function (card, player, event) {
-						if (get.name(card) != "sha") {
-							return false;
-						}
-						return lib.filter.filterCard.apply(this, arguments);
-					}, "冲司：使用一张杀");
-					if (!result?.bool) {
-						const result2 = await current
-							.chooseToDiscard("h", 2, "冲司：弃置两张手牌，否则你须对你或装备有【六龙骖驾】的角色造成1点伤害")
-							.set("ai", card => {
-								if (get.event("eff")) {
-									return 0;
-								}
-								return 6 - get.value(card);
-							})
-							.set(
-								"eff",
-								(() => {
-									const targets = game.filterPlayer(currentx => {
-											return currentx == current || Boolean(currentx.getEquip("cz_liulongcanjia"));
-										}),
-										getE = currentx => get.damageEffect(currentx, current, current);
-									return getE(targets.maxBy(getE)) >= 0;
-								})()
-							)
-							.forResult();
-						if (!result2?.bool) {
-							mustDamage = true;
-						}
-					}
-				}
-				if (link == "discard") {
-					const num = Math.min(2, current.countDiscardableCards(current, "h"));
-					if (num > 0) {
-						await current.chooseToDiscard("h", true, num);
-					}
-				}
-				if (link == "damage" || mustDamage) {
-					current.addSkill("mbchongsi_damage");
-					const targets = game.filterPlayer(currentx => {
-						return currentx == current || Boolean(currentx.getEquip("cz_liulongcanjia"));
-					});
-					if (targets.length) {
-						const result =
-							targets.length > 1
-								? await current
-										.chooseTarget(
-											"冲司：对你或装备有【六龙骖驾】的角色造成1点伤害",
-											(card, player, target) => {
-												return get.event("targetx").includes(target);
-											},
-											true
-										)
-										.set("targetx", targets)
-										.set("ai", target => {
-											const player = get.player();
-											return get.damageEffect(target, player, player);
+					choice: links[0],
+					async content(event, trigger, player) {
+						const {
+							targets: [target],
+						} = event;
+						const { choice: link } = get.info(event.name);
+						const func = async (current, link) => {
+							let mustDamage;
+							if (link == "sha") {
+								const { result } = await current.chooseToUse(function (card, player, event) {
+									if (get.name(card) != "sha") {
+										return false;
+									}
+									return lib.filter.filterCard.apply(this, arguments);
+								}, "冲司：使用一张杀");
+								if (!result?.bool) {
+									const result2 = await current
+										.chooseToDiscard("h", 2, "冲司：弃置两张手牌，否则你须对你或装备有【六龙骖驾】的角色造成1点伤害")
+										.set("ai", card => {
+											if (get.event("eff")) {
+												return 0;
+											}
+											return 6 - get.value(card);
 										})
-										.forResult()
-								: {
-										bool: true,
-										targets: targets,
-									};
-						if (result?.bool && result.targets?.length) {
-							current.line(result.targets);
-							const target = result.targets[0];
-							await target.damage(current);
+										.set(
+											"eff",
+											(() => {
+												const targets = game.filterPlayer(currentx => {
+														return currentx == current || Boolean(currentx.getEquip("cz_liulongcanjia"));
+													}),
+													getE = currentx => get.damageEffect(currentx, current, current);
+												return getE(targets.maxBy(getE)) >= 0;
+											})()
+										)
+										.forResult();
+									if (!result2?.bool) {
+										mustDamage = true;
+									}
+								}
+							}
+							if (link == "discard") {
+								const num = Math.min(2, current.countDiscardableCards(current, "h"));
+								if (num > 0) {
+									await current.chooseToDiscard("h", true, num);
+								}
+							}
+							if (link == "damage" || mustDamage) {
+								current.addSkill("mbchongsi_damage");
+								const targets = game.filterPlayer(currentx => {
+									return currentx == current || Boolean(currentx.getEquip("cz_liulongcanjia"));
+								});
+								if (targets.length) {
+									const result =
+										targets.length > 1
+											? await current
+													.chooseTarget(
+														"冲司：对你或装备有【六龙骖驾】的角色造成1点伤害",
+														(card, player, target) => {
+															return get.event("targetx").includes(target);
+														},
+														true
+													)
+													.set("targetx", targets)
+													.set("ai", target => {
+														const player = get.player();
+														return get.damageEffect(target, player, player);
+													})
+													.forResult()
+											: {
+													bool: true,
+													targets: targets,
+												};
+									if (result?.bool && result.targets?.length) {
+										current.line(result.targets);
+										const target = result.targets[0];
+										await target.damage(current);
+									}
+								}
+							}
+						};
+						await func(player, link);
+						const result = await target
+							.chooseButton(
+								[
+									"冲司：选择一项执行",
+									[
+										[
+											["sha", "使用一张【杀】"],
+											["discard", "弃置两张手牌"],
+											["damage", "对自己或装备【六龙骖驾】的角色造成1点伤害"],
+										],
+										"textbutton",
+									],
+								],
+								true
+							)
+							.set("filterButton", button => {
+								const player = get.player();
+								switch (button.link) {
+									case "sha": {
+										return player.hasUsableCard("sha", "use");
+									}
+									case "discard": {
+										return player.countDiscardableCards(player, "h") > 1;
+									}
+									default: {
+										return true;
+									}
+								}
+							})
+							.set("ai", button => {
+								const player = get.player();
+								switch (button.link) {
+									case "sha": {
+										const card = get.autoViewAs({ name: "sha" }, "unsure");
+										return player.getUseValue(card);
+									}
+									case "discard": {
+										return 2 * get.effect(player, { name: "guohe_copy", position: "h" }, player, player);
+									}
+									default: {
+										const targets = game.filterPlayer(current => {
+												return current == player || Boolean(current.getEquip("cz_liulongcanjia"));
+											}),
+											getE = current => get.damageEffect(current, player, player);
+										return getE(targets.maxBy(getE));
+									}
+								}
+							})
+							.forResult();
+						if (result?.bool && result.links?.length) {
+							await func(target, result.links[0]);
 						}
-					}
+					},
 				}
-			};
-			await func(player, link);
-			const result = await target
-				.chooseButton(
-					[
-						"冲司：选择一项执行",
-						[
-							[
-								["sha", "使用一张【杀】"],
-								["discard", "弃置两张手牌"],
-								["damage", "对自己或装备【六龙骖驾】的角色造成1点伤害"],
-							],
-							"textbutton",
-						],
-					],
-					true
-				)
-				.set("filterButton", button => {
-					const player = get.player();
-					switch (button.link) {
-						case "sha": {
-							return player.hasUsableCard("sha", "use");
-						}
-						case "discard": {
-							return player.countDiscardableCards(player, "h") > 1;
-						}
-						default: {
-							return true;
-						}
-					}
-				})
-				.set("ai", button => {
-					const player = get.player();
-					switch (button.link) {
-						case "sha": {
-							const card = get.autoViewAs({ name: "sha" }, "unsure");
-							return player.getUseValue(card);
-						}
-						case "discard": {
-							return 2 * get.effect(player, { name: "guohe_copy", position: "h" }, player, player);
-						}
-						default: {
-							const targets = game.filterPlayer(current => {
-									return current == player || Boolean(current.getEquip("cz_liulongcanjia"));
-								}),
-								getE = current => get.damageEffect(current, player, player);
-							return getE(targets.maxBy(getE));
-						}
-					}
-				})
-				.forResult();
-			if (result?.bool && result.links?.length) {
-				await func(target, result.links[0]);
-			}
+			},
+		},
+		ai: {
+			order(item, player) {
+				return get.order({ name: "sha"}, player) + 0.1;
+			},
+			result: {
+				player: 1,
+			},
 		},
 		subSkill: {
+			backup: {},
 			damage: {
 				charlotte: true,
 			},
@@ -662,6 +660,43 @@ const skills = {
 				const name = links[0][2];
 				return get.copy(get.info(`mbpeidong_${name}`));
 			},
+		},
+		hiddenCard(player, name) {
+			const filterCard = card => card == name,
+				filter = card => card.name == "cz_liulongcanjia";
+			if (filterCard("sha") && player.canMoveCard(false, true, player, player.getNext(), filter, false)) {
+				return true;
+			}
+			if (
+				filterCard("shan") &&
+				game.hasPlayer(current => {
+					return current != player && current.getGainableCards(player, "ej", filter).length > 0;
+				})
+			) {
+				return true;
+			}
+			if (
+				filterCard("tao") &&
+				(() => {
+					if (player.countCards("h", filter)) {
+						return true;
+					}
+					return get.cardPile2(filter);
+				})()
+			) {
+				return true;
+			}
+			if (
+				filterCard("jiu") &&
+				(() => {
+					if ("addedLiulong" in _status) {
+						return false;
+					}
+					return player.canEquip("cz_liulongcanjia", true);
+				})()
+			) {
+				return true;
+			}
 		},
 		ai: {
 			order: 6,
@@ -900,7 +935,7 @@ const skills = {
 					game.broadcastAll(() => {
 						_status.addedLiulong = true;
 					});
-					const card = game.createCard2("cz_liulongcanjia", "club", 13);
+					const card = game.createCard2("cz_liulongcanjia", "heart", 13);
 					if (player.canEquip(card, true)) {
 						player.$gain2(card, false);
 						await player.equip(card);
