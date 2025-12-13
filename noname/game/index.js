@@ -1018,6 +1018,60 @@ export class Game extends GameCompatible {
 	generateBeatmapTimeleap(bpm, beats, offset) {
 		return beats.map(value => Math.round((value * 60000) / bpm + (offset || 0)));
 	}
+	/**
+	 * 更新连接牌和显示
+	 */
+	updateConnectedCards() {
+		game.broadcast(cards => {
+			_status.sxrmConnectCards = cards;
+		}, _status.sxrmConnectCards);
+		game.players.forEach(current => {
+			if (current.hasConnectedCards()) {
+				current.markSkill("_sxrm_connect");
+			} else {
+				current.unmarkSkill("_sxrm_connect");
+			}
+		});
+	}
+	/**
+	 * 连接牌
+	 * @param { Card[] | Card } cards
+	 */
+	addConnectedCards(cards) {
+		if (get.itemtype(cards) === "card") {
+			cards = [cards];
+		}
+		const shown = cards.filter(card => get.is.connectedCard(card)),
+			hidden = cards.filter(card => !shown.includes(card));
+		if (shown.length) {
+			game.removeConnectedCards(shown);
+		}
+		if (hidden.length) {
+			_status.sxrmConnectCards.addArray(hidden);
+			game.broadcastAll(cards => {
+				cards.forEach(card => {
+					card.addGaintag("visible_sxrm_connect_tag");
+				});
+			}, cards);
+			game.updateConnectedCards();
+		}
+	}
+	/**
+	 * 重置连接牌
+	 * @param { Card[] | Card } cards
+	 */
+	removeConnectedCards(cards) {
+		if (get.itemtype(cards) === "card") {
+			cards = [cards];
+		}
+		_status.sxrmConnectCards.removeArray(cards);
+		game.broadcastAll(cards => {
+			cards.forEach(card => {
+				card.removeGaintag("visible_sxrm_connect_tag");
+			});
+		}, cards);
+		game.updateConnectedCards();
+	}
 	updateRenku() {
 		game.broadcast(function (renku) {
 			_status.renku = renku;
