@@ -453,8 +453,8 @@ export const Content = {
 		const { source, cards, log } = event;
 		const shown = cards.filter(card => get.is.connectedCard(card)),
 			hidden = cards.filter(card => !shown.includes(card));
-		event.shown = shown;
-		event.hidden = hidden;
+		event.shownCards = shown;
+		event.hiddenCards = hidden;
 		game.addConnectedCards(cards);
 		if (log) {
 			game.log(source, `连接了<span class="bluetext">${player == source ? "自己" : get.translation(player)}</span>的`, event.cards);
