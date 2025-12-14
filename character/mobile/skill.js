@@ -435,7 +435,7 @@ const skills = {
 								}
 							}
 							if (link == "damage" || mustDamage) {
-								current.addSkill("mbchongsi_damage");
+								current.addTempSkill("mbchongsi_damage", { global: "roundStart" });
 								const targets = game.filterPlayer(currentx => {
 									return currentx == current || Boolean(currentx.getEquip("cz_liulongcanjia"));
 								});
@@ -868,7 +868,7 @@ const skills = {
 				},
 				selectCard() {
 					const player = get.player(),
-						cards = player.countCards("h", card => card.name == "cz_liulongcanjia");
+						cards = player.getCards("h", card => card.name == "cz_liulongcanjia");
 					let event = _status.event,
 						evt = event;
 					if (event._backup) {
@@ -6223,7 +6223,7 @@ const skills = {
 							player.popup("预测正确", "wood");
 							game.log(player, "预测", "#y正确");
 							storage[0].push(true);
-							if (storage.filter(b => b === true).length <= 5) {
+							if (storage[0].filter(b => b === true).length <= 5) {
 								await player.draw("nodelay");
 							}
 						} else {

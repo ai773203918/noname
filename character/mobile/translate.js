@@ -1104,7 +1104,7 @@ const translates = {
 	mb_caozhi: "御曹植",
 	mb_caozhi_prefix: "御",
 	mbchongsi: "冲司",
-	mbchongsi_info: `出牌阶段，若你未选择过最后一项，你可选择一名其他角色并执行一项，然后令其选择一项执行：1.使用一张【杀】；2.弃置两张手牌；3.对自己或装备${get.poptip("cz_liulongcanjia")}的角色造成1点伤害。`,
+	mbchongsi_info: `出牌阶段，若你本轮未选择过最后一项，你可选择一名其他角色并执行一项，然后令其选择一项执行：1.使用一张【杀】；2.弃置两张手牌；3.对自己或装备${get.poptip("cz_liulongcanjia")}的角色造成1点伤害。`,
 	mbpeidong: "辔东",
 	mbpeidong_info: `你可按以下方式操作${get.poptip("cz_liulongcanjia")}并视为使用对应牌：【杀】，从装备区移动至下家；【闪】，从其他角色场上获得；【桃】，从手牌或牌堆中亮出；【酒】，从游戏外置入宝物栏。`,
 	cz_liulongcanjia: "六龙骖驾",
