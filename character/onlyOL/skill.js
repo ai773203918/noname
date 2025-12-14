@@ -5290,8 +5290,44 @@ const skills = {
 	oljulian: {
 		audio: "jsrgjulian",
 		inherit: "jsrgjulian",
+		filter(event, player) {
+			const { player: source } = event;
+			const skill = "oljulian";
+			if (source == player || source.group != "qun" || source.countMark(`${skill}_count`) >= lib.skill[skill].maxNum) {
+				return false;
+			}
+			const evt = event.getParent("phaseDraw");
+			return (!evt || evt.player != source) && event.getParent().name == "draw" && event.getParent(2).name != skill && player.hasZhuSkill(skill, event.player);
+		},
 		maxNum: 1,
 		group: "oljulian_gain",
+		subSkill: {
+			gain: {
+				audio: ["jsrgjulian3.mp3", "jsrgjulian4.mp3"],
+				trigger: { player: "phaseJieshuBegin" },
+				filter(event, player) {
+					return lib.skill["oljulian_gain"].logTarget(null, player).length;
+				},
+				prompt: "是否发动【聚敛】？",
+				prompt2: "获得其他所有群势力角色的各一张牌",
+				logTarget(event, player) {
+					return game
+						.filterPlayer(current => {
+							return current.group == "qun" && current.countGainableCards(player, "he") > 0 && current != player;
+						})
+						.sortBySeat();
+				},
+				async content(event, trigger, player) {
+					for (const target of event.targets) {
+						await player.gainPlayerCard(target, "he", true);
+					}
+				},
+			},
+			count: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
 	},
 	//闪赵云
 	ollonglin: {

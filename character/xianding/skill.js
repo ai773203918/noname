@@ -30680,7 +30680,7 @@ const skills = {
 			if (player != _status.currentPhase) {
 				return false;
 			}
-			const cards2 = get.info(this.skill_id).getCards(event, player);
+			const cards2 = get.info("youyan").getCards(event, player);
 			if (!cards2.length) {
 				return false;
 			}
@@ -30692,11 +30692,11 @@ const skills = {
 				}
 			}
 			const evt = event.getParent("phaseUse");
-			if (evt?.player == player && !player.getStorage(this.skill_id + "_used").includes(evt)) {
+			if (evt?.player == player && !player.getStorage("youyan_used").includes(evt)) {
 				return true;
 			}
 			const evtx = event.getParent("phaseDiscard");
-			if (evtx?.player == player && !player.getStorage(this.skill_id + "_used").includes(evtx)) {
+			if (evtx?.player == player && !player.getStorage("youyan_used").includes(evtx)) {
 				return true;
 			}
 			return false;
