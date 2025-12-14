@@ -1317,38 +1317,30 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		chooseButton: {
-			dialog(event, player) {
-				const cards = get.cards(5, true);
-				return ui.create.dialog("潜凶", cards, "hidden");
-			},
-			filter(button, player) {
-				return true;
-			},
-			check(button) {
-				return get.player().getUseValue(button.link);
-			},
-			backup(links) {
-				return {
-					card: links[0],
-					log: false,
-					async content(event, trigger, player) {
-						player.logSkill("twqianxiong");
-						const card = lib.skill.twqianxiong_backup.card;
-						const result = await player
-							.chooseTarget(`潜凶：将${get.translation(card)}正面向下置于一名角色的武将牌上`, true)
-							.set("ai", target => -get.attitude(get.player(), target))
-							.forResult();
-						const target = result.targets[0];
-						player.line(target);
-						game.log(player, "将一张牌正面向下置于", target, "的武将牌上");
-						await target.addToExpansion(card, player, "give").set("gaintag", ["twqianxiong"]);
-					},
-				};
-			},
-			prompt(links) {
-				return `观看牌堆顶的三张牌，将其中一张正面朝下置于一名角色的武将牌上`;
-			},
+		manualConfirm: true,
+		async content(event, trigger, player) {
+			const cards = get.cards(5, true);
+			const result = await player
+				.chooseButton(["潜凶：选择一张要扣置的牌", cards], true)
+				.set("ai", button => {
+					return get.player().getUseValue(button.link);
+				})
+				.forResult();
+			if (!result?.bool || !result.links?.length) {
+				return;
+			}
+			const card = result.links[0];
+			const result2 = await player
+				.chooseTarget(`潜凶：将${get.translation(card)}正面向下置于一名角色的武将牌上`, true)
+				.set("ai", target => -get.attitude(get.player(), target))
+				.forResult();
+			if (!result2?.bool || !result2.targets?.length) {
+				return;
+			}
+			const target = result2.targets[0];
+			player.line(target);
+			game.log(player, "将一张牌正面向下置于", target, "的武将牌上");
+			await target.addToExpansion(card, player, "give").set("gaintag", ["twqianxiong"]);
 		},
 		intro: {
 			markcount: "expansion",
