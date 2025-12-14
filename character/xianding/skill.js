@@ -172,11 +172,25 @@ const skills = {
 	dcsblingshu: {
 		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
+		onChooseToUse(event) {
+			if (game.online) {
+				return;
+			}
+			const player = event.player;
+			event.set("lingshuEnable", player.hasHistory("damage") || player.hasHistory("sourceDamage"));
+		},
+		onChooseToRespond(event) {
+			if (game.online) {
+				return;
+			}
+			const player = event.player;
+			event.set("lingshuEnable", player.hasHistory("damage") || player.hasHistory("sourceDamage"));
+		},
 		filter(event, player) {
 			if (event.type == "wuxie") {
 				return false;
 			}
-			if (player.hasHistory("damage") || player.hasHistory("sourceDamage")) {
+			if (event.lingshuEnable) {
 				return false;
 			}
 			if (
@@ -6835,7 +6849,7 @@ const skills = {
 			if (!player.hasSkill("dcyuzhi_delete") && player.countDiscardableCards(player, "e")) {
 				choices.push(`弃置一张装备区内的牌，于下次需要使用【闪】响应此【杀】时视为使用之并失去此选项至你的回合开始`);
 			}
-			choices.push(`此【杀】伤害1`);
+			choices.push(`此【杀】伤害+1`);
 			if (choices.length == 1) {
 				result = { index: 1 };
 			} else {

@@ -116,7 +116,7 @@ const skills = {
 				if (name == "phaseDiscard") {
 					let number = get.number(card, player);
 					if (typeof number == "number" && number > 9) {
-						return true;
+						return false;
 					}
 				}
 			},
@@ -194,7 +194,7 @@ const skills = {
 			return event.name != "changeHp" || event.num < 0;
 		},
 		async cost(event, trigger, player) {
-			const result = await player
+			const next = player
 				.chooseButtonTarget({
 					createDialog: [
 						get.prompt(event.skill),
@@ -241,8 +241,22 @@ const skills = {
 						}
 						return 1;
 					},
-				})
-				.forResult();
+				});
+			next.set(
+				"targetprompt2",
+				next.targetprompt2.concat([
+					target => {
+						if (!target.isIn() || ui.selected.buttons[0]?.link !== "draw") {
+							return false;
+						}
+						if (target.hasSkill("qinyin", null, null, false)) {
+							return "摸一张牌";
+						}
+						return "获得【琴音】";
+					},
+				])
+			);
+			const result = await next.forResult();
 			if (result?.bool && result.links?.length) {
 				event.result = {
 					bool: true,
