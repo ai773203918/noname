@@ -747,7 +747,7 @@ const skills = {
 						.when({ player: "phaseBegin" })
 						.filter(evt => evt.skill == event.name)
 						.step(async (event, trigger, player) => {
-							player.logSkill("mbquanchong", null, null, null, [get.rand(1, 2)]);
+							player.logSkill("mbquanchong", null, null, null, [get.rand(3, 4)]);
 							await player.loseHp();
 						})
 						.assign({ firstDo: true });
@@ -757,9 +757,7 @@ const skills = {
 	},
 	mbrenxing: {
 		audio: 2,
-		trigger: {
-			global: ["loseAfter", "loseAsyncAfter"],
-		},
+		trigger: { global: ["loseAfter", "loseAsyncAfter"] },
 		filter(event, player) {
 			if (game.players.every(target => !event.getl(target)?.cards?.length) || event.getParent("phaseDiscard", true)) {
 				return false;
@@ -772,63 +770,65 @@ const skills = {
 						}
 						return game.players.some(target => evt.getl(target)?.cards?.length);
 					})
-					.indexOf(event) == 0
+					.indexOf(event) == 0 &&
+				(_status.currentPhase?.isIn() ||
+					game.hasPlayer(current => {
+						return ["useCard", "respond"].every(key => !current.getHistory(key, evt => evt.card?.name == "sha").length) && current.countDiscardableCards(player, "he");
+					}))
 			);
 		},
 		async cost(event, trigger, player) {
-			const { bool, links, targets } = await player
-				.chooseButtonTarget({
-					createDialog: [
-						"任行：你可选择一项",
+			const { result } = await player.chooseButtonTarget({
+				createDialog: [
+					"任行：你可选择一项",
+					[
 						[
-							[
-								["draw", "你与当前回合角色各摸一张牌"],
-								["discard", "弃置一名本回合未使用或打出过【杀】的角色一张牌"],
-							],
-							"textbutton",
+							["draw", "你与当前回合角色各摸一张牌"],
+							["discard", "弃置一名本回合未使用或打出过【杀】的角色一张牌"],
 						],
+						"textbutton",
 					],
-					noShas: (() => {
-						return game.filterPlayer(current => {
-							return ["useCard", "respond"].every(key => !current.getHistory(key, evt => evt.card?.name == "sha").length);
-						});
-					})(),
-					filterButton(button) {
-						if (button.link == "discard") {
-							return get.event("noShas")?.length;
-						}
-						return true;
-					},
-					selectTarget() {
-						const link = ui.selected.buttons?.[0]?.link;
-						return link == "discard" ? 1 : -1;
-					},
-					filterTarget(card, player, target) {
-						const link = ui.selected.buttons?.[0]?.link;
-						if (link == "discard") {
-							return get.event("noShas")?.includes(target);
-						}
-						return target == _status.currentPhase || target == player;
-					},
-					ai1(button) {
-						const player = get.player();
-						const target = _status?.currentPhase;
-						if (button.link === "draw") {
-							return get.effect(target, { name: "draw" }, target, player) + get.effect(player, { name: "draw" }, player, player);
-						} else {
-							return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player, player)));
-						}
-					},
-					ai2(target) {
-						const player = get.player();
-						return get.effect(target, { name: "guohe_copy2" }, player, player);
-					},
-				})
-				.forResult();
+				],
+				noShas: (() => {
+					return game.filterPlayer(current => {
+						return ["useCard", "respond"].every(key => !current.getHistory(key, evt => evt.card?.name == "sha").length) && current.countDiscardableCards(player, "he");
+					});
+				})(),
+				filterButton(button) {
+					if (button.link == "discard") {
+						return get.event("noShas")?.length;
+					}
+					return _status.currentPhase?.isIn();
+				},
+				selectTarget() {
+					const link = ui.selected.buttons?.[0]?.link;
+					return link == "discard" ? 1 : -1;
+				},
+				filterTarget(card, player, target) {
+					const link = ui.selected.buttons?.[0]?.link;
+					if (link == "discard") {
+						return get.event("noShas")?.includes(target);
+					}
+					return target == _status.currentPhase || target == player;
+				},
+				ai1(button) {
+					const player = get.player();
+					const target = _status.currentPhase;
+					if (button.link === "draw" && target?.isIn()) {
+						return get.effect(target, { name: "draw" }, target, player) + get.effect(player, { name: "draw" }, player, player);
+					} else {
+						return Math.max(...game.filterPlayer().map(current => get.effect(current, { name: "guohe_copy2" }, player, player)));
+					}
+				},
+				ai2(target) {
+					const player = get.player();
+					return get.effect(target, { name: "guohe_copy2" }, player, player);
+				},
+			});
 			event.result = {
-				bool: bool,
-				targets: targets,
-				cost_data: links,
+				bool: result?.bool,
+				targets: result?.targets,
+				cost_data: result?.links,
 			};
 		},
 		async content(event, trigger, player) {

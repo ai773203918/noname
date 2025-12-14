@@ -1084,6 +1084,96 @@ export class Player extends HTMLDivElement {
 		};
 	}
 	/**
+	 * 让一名角色连接一名角色一些手牌
+	 */
+	connectCards() {
+		const next = game.createEvent("connectCards");
+		next.player = this;
+		for (const argument of arguments) {
+			const type = get.itemtype(argument);
+			if (type == "cards") {
+				next.cards = argument;
+			} else if (type == "card") {
+				next.cards = [argument];
+			} else if (type == "player") {
+				next.source = [argument];
+			} else if (typeof argument == "boolean") {
+				next.log = argument;
+			}
+		}
+		if (get.itemtype(next.source) != "player") {
+			next.source = _status.event.player;
+		}
+		if (get.itemtype(next.cards) != "cards") {
+			next.cards = this.getCards("h");
+		}
+		if (!next.cards.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
+		if (next.log == undefined) {
+			next.log = true;
+		}
+		next.setContent("connectCards");
+		next._args = Array.from(arguments);
+		return next;
+	}
+	/**
+	 * 让一名角色重置一名角色一些连接手牌
+	 */
+	resetConnectedCards() {
+		const next = game.createEvent("resetConnectedCards");
+		next.player = this;
+		for (const argument of arguments) {
+			const type = get.itemtype(argument);
+			if (type == "cards") {
+				next.cards = argument;
+			} else if (type == "card") {
+				next.cards = [argument];
+			} else if (type == "player") {
+				next.source = [argument];
+			} else if (typeof argument == "boolean") {
+				next.log = argument;
+			}
+		}
+		if (get.itemtype(next.source) != "player") {
+			next.source = _status.event.player;
+		}
+		if (get.itemtype(next.cards) != "cards") {
+			next.cards = this.getConnectedCards();
+		}
+		if (next.log == undefined) {
+			next.log = true;
+		}
+		if (!next.cards.length) {
+			_status.event.next.remove(next);
+			next.resolve();
+		}
+		next.setContent("resetConnectedCards");
+		next._args = Array.from(arguments);
+		return next;
+	}
+	/**
+	 * 获取角色所有的连接手牌
+	 */
+	getConnectedCards() {
+		return this.getCards("h", card => get.is.connectedCard(card));
+	}
+	/**
+	 * 获取角色所有的连接手牌数
+	 * @returns {number}
+	 */
+	countConnectedCards() {
+		return this.getConnectedCards().length;
+	}
+	/**
+	 * 判断一名角色是否拥有连接手牌
+	 * @returns {boolean}
+	 */
+	hasConnectedCards() {
+		return this.hasCard(card => get.is.connectedCard(card), "h");
+	}
+	/**
 	 * 让一名角色明置一些手牌
 	 */
 	addShownCards() {
@@ -1142,6 +1232,20 @@ export class Player extends HTMLDivElement {
 		return this.getCards("h", card => {
 			return get.is.shownCard(card);
 		});
+	}
+	/**
+	 * 获取角色所有的明置手牌数
+	 * @returns {number}
+	 */
+	countShownCards() {
+		return this.getShownCards().length;
+	}
+	/**
+	 * 判断一名角色是否拥有明置手牌
+	 * @returns {boolean}
+	 */
+	hasShownCards() {
+		return this.hasCard(card => get.is.shownCard(card), "h");
 	}
 	/**
 	 * 获取该角色被other所知的牌

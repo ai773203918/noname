@@ -15,7 +15,7 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage, player) {
-				if (!storage) {
+				if (storage) {
 					return `一名角色的回合结束时，若其本回合失去手牌数大于手牌数，你可观看牌堆顶三张牌并交给其其中一张，其失去此牌时，弃置体力值张手牌。`;
 				}
 				return `一名角色的回合结束时，若其本回合失去手牌数大于手牌数，你可观看牌堆顶三张牌并交给其其中一张，其失去此牌时，将手牌摸至体力上限（至多摸五）。`;
@@ -2309,37 +2309,33 @@ const skills = {
 			const {
 				cards: [top, bottom],
 			} = await game.cardsGotoOrdering([...get.cards(), ...get.bottomCards()]);
-			const next = player.chooseToMove(get.translation(event.name), true);
+			const next = player.chooseToMove_new(get.translation(event.name), true);
 			next.set("list", [
-				["牌堆顶", [top]],
-				["牌堆底", [bottom]],
 				["获得", []],
+				[["牌堆顶", [top]], ["牌堆底", [bottom]]],
 			]);
-			next.set("filterOk", moved => {
-				return !moved[1].length;
-			});
 			next.set("processAI", list => {
 				let player = get.player(),
 					trigger = get.event().getTrigger(),
-					cards = list.map(i => i[1]).flat();
+					cards = list[1].map(i => i[1]).flat();
 				//只要贪不死就往死里贪
 				if (!trigger?.judge || !trigger.player) {
-					return [[], [], cards];
+					return [cards, [], []];
 				}
 				let att = get.sgnAttitude(player, trigger.player);
 				cards.sort((a, b) => {
 					return (trigger.judge(b) - trigger.judge(a)) * att;
 				});
 				if (trigger.judge(cards[0]) > 0) {
-					return [cards, [], cards.splice(1)];
+					return [cards.slice(1), cards.slice(0, 1), []];
 				}
-				return [[], [], cards];
+				return [cards, [], []];
 			});
 			const result = await next.forResult();
 			if (!result?.bool) {
 				return;
 			}
-			const [tops, bottoms, gains] = result.moved;
+			const [gains, tops, bottoms] = result.moved;
 			if (gains.length) {
 				await player.gain(gains, "gain2");
 				const name = `${event.name}_tiandu`,
@@ -2969,8 +2965,8 @@ const skills = {
 				const { name } = evt.card;
 				const card = (event.card = { name, storage: { dcmohua: [evt, evt.player] } });
 				const next = player.chooseToUse(function (card, player, target) {
-					const { name } = get.event().cardx;
-					if (get.name(card) !== name) {
+					const { cardx } = get.event();
+					if (!cardx || get.name(card) !== cardx.name) {
 						return false;
 					}
 					return lib.filter.filterCard.apply(this, arguments);
@@ -2981,8 +2977,9 @@ const skills = {
 				next.set("complexSelect", true);
 				next.set("complexTarget", true);
 				next.set("filterTarget", function (card, player, target) {
-					const source = get.event().cardx.storage.dcmohua[1];
-					return lib.filter.filterTarget(card, source, target);
+					const { cardx } = get.event();
+					const source = cardx?.storage?.dcmohua[1];
+					return source?.isIn() && lib.filter.filterTarget(card, source, target);
 				});
 				next.set("cardx", card);
 				next.set("addCount", false);
@@ -3134,7 +3131,7 @@ const skills = {
 			const hp = player.getHp(),
 				num = player.countCards("h") - (toOther ? 1 : 0);
 			if (num > hp) {
-				return [["jiu"], player.countCards("hes", { color: "black" }) >= 2];
+				return [["jiu"], player.countCards("hes", { color: "black" }) >= 1];
 			} else if (num == hp) {
 				return [["juedou"], player.countCards("hes")];
 			}
@@ -8709,7 +8706,7 @@ const skills = {
 					if (target !== source) {
 						return false;
 					}
-					return lib.filter.filterTarget.apply(this, arguments);
+					return lib.filter.targetEnabled.apply(this, arguments);
 				})
 				.set("ai1", card => {
 					const player = get.player();
@@ -13359,8 +13356,8 @@ const skills = {
 						game.log(trigger.card, "对", player, "无效");
 						break;
 					case "防伤":
-						player.addTempSkill("dccilv_effect");
-						player.markAuto("dccilv_effect", [trigger.card]);
+						trigger.player.addTempSkill("dccilv_effect");
+						trigger.player.markAuto("dccilv_effect", [trigger.card]);
 						break;
 					case "获得":
 						player
@@ -13386,7 +13383,8 @@ const skills = {
 			effect: {
 				audio: "dccilv",
 				charlotte: true,
-				trigger: { player: "damageBegin4" },
+				onremove: true,
+				trigger: { source: "damageBegin2" },
 				filter(event, player) {
 					const evt = event.getParent(2);
 					return evt && evt.name == "useCard" && player.getStorage("dccilv_effect").includes(evt.card);
@@ -13396,8 +13394,12 @@ const skills = {
 					trigger.cancel();
 				},
 				ai: {
+					notricksource: true,
+					skillTagFilter(player, tag, arg) {
+						return player.getStorage("dccilv_effect").includes(arg.card);	
+					},
 					effect: {
-						target(card, player, target) {
+						player(card, player, target) {
 							if (player.getStorage("dccilv_effect").includes(card)) {
 								return "zeroplayertarget";
 							}
@@ -30678,7 +30680,7 @@ const skills = {
 			if (player != _status.currentPhase) {
 				return false;
 			}
-			const cards2 = get.info(this.skill_id).getCards(event, player);
+			const cards2 = get.info("youyan").getCards(event, player);
 			if (!cards2.length) {
 				return false;
 			}
@@ -30690,11 +30692,11 @@ const skills = {
 				}
 			}
 			const evt = event.getParent("phaseUse");
-			if (evt?.player == player && !player.getStorage(this.skill_id + "_used").includes(evt)) {
+			if (evt?.player == player && !player.getStorage("youyan_used").includes(evt)) {
 				return true;
 			}
 			const evtx = event.getParent("phaseDiscard");
-			if (evtx?.player == player && !player.getStorage(this.skill_id + "_used").includes(evtx)) {
+			if (evtx?.player == player && !player.getStorage("youyan_used").includes(evtx)) {
 				return true;
 			}
 			return false;

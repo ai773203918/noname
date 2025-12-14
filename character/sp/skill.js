@@ -1168,7 +1168,7 @@ const skills = {
 				.set("ai", target => {
 					const player = get.player(),
 						att = get.attitude(player, target);
-					if (player.countCards("hs", card => player.canSaveCard(card, player)) >= 1 - player.hp) {
+					if (att <= 0) {
 						return 0;
 					}
 					const ranks = target.getSkills(null, false, false).reduce((sum, name) => {
@@ -1177,7 +1177,7 @@ const skills = {
 						delete _status.event.skillRankPlayer;
 						return sum;
 					}, 1);
-					return (att + 114514) * (att > 0 ? 1 / ranks : ranks);
+					return att / ranks;
 				})
 				.set("logSkill", event.skill)
 				.forResult();

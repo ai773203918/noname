@@ -10,6 +10,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["dcsbshibian", "dcsbbibu"],
+		clans: ["陈留吴氏"],
 	},
 	dc_sb_fazheng: {
 		sex: "male",
@@ -130,6 +131,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["dcsbjunmou", "dcsbzhanyan"],
+		clans: ["吴郡陆氏"],
 	},
 	dc_sb_dengai: {
 		sex: "male",
@@ -193,6 +195,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dczhidui", "dcjiesi"],
+		clans: ["颍川钟氏"],
 	},
 	dc_xiahouhui: {
 		sex: "female",
@@ -225,6 +228,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["dcsbbizuo", "dcsbshimou"], //, "dcsbxianshi"
+		clans: ["颍川荀氏"],
 	},
 	v_dongzhuo: {
 		sex: "male",

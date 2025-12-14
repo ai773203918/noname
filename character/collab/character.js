@@ -320,6 +320,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["dcbenxi"],
+		clans: ["陈留吴氏"],
 	},
 	quyuan: {
 		sex: "male",
