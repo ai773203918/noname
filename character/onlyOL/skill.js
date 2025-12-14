@@ -742,7 +742,10 @@ const skills = {
 					if (evt.position == ui.discardPile) {
 						for (let i of evt.cards) {
 							if (get.position(i) == "d") {
-								suits.add(get.suit(i, false));
+								const suit = get.suit(i, false);
+								if (suit && lib.suit.includes(suit)) {
+									suits.add(suit);
+								}
 							}
 						}
 					}
@@ -750,7 +753,10 @@ const skills = {
 					if (evt.name == "cardsDiscard") {
 						for (let i of evt.cards) {
 							if (get.position(i) == "d") {
-								suits.add(get.suit(i, false));
+								const suit = get.suit(i, false);
+								if (suit && lib.suit.includes(suit)) {
+									suits.add(suit);
+								}
 							}
 						}
 					}

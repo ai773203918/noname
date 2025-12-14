@@ -14155,6 +14155,28 @@ export class Library {
 			}
 		],
 		[
+			"数",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
+			"御",
+			{
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
+			"手杀乐",
+			{
+				showName: "乐",
+				color: "#f0cf13",
+				nature: "shenmm",
+			}
+		],
+		[
 			"TW",
 			{
 				getSpan: () => {

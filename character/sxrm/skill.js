@@ -2604,23 +2604,11 @@ const skills = {
 			if (player != _status.currentPhase || !event.source) {
 				return false;
 			}
-			if (
-				game
-					.getGlobalHistory(
-						"everything",
-						evt => {
-							return evt.name == "damage" && evt.player == event.player;
-						},
-						event
-					)
-					.indexOf(event) != 0
-			) {
-				return false;
-			}
 			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
 				bool2 = get.sgn(event.player.hp - event.player.countCards("h"));
 			return !player.getStorage("sxrmyihe_used").includes(bool1 == bool2);
 		},
+		forced: true,
 		logTarget: "player",
 		check(event, player) {
 			let bool1 = get.sgn(event.source.hp - event.source.countCards("h")),
