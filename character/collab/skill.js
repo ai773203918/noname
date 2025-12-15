@@ -2,6 +2,380 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	liwenyupei_skill: {
+		trigger: {
+			player: ["phaseUseEnd", "phaseDrawBegin"],
+		},
+		forced: true,
+		equipSkill: true,
+		filter(event, player) {
+			const damageed = player.isDamaged();
+			if (event.name == "phaseUSe") {
+				return damageed;
+			} else {
+				return !damageed && !event.numFixed;
+			}
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "phaseUse") {
+				await player.recover();
+			} else {
+				trigger.num += 2;
+			}
+		},
+	},
+	bazhijing_skill: {
+		trigger: {
+			player: ["damageAfter", "damageBegin"],
+		},
+		equipSkill: true,
+		forced: true,
+		init(player) {
+			player.setStorage("bazhijing", []);
+		},
+		filter(event, player, triggername) {
+			if (player.hasSkillTag("unequip2")) {
+				return false;
+			}
+			if (
+				event.source &&
+				event.source.hasSkillTag("unequip", false, {
+					name: event.card ? event.card.name : null,
+					target: player,
+					card: event.card,
+				})
+			) {
+				return false;
+			}
+			const bool = player.getStorage("bazhijing").includes(event.card.name);
+			if (triggername == "damageAfter") {
+				return !bool;
+			} else {
+				return bool;
+			}
+		},
+		async content(event, trigger, player) {
+			if (event.triggername == "damageAfter") {
+				player.markAuto("bazhijing", trigger.card.name);
+			} else {
+				trigger.cancel();
+			}
+		},
+	},
+	ol_le_mojin: {
+		trigger: {
+			player: ["enterGame", "mojinSucces"],
+			global: ["phaseBefore"],
+		},
+		init(player, skill) {
+			const mojinMap = [
+				[
+					"使用至少三张非基本牌",
+					{ player: ["useCard"] },
+					(evt, player) => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) != "basic" && !player.getStorage("immojin").includes(evt));
+						return history.length >= 3;
+					},
+					player => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) != "basic");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"本回合因弃置失去至少两张牌",
+					{ player: ["loseAfter"], global: ["loseAsyncAfter"] },
+					(evt, player) => {
+						if (evt.type != "discard") {
+							return false;
+						}
+						const count = player.getHistory("lose", evt => evt.type == "diacard" && !player.getStorage("immojin").includes(evt)).reduce((num, evt) => (num += evt.hs.length), 0);
+						return count >= 2;
+					},
+					player => {
+						const history = player.getAllHistory("lose", evt => evt.type == "discard");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"使用至少两张装备牌",
+					{ player: ["useCard"] },
+					(evt, player) => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "equip" && !player.getStorage("immojin").includes(evt));
+						return history.length >= 2;
+					},
+					player => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "equip");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"使用三张基本牌",
+					{ player: ["useCard"] },
+					(evt, player) => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "basic" && !player.getStorage("immojin").includes(evt));
+						return history.length >= 3;
+					},
+					player => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "basic");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"使用两张锦囊牌",
+					{ player: ["useCard"] },
+					(evt, player) => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "trick" && !player.getStorage("immojin").includes(evt));
+						return history.length >= 2;
+					},
+					player => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "trick");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"造成至少两点伤害",
+					{ source: ["damageSource"] },
+					(evt, player) => {
+						const history = player.getAllHistory("sorceDamage", evt => evt.num >= 2 && !player.getStorage("immojin").includes(evt));
+						return history.length >= 1;
+					},
+					player => {
+						const history = player.getAllHistory("sorceDamage", evt => evt.num >= 2);
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"令一名角色进入濒死",
+					{ source: ["dying"] },
+					(evt, player) => {
+						return true;
+					},
+				],
+				[
+					"造成一点属性伤害",
+					{ source: ["damageSource"] },
+					(evt, player) => {
+						return evt.hasNature();
+					},
+				],
+				[
+					"获得一名角色至少一张牌",
+					{ player: ["gainAfter"] },
+					(evt, player) => {
+						return evt.source && evt.source != player;
+					},
+				],
+				[
+					"使用【酒】【杀】",
+					{ player: ["useCard"] },
+					(evt, player) => {
+						return evt.card.name == "sha" && evt.jiu;
+					},
+				],
+				[
+					"连续使用牌指定同一角色为目标",
+					{ player: ["useCardToPlayered"] },
+					(evt, player) => {
+						const last = player.getAllHistory("useCard").at(-2);
+						return last?.targets?.includes(evt.target);
+					},
+				],
+				[
+					"本回合获得至少四张牌",
+					{ player: ["gainAfter"] },
+					(evt, player) => {
+						const count = player.getHistory("gain", evt => !player.getStorage("immojin").includes(evt)).reduce((num, evt) => (num += evt.cards.length), 0);
+						return count >= 4;
+					},
+					player => {
+						const history = player.getAllHistory("gain");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"装备区牌数变化后最多",
+					{ player: "loseAfter", global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
+					(evt, player) => {
+						const count = player.countCards("e");
+						return !evt.immojin && player.isMaxEquip();
+					},
+				],
+				[
+					"使用至少一张延时锦囊牌",
+					{ player: ["useCard"] },
+					(evt, player) => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "delay" && !player.getStorage("immojin").includes(evt));
+						return history.length >= 1;
+					},
+					player => {
+						const history = player.getAllHistory("useCard", evt => get.type(evt.card, null, false) == "delay");
+						player.setStorage("immojin", history);
+					},
+				],
+				[
+					"一名其他角色失去最后手牌",
+					{ global: ["loseAfter", "loseAsyncAfter"] },
+					(evt, player) => {
+						return game.hasPlayer(curr => evt?.getl(curr)?.hs.length && curr.countCards("h") == 0);
+					},
+				],
+			];
+			const list = [];
+			for (let pack in lib.cardPack) {
+				//拒绝超标卡牌，从我做起
+				if (pack == "huodong" || pack == "zhanfa") {
+					continue;
+				}
+				const cards = lib.cardPack[pack].filter(card => !card.destroy);
+				list.addArray(cards);
+			}
+			player.setStorage("mojinMap", mojinMap);
+			player.setStorage("mojinAward", list);
+		},
+		marktext: "摸金",
+		intro: {
+			content(storage) {
+				return storage;
+			},
+		},
+		filter(event, player, triggername) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async cost(event, trigger, player) {
+			const list = player.getStorage("mojinMap").randomGets(3);
+			const buttons = list.map(info => [info, info[0]]);
+			const result = await player
+				.chooseButton(["选择一项进行摸金", [buttons, "textbutton"]])
+				.set("forced", true)
+				.forResult();
+			event.result = {
+				bool: result.bool,
+				confirm: result.confirm,
+				cost_data: result.links[0],
+			};
+		},
+		async content(event, trigger, player) {
+			const data = event.cost_data;
+			if (data[3]) {
+				game.broadcastAll((player, data) => data[3](player), player, data);
+			}
+			player.setStorage("ol_le_mojin", data[0]);
+			player.markSkill(event.name);
+			player
+				.when(data[1])
+				.filter(data[2])
+				.step(async (event, trigger, player) => {
+					const info = [player.getStorage("mojinAward").randomGet(), lib.suit.randomGet(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].randomGet()];
+					if (info[0] == "sha") {
+						info[3] = [...lib.nature.keys(), undefined].randomGet();
+					}
+					const card = game.createCard(...info);
+					const next = player.gain(card, "draw");
+					next.set("immojin", true);
+					if (["basic", "trick"].includes[get.type2(card.name, false)]) {
+						player.addGaintag(card, ["ol_le_mojin_directHit", "ol_le-mojin_effect"].randomGet());
+					}
+					player.chat("九九成，稀罕物");
+					await next;
+					event.trigger("mojinSucces");
+				});
+		},
+		group: ["ol_le_mojin_equip", "ol_le_mojin_effect"],
+		subSkill: {
+			equip: {
+				trigger: {
+					player: ["phaseBegin"],
+				},
+				filter(event, player) {
+					return player.hasEquipableSlot(1);
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const card = game.createCard("luoyangchan", "spade", 13);
+					await player.equip(card, "gain2");
+				},
+			},
+			effect: {
+				trigger: {
+					player: ["useCard"],
+				},
+				filter(event, player) {
+					return player.hasHistory("lose", evt => {
+						if (evt.getParent() != event || evt.type != "use") {
+							return false;
+						}
+						const list = Object.values(evt.gaintag_map).flat();
+						return list.includes("ol_le_mojin_directHit") || list.includes("ol_le_mojin_baseDamge");
+					});
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					const list = player
+						.getHistory("lose", evt => evt.getParent() == trigger && evt.type == "use")
+						.map(evt => Object.values(evt.gaintag_map))
+						.flat();
+					if (list.includes("ol_le_mojin_directHit")) {
+						trigger.directHit = true;
+					}
+					if (list.includes("ol_le_mojin_baseDamage")) {
+						trigger.baseDamage++;
+					}
+				},
+			},
+		},
+	},
+	ol_le_dingbao: {
+		enable: ["phaseUse"],
+		filterTarget: () => false,
+		limited: true,
+		selectTarget: -1,
+		filterCArd: () => false,
+		selectCard: -1,
+		filter(event, player) {
+			return player.storage.ol_le_mojin;
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const phase = get.event().getParent("phaseUse");
+			if (phase?.name == "phaseUse") {
+				phase.skipped = true;
+			}
+			const info = [player.getStorage("mojinAward").randomGet(), lib.suit.randomGet(), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].randomGet()];
+			if (info[0] == "sha") {
+				info[3] = [...lib.nature.keys(), ""].randomGet();
+			}
+			const card = game.createCard(...info);
+			const next = player.gain(card, "draw");
+			next.set("immojin", true);
+			if (["basic", "trick"].includes[get.type2(card.name, false)]) {
+				player.addGaintag(card, ["ol_le_mojin_directHit", "ol_le_mojin_effect"].randomGet());
+			}
+			player.chat("九九成，稀罕物");
+			await next;
+			event.trigger("mojinSucces");
+		},
+	},
+	luoyangchan_skill: {
+		enable: ["phaseUse"],
+		filterTarget: () => false,
+		equipSkill: true,
+		selectTarget: -1,
+		filterCard(card, player) {
+			return get.color(card, player) == "black";
+		},
+		filter(event, player) {
+			return player.countCards("he", card => get.color(card, player) == "black");
+		},
+		position: "he",
+		discard: false,
+		lose: false,
+		async content(event, trigger, player) {
+			await player.discard(event.cards);
+			const cards = player.getCards("h");
+			await player.loseToDiscardpile(cards);
+			await player.draw(cards.length);
+		},
+	},
 	//乐刘禅 ————蜀十头
 	oltuoquan: {
 		audio: 2,

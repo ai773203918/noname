@@ -645,11 +645,13 @@ const skills = {
 									skills.addArray(info.skills);
 								}
 							}
+							player.addExtraEquip(`olfuzai`, list, true);
 							if (skills.length) {
 								player.addAdditionalSkill("olfuzai", skills);
 							}
 							player.addTip("olfuzai", list.map(name => `覆载 ${get.translation(name)}`).join("\n"));
 						} else {
+							player.removeExtraEquip("olfuzai");
 							player.setStorage("olfuzai", [], true);
 							player.removeAdditionalSkill("olfuzai");
 							player.removeTip("olfuzai");
@@ -704,6 +706,7 @@ const skills = {
 							skills.addArray(info.skills);
 						}
 					}
+					player.addExtraEquip(`olfuzai`, cards, true);
 					if (skills.length) {
 						player.addAdditionalSkill("olfuzai", skills);
 					}
