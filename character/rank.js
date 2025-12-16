@@ -1072,6 +1072,7 @@ window.noname_character_rank = {
 		"ol_maliang",
 		"dc_sb_dengai",
 		"pot_huanjie",
+		"pot_zanghong",
 	],
 	b: [
 		"bozai",
@@ -3063,6 +3064,7 @@ window.noname_character_rank = {
 			"bozai",
 			"xiangjiaoduanwu",
 			"houzhaoning",
+			"pot_zanghong",
 			"yj_hanbing",
 			"yj_tengjia",
 			"two_yj_hanbing",
