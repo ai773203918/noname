@@ -14193,7 +14193,7 @@ export class Player extends HTMLDivElement {
 					} else {
 						player.node.equips.removeChild(card);
 						cardsResume.remove(card);
-						delete card.extraEqui;
+						delete card.extraEquip;
 					}
 				} else {
 					let remove = extraEquip.find(info => info[1] == extra);
