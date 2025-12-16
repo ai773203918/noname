@@ -2226,6 +2226,7 @@ window.noname_character_rank = {
 		"jsrg_liubei",
 		"tw_jsrg_liubei",
 		"pot_dengai",
+		"ol_le_caohong",
 	],
 	rarity: {
 		legend: [
@@ -4455,6 +4456,7 @@ window.noname_character_rank = {
 			"jsrg_dongzhuo",
 			"jsrg_zhanghuan",
 			"pot_dengai",
+			"ol_le_caohong",
 		],
 	},
 };
