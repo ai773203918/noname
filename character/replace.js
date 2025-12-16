@@ -155,7 +155,7 @@ window.noname_character_replace = {
 	liru: ["xin_liru", "ol_liru", "dc_liru", "re_liru", "std_liru", "yj_liru", "liru", "wild_liru"],
 	lisu: ["ol_lisu", "lisu"],
 	liuba: ["ol_liuba", "dc_liuba", "liuba", "std_liuba"],
-	liubei: ["liubei", "re_liubei", "sp_ol_liubei", "dc_liubei", "sb_liubei", "xia_liubei", "jsrg_liubei", "jd_sb_liubei", "ty_liubei", "sp_liubei", "jsp_liubei", "junk_liubei", "ps_liubei", "sxrm_liubei", "pe_jun_liubei"],
+	liubei: ["liubei", "re_liubei", "sp_ol_liubei", "dc_liubei", "sb_liubei", "xia_liubei", "jsrg_liubei", "tw_jsrg_liubei", "jd_sb_liubei", "ty_liubei", "sp_liubei", "jsp_liubei", "junk_liubei", "ps_liubei", "sxrm_liubei", "pe_jun_liubei"],
 	liubiao: ["liubiao", "ol_liubiao", "xin_liubiao", "re_liubiao", "sb_liubiao", "jsrg_liubiao", "std_liubiao", "old_liubiao", "oldre_liubiao"],
 	liuchen: ["liuchen", "re_liuchen", "std_liuchen"],
 	liufeng: ["liufeng", "re_liufeng", "huan_liufeng", "sxrm_liufeng"],

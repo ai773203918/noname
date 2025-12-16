@@ -2224,6 +2224,7 @@ window.noname_character_rank = {
 		"jsrg_qiaoxuan",
 		"jsrg_zhujun",
 		"jsrg_liubei",
+		"tw_jsrg_liubei",
 		"pot_dengai",
 	],
 	rarity: {
@@ -4448,6 +4449,7 @@ window.noname_character_rank = {
 			"jsrg_qiaoxuan",
 			"jsrg_kongrong",
 			"jsrg_liubei",
+			"tw_jsrg_liubei",
 			"jsrg_wangyun",
 			"jsrg_guojia",
 			"jsrg_dongzhuo",
