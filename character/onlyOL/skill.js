@@ -2861,7 +2861,9 @@ const skills = {
 							.step(async (event, trigger, player) => {
 								player.$throw(cards, 1000);
 								game.log(player, "弃置了", "#g牌堆", "的", cards);
-								trigger.setContent("cardsDiscard");
+								trigger.setContent(async (event, trigger, player) => {
+									await game.cardsDiscard(event.cards)
+								});
 							});
 					} else {
 						evt.goto(0);
