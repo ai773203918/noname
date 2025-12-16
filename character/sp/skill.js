@@ -10192,6 +10192,12 @@ const skills = {
 	olzhanjin: {
 		audio: 2,
 		locked: true,
+		init(player, skill) {
+			player.addExtraEquip(skill, "guanshi", true, player => player.hasEmptySlot(1) && lib.card.guanshi);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		group: "olzhanjin_guanshi",
 		subSkill: {
 			guanshi: {
@@ -10199,12 +10205,6 @@ const skills = {
 				nobracket: true,
 				equipSkill: true,
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
-				init(player, skill) {
-					player.addExtraEquip(skill, "guanshi", true, player => player.hasEmptySlot(1) && lib.card.guanshi);
-				},
-				onremove(player, skill) {
-					player.removeExtraEquip(skill);
-				},
 				filter(event, player) {
 					if (!player.hasEmptySlot(1) || !lib.card.guanshi || player.hasSkillTag("unequip_equip1")) {
 						return false;
