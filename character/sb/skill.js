@@ -25,7 +25,7 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "player",
-		usable: 1,
+		usable: 2,
 		logAudio: () => ["sbwushuang4.mp3", "sbwushuang5.mp3"],
 		content() {
 			trigger.num++;
