@@ -4157,6 +4157,7 @@ export class Player extends HTMLDivElement {
 			handcards: this.getCards("hs"),
 			gaintag: [],
 			equips: this.getCards("e"),
+			extraEquip: this.extraEquip,
 			equips_map: this.getCards("e").reduce((map, value) => {
 				let id = value.cardid;
 				map[id] = {};
