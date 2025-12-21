@@ -13310,6 +13310,7 @@ export class Library {
 						player.seatNum = info.seatNum;
 						player.disabledSlots = info.disabledSlots;
 						player.expandedSlots = info.expandedSlots;
+						player.extraEquip = info.extraEquip;
 						player.setNickname();
 						if (info.dead) {
 							player.classList.add("dead");
@@ -13336,7 +13337,9 @@ export class Library {
 							player.$disableJudge();
 						}
 						player.$syncDisable();
-
+						if (info.extraEquip) {
+							player.$handleEquipChange();
+						}
 						player.directgain(info.handcards);
 						lib.playerOL[i] = player;
 						/*if (info.vcardsMap) {
@@ -14138,35 +14141,35 @@ export class Library {
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"射",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"书",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"数",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"御",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"手杀乐",
@@ -14174,7 +14177,7 @@ export class Library {
 				showName: "乐",
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"TW",
