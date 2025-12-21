@@ -2,7 +2,7 @@
 import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 export { onload } from "./onload.js";
-import { userAgentLowerCase, nonameInitialized, device, leaveCompatibleEnvironment } from "@/util/index.js";
+import { userAgentLowerCase, nonameInitialized, device } from "@/util/index.js";
 import * as config from "@/util/config.js";
 import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
@@ -274,13 +274,6 @@ export function tryUpdateProtocol() {
 
 // 无名杀，启动！
 export async function boot() {
-	leaveCompatibleEnvironment();
-
-	if (typeof window.cordovaLoadTimeout != "undefined") {
-		clearTimeout(window.cordovaLoadTimeout);
-		delete window.cordovaLoadTimeout;
-	}
-
 	for (const link of document.head.querySelectorAll("link")) {
 		if (link.href.includes("app/color.css")) {
 			link.remove();
@@ -319,15 +312,6 @@ export async function boot() {
 
 	// 确认手机端平台
 	lib.device = device;
-
-	// 在dom加载完后执行相应的操作
-	const waitDomLoad = new Promise(resolve => {
-		if (document.readyState !== "complete") {
-			window.onload = resolve;
-		} else {
-			resolve(void 0);
-		}
-	}).then(onWindowReady.bind(window));
 
 	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
 
@@ -606,7 +590,14 @@ export async function boot() {
 		document.addEventListener("touchmove", ui.click.windowtouchmove);
 	}
 
-	await waitDomLoad;
+	// 在dom加载完后执行相应的操作
+	await new Promise(resolve => {
+		if (document.readyState !== "complete") {
+			window.onload = resolve;
+		} else {
+			resolve(void 0);
+		}
+	});
 
 	const extensionlist = await getExtensionList();
 	if (extensionlist.length) {
@@ -1049,16 +1040,6 @@ async function loadCss() {
 	await Promise.allSettled(Object.keys(stylesLoading).map(async i => (ui.css[i] = await stylesLoading[i])));
 }
 
-/**
- * `window.onload`触发时执行的函数
- *
- * 目前无任何内容，预防以后出现需要的情况
- *
- * @deprecated
- * @return {Promise<void>}
- */
-async function onWindowReady() {}
-
 function setBackground() {
 	let htmlbg = localStorage.getItem(lib.configprefix + "background");
 	if (htmlbg) {
@@ -1105,7 +1086,7 @@ function setServerIndex() {
 function setWindowListener() {
 	window.onkeydown = function (e) {
 		if (typeof ui.menuContainer == "undefined" || !ui.menuContainer.classList.contains("hidden")) {
-			if (e.keyCode == 116 || ((e.ctrlKey || e.metaKey) && e.keyCode == 82)) {
+			if (e.code == "F5" || ((e.ctrlKey || e.metaKey) && e.code == "KeyR")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
 						var noname_inited = localStorage.getItem("noname_inited");
@@ -1126,14 +1107,14 @@ function setWindowListener() {
 				} else {
 					game.reload();
 				}
-			} else if (e.keyCode == 83 && (e.ctrlKey || e.metaKey)) {
+			} else if (e.code == "KeyS" && (e.ctrlKey || e.metaKey)) {
 				if (typeof window.saveNonameInput == "function") {
 					window.saveNonameInput();
 				}
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
-			} else if (e.keyCode == 74 && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
+			} else if (e.code == "KeyJ" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
 				lib.node.debug();
 			}
 		} else {
@@ -1143,24 +1124,24 @@ function setWindowListener() {
 				// @ts-expect-error ignore
 				dialogs[i].delete();
 			}
-			if (e.keyCode == 32) {
+			if (e.code == "Space") {
 				var node = ui.window.querySelector("pausedbg");
 				if (node) {
 					node.click();
 				} else {
 					ui.click.pause();
 				}
-			} else if (e.keyCode == 65) {
+			} else if (e.code == "KeyA") {
 				if (typeof ui.auto != "undefined") {
 					ui.auto.click();
 				}
-			} else if (e.keyCode == 87) {
+			} else if (e.code == "KeyW") {
 				if (typeof ui.wuxie != "undefined" && ui.wuxie.style.display != "none") {
 					ui.wuxie.classList.toggle("glow");
 				} else if (typeof ui.tempnowuxie != "undefined") {
 					ui.tempnowuxie.classList.toggle("glow");
 				}
-			} else if (e.keyCode == 116 || ((e.ctrlKey || e.metaKey) && e.keyCode == 82)) {
+			} else if (e.code == "F5" || ((e.ctrlKey || e.metaKey) && e.code == "KeyR")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
 						var noname_inited = localStorage.getItem("noname_inited");
@@ -1181,14 +1162,14 @@ function setWindowListener() {
 				} else {
 					game.reload();
 				}
-			} else if (e.keyCode == 83 && (e.ctrlKey || e.metaKey)) {
+			} else if (e.code == "KeyS" && (e.ctrlKey || e.metaKey)) {
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
-			} else if (e.keyCode == 74 && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
+			} else if (e.code == "KeyJ" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
 				lib.node.debug();
 			}
-			// else if(e.keyCode==27){
+			// else if(e.code=="Escape"){
 			// 	if(!ui.arena.classList.contains('paused')) ui.click.config();
 			// }
 		}
