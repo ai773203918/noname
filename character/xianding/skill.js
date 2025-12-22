@@ -2716,6 +2716,11 @@ const skills = {
 					ui.cardPile.insertBefore(tops[i], ui.cardPile.firstChild);
 				}
 			}
+			if (bottoms.length) {
+				for (let i = 0; i < bottoms.length; i++) {
+					ui.cardPile.appendChild(bottoms[i]);
+				}
+			}
 			game.updateRoundNumber();
 			await game.delay();
 		},
