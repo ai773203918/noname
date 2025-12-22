@@ -11939,7 +11939,7 @@ const skills = {
 			} else {
 				await player.gain(gains, "giveAuto");
 			}
-			const first = Array.from(map.keys())[0];
+			const first = Array.from(map.keys()).find(current => map.get(current)?.bool);
 			if (first && first.isIn()) {
 				game.log(first, "第一个写出了文章");
 				await game.delay();

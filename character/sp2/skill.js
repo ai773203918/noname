@@ -250,6 +250,7 @@ const skills = {
 				})
 				.forResult();
 			if (result2?.bool && result2.cards?.length) {
+				await player.recover();
 				player.addTempSkill(`${name}_effect`, { player: "phaseBegin" });
 				player.addMark(`${name}_effect`, num, false);
 			} else {
