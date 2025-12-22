@@ -194,54 +194,53 @@ const skills = {
 			return event.name != "changeHp" || event.num < 0;
 		},
 		async cost(event, trigger, player) {
-			const next = player
-				.chooseButtonTarget({
-					createDialog: [
-						get.prompt(event.skill),
+			const next = player.chooseButtonTarget({
+				createDialog: [
+					get.prompt(event.skill),
+					[
 						[
-							[
-								["draw", `令一名角色摸一张牌，然后其获得${get.poptip("qinyin")}（已有则改为摸一张牌）`],
-								["reset", "令一名角色复原武将牌"],
-							],
-							"textbutton",
+							["draw", `令一名角色摸一张牌，然后其获得${get.poptip("qinyin")}（已有则改为摸一张牌）`],
+							["reset", "令一名角色复原武将牌"],
 						],
+						"textbutton",
 					],
-					filterTarget: true,
-					ai1(button) {
-						const player = get.player();
-						if (button.link == "draw") {
-							return 2;
+				],
+				filterTarget: true,
+				ai1(button) {
+					const player = get.player();
+					if (button.link == "draw") {
+						return 2;
+					}
+					if (
+						game.hasPlayer(current => {
+							return get.attitude(player, current) > 0 && current.isTurnedOver();
+						})
+					) {
+						return 3;
+					}
+					return 1;
+				},
+				ai2(target) {
+					const player = get.player();
+					if (ui.selected.buttons[0]?.link == "draw") {
+						let eff = get.effect(target, { name: "draw" }, player, player);
+						if (!target.hasSkill("qinyin", null, null, false)) {
+							eff *= 1.3;
 						}
-						if (
-							game.hasPlayer(current => {
-								return get.attitude(player, current) > 0 && current.isTurnedOver();
-							})
-						) {
-							return 3;
-						}
-						return 1;
-					},
-					ai2(target) {
-						const player = get.player();
-						if (ui.selected.buttons[0]?.link == "draw") {
-							let eff = get.effect(target, { name: "draw" }, player, player);
-							if (!target.hasSkill("qinyin", null, null, false)) {
-								eff *= 1.3;
-							}
-							return eff;
-						}
-						if (get.attitude(player, target) <= 0) {
-							return 0;
-						}
-						if (target.isTurnedOver()) {
-							return 2;
-						}
-						if (target.isLinked()) {
-							return 1.5;
-						}
-						return 1;
-					},
-				});
+						return eff;
+					}
+					if (get.attitude(player, target) <= 0) {
+						return 0;
+					}
+					if (target.isTurnedOver()) {
+						return 2;
+					}
+					if (target.isLinked()) {
+						return 1.5;
+					}
+					return 1;
+				},
+			});
 			next.set(
 				"targetprompt2",
 				next.targetprompt2.concat([
@@ -347,14 +346,18 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog("冲司", [
+				return ui.create.dialog(
+					"冲司",
 					[
-						["sha", "使用一张【杀】"],
-						["discard", "弃置两张手牌"],
-						["damage", "对自己或装备【六龙骖驾】的角色造成1点伤害"],
+						[
+							["sha", "使用一张【杀】"],
+							["discard", "弃置两张手牌"],
+							["damage", "对自己或装备【六龙骖驾】的角色造成1点伤害"],
+						],
+						"textbutton",
 					],
-					"textbutton",
-				], "hidden");
+					"hidden"
+				);
 			},
 			filter(button, player) {
 				switch (button.link) {
@@ -536,12 +539,12 @@ const skills = {
 							await func(target, result.links[0]);
 						}
 					},
-				}
+				};
 			},
 		},
 		ai: {
 			order(item, player) {
-				return get.order({ name: "sha"}, player) + 0.1;
+				return get.order({ name: "sha" }, player) + 0.1;
 			},
 			result: {
 				player: 1,
@@ -23158,13 +23161,13 @@ const skills = {
 	},
 	fengji: {
 		audio: 2,
-		trigger: { player: "phaseZhunbeiBegin" },
+		trigger: { player: "phaseBegin" },
 		forced: true,
 		filter(event, player) {
 			return typeof player.storage.fengji == "number" && player.countCards("h") >= player.storage.fengji;
 		},
 		content() {
-			player.draw(2);
+			player.draw(3);
 			player.addTempSkill("fengji3");
 		},
 		group: "fengji2",
@@ -23197,17 +23200,17 @@ const skills = {
 		filter(event, player) {
 			return player.countCards("he") > 0;
 		},
-		filterCard: true,
-		position: "he",
+		//filterCard: true,
+		//position: "he",
 		filterTarget(card, player, target) {
 			if (!["identity", "doudizhu"].includes(get.mode()) && target.isFriendOf(player)) {
 				return false;
 			}
 			return target != player;
 		},
-		check(card) {
+		/*check(card) {
 			return 6 - get.value(card);
-		},
+		},*/
 		content() {
 			"step 0";
 			player.addSkill("zhouxuan2");
