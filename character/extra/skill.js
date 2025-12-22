@@ -66,8 +66,9 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const { cards } = trigger;
-					const types = cards.map(card => get.type2(card)).unique();
-					await player.draw(types.length);
+					await player.draw();
+					//const types = cards.map(card => get.type2(card)).unique();
+					//await player.draw(types.length);
 				}
 			},
 			gain: {
