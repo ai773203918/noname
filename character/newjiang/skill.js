@@ -672,13 +672,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const type = get.subtype(event.cards[0]);
 			if (type == "equip1") {
-				player.addTempSkill("cuiren_effect1", { player: "phaseBegin" });
+				player.addTempSkill("cuiren_effect1");
 			} else if (type == "equip2") {
-				player.addTempSkill("cuiren_effect2", { player: "phaseBegin" });
+				player.addTempSkill("cuiren_effect2");
 			} else if (parseInt(type.slice(-1)) > 4) {
 				player.popup("杯具");
 			} else {
-				player.addTempSkill("cuiren_effect3", { player: "phaseBegin" });
+				player.addTempSkill("cuiren_effect3");
 			}
 		},
 		subSkill: {

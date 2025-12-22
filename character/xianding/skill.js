@@ -3518,13 +3518,14 @@ const skills = {
 				charlotte: true,
 				trigger: { player: "useCardBefore" },
 				filter(event, player) {
-					var source = event.card.storage?.dcmohua?.[1];
+					const evt = event.getParent(2);
+					const source = evt?.card?.storage?.dcmohua?.[1];
 					return get.itemtype(source) === "player" && source.isIn();
 				},
 				silent: true,
 				firstDo: true,
 				async content(event, trigger, player) {
-					trigger.player = trigger.card.storage.dcmohua[1];
+					trigger.player = trigger.getParent(2).card.storage.dcmohua[1];
 					trigger.noai = true;
 				},
 				group: "dcmohua_draw",
@@ -3534,16 +3535,18 @@ const skills = {
 				trigger: { global: "useCard" },
 				filter(event, player) {
 					let evt = event.getParent(2);
-					if (!Array.isArray(event.targets) || evt.name !== "dcmohua" || evt.player !== player) {
+					if (!event.targets?.length || evt.name !== "dcmohua" || evt.player !== player) {
 						return false;
 					}
 					evt = evt.card.storage.dcmohua[0];
-					return Array.isArray(evt.targets) && evt.targets.length === event.targets.length && evt.targets.every(i => event.targets.includes(i));
+					return evt.targets?.length && evt.targets.containsSome(...event.targets);
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					await player.draw(trigger.targets.length);
+					const evt = trigger.getParent(2);
+					const targets = evt.card.storage.dcmohua[0].targets.filter(target => trigger.targets.includes(target));
+					await player.draw(targets.length);
 				},
 			},
 		},

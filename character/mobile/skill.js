@@ -4960,10 +4960,10 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return player.countCards("h") && game.hasPlayer(current => current.countCards("h") && current != player);
+			return player.countCards("h") && game.hasPlayer(current => current != player);
 		},
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h");
+			return target != player;
 		},
 		filterCard: true,
 		discard: false,
@@ -4973,7 +4973,21 @@ const skills = {
 		async content(event, trigger, player) {
 			const card = event.cards[0],
 				target = event.target;
-			if (!target.countCards("h")) {
+			if (!target.countCards("h")) {//神秘结算之空城即背水
+				player.$throw(card);
+				await player.showCards(card, get.translation(player) + "发动了【劲镞】");
+				await player.modedDiscard(card);
+				if (!player.hasSkill("mbjinzu_used")) {
+					const stat = player.getStat().skill;
+					if (stat.mbjinzu) {
+						delete stat.mbjinzu;
+					}
+				}
+				const skill = "mbjinzu_effect";
+				player.addTempSkill(skill);
+				const list = player.getStorage(skill);
+				list.push(target);
+				player.setStorage(skill, list, true);
 				return;
 			}
 			const result =
@@ -4990,7 +5004,7 @@ const skills = {
 			player.$throw(card);
 			target.$throw(result.cards);
 			game.log(player, "展示了", player, "的", card, "和", target, "的", result.cards);
-			await player.showCards(cards, get.translation(player) + "发动了【劲镞】");
+			await player.showCards(cards, get.translation(player) + "发动了【劲镞】").set("log", false);
 			const numbers = cards.map(card => get.number(card)).toUniqued(),
 				min = Math.min(...numbers),
 				max = Math.max(...numbers),
@@ -5014,8 +5028,11 @@ const skills = {
 				}
 			}
 			if (result.cards.some(cardx => get.number(cardx) <= number) && result.cards.some(cardx => get.number(cardx) >= number)) {
-				player.addTempSkill("mbjinzu_effect");
-				player.markAuto("mbjinzu_effect", target);
+				const skill = "mbjinzu_effect";
+				player.addTempSkill(skill);
+				const list = player.getStorage(skill);
+				list.push(target);
+				player.setStorage(skill, list, true);
 			}
 		},
 		subSkill: {
@@ -5040,17 +5057,28 @@ const skills = {
 					return player.getStorage("mbjinzu_effect").length;
 				},
 				intro: {
-					content: "使用的下一张杀对$伤害+1且其不可响应",
+					nocount: true,
+					content(storage, player) {
+						if (!storage?.length) {
+							return "无效果";
+						}
+						const targets = storage.toUniqued();
+						return `使用的下一张杀令下列角色不可响应，且造成伤害增加：<br>${targets.map(target => {
+							const count = storage.filter(current => current == target).length;
+							return `${get.translation(target)}：${count}`;
+						}).join("<br>")}`;
+					},
 				},
 				forced: true,
 				charlotte: true,
 				async content(event, trigger, player) {
 					if (trigger.name == "damage") {
-						trigger.num++;
+						const count = trigger.getParent("useCard", true).jinzuEffect.filter(current => current == trigger.player).length;
+						trigger.num += count;
 					} else {
 						trigger.directHit.addArray(player.getStorage("mbjinzu_effect"));
 						trigger.jinzuEffect = player.getStorage("mbjinzu_effect").slice(0);
-						player.unmarkAuto("mbjinzu_effect", player.getStorage("mbjinzu_effect"));
+						player.setStorage(event.name, null, true);
 					}
 				},
 			},
