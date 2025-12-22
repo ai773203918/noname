@@ -1164,6 +1164,11 @@ const translates = {
 	hefeizheji_info: `①装备区有“陷坚”牌的角色使用【杀】指定目标后，你对其发动一次其选择选项的${get.poptip("hefeixianjian")}。②有角色失去装备栏里的一张“陷坚”牌后，你对其造成1点伤害。`,
 	hefeiheyuyuejin: "合御",
 	hefeiheyuyuejin_info: `锁定技，①若${get.poptip("characterx_hefei_zhangliao")}在场且与你阵营相同，你发动过${get.poptip("hefeixianjian")}的【杀】对一名角色造成伤害后，你可对其执行未选择的一项。②若${get.poptip("characterx_hefei_lidian")}在场且与你阵营相同，每回合首次有角色失去“陷坚”牌后，你摸一张牌。`,
+	hanxuan: "韩玄",
+	mbweizhan: "诿战",
+	mbweizhan_info: "其他角色出牌阶段开始时，若你计算与其距离为1，你可以摸一张牌并交给其至多三张牌，本回合结束时若其本回合造成伤害值：不小于X，你摸两张牌；小于X，你获得其区域里两张牌（X为你交给其的牌数）。",
+	mbyilv: "遗履",
+	mbyilv_info: "每回合限一次，一名角色使用【杀】指定你为目标后，你可与其谋奕。若你赢且你选择的选项为：“金蝉脱壳”，随机弃置其一张手牌，若为基本牌你获得之；“弃履狂奔”，此【杀】伤害-1。",
 };
 
 export default translates;

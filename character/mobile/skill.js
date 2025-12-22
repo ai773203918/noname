@@ -2,6 +2,134 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//韩玄
+	mbweizhan: {
+		audio: 2,
+		trigger: {
+			global: "phaseUseBegin",
+		},
+		filter(event, player) {
+			return event.player != player && get.distance(player, event.player) <= 1;
+		},
+		logTarget: "player",
+		check(event, player) {
+			return get.attitude(player, event.player) > 0 || event.player.countCards("h") > 6;
+		},
+		async content(event, trigger, player) {
+			await player.draw();
+			const target = trigger.player;
+			const num = player.countGainableCards(target, "he");
+			if (num <= 0) {
+				return;
+			}
+			const result = await player
+				.chooseToGive(target, "he", [1, Math.min(3, num)], true)
+				.set("ai", card => {
+					if (ui.selected.cards.length) {
+						return 0;
+					}
+					return 6 - get.value(card);
+				})
+				.set("complexCard", true)
+				.forResult();
+			if (!result?.bool || !result.cards?.length) {
+				return;
+			}
+			const numx = result.cards.length;
+			player
+				.when({
+					global: "phaseEnd",
+				})
+				.filter(evt => evt == trigger.getParent("phase", true, true))
+				.step(async (event, trigger, player) => {
+					let damage = 0;
+					target.getHistory("sourceDamage", evt => {
+						damage += evt.num;
+					});
+					if (damage >= numx) {
+						await player.draw(2);
+					} else {
+						const num = Math.min(2, target.countGainableCards(player, "he"));
+						if (num > 0) {
+							await player.gainPlayerCard(target, "he", num, true);
+						}
+					}
+				})
+		},
+	},
+	mbyilv: {
+		audio: 4,
+		trigger: {
+			target: "useCardToPlayered",
+		},
+		logTarget: "player",
+		logAudio: () => 1,
+		filter(event, player) {
+			return player != event.player && event.card.name == "sha" && event.player.isIn();
+		},
+		check(event, player) {
+			return get.effect(player, event.card, event.player, player) <= 0;
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const result = await player
+				.chooseToDuiben(target)
+				.set("title", "谋弈")
+				.set("namelist", ["长驱直入", "无懈可击", "金蝉脱壳", "弃履狂奔"]) //应对策略不明
+				.set("translationList", [
+					`以防止${get.translation(player)}令此杀伤害-1`,
+					`以防止${get.translation(player)}令你随机弃置一张手牌`,
+					`若成功，你令${get.translation(target)}随机弃置一张手牌`,
+					`若成功，你令此杀伤害-1`])
+				.set("ai", button => {
+					return 1 + Math.random();
+				})
+				.forResult();
+			if (result.bool) {
+				if (result.player == "db_def1") {
+					const cards = target.getDiscardableCards(player, "he");
+					if (cards.length) {
+						const discards = cards.randomGets(1);
+						await target.modedDiscard(discards);
+						if (get.type(discards[0]) == "basic") {
+							await player.gain(discards, "gain2");
+						}
+					}
+				} else {
+					const skill = "mbyilv_effect";
+					target.addTempSkill(skill);
+					target.markAuto(skill, trigger.card);
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event, player) {
+					return event.card && player.getStorage("mbyilv_effect").includes(event.card);
+				},
+				direct: true,
+				firstDo: true,
+				async content(event, trigger, player) {
+					game.log(trigger.card, "造成的伤害-1");
+					trigger.num--;
+				},
+			},
+			true1: {
+				audio: "mbyilv2.mp3",
+			},
+			true2: {
+				audio: "mbyilv3.mp3",
+			},
+			false: {
+				audio: "mbyilv4.mp3",
+			},
+		},
+	},
 	//老友记dlc-合肥
 	hefeichonglei: {
 		audio: 2,

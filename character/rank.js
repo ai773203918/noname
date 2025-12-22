@@ -2159,6 +2159,7 @@ window.noname_character_rank = {
 		"jsrg_machao",
 		"jsrg_simayi",
 		"jsrg_zhaoyun",
+		"hanxuan",
 		"zhenji",
 		"zhugeliang",
 		"liubei",
@@ -4204,6 +4205,7 @@ window.noname_character_rank = {
 		junk: [
 			"yao_yuanshu",
 			"yj_chezhou",
+			"hanxuan",
 			"tw_sb_caopi",
 			"zhugejing",
 			"xia_guanyu",
