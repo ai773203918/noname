@@ -20,6 +20,7 @@ const characterSort = {
 	mobile_xlqk6: ["mb_caoxing", "mb_luyu", "mb_zhangzhi", "mb_caozhi", "mb_zhouyu", "mb_liuhui"],
 	mobile_longxue: ["mb_simazhao", "mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_jiachong"],
 	mobile_laoyouji: ["friend_zhugeliang", "friend_xushu", "friend_pangtong", "friend_cuijun", "friend_shitao"],
+	mobile_laoyouji_hefei: ["hefei_zhangliao", "hefei_lidian", "hefei_yuejin"],
 	mobile_standard: ["xin_xiahoudun", "xin_zhangfei", "old_yuanshu"],
 	mobile_shenhua_feng: ["re_xiaoqiao", "xin_zhoutai"],
 	mobile_shenhua_huo: ["re_pangtong", "re_sp_zhugeliang", "re_xunyu", "re_dianwei", "re_yanwen", "xin_yuanshao"],
@@ -72,6 +73,7 @@ const characterSortTranslate = {
 	mobile_xlqk6: "袖里乾坤·君子六艺",
 	mobile_longxue: "龙血玄黄",
 	mobile_laoyouji: "老友季",
+	mobile_laoyouji_hefei: "老友季·合肥",
 	mobile_others: "其他",
 	mobile_changshi: "十常侍单体",
 };
