@@ -14502,6 +14502,14 @@ export class Library {
 			},
 		],
 		[
+			"手杀合",
+			{
+				showName: "合",
+				color: "#AAABFF",
+				nature: "blackmm",
+			},
+		],
+		[
 			"九鼎",
 			{
 				showName: "鼎",

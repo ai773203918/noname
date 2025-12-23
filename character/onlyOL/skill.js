@@ -2688,7 +2688,11 @@ const skills = {
 								if (!player.countGainableCards(source, "he")) {
 									return 0;
 								}
-								return get.effect(player, { name: "shunshou_copy2" }, source, source) > get.effect(player, trigger.card, source, source) ? 1 : 0;
+								const eff = get.effect(player, trigger.card, source, source);
+								if (get.attitude(player, source) > 0 && eff < 0) {
+									return 0;
+								}
+								return get.effect(player, { name: "shunshou_copy2" }, source, source) > eff ? 1 : 0;
 							})
 							.set("source", player)
 							.forResult()
