@@ -931,7 +931,7 @@ const skills = {
 							evtx.targets.push(result.targets[0]);
 						}
 					}
-				}/* else if (opinion == "black") {
+				} /* else if (opinion == "black") {
 					player.tempBanSkill("olshuoyu", { player: "phaseAfter" });
 				}*/
 			});
@@ -33794,6 +33794,12 @@ const skills = {
 		trigger: {
 			player: ["loseAfter", "disableEquipAfter", "enableEquipAfter"],
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "phaseBefore"],
+		},
+		init(player, skill) {
+			player.addExtraEquip(skill, "bagua", true, player => !player.getEquips(2).length && lib.card.bagua);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
 		},
 		forced: true,
 		onremove: true,

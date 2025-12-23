@@ -873,6 +873,12 @@ const skills = {
 			player: ["loseAfter", "disableEquipAfter", "enableEquipAfter"],
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "phaseBefore"],
 		},
+		init(player, skill) {
+			player.addExtraEquip(skill, "bagua", true, player => player.hasEmptySlot(2) && lib.card.bagua);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		forced: true,
 		onremove: true,
 		derivation: "reqicai",
@@ -1295,7 +1301,7 @@ const skills = {
 			trigger.set("filterDiscard", card => {
 				const { cards2 } = get.event().getParent();
 				return get.color(card) == get.color(cards2[0]);
-			})
+			});
 		},
 		async huogongContent(event, trigger, player) {
 			const { target } = event;
@@ -17678,4 +17684,3 @@ const skills = {
 };
 
 export default skills;
- 

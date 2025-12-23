@@ -4448,6 +4448,7 @@ export default {
 						.then(() => player.removeSkill("fakehuanjia_equip2"));
 					const cards = trigger.player.getEquips(2);
 					if (cards.length) {
+						player.addExtraEquip("fakehuanjia_equip2", cards);
 						const skills = cards.reduce((list, card) => {
 							if (get.info(card) && get.info(card).skills) {
 								list.addArray(get.info(card).skills);
@@ -4481,6 +4482,7 @@ export default {
 						.then(() => player.removeSkill("fakehuanjia_equip1"));
 					const cards = trigger.target.getEquips(1);
 					if (cards.length) {
+						player.addExtraEquip("fakehuanjia_equip1", cards);
 						const skills = cards.reduce((list, card) => {
 							if (get.info(card) && get.info(card).skills) {
 								list.addArray(get.info(card).skills);
@@ -4504,6 +4506,9 @@ export default {
 				onremove: true,
 				mark: true,
 				marktext: "攻",
+				onremove(player, skill) {
+					player.removeExtraEquip(skill);
+				},
 				mod: {
 					attackRange(player, num) {
 						const targets = player.getStorage("fakehuanjia_equip1").filter(i => i.isIn());
@@ -4541,22 +4546,27 @@ export default {
 				popup: false,
 				content() {
 					const targets = player.getStorage("fakehuanjia_equip1").filter(i => i.isIn());
-					const skills = targets.reduce((list, target) => {
-						const cards = target.getEquips(1);
-						if (cards.length) {
-							const skills = cards.reduce((listx, card) => {
-								if (get.info(card) && get.info(card).skills) {
-									listx.addArray(get.info(card).skills);
+					const list = targets.reduce(
+						(list, target) => {
+							const cards = target.getEquips(1);
+							if (cards.length) {
+								list.equips.addArray(cards.map(card => card.name));
+								const skills = cards.reduce((listx, card) => {
+									if (get.info(card) && get.info(card).skills) {
+										listx.addArray(get.info(card).skills);
+									}
+									return listx;
+								}, []);
+								if (skills.length) {
+									list.skills.addArray(skills);
 								}
-								return listx;
-							}, []);
-							if (skills.length) {
-								list.addArray(skills);
 							}
-						}
-						return list;
-					}, []);
-					player.addAdditionalSkill("fakehuanjia_equip1", skills);
+							return list;
+						},
+						{ equips: [], skills: [] }
+					);
+					player.addExtraEquip("fakehuanjia_equip1", list.equips);
+					player.addAdditionalSkill("fakehuanjia_equip1", list.skills);
 				},
 			},
 			equip2: {
@@ -4564,6 +4574,9 @@ export default {
 				onremove: true,
 				mark: true,
 				marktext: "防",
+				onremove(player, skill) {
+					player.removeExtraEquip(skill);
+				},
 				intro: { content: "视为装备$的防具" },
 				trigger: {
 					global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "die"],
@@ -4590,22 +4603,27 @@ export default {
 				popup: false,
 				content() {
 					const targets = player.getStorage("fakehuanjia_equip2").filter(i => i.isIn());
-					const skills = targets.reduce((list, target) => {
-						const cards = target.getEquips(2);
-						if (cards.length) {
-							const skills = cards.reduce((listx, card) => {
-								if (get.info(card) && get.info(card).skills) {
-									listx.addArray(get.info(card).skills);
+					const list = targets.reduce(
+						(list, target) => {
+							const cards = target.getEquips(2);
+							if (cards.length) {
+								list.equips.addArray(cards.map(card => card.name));
+								const skills = cards.reduce((listx, card) => {
+									if (get.info(card) && get.info(card).skills) {
+										listx.addArray(get.info(card).skills);
+									}
+									return listx;
+								}, []);
+								if (skills.length) {
+									list.skills.addArray(skills);
 								}
-								return listx;
-							}, []);
-							if (skills.length) {
-								list.addArray(skills);
 							}
-						}
-						return list;
-					}, []);
-					player.addAdditionalSkill("fakehuanjia_equip2", skills);
+							return list;
+						},
+						{ equips: [], skills: [] }
+					);
+					player.addExtraEquip("fakehuanjia_equip1", list.equips);
+					player.addAdditionalSkill("fakehuanjia_equip1", list.skills);
 				},
 			},
 		},
@@ -5398,6 +5416,12 @@ export default {
 	gztaidan: {
 		derivation: "taipingyaoshu",
 		audio: "tianshu",
+		init(player, skill) {
+			player.addExtraEquip(skill, "taipingyaoshu", true, player => player.hasEmptySlot(2) && lib.card.taipingyaoshu && !game.hasPlayer(current => current.getEquip("taipingyaoshu")));
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		locked: true,
 		group: "gztaidan_taipingyaoshu",
 	},
@@ -13032,6 +13056,12 @@ export default {
 	},
 	gzyongsi: {
 		audio: "yongsi1",
+		init(player, skill) {
+			player.addExtraEquip(skill, "yuxi", true, player => lib.card.yuxi && !game.hasPlayer(current => current.getEquip("yuxi")));
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		group: ["gzyongsi_eff1", "gzyongsi_eff2", "gzyongsi_eff3"],
 		preHidden: ["gzyongsi_eff3"],
 		ai: {

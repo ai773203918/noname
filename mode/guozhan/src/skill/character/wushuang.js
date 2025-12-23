@@ -3212,6 +3212,12 @@ export default {
 	},
 	gz_new_weidi: {
 		audio: "drlt_weidi",
+		init(player, skill) {
+			player.addExtraEquip(skill, "yuxi", true, player => player.hasEmptySlot(5) && lib.card.yuxi && !game.hasPlayer(current => current.getEquip("yuxi")));
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		group: ["gz_new_weidi_draw", "gz_new_weidi_zhibi"],
 		ai: {
 			threaten(player, target) {
