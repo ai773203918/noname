@@ -4240,6 +4240,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), `是否为${get.translation(trigger.card)}额外指定一名目标？该角色下回合使用基本或普通锦囊牌须额外指定你为目标`, (card, player, target) => {
+					const trigger = get.event().getTrigger();
 					if (trigger.targets.includes(target)) {
 						return false;
 					}

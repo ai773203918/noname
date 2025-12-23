@@ -6027,6 +6027,7 @@ const skills = {
 				}
 				lib.translate["qiexie_" + name + "_append"] = append;
 				lib.card["qiexie_" + name] = card;
+				game.finishCard("qiexie_" + name);
 			}
 		},
 		subSkill: {
