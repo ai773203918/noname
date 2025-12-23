@@ -4503,7 +4503,10 @@ export default {
 			},
 			equip1: {
 				charlotte: true,
-				onremove: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeExtraEquip(skill);
+				},
 				mark: true,
 				marktext: "攻",
 				onremove(player, skill) {
@@ -4571,12 +4574,12 @@ export default {
 			},
 			equip2: {
 				charlotte: true,
-				onremove: true,
-				mark: true,
-				marktext: "防",
 				onremove(player, skill) {
+					delete player.storage[skill];
 					player.removeExtraEquip(skill);
 				},
+				mark: true,
+				marktext: "防",
 				intro: { content: "视为装备$的防具" },
 				trigger: {
 					global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "die"],

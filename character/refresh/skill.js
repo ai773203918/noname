@@ -877,10 +877,10 @@ const skills = {
 			player.addExtraEquip(skill, "bagua", true, player => player.hasEmptySlot(2) && lib.card.bagua);
 		},
 		onremove(player, skill) {
+			delete player.storage[skill];
 			player.removeExtraEquip(skill);
 		},
 		forced: true,
-		onremove: true,
 		derivation: "reqicai",
 		filter(event, player) {
 			if (event.name == "disableEquip" || event.name == "enableEquip") {
