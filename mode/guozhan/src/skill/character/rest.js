@@ -4509,9 +4509,6 @@ export default {
 				},
 				mark: true,
 				marktext: "攻",
-				onremove(player, skill) {
-					player.removeExtraEquip(skill);
-				},
 				mod: {
 					attackRange(player, num) {
 						const targets = player.getStorage("fakehuanjia_equip1").filter(i => i.isIn());
