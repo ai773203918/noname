@@ -226,6 +226,12 @@ const skills = {
 		trigger: {
 			player: "dying",
 		},
+		init(player, skill) {
+			player.addExtraEquip(skill, "tengjia", true, player => lib.card.tengjia);
+		},
+		onremove(player, skill) {
+			player.removeExtraEquip(skill);
+		},
 		filter(event, player) {
 			if (!event.reason) {
 				return false;

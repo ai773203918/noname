@@ -416,11 +416,11 @@ export class Player extends HTMLDivElement {
 		} else {
 			list = equip.map(card => [skill, card, preserve]);
 		}
-		player.extraEquip.add(...list);
+		player.extraEquip.addArray(list);
 		player.$handleEquipChange();
 		game.broadcast(
 			(player, list) => {
-				player.extraEquip.add(...list);
+				player.extraEquip.addArray(list);
 				player.$handleEquipChange();
 			},
 			player,
@@ -2439,6 +2439,7 @@ export class Player extends HTMLDivElement {
 			return;
 		}
 		this.$showCharacter(num, log);
+		this.$handleEquipChange();
 		var next = game.createEvent("showCharacter", false);
 		next.player = this;
 		next.num = num;
@@ -14160,6 +14161,9 @@ export class Player extends HTMLDivElement {
 		const cardsResume = cards.slice(0);
 		const extraEquip = [];
 		player.extraEquip.forEach(info => {
+			if (player.hiddenSkills.includes(info[0])) {
+				return;
+			}
 			const extra = `${get.translation(info[0])} ${get.translation(info[1])}`;
 			const subtype = get.subtype(info[1]);
 			let preserve = info[2] && !info[2](player);
@@ -14182,10 +14186,10 @@ export class Player extends HTMLDivElement {
 				}
 			}
 			if (card.extraEquip && !remove) {
-				let info = card.extraEquip,
-					preserve = card.extraEquip[2] && !card.extraEquip[2](player);
-				const disable = card.classList.contains("feichu");
-				if (!extraEquip.some(infox => infox[0][0] == info[0] && infox[0][1] == info[1]) || preserve) {
+				const info = card.extraEquip,
+					disable = card.classList.contains("feichu");
+				const extra = extraEquip.find(infox => infox.every(item => info.includes(item)));
+				if (!extra) {
 					if (disable) {
 						card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
 						delete card.extraEquip;
@@ -14193,6 +14197,8 @@ export class Player extends HTMLDivElement {
 						player.node.equips.removeChild(card);
 						cardsResume.remove(card);
 					}
+				} else {
+					extraEquip.remove(extra);
 				}
 			} else if (card.classList.contains("feichu")) {
 				let extra = extraEquip.find(info => info[2].includes("equip" + num));
