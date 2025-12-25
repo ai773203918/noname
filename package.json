@@ -14,6 +14,7 @@
         "dev": "concurrently \"tsx noname-server.cts --debug\" \"pnpm vite dev --open\"",
         "serve": "cd dist && node noname-server.cjs",
         "build": "tsx scripts/build.ts",
+        "build:types": "tsc -p tsconfig.types.json",
         "build:full": "tsx scripts/build.ts --mode full",
         "build:diff": "tsx scripts/build.ts --mode diff",
         "lint": "pnpm eslint ."
@@ -67,7 +68,6 @@
         "@types/fs-extra": "^11.0.4",
         "@types/minimist": "^1.2.5",
         "@types/node": "^25.0.3",
-        "@types/path-browserify": "^1.0.3",
         "@types/tern": "^0.23.9",
         "@types/ws": "^8.18.1",
         "@vitejs/plugin-vue": "^6.0.3",
