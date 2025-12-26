@@ -5787,6 +5787,10 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							uiintro.add('<div class="text center">（这是一张虚拟牌）</div>');
 						}
 					}
+					if (node.gaintag?.length) {
+						uiintro.add(" ");
+						uiintro.add(`<div class="text" style="display:inline">此牌标签：${get.translation(node.gaintag)}</div>`);
+					}
 				}
 				uiintro.add(ui.create.div(".placeholder.slim"));
 			}
