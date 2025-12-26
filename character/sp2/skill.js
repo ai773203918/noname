@@ -4502,19 +4502,29 @@ const skills = {
 	},
 	dcwujie: {
 		audio: 2,
-		trigger: {
+		/*trigger: {
 			global: ["discardBegin", "drawBegin"],
 		},
-		forced: true,
-		forceDie: true,
-		group: "dcwujie_inf",
 		logTarget: "player",
 		filter(event, player) {
 			return event.getParent().name == "die" && event.getParent().source == event.player && event.player != player && event.getParent().player == player;
 		},
 		content() {
 			trigger.cancel();
+		},*/
+		trigger: {
+			player: "dieBefore",
 		},
+		forced: true,
+		forceDie: true,
+		logTarget: "source",
+		filter(event, player) {
+			return get.mode() == "identity" && event.source?.isIn() && event.source != player;
+		},
+		async content(event, trigger, player) {
+			trigger.set("noDieAfter2", true);
+		},
+		group: "dcwujie_inf",
 		subSkill: {
 			inf: {
 				trigger: { player: "useCard1" },
