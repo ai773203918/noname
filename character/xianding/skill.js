@@ -5090,14 +5090,14 @@ const skills = {
 					.chooseTarget(
 						"###隽谋：是否横置一名角色？###你可横置两名角色并令此技能本阶段失效",
 						(card, player, target) => {
-							if (ui.selected.targets.length) {
-								return 0;
-							}
 							return get.event("isLinked").includes(target);
 						},
 						[1, 2]
 					)
 					.set("ai", target => {
+						if (ui.selected.targets.length) {
+							return 0;
+						}
 						return get.effect(target, { name: "tiesuo" }, get.player(), get.player());
 					})
 					.set("isLinked", targets)

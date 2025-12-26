@@ -12343,7 +12343,7 @@ const skills = {
 						player.hasUseTarget({ name: link[2], nature: link[3] }) &&
 						(get.type(link[2]) == "basic" ||
 							game.countPlayer(current => {
-								return player.canUse({ name: link[2] }, current);
+								return player.canUse({ name: link[2], nature: link[3] }, current);
 							}) <= numx)
 					);
 				})
@@ -12372,7 +12372,7 @@ const skills = {
 			if (typeof links[0] == "number") {
 				await player.draw(links[0]);
 			} else {
-				const card = get.autoViewAs({ name: links[0][2], isCard: true });
+				const card = get.autoViewAs({ name: links[0][2], nature: links[0][3], isCard: true });
 				player.markAuto(event.name, [card.name]);
 				await player.chooseUseTarget(card, true);
 			}

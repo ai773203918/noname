@@ -12114,14 +12114,14 @@ const skills = {
 						if (!Array.isArray(link)) {
 							return true;
 						}
-						return player.hasUseTarget({ name: link[2] });
+						return player.hasUseTarget({ name: link[2], nature: link[3] });
 					})
 					.set("ai", button => {
 						const { player, numx } = get.event();
 						const { link } = button;
 						const val = numx > 3 ? Math.min(1.5, 1 + (numx - 3) * 0.1) : 1;
 						if (Array.isArray(link)) {
-							if (player.getUseValue({ name: link[2] }) > 4 * val) {
+							if (player.getUseValue({ name: link[2], nature: link[3] }) > 4 * val) {
 								return 1;
 							}
 						}
@@ -12147,7 +12147,7 @@ const skills = {
 			if (typeof links[0] == "number") {
 				await player.draw(links[0]);
 			} else {
-				const card = get.autoViewAs({ name: links[0][2], isCard: true });
+				const card = get.autoViewAs({ name: links[0][2], nature: links[0][3], isCard: true });
 				player.markAuto(event.name, [card.name]);
 				await player.chooseUseTarget(card, true);
 			}
