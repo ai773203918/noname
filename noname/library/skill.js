@@ -1967,9 +1967,8 @@ export default {
 				return _status._rest_return?.[player.playerid].count || 0;
 			},
 			content(storage, player) {
-				const map = _status._rest_return?.[player.playerid];
-				const { type, count } = map;
-				if (!count || !map) {
+				const { type, count } = _status._rest_return?.[player.playerid] || {};
+				if (!count) {
 					return `无限休整中，撅醒时机未知`;
 				}
 				return `还需休整${count}${type == "phase" ? "回合" : "轮"}`;
