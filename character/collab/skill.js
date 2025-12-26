@@ -2,6 +2,84 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//魔白马
+	dmchongqi: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayered",
+		},
+		usable: 1,
+		filter(event, player) {
+			return event.card.name == "sha" && event.target.countDiscardableCards(player, "he");
+		},
+		check(event, player) {
+			return get.effect(event.target, { name: "guohe_copy2" }, player, player) > 0;
+		},
+		logTarget: "target",
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			if (target.countDiscardableCards(player, "he")) {
+				await player.discardPlayerCard(target, "he", true);
+			}
+			if (player.inRange(target) && !target.inRange(player)) {
+				game.log(player, "触发了", "#y游击", "效果");
+				player.popup("游击", "fire");
+				const evt = trigger.getParent();
+				evt.baseDamage ??= 1;
+				evt.baseDamage++;
+			}
+		},
+	},
+	dmfanquan: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+		},
+		filter(event, player) {
+			return game.hasPlayer(current => current != player);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
+					const eff = get.damageEffect(target, player, player);
+					if (player.inRange(target) && target.inRange(player)) {
+						return eff * 2;
+					}
+					return eff;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await target.damage();
+			if (player.inRange(target) && target.inRange(player)) {
+				game.log(player, "触发了", "#y搏击", "效果");
+				player.popup("搏击", "fire");
+				if (trigger.num > 0) {
+					await target.damage(trigger.num);
+				}
+				const skill = "dmfanquan_range";
+				player.addTempSkill(skill);
+				player.addMark(skill, 1, false);
+			}
+		},
+		subSkill: {
+			range: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "计算与其他角色的距离+#",
+				},
+				mod: {
+					globalFrom(from, to, distance) {
+						return distance + from.countMark("dmfanquan_range");
+					},
+				},
+			},
+		},
+	},
 	bachiqionggouyu_skill: {
 		trigger: {
 			player: ["phaseUseEnd", "phaseDrawBegin"],
