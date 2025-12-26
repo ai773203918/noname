@@ -1,7 +1,7 @@
 import { normalizePath, Plugin } from "vite";
 import fs from "fs";
 import path from "path";
-import { createRequire } from 'module';
+import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 export default function vitePluginJIT(importMap: Record<string, string> = {}): Plugin {
@@ -35,6 +35,11 @@ export default function vitePluginJIT(importMap: Record<string, string> = {}): P
 			fs.writeFileSync(
 				gameJs,
 				`"use strict"
+
+if (location.protocol.startsWith("file")) {
+	alert("您使用的浏览器或客户端正在使用不受支持的file协议运行无名杀\n请检查浏览器或客户端是否需要更新");
+	return;
+}
 			
 const im = document.createElement("script");
 im.type = "importmap";
@@ -51,8 +56,19 @@ document.head.appendChild(script);
 
 		transformIndexHtml(html) {
 			if (!isBuild) return;
-			const script = `<script type="importmap">\n${JSON.stringify({ imports: resolvedImportMap }, null, 2)}\n</script>`;
-			return html.replace("</head>", `${script}\n</head>`);
+			return {
+				html,
+				tags: [
+					{
+						tag: "script",
+						attrs: {
+							type: "importmap",
+						},
+						children: JSON.stringify({ imports: resolvedImportMap }, null, 2),
+						injectTo: "head-prepend",
+					},
+				],
+			};
 		},
 	};
 }

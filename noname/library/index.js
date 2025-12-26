@@ -8623,7 +8623,7 @@ export class Library {
 		},
 	};
 	/**
-	 * @type {import('path-browserify')}
+	 * @type {import('path-browserify-esm')}
 	 */
 	// @ts-expect-error ignore
 	path = {};
@@ -10872,7 +10872,6 @@ export class Library {
 		VCard: Element.VCard,
 		Button: Element.Button,
 		GameEvent: Element.GameEvent,
-		GameEventPromise: Element.GameEventPromise,
 		Dialog: Element.Dialog,
 		Control: Element.Control,
 		Client: Element.Client,
@@ -13310,6 +13309,7 @@ export class Library {
 						player.seatNum = info.seatNum;
 						player.disabledSlots = info.disabledSlots;
 						player.expandedSlots = info.expandedSlots;
+						player.extraEquip = info.extraEquip;
 						player.setNickname();
 						if (info.dead) {
 							player.classList.add("dead");
@@ -13336,7 +13336,9 @@ export class Library {
 							player.$disableJudge();
 						}
 						player.$syncDisable();
-
+						if (info.extraEquip) {
+							player.$handleEquipChange();
+						}
 						player.directgain(info.handcards);
 						lib.playerOL[i] = player;
 						/*if (info.vcardsMap) {
@@ -14138,35 +14140,35 @@ export class Library {
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"射",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"书",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"数",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"御",
 			{
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"手杀乐",
@@ -14174,7 +14176,7 @@ export class Library {
 				showName: "乐",
 				color: "#f0cf13",
 				nature: "shenmm",
-			}
+			},
 		],
 		[
 			"TW",
@@ -14494,6 +14496,14 @@ export class Library {
 		[
 			"友",
 			{
+				color: "#AAABFF",
+				nature: "blackmm",
+			},
+		],
+		[
+			"手杀合",
+			{
+				showName: "合",
 				color: "#AAABFF",
 				nature: "blackmm",
 			},

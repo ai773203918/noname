@@ -1,6 +1,6 @@
 import { build } from "vite";
 import { Target, viteStaticCopy } from "vite-plugin-static-copy";
-import generateImportMap from "../jit/vite-plugin-importmap";
+import generateImportMap from "./vite-plugin-importmap";
 import jit from "../jit/vite-plugin-jit";
 import minimist from "minimist";
 import { build as esbuild } from "esbuild";
@@ -14,7 +14,7 @@ const importMap: Record<string, string> = {
 	noname: "/noname.js",
 	vue: "vue/dist/vue.esm-browser.js",
 	"pinyin-pro": "pinyin-pro",
-	"dedent": "dedent",
+	dedent: "dedent",
 	// jszip: "jszip",
 };
 
@@ -34,7 +34,7 @@ const staticModules: Target[] = [
 	// 重构之后请删除
 	{ src: "noname/get/pinyins/index.js", dest: "noname/get/pinyins" },
 	{ src: "noname/library/element/content.js", dest: "noname/library/element" },
-	{ src: "noname/library/skill.js", dest: "noname/library" },
+	// { src: "noname/library/skill.js", dest: "noname/library" },
 ];
 
 //完整包
@@ -67,6 +67,10 @@ await build({
 			preserveEntrySignatures: "strict",
 			treeshake: false,
 			external: ["vue"],
+			input: {
+				index: "index.html",
+				noname: "noname.js",
+			},
 			output: {
 				preserveModules: true, // 保留文件结构
 				preserveModulesRoot: "./",
