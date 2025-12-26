@@ -15473,9 +15473,12 @@ const skills = {
 			effect: {
 				audio: "dcfenhui",
 				trigger: {
-					global: ["damageBegin1", "die"],
+					global: ["damageBegin1", "die", "dyingAfter"],
 				},
 				filter(event, player) {
+					if (event.name == "dying" && !event.player?.isIn()) {
+						return false;
+					}
 					return event.player.hasMark("dcfenhui_mark");
 				},
 				logTarget: "player",
@@ -15562,14 +15565,14 @@ const skills = {
 					player: "gainAfter",
 				},
 				filter(event, player) {
-					return event.getParent().name === "draw" && event.cards.length >= 2 && event.cards.some(card => get.color(card) === "red");
+					return event.getParent().name === "draw" && event.cards.length >= 2;
 				},
 				forced: true,
 				locked: false,
 				popup: false,
 				async content(event, trigger, player) {
 					player.addGaintag(
-						trigger.cards.filter(card => get.color(card) === "red"),
+						trigger.cards,
 						"dcxingmen"
 					);
 					player.addSkill("dcxingmen_directHit");
@@ -15589,8 +15592,23 @@ const skills = {
 					});
 				},
 				async content(event, trigger, player) {
+					if (trigger.addCount !== false) {
+						trigger.addCount = false;
+						const stat = player.getStat("card"),
+							name = trigger.card.name;
+						if (typeof stat[name] == "number" && stat[name] > 0) {
+							stat[name]--;
+						}
+					}
 					trigger.directHit.addArray(game.filterPlayer());
-					game.log(trigger.card, "不可被响应");
+					game.log(trigger.card, "不计次数且不可被响应");
+				},
+				mod: {
+					cardUsable(card, player) {
+						if (get.number(card) === "unsure" || card.cards?.some(card => card.hasGaintag("dcxingmen"))) {
+							return Infinity;
+						}
+					},
 				},
 			},
 		},
