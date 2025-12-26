@@ -3250,11 +3250,11 @@ const skills = {
 				return;
 			}
 			const player = event.player;
-			const used = player
-				.getHistory("useCard", evt => {
-					return (evt.cards ?? []).length == 2;
+			const used = game
+				.getGlobalHistory("useCard", evt => {
+					return evt.card?.storage?.dcfuhui == player && (evt.cards ?? []).length == 2;
 				})
-				.map(evt => evt.cards.map(card => get.suit(card, player)).toUniqued());
+				.map(evt => evt.cards.map(card => get.suit(card, evt.player)).toUniqued());
 			event.set("usedSuit", used);
 		},
 		filter(event, player) {
@@ -3314,15 +3314,44 @@ const skills = {
 					viewAs: {
 						name: links[0][2],
 						nature: links[0][3],
+						storage: {
+							dcfuhui: player,
+						},
 					},
 					ai1(card) {
 						return 1 / (get.value(card) || 0.5);
 					},
+					log: false,
 					position: "hs",
-					precontent() {
-						player.addTempSkill("dcfuhui_effect");
+					async precontent(event, trigger, player) {
+						player.logSkill("dcfuhui");
 						player.addTempSkill("dcfuhui_used");
 						player.markAuto("dcfuhui_used", [event.result.card.name]);
+						player
+							.when({
+								global: "useCard",
+							})
+							.filter(evt => evt.getParent() == event.getParent())
+							.step(async (event, trigger, player) => {
+								const sort = (a, b) => lib.suits.indexOf(a) - lib.suits.indexOf(b);
+								const suits = trigger.cards.map(i => get.suit(i, player)).sort(sort);
+								if (!game.hasGlobalHistory(
+									"useCard",
+									evt => {
+										if (evt === trigger || (evt.cards ?? []).length !== 2) {
+											return false;
+										}
+										if (evt.card?.storage?.dcfuhui !== player) {
+											return false;
+										}
+										const suits2 = evt.cards.map(i => get.suit(i, evt.player)).sort(sort);
+										return suits.length === suits2.length && suits.every((suit, i) => suit == suits2[i]);
+									},
+									trigger
+								)) {
+									await player.draw();
+								}
+							});
 					},
 				};
 			},
@@ -3464,17 +3493,18 @@ const skills = {
 		check(event, player) {
 			const history = event.player.getHistory("useCard", evt => evt.isPhaseUsing(event.player) && get.type(evt.card) !== "equip");
 			const { name } = history[0].card;
-			const card = { name, storage: { dcmohua: [null, history[0].player] } };
-			return player.hasValueTarget(new lib.element.VCard(card));
+			const card = { name, storage: { dcmohua: history[0] } };
+			return event.player.hasValueTarget(new lib.element.VCard(card), true, true);
 		},
 		round: 1,
 		logTarget: "player",
 		async content(event, trigger, player) {
 			player.addTempSkill("dcmohua_effect");
+			player.setStorage("dcmohua_effect", trigger.player);
 			const history = trigger.player.getHistory("useCard", evt => evt.isPhaseUsing(trigger.player) && get.type(evt.card) !== "equip");
 			for (const evt of history) {
 				const { name } = evt.card;
-				const card = (event.card = { name, storage: { dcmohua: [evt, evt.player] } });
+				const card = (event.card = { name, storage: { dcmohua: evt } });
 				const next = player.chooseToUse(function (card, player, target) {
 					const { cardx } = get.event();
 					if (!cardx || get.name(card) !== cardx.name) {
@@ -3482,28 +3512,21 @@ const skills = {
 					}
 					return lib.filter.filterCard.apply(this, arguments);
 				});
+				next.set("dcmohua", true)
 				next.set("manualConfirm", true);
 				next.set("openskilldialog", `${get.translation(event.name)}：请选择【${get.translation(card.name)}】的目标`);
-				next.set("targetRequired", true);
-				next.set("complexSelect", true);
-				next.set("complexTarget", true);
-				next.set("filterTarget", function (card, player, target) {
-					const { cardx } = get.event();
-					const source = cardx?.storage?.dcmohua[1];
-					return source?.isIn() && lib.filter.filterTarget(card, source, target);
-				});
 				next.set("cardx", card);
-				next.set("addCount", false);
 				const result = await next.forResult();
 				if (!result?.bool) {
 					break;
 				}
 			}
+			player.removeSkill("dcmohua_effect");
 		},
 		onChooseToUse(event) {
 			const evt = event.getParent();
 			if (evt.name === "dcmohua" && evt.player === event.player) {
-				const evt2 = evt.card.storage.dcmohua[0];
+				const evt2 = evt.card.storage.dcmohua;
 				if (Array.isArray(evt2.targets)) {
 					event.targetprompt2.add(target => {
 						if (target.isIn() && evt2.targets.includes(target)) {
@@ -3516,17 +3539,160 @@ const skills = {
 		subSkill: {
 			effect: {
 				charlotte: true,
+				priority: Infinity,
 				trigger: { player: "useCardBefore" },
+				direct: true,
 				filter(event, player) {
-					const evt = event.getParent(2);
-					const source = evt?.card?.storage?.dcmohua?.[1];
-					return get.itemtype(source) === "player" && source.isIn();
+					const target = player.getStorage("dcmohua_effect");
+					return get.itemtype(target) == "player" && target?.isIn();
 				},
-				silent: true,
-				firstDo: true,
+				logTarget: (event, player) => player.getStorage("dcmohua_effect"),
 				async content(event, trigger, player) {
-					trigger.player = trigger.getParent(2).card.storage.dcmohua[1];
+					trigger.player = player.getStorage("dcmohua_effect");
 					trigger.noai = true;
+					await game.delay(0.5);
+				},
+				mod: {
+					selectTarget(card, player, range) {
+						const source = player.getStorage("dcmohua_effect");
+						if (!source.isIn() || get.itemtype(source) != "player") {
+							return;
+						}
+						const evt = get.event().getParent("chooseToUse", true, true);
+						if (!evt?.dcmohua) {
+							return;
+						}
+						let info = get.info(card);
+						let select = get.copy(info.selectTarget);
+						if (select == undefined) {
+							if (info.filterTarget == undefined) {
+								return [0, 0];
+							}
+							range = [1, 1];
+						} else if (typeof select == "number") {
+							range = [select, select];
+						} else if (get.itemtype(select) == "select") {
+							range = select;
+						} else if (typeof select == "function") {
+							range = select(card, source);
+							if (typeof range == "number") {
+								range = [range, range];
+							}
+						}
+						game.checkMod(card, source, range, "selectTarget", source);
+					},
+					cardEnabled2(card, player, event) {
+						const source = player.getStorage("dcmohua_effect");
+						if (!source.isIn() || get.itemtype(source) != "player") {
+							return;
+						}
+						const evt = get.event().getParent("chooseToUse", true, true);
+						if (!evt?.dcmohua) {
+							return;
+						}
+						let check = game.checkMod(card, source, event, "unchanged", "cardEnabled2", source);
+						return check;
+					},
+					cardEnabled(card, player, event) {
+						const source = player.getStorage("dcmohua_effect");
+						if (!source.isIn() || get.itemtype(source) != "player") {
+							return;
+						}
+						const evt = get.event().getParent("chooseToUse", true, true);
+						if (!evt?.dcmohua) {
+							return;
+						}
+						if (event === "forceEnable") {
+							let mod = game.checkMod(card, source, event, "unchanged", "cardEnabled", source);
+							if (mod != "unchanged") {
+								return mod;
+							}
+							return true;
+						} else {
+							let filter = get.info(card).enable;
+							if (!filter) {
+								return;
+							}
+							let mod = game.checkMod(card, player, source, "unchanged", "cardEnabled", source);
+							if (mod != "unchanged") {
+								return mod;
+							}
+							if (typeof filter == "boolean") {
+								return filter;
+							}
+							if (typeof filter == "function") {
+								return filter(card, source, event);
+							}
+						}
+					},
+					cardUsable(card, player, num) {
+						const source = player.getStorage("dcmohua_effect");
+						if (!source.isIn() || get.itemtype(source) != "player") {
+							return;
+						}
+						const evt = get.event().getParent("chooseToUse", true, true);
+						if (!evt?.dcmohua) {
+							return;
+						}
+						let event = _status.event;
+						if (event.type == "chooseToUse_button") {
+							event = event.getParent();
+						}
+						/*if (source != _status.event.player) {
+							return true;
+						}*/
+						const info = get.info(card);
+						if (info.updateUsable == "phaseUse") {
+							if (event.getParent().name != "phaseUse") {
+								return true;
+							}
+							if (event.getParent().player != source) {
+								return true;
+							}
+						}
+						event.addCount_extra = true;
+						num = info.usable;
+						if (typeof num == "function") {
+							num = num(card, source);
+						}
+						num = game.checkMod(card, source, num, event, "cardUsable", source);
+						if (typeof num != "number") {
+							return true;
+						}
+						if (source.countUsed(card) < num) {
+							return true;
+						}
+						if (
+							game.hasPlayer(function (current) {
+								return game.checkMod(card, source, current, false, "cardUsableTarget", source);
+							})
+						) {
+							return true;
+						}
+						return false;
+					},
+					playerEnabled(card, player, target) {
+						const source = player.getStorage("dcmohua_effect");
+						if (!source.isIn() || get.itemtype(source) != "player") {
+							return;
+						}
+						const evt = get.event().getParent("chooseToUse", true, true);
+						if (!evt?.dcmohua) {
+							return;
+						}
+						return lib.filter.targetEnabledx(card, source, target);
+					},
+					targetInRange(card, player, target) {
+						const source = player.getStorage("dcmohua_effect");
+						if (!source.isIn() || get.itemtype(source) != "player") {
+							return;
+						}
+						const evt = get.event().getParent("chooseToUse", true, true);
+						if (!evt?.dcmohua) {
+							return;
+						}
+						return lib.filter.targetInRange(card, source, target);
+					},
 				},
 				group: "dcmohua_draw",
 			},
@@ -3538,14 +3704,14 @@ const skills = {
 					if (!event.targets?.length || evt.name !== "dcmohua" || evt.player !== player) {
 						return false;
 					}
-					evt = evt.card.storage.dcmohua[0];
+					evt = evt.card.storage.dcmohua;
 					return evt.targets?.length && evt.targets.containsSome(...event.targets);
 				},
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
 					const evt = trigger.getParent(2);
-					const targets = evt.card.storage.dcmohua[0].targets.filter(target => trigger.targets.includes(target));
+					const targets = evt.card.storage.dcmohua.targets.filter(target => trigger.targets.includes(target));
 					await player.draw(targets.length);
 				},
 			},
