@@ -1448,14 +1448,14 @@ const skills = {
 			}
 			const list = player.getStorage("dcsbhengye", [0, 0, 0, 0]);
 			if (event.name == "phase") {
-				return list.some(num => num >= 3);
+				return event.player == player && list.some(num => num >= 3);
 			}
 			if (event.name == "phaseDraw") {
 				return !event.numFixed && list[0] > 0;
 			}
-			if (!event.hasNature()) {
+			/*if (!event.hasNature()) {
 				return false;
-			}
+			}*/
 			return list.some(num => num < 3);
 		},
 		async content(event, trigger, player) {

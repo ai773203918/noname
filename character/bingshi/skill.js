@@ -864,6 +864,9 @@ const skills = {
 			if (game.players.every(target => !event.getl(target)?.cards?.length) || event.getParent("phaseDiscard", true)) {
 				return false;
 			}
+			if (player.countMark("mbrenxing_used") >= 2) {
+				return false;
+			}
 			return (
 				game
 					.getGlobalHistory("everything", evt => {
@@ -934,7 +937,10 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			const { targets, cost_data: choice } = event;
+			const { targets, cost_data: choice } = event,
+				name = "mbrenxing_used";
+			player.addTempSkill(name, "roundStart");
+			player.addMark(name, 1, false);
 			if (choice.includes("draw")) {
 				if (player == _status.currentPhase) {
 					targets.push(player);
@@ -943,6 +949,12 @@ const skills = {
 			} else {
 				await player.discardPlayerCard(event.targets[0], "he", true);
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//势鲁肃

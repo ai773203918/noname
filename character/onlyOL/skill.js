@@ -217,17 +217,17 @@ const skills = {
 			const [target] = event.targets;
 			player.addTempSkill(`${event.name}_used`, "roundStart");
 			player.markAuto(`${event.name}_used`, target);
-			await player.draw();
+			await player.draw(2);
 			if (player == target) {
 				return;
 			}
 			const damaged = player.getStorage(`${event.name}_damaged`);
-			const hs = player.getCards("he", card => !player.hasCard(cardx => cardx != card && get.name(cardx) == get.name(card) && !damaged.includes(get.name(card)), "he"));
+			const hs = player.getCards("he", card => !damaged.includes(get.name(card), "he"));
 			if (hs.length) {
 				player.addGaintag(hs, `${event.name}_tag`);
 			}
 			const result = await player
-				.chooseToGive(target, "he", true)
+				.chooseToGive(target, "he", true, 2)
 				.set("hs", hs)
 				.set("custom", {
 					add: {
@@ -255,12 +255,13 @@ const skills = {
 				.forResult();
 			player.removeGaintag(`${event.name}_tag`);
 			if (result?.bool && result.cards?.length) {
-				const {
-					cards: [card],
-				} = result;
-				const name = get.name(card);
-				if (!player.hasCard(i => get.name(i) == name, "he") && !damaged.includes(name)) {
-					player.markAuto(`${event.name}_damaged`, name);
+				const { cards } = result;
+				const names = cards.filter(card => {
+					const name = get.name(card);
+					return !player.hasCard(i => get.name(i) == name, "he") && !damaged.includes(name);
+				}).map(card => get.name(card)).toUniqued();
+				if (names?.length) {
+					player.markAuto(`${event.name}_damaged`, names);
 					await target.damage();
 				}
 			}
