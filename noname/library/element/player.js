@@ -8518,19 +8518,47 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家死亡或进入休整状态
 	 * @param { GameEvent } reason 导致角色死亡的事件
-	 * @param { Boolean } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"代表在你的回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合；audio是休整播放的语音）
 	 * @returns { GameEvent }
 	 */
 	die(reason, restMap = { type: null, count: null, audio: null }) {
 		var next = game.createEvent("die");
 		next.player = this;
 		next.reason = reason;
-		next.restMap = restMap;
+		//next.restMap = restMap;
 		if (reason) {
 			next.source = reason.source;
 		}
 		next.excludeMark = [];
 		next.setContent("die");
+		return next;
+	}
+	/**
+	 * 令玩家休整，同时会触发rest时机
+	 * @param { object | undefined } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"是在你的额定回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合（为负数则永久休整，可以自主脱离））
+	 * @returns { GameEvent } 
+	 */
+	rest(restMap = { type: "phase", count: -1}) {//, audio: null
+		const next = game.createEvent("rest", false);
+		next.player = this;
+		next.restMap = restMap;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("rest");
+		return next;
+	}
+	/**
+	 * 令玩家结束休整
+	 * @param { object | undefined } reseEndMap 进入休整状态状态相关的参数（hp是脱离休整复活时回复至的体力值）
+	 * @returns { GameEvent }
+	 */
+	restEnd(restEndMap = { hp: null }) {//, audio: null
+		const next = game.createEvent("restEnd", false);
+		restEndMap.hp ??= this.maxHp;
+		next.player = this;
+		next.restEndMap = restEndMap;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("restEnd");
 		return next;
 	}
 	/**
@@ -11921,6 +11949,13 @@ export class Player extends HTMLDivElement {
 	}
 	isDead() {
 		return this.classList.contains("dead");
+	}
+	/**
+	 * 判断角色是否处于休整状态
+	 * @returns { boolean }
+	 */
+	isRest() {
+		return this.isAlive() && this.isOut() && _status._rest_return[this.playerid];
 	}
 	isDying() {
 		return _status.dying.includes(this) && this.hp <= 0 && this.isAlive();

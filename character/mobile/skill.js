@@ -12322,11 +12322,14 @@ const skills = {
 	},
 	mbmowang: {
 		trigger: {
-			player: ["dieBefore", "rest"],
+			player: ["dieBefore", "rest", "dieAfter"],
 		},
 		filter(event, player, name) {
 			if (name == "rest") {
 				return true;
+			}
+			if (name == "dieAfter") {
+				return event.reserveOut;
 			}
 			return event.getParent().name != "giveup" && player.maxHp > 0;
 		},
@@ -12356,29 +12359,31 @@ const skills = {
 					player,
 					lib.skill.mbdanggu.changshi.map(i => i[0])
 				);
-				return;
 			}
-			if (_status._rest_return?.[player.playerid]) {
-				trigger.cancel();
-			} else {
+			else if (event.triggername == "dieAfter") {
 				if (player.getStorage("mbdanggu").length) {
 					player.logSkill("mbmowang");
-					/*game.broadcastAll(function () {
+					game.broadcastAll(function () {
 						if (lib.config.background_speak) {
 							game.playAudio("die", "shichangshiRest");
 						}
-					});*/
-					//煞笔十常侍
-					trigger.restMap = {
-						type: "round",
-						count: 1,
-						audio: "shichangshiRest",
-					};
-					trigger.excludeMark.add("mbdanggu");
-					//trigger.noDieAudio = true;
-					trigger.includeOut = true;
+					});
+					await player.rest({type: "round", count: 1});//, audio: "shichangshiRest"
+				}
+			}
+			else {
+				if (player.isRest()) {
+					trigger.cancel();
 				} else {
-					player.changeSkin("mbmowang", "shichangshi_dead");
+					if (player.getStorage("mbdanggu").length) {
+						//煞笔十常侍
+						trigger.excludeMark.add("mbdanggu");
+						trigger.noDieAudio = true;
+						//trigger.includeOut = true;
+						trigger.reserveOut = true;
+					} else {
+						player.changeSkin("mbmowang", "shichangshi_dead");
+					}
 				}
 			}
 		},
