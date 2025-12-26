@@ -1602,6 +1602,8 @@ window.noname_character_rank = {
 		"v_caocao",
 		"guotiying",
 		"tw_dm_quyi",
+		"star_zhanghe",
+		"v_liubei",
 	],
 	bm: [
 		"std_huangwudie",
@@ -2554,6 +2556,8 @@ window.noname_character_rank = {
 			"ol_sb_chengyu",
 			"ol_cuiyan",
 			"tw_dm_quyi",
+			"star_zhanghe",
+			"v_liubei",
 			"clan_chenqun",
 			"dc_sb_zhuran",
 			"dc_sb_wuyi",

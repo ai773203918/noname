@@ -3,6 +3,266 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//威刘备
+	dcliexiang: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				const num = Math.min(5, game.countPlayer(() => true, true));
+				return ui.create.dialog(`烈骧：摸至多${get.cnNumber(num)}张牌`, "hidden");
+			},
+			chooseControl(event, player) {
+				const num = Math.min(5, game.countPlayer(() => true, true));
+				const choices = [...Array.from(Array(num)).map((v, i) => `${get.cnNumber(i + 1)}张`), "cancel2"];
+				return choices;
+			},
+			check() {
+				const num = Math.min(5, game.countPlayer(() => true, true)),
+					player = get.player(),
+					num2 = player.countCards("h");
+				if (!player.hasSkill("dcliexiang_extra") && game.hasPlayer(current => {
+					return current.countCards("h") > num2 + 1;
+				})) {
+					return `${get.cnNumber(1)}张`;
+				}
+				return `${get.cnNumber(num)}张`;
+			},
+			prompt(result, player) {
+				const num = result.index + 1;
+				let prompt = get.skillInfoTranslation("dcliexiang", player),
+					draw = `摸${get.cnNumber(num)}张牌`;
+				return `###烈骧###${prompt.replace("出牌阶段限一次，你可摸至多X张牌（X为游戏人数且至多为5）", draw)}`;
+			},
+			backup(result, player) {
+				const info = get.copy(lib.skill["dcliexiang_backup"]);
+				info.index = result.index;
+				return info;
+			},
+		},
+		ai: {
+			order(item, player) {
+				if (player.hasSkill("dcliexiang_extra")) {
+					return 1;
+				}
+				return 9;
+			},
+			result: {
+				player(player) {
+					const num = player.countCards("h") + Math.min(5, game.countPlayer(() => true, true));
+					return game.countPlayer(current => {
+						if (current == player) {
+							return false;
+						}
+						const num2 = current.countCards("h");
+						if (num > num2) {
+							return true;
+						}
+						if (get.attitude(player, current) < 0 && num == num2) {
+							return true;
+						}
+						return false;
+					});
+				},
+			},
+		},
+		subSkill: {
+			backup: {
+				audio: "dcliexiang",
+				manualConfirm: true,
+				async content(event, trigger, player) {
+					const { index } = get.info(event.name);
+					await player.draw(index + 1);
+					if (!game.hasPlayer(current => current != player)) {
+						return;
+					}
+					const max = player.hasSkill("dcliexiang_extra") ? 2 : 1,
+						prompt = get.skillInfoTranslation("dcliexiang", player);
+					const result = await player
+						.chooseTarget(lib.filter.notMe, [1, max], true)
+						.set("prompt", `烈骧：选择${max > 1 ? "至多" : ""}${get.cnNumber(max)}名其他角色`)
+						.set("prompt2", prompt.slice(prompt.indexOf("若你的手牌数")))
+						.set("ai", target => {
+							const { player, numx } = get.event(),
+								num = target.countCards("h");
+							if (numx > num) {
+								return Math.max(0.1, -get.attitude(player, target));
+							}
+							if (numx == num) {
+								return get.damageEffect(target, player, player) + get.effect(target, { name: "guohe_copy2" }, player, player);
+							}
+							if (player.hp <= 2 || player.hasSkill("dcliexiang_extra")) {
+								return 0;
+							}
+							return 15;
+						})
+						.set("numx", player.countCards("h"))
+						.forResult();
+					if (!result?.bool || !result.targets?.length) {
+						return;
+					}
+					const func = async target => {
+						const num = player.countCards("h") - target.countCards("h");
+						if (num > 0) {
+							const skill = "dcliexiang_effect";
+							player.addTempSkill(skill);
+							player.markAuto(skill, target);
+						}
+						if (num == 0) {
+							const numx = target.countDiscardableCards(player, "he");
+							if (numx > 0) {
+								await player.discardPlayerCard(target, "he", true);
+							}
+							await target.damage(player);
+						}
+						if (num < 0) {
+							await player.loseHp(2);
+							if (player.hasSkill("dcliexiang", null, null, false)) {
+								if (player.getStat("skill").dcliexiang) {
+									delete player.getStat("skill").dcliexiang;
+									game.log(player, "重置了", "#g【烈骧】");
+								}
+								player.addSkill("dcliexiang_extra");
+							}
+						}
+					};
+					player.line(result.targets);
+					await game.doAsyncInOrder(result.targets, func);
+				},
+			},
+			extra: {
+				charlotte: true,
+			},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: {
+					player: "useCard",
+				},
+				intro: {
+					content: "$视为在你的攻击范围内，且不能响应你使用的牌",
+				},
+				filter(event, player) {
+					return player.getStorage("dcliexiang_effect").length;
+				},
+				logTarget(event, player) {
+					return player.getStorage("dcliexiang_effect");
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					trigger.directHit.addArray(player.getStorage(event.name));
+				},
+				mod: {
+					inRange(from, to) {
+						if (from.getStorage("dcliexiang_effect").includes(to)) {
+							return true;
+						}
+					},
+				},
+			},
+		},
+	},
+	dcrengou: {
+		audio: 2,
+		derivation: "dcliexiang",
+		global: "dcrengou_global",
+		subSkill: {
+			global: {
+				enable: "phaseUse",
+				usable: 1,
+				filter(event, player) {
+					if (player.group != "shu" || !player.countDiscardableCards(player, "he", card => get.type(card) == "basic")) {
+						return false;
+					}
+					return game.hasPlayer(current => current != player && current.hasSkill("dcrengou"));
+				},
+				filterTarget(card, player, target) {
+					return target != player && target.hasSkill("dcrengou");
+				},
+				selectTarget() {
+					const player = get.player(),
+						num = game.countPlayer(current => current != player && current.hasSkill("dcrengou"));
+					if (num == 1) {
+						return -1;
+					}
+					return 1;
+				},
+				prompt() {
+					const player = get.player(),
+						targets = game.filterPlayer(current => current != player && current.hasSkill("dcrengou"));
+					return `弃置一张基本牌并令${get.translation(targets)}${targets.length > 1 ? "中的一人" : ""}回复1点体力，然后其可令你发动一次X为2的${get.poptip("dcliexiang")}`;
+				},
+				filterCard(card, player) {
+					return get.type(card) == "basic";
+				},
+				log: false,
+				prepare(cards, player, targets) {
+					targets[0].logSkill("dcrengou", player);
+				},
+				async content(event, trigger, player) {
+					const { target } = event;
+					await target.recover();
+					const result = await target
+						.chooseBool(`###仁彀###是否令${get.translation(player)}发动一次X为2的${get.poptip("dcliexiang")}？`)
+						.set("choice", (() => {
+							const num = player.countCards("h") + Math.min(2, game.countPlayer(() => true, true)),
+								bool = game.hasPlayer(current => {
+									if (current == player) {
+										return false;
+									}
+									const num2 = current.countCards("h");
+									if (num2 < num) {
+										return true;
+									}
+									return num2 == num && get.attitude(player, current) >= 0;
+								});
+							if (get.attitude(target, player) > 0) {
+								return bool;
+							}
+							return player.hp < 2 && !bool;
+						})())
+						.forResult();
+					if (!result?.bool) {
+						target.popup("拒绝");
+						return;
+					}
+					target.popup("同意");
+					const num = Math.min(2, game.countPlayer(() => true, true));
+					const result2 = await player
+						.chooseControl(Array.from(Array(num)).map((v, i) => `${get.cnNumber(i + 1)}张`))
+						.set("prompt", `烈骧：摸至多${get.cnNumber(num)}张牌`)
+						.set("ai", () => {
+							return `${get.cnNumber(Math.min(2, game.countPlayer(() => true, true)))}张`;
+						})
+						.forResult();
+					if (!result2?.control) {
+						return;
+					}
+					game.broadcastAll(index => {
+						lib.skill.dcliexiang_backup.index = index;
+					}, result2.index);
+					await player.useSkill("dcliexiang_backup").set("addCount", false);
+				},
+				ai: {
+					order: 8,
+					result: {
+						target(player, target) {
+							return get.recoverEffect(target, target, target);
+						},
+						player(player, target) {
+							let eff = -1;
+							if (get.attitude(target, player) > 0) {
+								eff += Math.min(2, game.countPlayer(() => true, true));
+							}
+							return eff;
+						}
+					},
+				},
+			},
+		},
+	},
 	//谋蒋干
 	dcsbmingfang: {
 		audio: 2,

@@ -1,4 +1,5 @@
 export default {
+	v_liubei: "志昭义烈",
 	//dc_sb_jianggan: "",
 	//dc_sb_chunyuqiong: "",
 	houzhaoning: "贤助抚外",
