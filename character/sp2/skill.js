@@ -60,25 +60,28 @@ const skills = {
 				await player.chooseToDiscard("he", true, 2);
 				return;
 			}
-			const result = target.countDiscardableCards(target, "he") > 0 ? await target
-				.chooseToDiscard(`弃置${get.cnNumber(numx)}张牌，每少弃置一张牌便失去1点体力`, [1, numx], "he")
-				.set("ai", card => {
-					const { eff, maxNum: num, player } = get.event();
-					if (eff > 0) {
-						const numx = num - ui.selected.cards.length;
-						if (numx < player.hp) {
-							return 0;
-						}
-					}
-					return 10 - get.value(card);
-				})
-				.set("complexCard", true)
-				.set("allowChooseAll", true)
-				.set("maxNum", numx)
-				.set("eff", get.effect(target, { name: "losehp" }, target, target))
-				.forResult() : {
-					bool: false,
-				};
+			const result =
+				target.countDiscardableCards(target, "he") > 0
+					? await target
+							.chooseToDiscard(`弃置${get.cnNumber(numx)}张牌，每少弃置一张牌便失去1点体力`, [1, numx], "he")
+							.set("ai", card => {
+								const { eff, maxNum: num, player } = get.event();
+								if (eff > 0) {
+									const numx = num - ui.selected.cards.length;
+									if (numx < player.hp) {
+										return 0;
+									}
+								}
+								return 10 - get.value(card);
+							})
+							.set("complexCard", true)
+							.set("allowChooseAll", true)
+							.set("maxNum", numx)
+							.set("eff", get.effect(target, { name: "losehp" }, target, target))
+							.forResult()
+					: {
+							bool: false,
+						};
 			if (result?.bool && result.cards?.length) {
 				const numx2 = numx - result.cards.length;
 				if (numx2 > 0) {
@@ -100,11 +103,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const evts = game.getAllGlobalHistory("everything", evt => {
-				if (evt.name != "phase" || evt.player != player) {
-					return false;
-				}
-				return !evt._finished && evt.phaseList?.length;
-			}),
+					if (evt.name != "phase" || evt.player != player) {
+						return false;
+					}
+					return !evt._finished && evt.phaseList?.length;
+				}),
 				filter = phase => lib.phaseName.includes(phase);
 			let lastPhaseList = [];
 			if (evts?.length > 1) {

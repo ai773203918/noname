@@ -2,6 +2,446 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//SM神马超
+	sm_kulian: {
+		audio: 2,
+		trigger: {
+			player: "enterGame",
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		forced: true,
+		logTarget(event, player) {
+			return game.filterPlayer(() => true);
+		},
+		async content(event, trigger, player) {
+			const func = async target => {
+				const card = get.cardPile2(card => {
+					return get.subtypes(card).containsSome("equip3", "equip4", "equip6");
+				}, "random");
+				if (card) {
+					target.$gain2(card);
+					await target.equip(card);
+				}
+				const card2 = game.createCard2("sm_mabian", "heart", 13);
+				target.$gain2(card2);
+				await target.equip(card2);
+				await game.delayx();
+			};
+			await game.doAsyncInOrder(event.targets, func);
+			game.addGlobalSkill("sm_kulian_prettyDerby");
+		},
+		derivation: "sm_kulian_reward",
+		subSkill: {
+			prettyDerby: {
+				trigger: {
+					global: ["roundStart", "roundEnd", "loseAsyncAfter", "gainAfter", "addJudgeAfter", "equipAfter", "addToExpansionAfter"],
+					source: "damageSource",
+					player: "loseAfter",
+				},
+				filter(event, player, name) {
+					if (name == "roundStart") {
+						return !event._PerttyDerbyed;
+					}
+					if (name == "roundEnd") {
+						return _status.prettyDerbyDoing?.length;
+					}
+					if (event.name == "damage") {
+						if (!player.getEquip("sm_mabian") || player.hasSkill("sm_kulian_damaged")) {
+							return false;
+						}
+						return event.player != player && event.player.getEquip("sm_mabian");
+					}
+					const es = event.getl(player)?.es;
+					return es?.length && es.some(card => card.name == "sm_mabian");
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					switch (event.triggername) {
+						case "roundStart": {
+							trigger.set("_PerttyDerbyed", true);
+							game.log("#y新一轮赛马比赛开始！");
+							const list = get.info(event.name).initList(event.name);
+							list.forEach((obj, index) => {
+								game.log(`本轮赛马奖励${index + 1}：`, `#g${obj.info}[奖励：${obj.reward}]`);
+							});
+							game.broadcastAll(list => {
+								_status.prettyDerbyDoing = list;
+							}, list);
+							const target = game.findPlayer(current => current.hasSkill("sm_kulian")),
+								func = async target => {
+									target.markSkill(event.name);
+								};
+							if (target) {
+								await func(target);
+							} else {
+								await game.doAsyncInOrder(
+									game.filterPlayer(() => true),
+									func
+								);
+							}
+							return;
+						}
+						case "roundEnd": {
+							game.log("#y赛马比赛结束");
+							await game.doAsyncInOrder(
+								game.filterPlayer(() => true),
+								async target => {
+									target.unmarkSkill(event.name);
+								}
+							);
+							const next = game.createEvent("perttyDerbyEnd", false);
+							next.set("rewards", _status.prettyDerbyDoing);
+							next.setContent("emptyEvent");
+							await next;
+							while (_status.prettyDerbyDoing.length) {
+								const map = _status.prettyDerbyDoing.shift();
+								game.broadcastAll(list => {
+									_status.prettyDerbyDoing = list;
+								}, _status.prettyDerbyDoing);
+								const targets = game
+									.filterPlayer(current => {
+										return current.getEquip("sm_mabian");
+									})
+									.sort((a, b) => {
+										return map.filter(b) - map.filter(a);
+									});
+								if (!targets.length) {
+									continue;
+								}
+								if (targets.length > 1 && map.filter(targets[0]) == map.filter(targets[1])) {
+									continue;
+								}
+								const target = targets[0];
+								game.log(target, "执行了赛马奖励：", `#g${map.reward}`);
+								await map.content(target);
+							}
+							return;
+						}
+						case "damageSource": {
+							player.addTempSkill("sm_kulian_damaged");
+							player.logSkill("sm_kulian", trigger.player);
+							await player.draw();
+							return;
+						}
+						default: {
+							game.log(player, "#y退赛了！");
+							await event.trigger("withdrawPrettyDerby");
+							return;
+						}
+					}
+				},
+				mod: {
+					targetInRange(card, player) {
+						if (player.getEquip("sm_mabian") && ["equip3", "equip4", "equip6"].some(slot => player.getEquip(slot))) {
+							return true;
+						}
+					},
+				},
+				intro: {
+					content() {
+						const list = _status.prettyDerbyDoing;
+						if (!list?.length) {
+							return "未进行比赛";
+						}
+						return list.map((obj, index) => `目标${index + 1}：${obj.info}<br><li><span style='font-family: yuanli'>奖励：${obj.reward}</span>`).join("<br>");
+					},
+				},
+				rewardList: [
+					{
+						info: "受到伤害唯一最多",
+						reward: "回复全部体力",
+						filter(player) {
+							return player.getRoundHistory("damage").reduce((sum, evt) => sum + evt.num, 0);
+						},
+						async content(player) {
+							if (player.isDamaged()) {
+								await player.recoverTo(player.maxHp);
+							}
+						},
+					},
+					{
+						info: "手牌数唯一最多",
+						reward: "手牌上限改为体力上限",
+						filter(player) {
+							return player.countCards("h");
+						},
+						async content(player) {
+							player.addSkill("sm_kulian_yingzi");
+						},
+					},
+					{
+						info: "体力值唯一最高",
+						reward: "增加1点体力上限",
+						filter(player) {
+							return player.getHp();
+						},
+						async content(player) {
+							await player.gainMaxHp();
+						},
+					},
+					{
+						info: "装备区牌数唯一最多",
+						reward: "获得一张其他角色的装备牌",
+						filter(player) {
+							return player.countCards("e");
+						},
+						async content(player) {
+							const targets = game.filterPlayer(current => current != player && current.countGainableCards(player, "e"));
+							if (!targets?.length) {
+								return;
+							}
+							const result =
+								targets.length > 1
+									? await player
+											.chooseTarget(
+												"获得一名其他角色一张装备牌",
+												(card, player, target) => {
+													return player != target && target.countGainableCards(player, "e");
+												},
+												true
+											)
+											.set("ai", target => {
+												const player = get.player();
+												return get.effect(target, { name: "shunshou_copy2", position: "e" }, player, player);
+											})
+											.forResult()
+									: {
+											bool: true,
+											targets: targets,
+										};
+							if (!result?.bool || !result.targets?.length) {
+								return;
+							}
+							const target = result.targets[0];
+							await player.gainPlayerCard(target, "e", true);
+						},
+					},
+					{
+						info: "击杀数唯一最多",
+						reward: "执行一个仅有出牌阶段的额外回合",
+						filter(player) {
+							return game.getRoundHistory("everything", evt => evt.name == "die" && evt.source == player).length;
+						},
+						async content(player) {
+							const next = player.insertPhase("sm_kulian");
+							next.phaseList = ["phaseUse"];
+							next._noTurnOver = true;
+						},
+					},
+					{
+						info: "使用牌数唯一最多",
+						reward: "摸五张牌",
+						filter(player) {
+							return player.getRoundHistory("useCard").length;
+						},
+						async content(player) {
+							await player.draw(5);
+						},
+					},
+					{
+						info: "造成伤害唯一最多",
+						reward: "使用【杀】造成伤害+1",
+						filter(player) {
+							return player.getRoundHistory("sourceDamage").reduce((sum, evt) => sum + evt.num, 0);
+						},
+						async content(player) {
+							const skill = "sm_kulian_sha";
+							player.addSkill(skill);
+							player.addMark(skill, 1, false);
+						},
+					},
+				],
+				initList(skill) {
+					if (!_status.prettyDerbyList || _status.prettyDerbyList.length < 2) {
+						_status.prettyDerbyList = get.info(skill).rewardList.slice(0);
+					}
+					const list = _status.prettyDerbyList.randomRemove(2);
+					game.broadcastAll(list => {
+						_status.prettyDerbyList = list;
+					}, _status.prettyDerbyList);
+					return list;
+				},
+			},
+			yingzi: {
+				charlotte: true,
+				mark: true,
+				intro: {
+					content: "你的手牌上限改为体力上限",
+				},
+				mod: {
+					maxHandcardBase(player, num) {
+						return player.maxHp;
+					},
+				},
+			},
+			sha: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "使用杀造成的伤害+#",
+				},
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event, player) {
+					return event.card?.name == "sha" && player.countMark("sm_kulian_sha");
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					trigger.num += player.countMark(event.name);
+				},
+			},
+			damaged: {
+				charlotte: true,
+			},
+			reward: {
+				nobracket: true,
+				nopop: true,
+			},
+		},
+	},
+	sm_lema: {
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			if (event.type === "wuxie") {
+				return false;
+			}
+			return get
+				.inpileVCardList(info => get.type(info[2]) == "basic")
+				.some(card => {
+					return event.filterCard(get.autoViewAs({ name: card[2], nature: card[3], isCard: true }), player, event);
+				});
+		},
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				const list = get
+					.inpileVCardList(info => get.type(info[2]) == "basic")
+					.filter(card => {
+						return event.filterCard(get.autoViewAs({ name: card[2], nature: card[3], isCard: true }), player, event);
+					});
+				return ui.create.dialog("乐马", [list, "vcard"], "hidden");
+			},
+			check(button) {
+				const event = get.event().getParent();
+				if (event.type !== "phase") {
+					return 1;
+				}
+				return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3], isCard: true }));
+			},
+			prompt(links) {
+				const num = Math.max(
+					1,
+					game.countPlayer(
+						current =>
+							current.getCards("e", card => {
+								return get.subtypes(card).containsSome("equip3", "equip4", "equip6");
+							}).length
+					)
+				);
+				return `视为使用${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}并摸${get.cnNumber(num)}张牌`;
+			},
+			backup(links, player) {
+				return {
+					audio: "sm_lema",
+					selectCard: -1,
+					filterCard: () => false,
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						isCard: true,
+					},
+					popname: true,
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("sm_lema");
+						const num = Math.max(
+							1,
+							game.countPlayer(
+								current =>
+									current.getCards("e", card => {
+										return get.subtypes(card).containsSome("equip3", "equip4", "equip6");
+									}).length
+							)
+						);
+						await player.draw(num);
+					},
+				};
+			},
+		},
+		hiddenCard(player, name) {
+			if (player.getStat("skill").sm_lema) {
+				return false;
+			}
+			return get.type(name) == "basic";
+		},
+		ai: {
+			order: 10,
+			respondShan: true,
+			respondSha: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg === "respond") {
+					return false;
+				}
+				return get.info("sm_lema").hiddenCard(player, tag.slice("respond".length).toLowerCase());
+			},
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+		},
+	},
+	sm_chaoxuan: {
+		audio: 2,
+		trigger: {
+			global: "perttyDerbyEnd",
+		},
+		filter(event, player) {
+			return event.rewards?.length;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			for (const reward of trigger.rewards) {
+				game.log(player, "执行了赛马奖励：", `#g${reward.reward}`);
+				await reward.content(player);
+			}
+		},
+	},
+	sm_wandou: {
+		audio: 2,
+		trigger: {
+			global: "withdrawPrettyDerby",
+		},
+		filter(event, player) {
+			return event.player.getHp() != 1;
+		},
+		check(event, player) {
+			const bool1 = event.player.getHp() > 1,
+				bool2 = get.attitude(player, event.player) > 0;
+			return bool1 != bool2;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = event.targets[0],
+				num = target.getHp() - 1;
+			if (num > 0) {
+				await target.loseHp(num);
+			} else if (num < 0) {
+				await target.recoverTo(1);
+			}
+		},
+	},
 	//新杀神孙权
 	dccangming: {
 		audio: 2,
@@ -18,13 +458,15 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name, targets } = event;
 			const lose_list = targets.sortBySeat().map(target => [target, target.getCards("h")]);
-			await game.loseAsync({
-				lose_list: lose_list,
-				player: player,
-				log: true,
-				animate: "giveAuto",
-				gaintag: [name],
-			}).setContent("addToExpansionMultiple");
+			await game
+				.loseAsync({
+					lose_list: lose_list,
+					player: player,
+					log: true,
+					animate: "giveAuto",
+					gaintag: [name],
+				})
+				.setContent("addToExpansionMultiple");
 			/*const func = async target => {
 				if (!target.countCards("h")) {
 					return;
@@ -69,7 +511,7 @@ const skills = {
 					await player.draw();
 					//const types = cards.map(card => get.type2(card)).unique();
 					//await player.draw(types.length);
-				}
+				},
 			},
 			gain: {
 				trigger: {
@@ -234,7 +676,7 @@ const skills = {
 						if (choice == "all") {
 							player.addTempSkill("dcjichao_blocker", { player: "dieAfter" });
 						}
-						const getCards = function(target) {
+						const getCards = function (target) {
 							let cards = target.getCards("h");
 							if (choice !== "all") {
 								let num = Math.ceil(cards.length / 2);
@@ -244,17 +686,18 @@ const skills = {
 							}
 							cards = [...cards, ...target.getCards("e")];
 							return cards;
-						}
+						};
 						if (choice == "all") {
-							await game.loseAsync({
-								lose_list: targets.sortBySeat().map(target => [target, getCards(target)]),
-								player: player,
-								log: true,
-								animate: "giveAuto",
-								gaintag: ["dccangming"],
-							}).setContent("addToExpansionMultiple");
-						}
-						else {
+							await game
+								.loseAsync({
+									lose_list: targets.sortBySeat().map(target => [target, getCards(target)]),
+									player: player,
+									log: true,
+									animate: "giveAuto",
+									gaintag: ["dccangming"],
+								})
+								.setContent("addToExpansionMultiple");
+						} else {
 							const [target] = targets;
 							const next = target.addToExpansion(getCards(target), target, "giveAuto");
 							next.gaintag.add("dccangming");
@@ -332,7 +775,7 @@ const skills = {
 					if (!player.hasMark(event.name)) {
 						player.removeSkill(event.name);
 					}
-				}
+				},
 			},
 			backup: {},
 		},

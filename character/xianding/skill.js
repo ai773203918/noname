@@ -10,21 +10,33 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				const num = Math.min(5, game.countPlayer(() => true, true));
+				const num = Math.min(
+					5,
+					game.countPlayer(() => true, true)
+				);
 				return ui.create.dialog(`烈骧：摸至多${get.cnNumber(num)}张牌`, "hidden");
 			},
 			chooseControl(event, player) {
-				const num = Math.min(5, game.countPlayer(() => true, true));
+				const num = Math.min(
+					5,
+					game.countPlayer(() => true, true)
+				);
 				const choices = [...Array.from(Array(num)).map((v, i) => `${get.cnNumber(i + 1)}张`), "cancel2"];
 				return choices;
 			},
 			check() {
-				const num = Math.min(5, game.countPlayer(() => true, true)),
+				const num = Math.min(
+						5,
+						game.countPlayer(() => true, true)
+					),
 					player = get.player(),
 					num2 = player.countCards("h");
-				if (!player.hasSkill("dcliexiang_extra") && game.hasPlayer(current => {
-					return current.countCards("h") > num2 + 1;
-				})) {
+				if (
+					!player.hasSkill("dcliexiang_extra") &&
+					game.hasPlayer(current => {
+						return current.countCards("h") > num2 + 1;
+					})
+				) {
 					return `${get.cnNumber(1)}张`;
 				}
 				return `${get.cnNumber(num)}张`;
@@ -50,7 +62,12 @@ const skills = {
 			},
 			result: {
 				player(player) {
-					const num = player.countCards("h") + Math.min(5, game.countPlayer(() => true, true));
+					const num =
+						player.countCards("h") +
+						Math.min(
+							5,
+							game.countPlayer(() => true, true)
+						);
 					return game.countPlayer(current => {
 						if (current == player) {
 							return false;
@@ -206,35 +223,51 @@ const skills = {
 					await target.recover();
 					const result = await target
 						.chooseBool(`###仁彀###是否令${get.translation(player)}发动一次X为2的${get.poptip("dcliexiang")}？`)
-						.set("choice", (() => {
-							const num = player.countCards("h") + Math.min(2, game.countPlayer(() => true, true)),
-								bool = game.hasPlayer(current => {
-									if (current == player) {
-										return false;
-									}
-									const num2 = current.countCards("h");
-									if (num2 < num) {
-										return true;
-									}
-									return num2 == num && get.attitude(player, current) >= 0;
-								});
-							if (get.attitude(target, player) > 0) {
-								return bool;
-							}
-							return player.hp < 2 && !bool;
-						})())
+						.set(
+							"choice",
+							(() => {
+								const num =
+										player.countCards("h") +
+										Math.min(
+											2,
+											game.countPlayer(() => true, true)
+										),
+									bool = game.hasPlayer(current => {
+										if (current == player) {
+											return false;
+										}
+										const num2 = current.countCards("h");
+										if (num2 < num) {
+											return true;
+										}
+										return num2 == num && get.attitude(player, current) >= 0;
+									});
+								if (get.attitude(target, player) > 0) {
+									return bool;
+								}
+								return player.hp < 2 && !bool;
+							})()
+						)
 						.forResult();
 					if (!result?.bool) {
 						target.popup("拒绝");
 						return;
 					}
 					target.popup("同意");
-					const num = Math.min(2, game.countPlayer(() => true, true));
+					const num = Math.min(
+						2,
+						game.countPlayer(() => true, true)
+					);
 					const result2 = await player
 						.chooseControl(Array.from(Array(num)).map((v, i) => `${get.cnNumber(i + 1)}张`))
 						.set("prompt", `烈骧：摸至多${get.cnNumber(num)}张牌`)
 						.set("ai", () => {
-							return `${get.cnNumber(Math.min(2, game.countPlayer(() => true, true)))}张`;
+							return `${get.cnNumber(
+								Math.min(
+									2,
+									game.countPlayer(() => true, true)
+								)
+							)}张`;
 						})
 						.forResult();
 					if (!result2?.control) {
@@ -254,10 +287,13 @@ const skills = {
 						player(player, target) {
 							let eff = -1;
 							if (get.attitude(target, player) > 0) {
-								eff += Math.min(2, game.countPlayer(() => true, true));
+								eff += Math.min(
+									2,
+									game.countPlayer(() => true, true)
+								);
 							}
 							return eff;
-						}
+						},
 					},
 				},
 			},
@@ -3595,20 +3631,22 @@ const skills = {
 							.step(async (event, trigger, player) => {
 								const sort = (a, b) => lib.suits.indexOf(a) - lib.suits.indexOf(b);
 								const suits = trigger.cards.map(i => get.suit(i, player)).sort(sort);
-								if (!game.hasGlobalHistory(
-									"useCard",
-									evt => {
-										if (evt === trigger || (evt.cards ?? []).length !== 2) {
-											return false;
-										}
-										if (evt.card?.storage?.dcfuhui !== player) {
-											return false;
-										}
-										const suits2 = evt.cards.map(i => get.suit(i, evt.player)).sort(sort);
-										return suits.length === suits2.length && suits.every((suit, i) => suit == suits2[i]);
-									},
-									trigger
-								)) {
+								if (
+									!game.hasGlobalHistory(
+										"useCard",
+										evt => {
+											if (evt === trigger || (evt.cards ?? []).length !== 2) {
+												return false;
+											}
+											if (evt.card?.storage?.dcfuhui !== player) {
+												return false;
+											}
+											const suits2 = evt.cards.map(i => get.suit(i, evt.player)).sort(sort);
+											return suits.length === suits2.length && suits.every((suit, i) => suit == suits2[i]);
+										},
+										trigger
+									)
+								) {
 									await player.draw();
 								}
 							});
@@ -3772,7 +3810,7 @@ const skills = {
 					}
 					return lib.filter.filterCard.apply(this, arguments);
 				});
-				next.set("dcmohua", true)
+				next.set("dcmohua", true);
 				next.set("manualConfirm", true);
 				next.set("openskilldialog", `${get.translation(event.name)}：请选择【${get.translation(card.name)}】的目标`);
 				next.set("cardx", card);
@@ -15831,10 +15869,7 @@ const skills = {
 				locked: false,
 				popup: false,
 				async content(event, trigger, player) {
-					player.addGaintag(
-						trigger.cards,
-						"dcxingmen"
-					);
+					player.addGaintag(trigger.cards, "dcxingmen");
 					player.addSkill("dcxingmen_directHit");
 				},
 			},

@@ -559,6 +559,54 @@ const translates = {
 	dcchouxi_info: "出牌阶段，你可将一张牌当作“溟”中的一张基本牌或普通锦囊牌使用（每种牌名每回合限一次），以此法使用牌无距离次数限制。",
 	dcjichao: "激潮",
 	dcjichao_info: "出牌阶段限一次，你可选择一项：1.令一名其他角色将随机一半数量的手牌（向上取整）和装备区的牌置于武将牌上，称为“溟”；2.令所有其他角色将所有牌置于武将牌上，称为“溟”，然后此选项失效直到你累计造成3点伤害。",
+	sm_shen_machao: "赛马神马超",
+	sm_shen_machao_prefix: "赛马|神",
+	sm_mabian: "马鞭",
+	sm_mabian_info: `若称号为“赛马娘”的角色因${get.poptip("rule_bianshenji")}将此牌置入你的装备区，你视为拥有其武将牌上的第一个技能直到失去此牌。`,
+	sm_kulian: "酷练",
+	sm_kulian_info: `锁定技，游戏开始时，你令所有角色依次装备牌堆中的一张坐骑牌，并从游戏外将一张${get.poptip("sm_mabian")}置入装备区，然后开始${get.poptip({
+		name: "比赛",
+		id: "sm_PrettyDerby",
+		info: `
+			1.每轮开始时，随机亮出两张${get.poptip("sm_PerttyDerby_reward")}，于本轮结束时执行效果<br>
+			2.全部${get.poptip("sm_PerttyDerby_reward")}亮出后，重新洗切奖励牌堆<br>
+			3.装备有${get.poptip("sm_mabian")}的角色称为“选手”<br>
+			4.装备坐骑的“选手”使用牌无距离限制，每回合首次对其他“选手”造成伤害后摸一张牌<br>
+			5.失去${get.poptip("sm_mabian")}的“选手”进行“退赛”，不再视为“选手”<br>
+			6.快乐第一，比赛第二
+		`,
+		type: "character",
+	})}。`,
+	sm_kulian_reward: "赛马奖励",
+	get sm_kulian_reward_info() {
+		return lib.poptip.getInfo("sm_PerttyDerby_reward");
+	},
+	sm_lema: "乐马",
+	sm_lema_info: "每回合限一次，你可以视为使用一张基本牌，然后摸X张牌（X为场上坐骑牌数量且至少为1）。",
+	sm_chaoxuan: "潮炫",
+	sm_chaoxuan_info: `锁定技，一次${get.poptip("sm_PrettyDerby")}结束时，你执行一次${get.poptip({
+		id: "sm_PerttyDerby_reward",
+		name: "赛马奖励",
+		info: `
+			1.受到伤害唯一最多<br>
+			<li><span style='font-family: yuanli'>奖励：回复全部体力</span><br>
+			2.手牌数唯一最多<br>
+			<li><span style='font-family: yuanli'>奖励：手牌上限改为体力上限</span><br>
+			3.体力值唯一最高<br>
+			<li><span style='font-family: yuanli'>奖励：增加1点体力上限</span><br>
+			4.装备区牌数唯一最多<br>
+			<li><span style='font-family: yuanli'>奖励：获得一张其他角色的装备牌</span><br>
+			5.击杀数唯一最多<br>
+			<li><span style='font-family: yuanli'>奖励：执行一个仅有出牌阶段的额外回合</span><br>
+			6.使用牌数唯一最多<br>
+			<li><span style='font-family: yuanli'>奖励：摸五张牌</span><br>
+			7.造成伤害唯一最多<br>
+			<li><span style='font-family: yuanli'>奖励：使用【杀】造成伤害+1</span>
+		`,
+		type: "character",
+	})}。`,
+	sm_wandou: "玩斗",
+	sm_wandou_info: "一名角色“退赛”时，你可令其将体力值调整至1点。",
 };
 
 export default translates;

@@ -1,6 +1,19 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	//sm-赛马
+	sm_mabian: {
+		derivation: "sm_shen_machao",
+		fullskin: true,
+		type: "equip",
+		subtype: "equip5",
+		skills: [],
+		ai: {
+			basic: {
+				equipValue: 7,
+			},
+		},
+	},
 	//26神黄月英的升级装备
 	zc26_zhuge: {
 		fullskin: true,
