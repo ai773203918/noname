@@ -8,16 +8,13 @@
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */
-import { ai, get, game, _status, ui, gnc } from "noname";
+import { ai, get, game, _status, ui } from "noname";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
-import { Channel } from "./channel/index.js";
 import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
-import { Concurrent } from "./concurrent/index.js";
-import { freezeButExtensible } from "@/util/index.js";
 import security from "@/util/security.js";
 import { ErrorManager } from "@/util/error.ts";
 import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
@@ -40,7 +37,6 @@ export class Library {
 	assetURL = assetURL;
 	userAgent = userAgentLowerCase;
 	characterDefaultPicturePath = characterDefaultPicturePath;
-	compatibleEdition = Boolean(typeof nonameInitialized == "string" && nonameInitialized.match(/\/(?:com\.widget|yuri\.nakamura)\.noname\//));
 	changeLog = [];
 	updates = [];
 	canvasUpdates = [];
@@ -387,30 +383,7 @@ export class Library {
 	 *
 	 * 你可以将hook机制类比为event.trigger()，但是这里只能放同步代码
 	 */
-	hooks = freezeButExtensible({ ...defaultHooks });
-
-	/**
-	 * **无名杀频道推送机制**
-	 *
-	 * 鉴于`Javascript`的特性及自身对所需功能的思考，这是一个参考`Golang`的`channel`设计的、完全和`go channel`不一样的异步消息传递对象
-	 *
-	 * 当且仅当接收方和发送方均存在时进行消息传递，完全保证信息传递的单一性（发送方/接收方一旦确定则无法更改）和准确性（发送方必然将消息发送给接收方）
-	 *
-	 * 若存在发送方/接收方时调用`send`/`receive`，将报错
-	 *
-	 * 若需要异步/不报错发送信息，请等待`lib.actor`
-	 *
-	 * @example
-	 * // 创建一个频道
-	 * const channel = new lib.channel();
-	 *
-	 * // 从某个角落接收channel发出的消息，若无消息则等待
-	 * const message = await channel.receive();
-	 *
-	 * // 从某个角落向channel发消息，若无消息接收则等待
-	 * await channel.send(item);
-	 */
-	channel = Channel;
+	hooks = { ...defaultHooks };
 
 	/**
 	 * **无名杀消息推送库**
@@ -438,11 +411,6 @@ export class Library {
 	 * lib.announce.unsubscribe("skinChange", method);
 	 */
 	announce = new Announce(new EventTarget(), new WeakMap());
-
-	/**
-	 * 提供一组用于并发异步操作的静态工具方法
-	 */
-	concurrent = Concurrent;
 
 	objectURL = new Map();
 	hookmap = {};
@@ -9200,116 +9168,6 @@ export class Library {
 			game.export(lib.init.encode(JSON.stringify(_status.videoToSave)), "无名杀 - 录像 - " + _status.videoToSave.name[0] + " - " + _status.videoToSave.name[1]);
 		}
 	}
-	/**
-	 * @param {Function} fn
-	 */
-	genAsync(fn) {
-		return gnc.of(fn);
-	}
-	genAwait(item) {
-		return gnc.is.generator(item)
-			? gnc.of(function* () {
-					for (const content of item) {
-						yield content;
-					}
-				})()
-			: Promise.resolve(item);
-	}
-	gnc = {
-		of: fn => gnc.of(fn),
-		is: {
-			coroutine: item => gnc.is.coroutine(item),
-			generatorFunc: item => gnc.is.generatorFunc(item),
-			generator: item => gnc.is.generator(item),
-		},
-	};
-	comparator = {
-		equals: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] !== arguments[0]) {
-					return false;
-				}
-			}
-			return true;
-		},
-		equalAny: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] === arguments[0]) {
-					return true;
-				}
-			}
-			return false;
-		},
-		notEquals: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] === arguments[0]) {
-					return false;
-				}
-			}
-			return true;
-		},
-		notEqualAny: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] !== arguments[0]) {
-					return true;
-				}
-			}
-			return false;
-		},
-		typeEquals: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return arguments[0] !== null;
-			}
-			const type = typeof arguments[0];
-			for (let i = 1; i < arguments.length; ++i) {
-				if (type !== arguments[i]) {
-					return false;
-				}
-			}
-			return true;
-		},
-	};
-	creation = {
-		get array() {
-			return [];
-		},
-		get object() {
-			return {};
-		},
-		get nullObject() {
-			return Object.create(null);
-		},
-		get string() {
-			return "";
-		},
-	};
 	linq = {
 		cselector: {
 			hasAttr: name => `[${name}]`,

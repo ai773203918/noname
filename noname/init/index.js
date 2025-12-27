@@ -1,34 +1,27 @@
 /// <reference types="vite/client" />
-import { rootURL, lib, game, get, _status, ui, ai, gnc } from "noname";
-import { userAgentLowerCase, device } from "@/util/index.js";
+import { rootURL, lib, game, get, _status, ui, ai } from "noname";
+import { userAgentLowerCase } from "@/util/index.js";
 import * as config from "@/util/config.js";
 import { initializeSandboxRealms } from "@/util/initRealms.js";
 import { setOnError } from "@/util/error.ts";
 import security from "@/util/security.js";
-import { Mutex } from "@/util/mutex.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
 import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
 
 // 无名杀，启动！
 export async function boot() {
-	for (const link of document.head.querySelectorAll("link")) {
-		if (link.href.includes("app/color.css")) {
-			link.remove();
-			break;
-		}
-	}
-	// 不想看，反正别动
-	if (typeof __dirname === "string" && __dirname.length) {
-		const dirsplit = __dirname.split("/");
-		for (let i = 0; i < dirsplit.length; i++) {
-			if (dirsplit[i]) {
-				var c = dirsplit[i][0];
-				lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
-			}
-		}
-		lib.configprefix += "_";
-	}
+	// // 不想看，反正别动
+	// if (typeof __dirname === "string" && __dirname.length) {
+	// 	const dirsplit = __dirname.split("/");
+	// 	for (let i = 0; i < dirsplit.length; i++) {
+	// 		if (dirsplit[i]) {
+	// 			var c = dirsplit[i][0];
+	// 			lib.configprefix += /[A-Z]|[a-z]/.test(c) ? c : "_";
+	// 		}
+	// 	}
+	// 	lib.configprefix += "_";
+	// }
 
 	await import("./polyfill.js");
 	// 设定游戏加载时间，超过时间未加载就提醒
@@ -47,37 +40,6 @@ export async function boot() {
 
 	setWindowListener();
 	const promiseErrorHandler = await setOnError({ lib, game, get, _status });
-
-	// 确认手机端平台
-	lib.device = device;
-
-	// 清瑤？過於先進以至於無法運行我們的落後本體，故也就不再檢測
-
-	// Electron平台
-	if (typeof window.require === "function") {
-		const { nodeReady } = await import("./node.js");
-		nodeReady();
-	} else {
-		lib.path = (await import("path-browserify-esm")).default;
-		window.onbeforeunload = function (e) {
-			if (config.get("confirm_exit") && !_status.reloading) {
-				e.preventDefault();
-				e.returnValue = "";
-			}
-		};
-
-		// 仅在“确实是移动端客户端/cordova环境”时才走 cordova 分支；
-		// 否则（如 macOS 桌面 Safari/Chrome、普通手机浏览器）应走 browser 分支，避免请求 /cordova.js 并卡死在 deviceready。
-		const isCordovaLike = typeof window.cordova !== "undefined" || typeof window.NonameAndroidBridge !== "undefined" || typeof window.noname_shijianInterfaces !== "undefined";
-
-		if (import.meta.env.DEV || typeof lib.device == "undefined" || !isCordovaLike) {
-			const { browserReady } = await import("./browser.js");
-			await browserReady();
-		} else {
-			const { cordovaReady } = await import("./cordova.js");
-			await cordovaReady();
-		}
-	}
 
 	await loadConfig();
 
@@ -100,7 +62,7 @@ export async function boot() {
 	await initializeSandboxRealms(sandboxEnabled);
 
 	// 初始化security
-	await security.initSecurity({ lib, game, ui, get, ai, _status, gnc });
+	await security.initSecurity({ lib, game, ui, get, ai, _status });
 
 	CacheContext.setProxy({ lib, game, get });
 
@@ -393,7 +355,7 @@ export async function boot() {
 		_status.onprepare = Object.freeze(
 			lib.onprepare.map(fn => {
 				if (typeof fn !== "function") return;
-				return (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn)();
+				return fn();
 			})
 		);
 	}
@@ -460,7 +422,7 @@ export async function boot() {
 	window.resetGameTimeout = resetGameTimeout;
 	const libOnload = lib.onload;
 	delete lib.onload;
-	await runCustomContents(libOnload);
+	libOnload.forEach(fn => fn());
 
 	ui.updated();
 	game.documentZoom = game.deviceZoom;
@@ -593,7 +555,7 @@ export async function boot() {
 
 	const libOnload2 = lib.onload2;
 	delete lib.onload2;
-	await runCustomContents(libOnload2);
+	libOnload2.forEach(fn => fn());
 
 	await Promise.allSettled(loadingCustomStyle);
 	delete window.game;
@@ -1159,6 +1121,13 @@ function setWindowListener() {
 			// }
 		}
 	};
+	
+	window.onbeforeunload = function (e) {
+		if (config.get("confirm_exit") && !_status.reloading) {
+			e.preventDefault();
+			e.returnValue = "";
+		}
+	};
 }
 
 async function createBackground() {
@@ -1218,31 +1187,6 @@ function createTouchDraggedFilter() {
 		if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
 			_status.dragged = true;
 		}
-	});
-}
-
-/**
- * @async
- * @param {((function(Mutex): void) | GeneratorFunction)[]} contents
- */
-function runCustomContents(contents) {
-	if (!Array.isArray(contents)) {
-		return;
-	}
-
-	const mutex = new Mutex();
-	// 将生成器函数转换成genCoroutin
-	const tasks = contents
-		.filter(fn => typeof fn === "function")
-		.map(fn => (gnc.is.generatorFunc(fn) ? gnc.of(fn) : fn))
-		.map(fn => fn(mutex));
-
-	return Promise.allSettled(tasks).then(results => {
-		results.forEach(result => {
-			if (result.status === "rejected") {
-				console.error(result.reason);
-			}
-		});
 	});
 }
 

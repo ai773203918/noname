@@ -10,8 +10,8 @@
  * @typedef { { mode: string, name: string[], name1: string, name2?: string, time: number, video: Video, win: boolean } } Videos
  */
 
-import { _status, lib, get, ai, ui, gnc } from "noname";
-import { isClass, userAgentLowerCase, Uninstantable, GeneratorFunction, AsyncFunction, delay, nonameInitialized } from "@/util/index.js";
+import { _status, lib, get, ai, ui } from "noname";
+import { isClass, userAgentLowerCase, GeneratorFunction, AsyncFunction, delay } from "@/util/index.js";
 
 import { DynamicStyle } from "./dynamic-style/index.js";
 import { GamePromises } from "./promises.js";
@@ -789,15 +789,15 @@ export class Game {
 		if (!id) {
 			throw new TypeError();
 		}
-		if (lib.comparator.typeEquals(short, "object")) {
+		if (typeof short === "object") {
 			config = short;
 			short = null;
 		}
-		if (lib.comparator.typeEquals(name, "object")) {
+		if (typeof name === "object") {
 			config = name;
 			name = null;
 		}
-		if (!lib.comparator.typeEquals(short, "string") && short) {
+		if (typeof short !== "string" && short) {
 			name = short;
 		}
 		if (["default", "all"].includes(type)) {
@@ -2977,11 +2977,7 @@ export class Game {
 			/** @type {Promise<any>} */
 			let promise;
 			if (typeof content === "function") {
-				if (gnc.is.generator(content)) {
-					promise = gnc.of(content)(lib, game, ui, get, ai, _status);
-				} else {
-					promise = Promise.try(content, lib, game, ui, get, ai, _status);
-				}
+				promise = Promise.try(content, lib, game, ui, get, ai, _status);
 			} else {
 				// 目前假定content是一个合法的对象
 				promise = Promise.resolve(content);
@@ -3017,7 +3013,7 @@ export class Game {
 					return;
 				}
 			} else {
-				object = await (gnc.is.generatorFunc(object) ? gnc.of(object) : object)(lib, game, ui, get, ai, _status);
+				object = await object(lib, game, ui, get, ai, _status);
 			}
 			noEval = true;
 		}
@@ -3166,7 +3162,7 @@ export class Game {
 				if (precontent) {
 					_status.extension = name;
 
-					await (gnc.is.generatorFunc(precontent) ? gnc.of(precontent) : precontent).call(object, config);
+					await precontent.call(object, config);
 					delete _status.extension;
 				}
 				if (prepare) {
