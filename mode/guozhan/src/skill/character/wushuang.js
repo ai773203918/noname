@@ -2360,11 +2360,14 @@ export default {
 	},
 	gz_mowang: {
 		trigger: {
-			player: ["dieBefore", "rest"],
+			player: ["dieBefore", "rest", "dieAfter"],
 		},
 		filter(event, player, name) {
 			if (name == "rest") {
 				return true;
+			}
+			if (name == "dieAfter") {
+				return event.reserveOut;
 			}
 			return event.getParent().name != "giveup" && player.maxHp > 0;
 		},
@@ -2384,29 +2387,36 @@ export default {
 					player.changeSkin("gz_mowang", `${player.skin.name2}_dead`);
 				}
 				return;
-			}
-			if (_status._rest_return?.[player.playerid]) {
-				trigger.cancel();
-			} else {
+			} else if (event.triggername == "dieAfter") {
 				if (player.getStorage("gz_danggu").length) {
 					player.logSkill("gz_mowang");
-					trigger.restMap = {
-						type: "round",
-						count: 1,
-						audio: "shichangshiRest",
-					};
-					trigger.excludeMark.add("gz_danggu");
-					trigger.includeOut = true;
+					game.broadcastAll(function () {
+						if (lib.config.background_speak) {
+							game.playAudio("die", "shichangshiRest");
+						}
+					});
+					await player.rest({ type: "round", count: 1 }); //, audio: "shichangshiRest"
+				}
+			} else {
+				if (player.isRest()) {
+					trigger.cancel();
 				} else {
-					game.broadcastAll(player => {
-						if (player.name1 == "gz_shichangshi") {
-							player.node.name.innerHTML = get.slimName(player.name1);
-						}
-						if (player.name2 == "gz_shichangshi") {
-							player.node.name2.innerHTML = get.slimName(player.name2);
-						}
-					}, player);
-					player.changeSkin("gz_mowang", "gz_shichangshi_dead");
+					if (player.getStorage("gz_danggu").length) {
+						trigger.excludeMark.add("gz_danggu");
+						trigger.noDieAudio = true;
+						//trigger.includeOut = true;
+						trigger.reserveOut = true;
+					} else {
+						game.broadcastAll(player => {
+							if (player.name1 == "gz_shichangshi") {
+								player.node.name.innerHTML = get.slimName(player.name1);
+							}
+							if (player.name2 == "gz_shichangshi") {
+								player.node.name2.innerHTML = get.slimName(player.name2);
+							}
+						}, player);
+						player.changeSkin("gz_mowang", "gz_shichangshi_dead");
+					}
 				}
 			}
 		},
