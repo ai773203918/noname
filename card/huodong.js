@@ -1124,7 +1124,7 @@ game.import("card", function () {
 						player: 1,
 					},
 					tag: {
-						damage: 0.2,
+						damage: 0.6,
 						multitarget: 1,
 						multineg: 1,
 					},

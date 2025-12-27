@@ -515,7 +515,7 @@ const cards = {
 		ai: {
 			order: 5,
 			tag: {
-				damage: 0.5,
+				damage: 0.6,
 				gain: 0.5,
 				loseCard: 1,
 				respondShan: 1,
