@@ -2196,6 +2196,21 @@ export class Click {
 			delete this._waitingfordrag;
 		}
 	}
+	cardmouseenter() {
+		if (!lib.config.spread_card) return;
+		if (this.parentNode?.parentNode?.parentNode !== ui.me) return;
+		if (ui.selected.cards.length) return;
+		ui._handcardHover = this;
+		ui.updatehl();
+	}
+	cardmouseleave() {
+		if (ui._handcardHover === this) {
+			ui._handcardHover = null;
+			if (!ui.selected.cards.length) {
+				ui.updatehl();
+			}
+		}
+	}
 	playertouchstart(e) {
 		if (e.touches.length != 1 || !lib.config.enable_drag) {
 			return;

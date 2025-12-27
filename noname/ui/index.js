@@ -163,6 +163,11 @@ export class UI {
 	 */
 	css;
 	/**
+	 * PC端悬浮的手牌
+	 * @type {HTMLElement | null}
+	 */
+	_handcardHover = null;
+	/**
 	 * 计算手牌展开偏移量
 	 * @param {HTMLElement[]} cards - 手牌数组
 	 * @param {{cardWidth?: number, currentMargin?: number}} [options] - 配置选项
@@ -177,7 +182,9 @@ export class UI {
 		if (currentMargin >= cardWidth - 2) return result;
 
 		for (let i = 0; i < cards.length; i++) {
-			if (cards[i].classList && cards[i].classList.contains("selected")) {
+			const isSelected = cards[i].classList?.contains("selected");
+			const isHovered = !lib.config.touchscreen && cards[i] === ui._handcardHover;
+			if (isSelected || isHovered) {
 				if (result.selectedIndex !== -1) {
 					result.selectedIndex = -1;
 					break;
