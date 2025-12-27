@@ -728,6 +728,9 @@ export class Card extends HTMLDivElement {
 			if (_status.event.player != game.me) {
 				return;
 			}
+			if (this.parentNode && this.parentNode.parentNode && this.parentNode.parentNode.parentNode == ui.me) {
+				ui.updatehl();
+			}
 			if (this._transform && this.parentNode && this.parentNode.parentNode && this.parentNode.parentNode.parentNode == ui.me && (!_status.mousedown || _status.mouseleft) && (!this.parentNode.parentNode.classList.contains("scrollh") || game.layout == "long2" || game.layout == "nova")) {
 				if (bool) {
 					this.style.transform = this._transform + " translateY(-20px)";

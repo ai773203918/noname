@@ -3703,6 +3703,12 @@ export class Library {
 					init: false,
 					unfrequent: true,
 				},
+				spread_card: {
+					name: "手牌展开",
+					intro: "手牌折叠时，点击卡牌会展开周围的手牌",
+					init: true,
+					unfrequent: false,
+				},
 				card_animation_info: {
 					name: "卡牌动画信息(Beta)",
 					intro: "开启后会在卡牌动画中显示一些信息来源并启用虚拟牌动画(Beta测试功能，如遇异常可关闭该功能)",
