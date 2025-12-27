@@ -141,6 +141,9 @@ const skills = {
 			if (!event.respondTo || !Array.isArray(event.respondTo)) {
 				return false;
 			}
+			if (!player.isPhaseUsing()) {
+				return false;
+			}
 			if (event.player == event.respondTo[0]) {
 				return false;
 			}
@@ -367,7 +370,7 @@ const skills = {
 								return get.event("canChoose").includes(button.link);
 							})
 							.set("ai", button => {
-								const player = get.player(),
+								const { player, getNum } = get.event(),
 									trigger = get.event().getTrigger();
 								if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
@@ -380,11 +383,11 @@ const skills = {
 									return check(cards.maxBy(check));
 								}
 								if (button.link == "discard") {
-									const num = getNum(trigger.player, player);
-									return num * get.effect(player, { name: "guohe_copy2" }, player, player);
+									return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
 								}
 								return get.damageEffect(player, player, player);
 							})
+							.set("getNum", getNum(player, target) + 1)
 							.set("canChoose", canChoose)
 							.forResult()
 					: {

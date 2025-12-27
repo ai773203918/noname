@@ -213,11 +213,32 @@ const skills = {
 			}
 			return false;
 		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl("一张", "两张", "cancel2")
+				.set("prompt", get.prompt2(event.skill, trigger.player))
+				.set("ai", () => {
+					const { resultx, att } = get.event();
+					if (!resultx) {
+						return "cancel2";
+					}
+					return att > 0 ? 1 : 0;
+				})
+				.set("att", get.attitude(player, trigger.player))
+				.set("resultx", get.info(event.skill).check(trigger, player))
+				.forResult();
+			if (result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.index + 1,
+				};
+			}
+		},
 		async content(event, trigger, player) {
-			const [target] = event.targets;
+			const { targets: [target], cost_data: num } = event;
 			player.addTempSkill(`${event.name}_used`, "roundStart");
 			player.markAuto(`${event.name}_used`, target);
-			await player.draw(2);
+			await player.draw(num);
 			if (player == target) {
 				return;
 			}
@@ -227,7 +248,7 @@ const skills = {
 				player.addGaintag(hs, `${event.name}_tag`);
 			}
 			const result = await player
-				.chooseToGive(target, "he", true, 2)
+				.chooseToGive(target, "he", true, num)
 				.set("hs", hs)
 				.set("custom", {
 					add: {

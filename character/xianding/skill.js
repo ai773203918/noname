@@ -2679,6 +2679,9 @@ const skills = {
 		},
 		trigger: { source: "damageSource" },
 		forced: true,
+		filter(event, player) {
+			return player.maxHp > player.countCards("h");
+		},
 		async content(event, trigger, player) {
 			if (player.maxHp > player.countCards("h")) {
 				await player.drawTo(player.maxHp);
@@ -2716,9 +2719,23 @@ const skills = {
 			trigger.player.addGaintag([card1], "eternal_dcweiwei_effect");
 			player.setStorage("dcweiwei_effect", [trigger.player, card1], true);
 			player.addTempSkill("dcweiwei_effect");
-			if (player.hasUseTarget(card2)) {
+			const card = card2;
+			player
+				.when({
+					global: "useCardAfter",
+				})
+				.filter(evt => evt == trigger.getParent())
+				.step(async (event, trigger, player) => {
+					if (!player.getCards("h").includes(card)) {
+						return;
+					}
+					if (player.hasUseTarget(card)) {
+						await player.chooseUseTarget(card);
+					}
+				});
+			/*if (player.hasUseTarget(card2)) {
 				await player.chooseUseTarget(card2);
-			}
+			}*/
 		},
 		chooseCard(player, targets, source, eventId) {
 			const target = targets[0] == player ? targets[1] : targets[0];
@@ -2782,27 +2799,38 @@ const skills = {
 			if (!game.hasPlayer(current => !current.isLinked())) {
 				return false;
 			}
-			for (let name of ["sha", "shan"]) {
-				let card = get.autoViewAs({ name }, []);
-				if (event.filterCard(card, player, event)) {
-					return true;
+			return get.inpileVCardList(info => {
+				if (info[0] != "basic") {
+					return false;
 				}
-			}
-			return false;
+				const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true });
+				return event.filterCard(card, player, event);
+			}).length > 0;
 		},
 		chooseButton: {
 			dialog(event, player) {
-				let list = ["sha", "shan"].filter(name => event.filterCard(get.autoViewAs({ name }, []), player, event)).map(name => ["basic", "", name]);
+				const list = get.inpileVCardList(info => {
+					if (info[0] != "basic") {
+						return false;
+					}
+					const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true });
+					return event.filterCard(card, player, event);
+				});
 				return ui.create.dialog("镇御", [list, "vcard"]);
 			},
-			check() {
-				return 1;
+			check(button) {
+				if (get.event().getParent().type != "phase") {
+					return 1;
+				}
+				return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: butotn.link[3], isCard: true }));
 			},
 			backup(links, player) {
 				return {
 					audio: "dcsbzhenyu",
 					viewAs: {
 						name: links[0][2],
+						nature: links[0][3],
+						isCard: true,
 					},
 					selectCard: -1,
 					filterCard: () => false,
@@ -2823,6 +2851,7 @@ const skills = {
 							player.line(targets[0]);
 							await targets[0].link(true);
 							player.addSkill("dcsbzhenyu_disable");
+							player.markAuto("dcsbzhenyu_disable", event.result.card.name);
 						}
 					},
 				};
@@ -2840,13 +2869,13 @@ const skills = {
 				},
 				trigger: {
 					player: "useCard",
-					global: "roundEnd",
+					//global: "roundEnd",
 				},
 				filter(event, player) {
 					if (event.name != "useCard") {
 						return true;
 					}
-					if (get.type(event.card) != "basic") {
+					if (!player.getStorage("dcsbzhenyu_disable").includes(get.name(event.card))) {
 						return false;
 					}
 					return player.hasHistory("lose", evt => {

@@ -446,10 +446,15 @@ const skills = {
 	dccangming: {
 		audio: 2,
 		trigger: {
-			global: "gameDrawAfter",
+			//global: "gameDrawAfter",
+			global: "phaseBefore",
+			player: "enterGame",
 		},
 		forced: true,
 		filter(event, player) {
+			if (event.name == "phase" && game.phaseNumber != 0) {
+				return false;
+			}
 			return !!game.countPlayer(target => target.countCards("h") > 0);
 		},
 		logTarget() {
@@ -508,9 +513,9 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const { cards } = trigger;
-					await player.draw();
-					//const types = cards.map(card => get.type2(card)).unique();
-					//await player.draw(types.length);
+					//await player.draw();
+					const types = cards.map(card => get.color(card)).unique();
+					await player.draw(types.length);
 				},
 			},
 			gain: {
@@ -659,7 +664,7 @@ const skills = {
 					choice: links[0],
 					manualConfirm: true,
 					filterTarget(card, player, target) {
-						return target != player && target.countCards("h") > 0;
+						return target != player && target.countCards("he") > 0;
 					},
 					selectTarget() {
 						const { choice } = get.info("dcjichao_backup");
