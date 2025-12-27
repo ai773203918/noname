@@ -192,6 +192,7 @@ export class Player extends HTMLDivElement {
 			node.identity.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.identity);
 			if (lib.config.touchscreen) {
 				player.addEventListener("touchstart", ui.click.playertouchstart);
+				player.addEventListener("touchmove", ui.click.playertouchmove);
 			}
 		}
 	}
