@@ -33804,8 +33804,14 @@ const skills = {
 			player: ["loseAfter", "disableEquipAfter", "enableEquipAfter"],
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "phaseBefore"],
 		},
+		init(player, skill) {
+			player.addExtraEquip(skill, "bagua", true, player => !player.getEquips(2).length && lib.card.bagua);
+		},
+		onremove(player, skill) {
+			delete player.storage[skill];
+			player.removeExtraEquip(skill);
+		},
 		forced: true,
-		onremove: true,
 		derivation: "reqicai",
 		filter(event, player) {
 			if (event.name == "disableEquip" || event.name == "enableEquip") {
