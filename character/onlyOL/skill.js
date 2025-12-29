@@ -2901,7 +2901,7 @@ const skills = {
 			return event.getd?.()?.length;
 		},
 		async content(event, trigger, player) {
-			await player.addSkill(event.name + "_effect");
+			player.addSkill(event.name + "_effect");
 		},
 		group: ["olsbwujing_draw"],
 		subSkill: {

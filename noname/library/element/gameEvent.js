@@ -687,6 +687,10 @@ export class GameEvent {
 								return mod;
 							}
 						}
+						/*if (evt.ignoreMod) {
+							console.log(card);
+							card.cards = [];
+						}*/
 						return get.filter(evt.filterCard2).apply(this, arguments);
 					};
 				}

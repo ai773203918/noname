@@ -1940,10 +1940,7 @@ export default {
 			if (!map?.count || map?.count < 0) {
 				return false;
 			}
-			if (map?.type == "round" && event.player != player) {
-				return false;
-			}
-			if (map?.type == "round" && event.skill) {
+			if (map?.type == "round" && (event.player != player || event.skill)) {
 				return false;
 			}
 			if (player.isIn()) {
@@ -1958,22 +1955,24 @@ export default {
 					map.count--;
 				}, map);
 			}
-			trigger._rest_return = true;
+			player.markSkill("_rest_return");
+			trigger[event.name] = true;
 			if (!map.count) {
-				game.broadcastAll(function (player) {
-					player.classList.remove("out");
-				}, player);
-				player.removeSkill("undist");
-				game.log(player, "移回了游戏");
-				delete _status._rest_return[player.playerid];
-				await player.recoverTo(player.maxHp);
-				//生成restEnd时机
-				const next = game.createEvent("restEnd", false);
-				next.setContent("emptyEvent");
-				next.player = player;
-				await next;
+				await player.restEnd();
 			}
 		},
+		intro: {
+			markcount(storage, player) {
+				return _status._rest_return?.[player.playerid].count || 0;
+			},
+			content(storage, player) {
+				const { type, count } = _status._rest_return?.[player.playerid] || {};
+				if (!count) {
+					return `无限休整中，撅醒时机未知`;
+				}
+				return `还需休整${count}${type == "phase" ? "回合" : "轮"}`;
+			}
+		}
 	},
 	/**
 	 * @deprecated
