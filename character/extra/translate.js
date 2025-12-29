@@ -563,7 +563,6 @@ const translates = {
 	sp_sm_shen_machao_prefix: "SP|赛马|神",
 	sm_mabian: "马鞭",
 	sm_mabian_info: `若称号为“赛马娘”的角色因${get.poptip("rule_bianshenji")}将此牌置入你的装备区，你视为拥有其武将牌上的第一个技能直到失去此牌。`,
-	sm_mabian_skill: "马鞭",
 	sm_kulian: "酷练",
 	sm_kulian_info: `锁定技，游戏开始时，你令所有角色依次装备牌堆中的一张坐骑牌，并从游戏外将一张${get.poptip("sm_mabian")}置入装备区，然后开始${get.poptip({
 		name: "比赛",

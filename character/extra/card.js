@@ -60,7 +60,59 @@ const cards = {
 		fullskin: true,
 		type: "equip",
 		subtype: "equip5",
-		skills: ["sm_mabian_skill"],
+		async onEquip(event, trigger, player) {
+			const { card } = event,
+				skill = "sm_mabian_skill";
+			if (event.getParent().name != "equip") {
+				return;
+			}
+			const evt = event.getParent(2),
+				target = evt.player;
+			if (!get.info(evt.name)?.transformSkill) {
+				return;
+			}
+			const skills = [];
+			for (const name of get.nameList(target)) {
+				const list = get.character(name, 3);
+				if (!list?.length || !list.includes(evt.name)) {
+					continue;
+				}
+				if (get.characterIntro(name) != "赛马娘") {
+					continue;
+				}
+				skills.add(list[0]);
+			}
+			player.addSkill(skill);
+			const map = player.getStorage(skill, new Map());
+			map.set(card, skills);
+			player.setStorage(skill, map);
+			player.addAdditionalSkill(skill, Array.from(map.values()).flat());
+		},
+		forceDie: true,
+		async onLose(event, trigger, player) {
+			const { card } = event,
+				skill = "sm_mabian_skill";
+			const map = player.getStorage(skill, new Map());
+			map.delete(card);
+			player.setStorage(skill, map);
+			player.addAdditionalSkill(skill, Array.from(map.values()).flat());
+			if (!map.size) {
+				player.removeSkill(skill);
+			}
+		},
+		cardPrompt(card, player) {
+			if (!card || !player) {
+				return lib.translate["sm_mabian_info"];
+			}
+			const skill = "sm_mabian_skill",
+				map = player.getStorage(skill, new Map()),
+				vcard = card[card.cardSymbol];
+			if (!vcard || !map.has(vcard)) {
+				return lib.translate["sm_mabian_info"];
+			}
+			const skills = map.get(vcard);
+			return `你视为拥有着${skills.map(name => get.poptip(name))}`;
+		},
 		ai: {
 			basic: {
 				equipValue: 7,

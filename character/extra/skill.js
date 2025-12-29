@@ -1051,6 +1051,11 @@ const skills = {
 			}
 		},
 	},
+	sm_mabian_skill: {
+		equipSkill: true,
+		onremove: true,
+		charlotte: true,
+	},
 	//新杀神孙权
 	dccangming: {
 		audio: 2,
