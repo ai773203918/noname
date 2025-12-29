@@ -7572,7 +7572,7 @@ const skills = {
 							return;
 						}
 						const sum = num + numx;
-						if (numx > 0 || sum > 1) {
+						if (numx > 0 || sum >= 1) {
 							return sum;
 						}
 					},
