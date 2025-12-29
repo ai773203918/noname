@@ -304,10 +304,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
-				if (info[3]) {
+				if (info[3] || info[0] == "delay") {
 					return false;
 				}
-				return get.tag({ name: info[2] }, "damage") > 0.5;
+				return get.tag({ name: info[2] }, "damage");
 			});
 			if (list.length) {
 				const result = await player
@@ -384,12 +384,12 @@ const skills = {
 				onremove: true,
 				mod: {
 					cardEnabled(card, player) {
-						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
+						if ((get.type(card) == "equip" || (get.tag(card, "damage") && get.type(card) != "delay")) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
-						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
+						if ((get.type(card) == "equip" || (get.tag(card, "damage") && get.type(card) != "delay")) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
 							return false;
 						}
 					},
@@ -2543,7 +2543,7 @@ const skills = {
 						})
 					) {
 						delete player._starruijun_effect_use;
-						return [1, 1 + player.getDamagedHp(), 1, -1.8 * player.countCards("hs", i => get.tag(i, "damage") > 0.5)];
+						return [1, 1 + player.getDamagedHp(), 1, -1.8 * player.countCards("hs", i => get.tag(i, "damage") && get.type(i) != "delay")];
 					}
 					delete player._starruijun_effect_use;
 				},

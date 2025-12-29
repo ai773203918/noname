@@ -764,7 +764,7 @@ const skills = {
 				audio: "olzhuoyue",
 				trigger: { global: "useCardToTargeted" },
 				filter(event, player) {
-					return get.tag(event.card, "damage") > 0.5 && event.target.hasSkill("jiu") && event.target.hasUseTarget({ name: "tao", isCard: true }, false, false);
+					return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.target.hasSkill("jiu") && event.target.hasUseTarget({ name: "tao", isCard: true }, false, false);
 				},
 				logTarget: "target",
 				prompt2(event, player) {
@@ -6501,7 +6501,7 @@ const skills = {
 						if (!lib.filter.cardDiscardable(card, player, "renxia_discard")) {
 							return false;
 						}
-						return card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5);
+						return card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") && get.type(card) != "delay");
 					}, "he");
 				}
 				return true;
@@ -6511,7 +6511,7 @@ const skills = {
 				if (button.link == "discard") {
 					return 2;
 				}
-				let bool = card => get.type(card) == "trick" && get.tag(card, "damage") > 0.5;
+				let bool = card => get.type(card) == "trick" && get.tag(card, "damage") && get.type(card) != "delay";
 				if (player.countCards("h", "sha") > 1 && player.countCards("h", bool) > 1) {
 					return 1;
 				}
@@ -6532,12 +6532,12 @@ const skills = {
 								if (!lib.filter.cardDiscardable(card, player, "renxia_discard")) {
 									return false;
 								}
-								return card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5);
+								return card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") && get.type(card) != "delay");
 							}, "he")
 						) {
 							await player.chooseToDiscard(2, "he", true).set("ai", card => {
 								let player = get.player();
-								let bool = card => get.type(card) == "trick" && get.tag(card, "damage") > 0.5;
+								let bool = card => get.type(card) == "trick" && get.tag(card, "damage") && get.type(card) != "delay";
 								if (card.name == "sha" || bool(card)) {
 									return 10 - get.value(card);
 								}
@@ -6566,7 +6566,7 @@ const skills = {
 				async content(event, trigger, player) {
 					while (true) {
 						await player.draw(2);
-						if (player.hasCard(card => card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5), "h")) {
+						if (player.hasCard(card => card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0), "h")) {
 							break;
 						}
 					}
@@ -12858,7 +12858,7 @@ const skills = {
 							return (
 								!player.getHistory("sourceDamage", evt2 => {
 									return evt2.card && evt2.card == evt.card;
-								}).length && get.tag(evt.card, "damage") > 0.5
+								}).length && get.tag(evt.card, "damage") && get.type(evt.card) != "delay"
 							);
 						})
 						.indexOf(event) >= 2
@@ -12883,7 +12883,7 @@ const skills = {
 		},
 		init(player) {
 			player.addSkill("oltuishi_count");
-			const history = player.getHistory("useCard", evt => evt.finished && get.tag(evt.card, "damage") > 0.5 && !player.hasHistory("sourceDamage", evt2 => evt2.card === evt.card));
+			const history = player.getHistory("useCard", evt => evt.finished && get.tag(evt.card, "damage") && get.type(evt.card) != "delay" && !player.hasHistory("sourceDamage", evt2 => evt2.card === evt.card));
 			history.length > 0 && player.addMark("oltuishi_count", history.length, false);
 		},
 		onremove(player) {
@@ -12899,7 +12899,7 @@ const skills = {
 				},
 				filter(event, player) {
 					if (event.name === "useCard") {
-						return get.tag(event.card, "damage") > 0.5 && !player.hasHistory("sourceDamage", evt2 => evt2.card === event.card);
+						return get.tag(event.card, "damage") && get.type(event.card) != "delay" && !player.hasHistory("sourceDamage", evt2 => evt2.card === event.card);
 					}
 					return player.hasMark("oltuishi_count");
 				},

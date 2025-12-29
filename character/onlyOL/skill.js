@@ -2301,7 +2301,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const [target] = event.targets;
 			player.awakenSkill(event.name);
-			let cards = Array.from(ui.discardPile.childNodes).filter(card => get.tag(card, "damage") > 0.5);
+			let cards = Array.from(ui.discardPile.childNodes).filter(card => get.tag(card, "damage") && get.type(card) != "delay");
 			if (cards.length > game.players.length) {
 				cards = cards.randomGets(game.players.length);
 			}
@@ -3808,7 +3808,7 @@ const skills = {
 			const effect = async target => {
 				const card = get.cardPile(card => {
 					const info = get.info(card);
-					return get.tag(card, "damage") > 0.5 && info.selectTarget && get.select(info.selectTarget).every(i => i == 1);
+					return get.tag(card, "damage") && get.type(card) != "delay" && info.selectTarget && get.select(info.selectTarget).every(i => i == 1);
 				});
 				if (card) {
 					const next = target.gain(card, "draw");
@@ -4839,7 +4839,7 @@ const skills = {
 				.set("ai", card => {
 					const player = get.player();
 					let value = 0;
-					if (get.tag(card, "damage") > 0.5) {
+					if (get.tag(card, "damage") && get.type(card) != "delay") {
 						value += player.getUseValue(card);
 					}
 					value += get.color(card, player) == "red" ? 7 - get.value(card, player) : 6 - get.value(card, player);
@@ -4956,9 +4956,9 @@ const skills = {
 		},
 		filter(event, player, name) {
 			if (name == "useCardToPlayer") {
-				return get.tag(event.card, "damage") > 0.5 && event.targets.length == 1 && player.countDiscardableCards(player, "he", card => get.color(card, player) == "red") && !player.hasSkill("olsibing_used");
+				return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.length == 1 && player.countDiscardableCards(player, "he", card => get.color(card, player) == "red") && !player.hasSkill("olsibing_used");
 			}
-			return get.tag(event.card, "damage") > 0.5 && event.targets.includes(player) && !player.hasHistory("damage", evt => evt.getParent("useCard") == event) && player.countDiscardableCards(player, "he", card => get.color(card, player) == "black") && player.hasUseTarget({ name: "sha", isCard: true }, false, false);
+			return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.includes(player) && !player.hasHistory("damage", evt => evt.getParent("useCard") == event) && player.countDiscardableCards(player, "he", card => get.color(card, player) == "black") && player.hasUseTarget({ name: "sha", isCard: true }, false, false);
 		},
 		logTarget(event, player, name) {
 			if (name == "useCardToPlayer") {
@@ -6382,7 +6382,7 @@ const skills = {
 		filter(event, player) {
 			const { card } = event;
 			return (
-				(card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5)) &&
+				(card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") && get.type(card) != "delay")) &&
 				game.hasPlayer(current => {
 					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(card, event.player, current);
 				})
@@ -9282,7 +9282,7 @@ const skills = {
 				.when("phaseJieshuBegin")
 				.filter(evt => evt.getParent() == trigger.getParent())
 				.then(() => {
-					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") > 0.5) && player.countDiscardableCards("he")) {
+					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") && get.type(evtx.card) != "delay") && player.countDiscardableCards("he")) {
 						player.chooseToDiscard("he", game.countGroup(), true);
 					}
 				});

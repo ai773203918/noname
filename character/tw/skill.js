@@ -3339,7 +3339,7 @@ const skills = {
 			if (player.hp < event.target.hp || get.distance(player, event.target) > 1 || !player.countCards("h")) {
 				return false;
 			}
-			return get.tag(event.card, "damage") > 0.5 && get.type(event.card) == "trick";
+			return get.tag(event.card, "damage") && get.type(event.card) == "trick";
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;

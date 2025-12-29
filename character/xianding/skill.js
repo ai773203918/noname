@@ -8077,7 +8077,10 @@ const skills = {
 				chooseButton: {
 					dialog(event, player) {
 						const list = get.inpileVCardList(info => {
-							return get.tag({ name: info[2] }, "damage") > 0.5;
+							if (info[0] == "delay") {
+								return false;
+							}
+							return get.tag({ name: info[2] }, "damage");
 						});
 						return ui.create.dialog("肃纲", [list, "vcard"]);
 					},
@@ -8950,7 +8953,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return player.hasCard(card => get.tag(card, "damage") > 0.5, "h");
+			return player.hasCard(card => get.tag(card, "damage") && get.type(card) != "delay", "h");
 		},
 		filterCard(card, player) {
 			const cardx = get.autoViewAs({
@@ -8960,7 +8963,7 @@ const skills = {
 				number: get.number(card, player),
 				isCard: true,
 			});
-			return get.tag(card, "damage") > 0.5 && game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
+			return get.tag(card, "damage") && get.type(card) != "delay" && game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
 		},
 		async content(event, trigger, player) {
 			const card = event.cards[0],
@@ -12121,7 +12124,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (typeof card == "object") {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcporong && get.name(card, player) == "sha") {
+					if (evt?.card && get.tag(evt.card, "damage") && get.type(evt.card) != "delay" && !evt.dcporong && get.name(card, player) == "sha") {
 						return num + 10;
 					}
 				}
@@ -12136,7 +12139,7 @@ const skills = {
 			if (!evt || !evt.card || evt.dcporong) {
 				return false;
 			}
-			return get.tag(evt.card, "damage") > 0.5;
+			return get.tag(evt.card, "damage") && get.type(evt.card) != "delay";
 		},
 		locked: false,
 		logTarget(event, player) {
@@ -12175,7 +12178,7 @@ const skills = {
 					return;
 				}
 				const evt = lib.skill.dcjianying.getLastUsed(player);
-				return evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcporong;
+				return evt?.card && get.tag(evt.card, "damage") && get.type(evt.card) != "delay" && !evt.dcporong;
 			},
 		},
 		//group: "dcporong_mark",
@@ -12183,7 +12186,7 @@ const skills = {
 			mark: {
 				init(player, skill) {
 					const evt = lib.skill.dcjianying.getLastUsed(player);
-					if (evt?.card && get.tag(evt.card, "damage") > 0.5 && !evt.dcporong) {
+					if (evt?.card && get.tag(evt.card, "damage") && get.type(evt.card) != "delay" && !evt.dcporong) {
 						player.addTip(skill, "破戎 可连击");
 					}
 				},
@@ -12197,7 +12200,7 @@ const skills = {
 				firstDo: true,
 				async content(event, trigger, player) {
 					if (event.triggername == "useCard1") {
-						if (get.tag(trigger.card, "damage") > 0.5) {
+						if (get.tag(trigger.card, "damage") && get.type(trigger.card) != "delay") {
 							player.addTip(event.name, "破戎 可连击");
 						} else {
 							player.removeTip(event.name);
@@ -12357,13 +12360,13 @@ const skills = {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
-			return get.type2(event.card) === "trick" && player.hasCard(card => get.tag(card, "damage") > 0.5, "h");
+			return get.type2(event.card) === "trick" && player.hasCard(card => get.tag(card, "damage") && get.type(card) != "delay", "h");
 		},
 		frequent: true,
 		content() {
 			const skill = "dcsblieji_effect";
 			player.addTempSkill(skill);
-			const cards = player.getCards("h", card => get.tag(card, "damage") > 0.5);
+			const cards = player.getCards("h", card => get.tag(card, "damage") && get.type(card) != "delay");
 			for (const card of cards) {
 				let tag = card.gaintag?.find(tag => tag.startsWith(skill));
 				if (tag) {
@@ -13057,7 +13060,7 @@ const skills = {
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			const num = player.storage.dcshangjue ? 2 : 1;
-			return player.getStorage("dckengqiang_used").length < num && get.tag(event.card, "damage") > 0.5;
+			return player.getStorage("dckengqiang_used").length < num && get.tag(event.card, "damage") && get.type(event.card) != "delay";
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -14292,8 +14295,8 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			await player.swapHandcards(target);
-			const cards1 = player.getCards("h", card => get.tag(card, "damage") > 0.5),
-				cards2 = target.getCards("h", card => get.tag(card, "damage") > 0.5);
+			const cards1 = player.getCards("h", card => get.tag(card, "damage") && get.type(card) != "delay"),
+				cards2 = target.getCards("h", card => get.tag(card, "damage") && get.type(card) != "delay");
 			if (cards1.length) {
 				player.$throw(cards1.length, 1000);
 				await player.lose(cards1, ui.cardPile);

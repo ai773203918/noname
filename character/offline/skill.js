@@ -15079,7 +15079,7 @@ const skills = {
 			order: 8,
 			result: {
 				player(player) {
-					if (!player.hasCard(card => get.tag(card, "damage") > 0.5 && player.hasValueTarget(card), "hs") || player.hasSkill("jyzhaxiang_effect") || player.maxHp <= 3) {
+					if (!player.hasCard(card => get.tag(card, "damage") && get.type(card) != "delay" && player.hasValueTarget(card), "hs") || player.hasSkill("jyzhaxiang_effect") || player.maxHp <= 3) {
 						return 0;
 					}
 					return player.isHealthy() ? 0 : 1;
@@ -17153,7 +17153,7 @@ const skills = {
 						if (current.getHp() > 3) {
 							return false;
 						}
-						return player.hasCard(card => get.tag(card, "damage") > 0.5 && player.canUse(card, current) && get.effect(current, card, player, player) > 0, "hs");
+						return player.hasCard(card => get.tag(card, "damage") && get.type(card) != "delay" && player.canUse(card, current) && get.effect(current, card, player, player) > 0, "hs");
 					})
 				) {
 					return 10;
@@ -17162,7 +17162,7 @@ const skills = {
 			},
 			result: {
 				player(player, target) {
-					return player.hasCard(card => get.tag(card, "damage") > 0.5 && player.hasValueTarget(card), "hs") ? 1 : 0;
+					return player.hasCard(card => get.tag(card, "damage") && get.type(card) != "delay" && player.hasValueTarget(card), "hs") ? 1 : 0;
 				},
 			},
 		},*/
@@ -31211,7 +31211,7 @@ const skills = {
 				if (currentx == current || current == player) {
 					return false;
 				}
-				return current.hasCard(card => current.canUse(card, currentx) && get.effect(currentx, card, current, player) > 0 && get.color(card) == "red" && get.tag(card, "damage") > 0.5, "hs");
+				return current.hasCard(card => current.canUse(card, currentx) && get.effect(currentx, card, current, player) > 0 && get.color(card) == "red" && get.tag(card, "damage") && get.type(card) != "delay", "hs");
 			});
 			event.result = await player
 				.chooseCardTarget({

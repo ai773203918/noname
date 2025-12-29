@@ -1171,7 +1171,7 @@ const skills = {
 				.set("ai", button => {
 					const card = get.event().card;
 					const bool = button.link == "olhuaquan_heavy";
-					if (get.tag(card, "damage") > 0.5) {
+					if (get.tag(card, "damage") && get.type(card) != "delay") {
 						return bool ? 1 + Math.random() : 0.5 + Math.random();
 					}
 					return bool ? 0.5 + Math.random() : 1 + Math.random();
@@ -1201,7 +1201,7 @@ const skills = {
 					.set("ai", button => {
 						const card = get.event().card;
 						const bool = button.link == "olhuaquan_heavy";
-						if (get.tag(card, "damage") > 0.5) {
+						if (get.tag(card, "damage") && get.type(card) != "delay") {
 							return bool ? 1 + Math.random() : 0.5 + Math.random();
 						}
 						return bool ? 0.5 + Math.random() : 1 + Math.random();
@@ -1895,7 +1895,7 @@ const skills = {
 					player.changeSkin({ characterName: "taipingsangong" }, "taipingsangong_ultimate");
 				}
 			}
-			if (get.tag(trigger.card, "damage") > 0.5) {
+			if (get.tag(trigger.card, "damage") && get.type(trigger.card) != "delay") {
 				trigger.baseDamage++;
 			} else {
 				player

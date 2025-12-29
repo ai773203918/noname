@@ -256,7 +256,7 @@ const skills = {
 		usable: 1,
 		trigger: { player: "useCard" },
 		filter(event, player) {
-			return get.tag(event.card, "damage") > 0.5;
+			return get.tag(event.card, "damage") && get.type(event.card) != "delay";
 		},
 		async cost(event, trigger, player) {
 			const list = [`摸两张牌`, `失去一点体力，令${get.translation(trigger.card)}伤害+1`];
@@ -917,7 +917,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const func = async function (target) {
 				await target.showHandcards();
-				const hs = target.getDiscardableCards(target, "h", card => get.tag(card, "damage") > 0.5);
+				const hs = target.getDiscardableCards(target, "h", card => get.tag(card, "damage") && get.type(card) != "delay");
 				if (hs.length) {
 					await target.discard(hs);
 				}
