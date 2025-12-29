@@ -382,7 +382,7 @@ export const Content = {
 				newGroups = get.is.double(player.name2, true) || [get.character(player.name2, 1)];
 			}
 			if (newGroups.length > 1) {
-				const newGroup = await player.chooseControl(newGroups).set("prompt", "请选择一个新的势力").forResult("control");
+				const { control: newGroup } = await player.chooseControl(newGroups).set("prompt", "请选择一个新的势力").forResult();
 				if (newGroup != player.group) {
 					await player.changeGroup(newGroup);
 				}
@@ -4157,7 +4157,7 @@ player.removeVirtualEquip(card);
 								next.set("forceDie", true);
 								next.set("arrangeSkill", true);
 								next.set("includeOut", true);
-								const { result } = await next;
+								const result = await next.forResult();
 								//千里走单骑全责，把敌人打死可能会打断chooseControl
 								if (result) {
 									event.current = usableSkills.find(info => info.skill == skillsToChoose[result.index]);
@@ -13631,7 +13631,7 @@ player.removeVirtualEquip(card);
 						return [top, cards];
 				}
 			};
-		const { result } = await next;
+		const result = await next.forResult();
 		const top = result?.moved?.[0] || [];
 		const bottom = result?.moved?.[1] || [];
 		top.reverse();

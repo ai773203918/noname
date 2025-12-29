@@ -1,6 +1,5 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
-/** @type {Record<string, Skill>} */
 export default {
 	//神将进攻国战
 	//神赵云
@@ -1743,9 +1742,7 @@ export default {
 		},
 		audio: "dawu",
 		async cost(event, trigger, player) {
-			const {
-				result: { bool, targets, links: cost_data },
-			} = await player
+			const { bool, targets, links: cost_data } = await player
 				.chooseButtonTarget({
 					createDialog: [get.prompt2(event.skill), player.getExpansions("gz_qixing")],
 					selectButton: [1, game.countPlayer()],
@@ -1809,7 +1806,8 @@ export default {
 							return player.isFriendOf(current) && get.attitude(player, current) > 4;
 						}) *
 							2
-				);
+				)
+				.forResult();
 			event.result = {
 				bool: bool,
 				targets: targets?.sortBySeat(),
@@ -2549,13 +2547,13 @@ export default {
 				if (!target.isIn() || !target.countCards("he")) {
 					continue;
 				}
-				const { result } = await target.chooseCard("鸱咽：将任意张牌置于武将牌上直到回合结束", [1, Infinity], true, "he", "allowChooseAll").set("ai", card => {
+				const result = await target.chooseCard("鸱咽：将任意张牌置于武将牌上直到回合结束", [1, Infinity], true, "he", "allowChooseAll").set("ai", card => {
 					const player = get.player();
 					if (ui.selected.cards.length) {
 						return 0;
 					}
 					return 6 - get.value(card);
-				});
+				}).forResult();
 				if (result?.bool && result?.cards?.length) {
 					target.addSkill(event.name + "_gain");
 					const next = target.addToExpansion("giveAuto", result.cards, target);
@@ -2683,7 +2681,7 @@ export default {
 			const list = [];
 			for (const target of event.targets.sortBySeat()) {
 				if (target.isIn() && target.countCards("h")) {
-					const { result } = await target.chooseCard("选择一张手牌置于牌堆顶", "h", true);
+					const result = await target.chooseCard("选择一张手牌置于牌堆顶", "h", true).forResult();
 					if (result?.bool && result?.cards?.length) {
 						list.push(target);
 						await target.lose(result.cards, ui.cardPile, "insert");
@@ -2741,7 +2739,7 @@ export default {
 			const {
 				targets: [target],
 			} = event;
-			const { result } = await player.chooseToCompare(target);
+			const result = await player.chooseToCompare(target).forResult();
 			if (result?.bool) {
 				await target.chooseToDiscard(2, true, "h");
 			} else {
@@ -2972,13 +2970,13 @@ export default {
 			if (!player.countCards("h")) {
 				return;
 			}
-			const { result } = await player.chooseCard("h", true, 2, "选择两张手牌展示");
+			const result = await player.chooseCard("h", true, 2, "选择两张手牌展示").forResult();
 			if (result?.bool && result?.cards?.length) {
 				await player.showCards(result.cards, get.translation(player) + "发动了【" + get.translation(event.name) + "】");
 			}
 			const target = get.info(event.name).logTarget(trigger, player);
 			if (player.canCompare(target)) {
-				const { result } = await player.chooseToCompare(target);
+				const result = await player.chooseToCompare(target).forResult();
 				if (result?.bool) {
 					const evt = trigger.getParent();
 					if (typeof evt.baseDamage != "number") {
@@ -3576,7 +3574,7 @@ export default {
 			} else {
 				choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			}
-			const { result } = await player
+			const result = await player
 				.chooseControl(choices, "cancel2")
 				.set("choiceList", choiceList)
 				.set("prompt", get.prompt(event.skill))
@@ -3611,7 +3609,8 @@ export default {
 						}
 						return 0;
 					})()
-				);
+				)
+				.forResult();
 			event.result = {
 				bool: result?.control !== "cancel2",
 				cost_data: result?.index,
@@ -4275,7 +4274,7 @@ export default {
 				list.push("选项二");
 			}
 			list.push("cancel2");
-			const control = await player
+			const { control } = await player
 				.chooseControl(list)
 				.set("choiceList", [`获得${get.translation(target)}的一张手牌`, `弃置一张基本牌并令${get.translation(trigger.card)}伤害+1`])
 				.set("prompt", get.prompt(event.skill, target))
@@ -4304,7 +4303,7 @@ export default {
 					}
 					return "cancel2";
 				})
-				.forResultControl();
+				.forResult();
 			event.result = {
 				bool: control != "cancel2",
 				cost_data: control,
@@ -4318,7 +4317,7 @@ export default {
 				await player.gainPlayerCard(target, true, "h");
 			}
 			if (["选项二", "背水！"].includes(control) && player.hasCard(card => get.type(card, null, player) == "basic" && lib.filter.cardDiscardable(card, player, "dbquedi"), "h")) {
-				const bool = await player.chooseToDiscard("h", "弃置一张基本牌", { type: "basic" }, true).forResultBool();
+				const { bool } = await player.chooseToDiscard("h", "弃置一张基本牌", { type: "basic" }, true).forResult();
 				if (bool) {
 					trigger.getParent().baseDamage++;
 				}

@@ -1313,15 +1313,14 @@ const skills = {
 									}
 								});
 						}
-						const {
-							targets,
-							num1,
-							result: { player: card, num2 },
-						} = await player
+						const next = await player
 							.chooseToCompare(event.targets, card => {
 								return get.number(card);
 							})
 							.setContent("chooseToCompareMeanwhile");
+
+						const { player: card, num2 } = await next.forResult();
+						const { targets, num1 } = next;
 						player.markAuto("renhuoluan", card);
 						let max = 0,
 							min = 14,
@@ -2172,7 +2171,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0],
 				numbers = Array.from({ length: 3 }).map((_, i) => (i + 1).toString());
-			const num1 = await player
+			const { control: num1 } = await player
 				.chooseControl(numbers)
 				.set("ai", () => {
 					const { player, target } = get.event().getParent();
@@ -2182,11 +2181,11 @@ const skills = {
 					return get.rand(0, 2);
 				})
 				.set("prompt", "请选择你给" + get.translation(target) + "设下的难题")
-				.forResult("control");
+				.forResult();
 			game.log(player, "选择了一个数字");
 			player.chat("我选的" + [1, 2, 3, 114514, 1919810].randomGet() + "，你信吗");
 			await game.delayx();
-			const num2 = await target
+			const { control: num2 }  = await target
 				.chooseControl(numbers)
 				.set("ai", () => {
 					const { player, target } = get.event().getParent();
@@ -2196,7 +2195,7 @@ const skills = {
 					return get.rand(0, 2);
 				})
 				.set("prompt", "请猜测" + get.translation(player) + "选择的数字")
-				.forResult("control");
+				.forResult();
 			target.chat("我猜是" + num2 + "！");
 			await game.delayx();
 			player.chat(num1 === num2 ? "悲" : "喜");
@@ -2238,7 +2237,7 @@ const skills = {
 				win = 0;
 			while (num < 3) {
 				num++;
-				const bool = await player.chooseToCompare(target).forResult("bool");
+				const { bool } = await player.chooseToCompare(target).forResult();
 				if (bool) {
 					win++;
 					game.log("双方拼点剩余", "#y" + (3 - num), "场，", player, "已赢", "#g" + win, "场");
@@ -4462,7 +4461,7 @@ const skills = {
 						return get.skillRank(b, "in") - get.skillRank(a, "in");
 					})[0]
 				);
-				const links = await next.forResultLinks();
+				const { links } = await next.forResult();
 				event.result = { bool: true, cost_data: links };
 			}
 		},
@@ -4505,9 +4504,7 @@ const skills = {
 						return Math.random();
 					});
 					next.set("skills", skills);
-					const {
-						result: { bool, links },
-					} = await next;
+					const { bool, links } = await next.forResult();
 					event.result = {
 						bool: bool,
 						cost_data: links,
@@ -4530,10 +4527,10 @@ const skills = {
 						}
 					});
 					const cards = get.cards(3, true);
-					const gains = await player
+					const { links: gains } = await player
 						.chooseButton(["虎翼：选择获得其中一张牌", cards], true)
 						.set("ai", button => get.value(button.link))
-						.forResult("links");
+						.forResult();
 					if (gains?.length) {
 						await player.gain(gains, "draw");
 					}
