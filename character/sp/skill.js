@@ -39971,13 +39971,17 @@ const skills = {
 		audio: "xinfu_fujian",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		filter(event, player) {
-			return game.hasPlayer(target => target != player && target.countCards("h") && !target.isMaxHandcard(true, current => current != player));
+			return game.hasPlayer(target => target != player && target.countCards("h"));
 		},
 		forced: true,
 		async content(event, trigger, player) {
+			const bool = game.filterPlayer(current => current != player).map(current => current.countCards("h")).toUniqued().length == 1;
 			const target = game
 				.filterPlayer(target => {
-					return target != player && target.countCards("h") && !target.isMaxHandcard(true, current => current != player);
+					if (target == player || !target.countCards("h")) {
+						return false;
+					}
+					return bool || !target.isMaxHandcard(null, current => current != player);
 				})
 				.randomGet();
 			player.line(target);

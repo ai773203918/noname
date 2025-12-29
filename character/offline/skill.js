@@ -918,6 +918,7 @@ const skills = {
 				return get
 					.nameList(current)
 					.map(name => get.characterTitle(name))
+					.filter(title => title.length)
 					.toUniqued();
 			};
 			return game.filterPlayer(current => getTitles(current).containsSome(...getTitles(player)));
@@ -1500,6 +1501,7 @@ const skills = {
 				return get
 					.nameList(current)
 					.map(name => get.characterTitle(name))
+					.filter(title => title.length)
 					.toUniqued();
 			};
 			return getTitles(event.source).containsSome(...getTitles(player));
@@ -1824,6 +1826,7 @@ const skills = {
 				return get
 					.nameList(current)
 					.map(name => get.characterTitle(name))
+					.filter(title => title.length)
 					.toUniqued();
 			};
 			return getTitles(event.player).containsSome(...getTitles(player));
@@ -2119,6 +2122,7 @@ const skills = {
 				return get
 					.nameList(current)
 					.map(name => get.characterTitle(name))
+					.filter(title => title.length)
 					.toUniqued();
 			};
 			return getTitles(target).containsSome(...getTitles(player));
@@ -2358,6 +2362,7 @@ const skills = {
 				return get
 					.nameList(current)
 					.map(name => get.characterTitle(name))
+					.filter(title => title.length)
 					.toUniqued();
 			};
 			return getTitles(event.target).containsSome(...getTitles(player));
