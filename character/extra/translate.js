@@ -559,10 +559,11 @@ const translates = {
 	dcchouxi_info: "出牌阶段，你可将一张牌当作“溟”中的一张基本牌或普通锦囊牌使用（每种牌名每回合限一次），以此法使用牌无距离次数限制。",
 	dcjichao: "激潮",
 	dcjichao_info: "出牌阶段限一次，你可选择一项：1.令一名其他角色将随机一半数量的手牌（向上取整）和装备区的牌置于武将牌上，称为“溟”；2.令所有其他角色将所有牌置于武将牌上，称为“溟”，然后此选项失效直到你累计造成3点伤害。",
-	sm_shen_machao: "赛马神马超",
-	sm_shen_machao_prefix: "赛马|神",
+	sp_sm_shen_machao: "SP赛马神马超",
+	sp_sm_shen_machao_prefix: "SP|赛马|神",
 	sm_mabian: "马鞭",
 	sm_mabian_info: `若称号为“赛马娘”的角色因${get.poptip("rule_bianshenji")}将此牌置入你的装备区，你视为拥有其武将牌上的第一个技能直到失去此牌。`,
+	sm_mabian_skill: "马鞭",
 	sm_kulian: "酷练",
 	sm_kulian_info: `锁定技，游戏开始时，你令所有角色依次装备牌堆中的一张坐骑牌，并从游戏外将一张${get.poptip("sm_mabian")}置入装备区，然后开始${get.poptip({
 		name: "比赛",
@@ -607,6 +608,16 @@ const translates = {
 	})}。`,
 	sm_wandou: "玩斗",
 	sm_wandou_info: "一名角色“退赛”时，你可令其将体力值调整至1点。",
+	sm_shen_machao: "赛马神马超",
+	sm_shen_machao_prefix: "赛马|神",
+	sm_tuanlian: "团练",
+	sm_tuanlian_info: "锁定技，游戏开始时/你每回合首次造成或受到伤害后，你随机获得五/一张名字或称号包含“马”的武将牌，称为“赛马”。",
+	sm_jingji: "竞激",
+	sm_jingji_info: `①你可弃置一张“赛马”，发动其牌面上的第一个技能。②你可移去一张“赛马”，视为使用以下牌：${get.poptip("sm_prettyDerby")}；任意基本牌，数值+1；任意普通锦囊牌，摸一张牌。`,
+	sm_prettyDerby: "赛马",
+	sm_prettyDerby_info: "锁定技，你计算与其他角色的距离-1，其他角色计算与你的距离+1。",
+	sm_kuangchi: "狂驰",
+	sm_kuangchi_info: "你杀死一名角色后，可以交给其一张“赛马”代替其一张武将牌并令其复活，其胜利条件改为与你一致。",
 };
 
 export default translates;

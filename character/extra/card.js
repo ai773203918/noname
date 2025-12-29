@@ -1,13 +1,66 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 const cards = {
+	sm_prettyDerby: {
+		audio: true,
+		fullskin: true,
+		derivation: "sm_shen_machao",
+		type: "equip",
+		distance: {
+			globalFrom: -1,
+			globalTo: +1,
+		},
+		selectTarget: -1,
+		filterTarget(card, player, target) {
+			if (player !== target) {
+				return false
+			}
+			const ranges = Array.from(Array(5)).map((value, index) => `equip${index + 1}`);
+			if (get.is.mountCombined()) {
+				ranges.removeArray(["equip3", "equip4"]);
+				ranges.add("equip3_4");
+			}
+			if (get.itemtype(card) == "card") {
+				const owner = get.owner(card, "judge");
+				if (owner && !lib.filter.canBeGained(card, player, owner)) {
+					return false;
+				}
+			}
+			return ranges.some(range => player.countEquipableSlot(range));
+		},
+		async prepareEquip(event, trigger, player) {
+			if (!event.card.subtypes?.length) {
+				const choices = [];
+				for (let i = 0; i <= 5; i++) {
+					if (player.hasEquipableSlot(i)) {
+						choices.push(`equip${i}`);
+					}
+				}
+				if (!choices.length) {
+					return;
+				}
+				const result = await player
+					.chooseControl(choices)
+					.set("prompt", "请选择置入【赛马】的装备栏")
+					.set("ai", () => _status.event.controls.randomGet())
+					.forResult();
+				event.card.subtypes = [result.control];
+			}
+		},
+		ai: {
+			equipValue: 7.5,
+			basic: {
+				equipValue: 7.5,
+			},
+		},
+	},
 	//sm-赛马
 	sm_mabian: {
-		derivation: "sm_shen_machao",
+		derivation: "sp_sm_shen_machao",
 		fullskin: true,
 		type: "equip",
 		subtype: "equip5",
-		skills: [],
+		skills: ["sm_mabian_skill"],
 		ai: {
 			basic: {
 				equipValue: 7,
