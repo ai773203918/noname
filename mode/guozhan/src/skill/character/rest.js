@@ -8,6 +8,261 @@ const get = cast(_get);
 
 /** @type {Record<string, Skill>} */
 export default {
+	//OL许攸
+	gz_ol_chenglve: {
+		audio: "gzchenglve",
+		trigger: {
+			global: "phaseUseBegin",
+		},
+		filter(event, player) {
+			if (!player.countCards("he")) {
+				return false;
+			}
+			return event.player.isFriendOf(player);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCard(get.prompt2(event.skill), "he")
+				.set("ai", card => {
+					const { player, att } = get.event();
+					if (att <= 0) {
+						return 0;
+					}
+					return 7 - get.value(card);
+				})
+				.set("att", get.attitude(player, trigger.player))
+				.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			await player.lose(cards, ui.cardPile, "insert");
+			const result = await target
+				.chooseToDiscard("he", 2, `弃置两张牌，你使用同花色的牌无距离次数限制；或点取消选择是否与${get.translation(player)}副将易位`)
+				.set(
+					"resultx",
+					(() => {
+						const cards = target.getCards("h").filter(i => {
+								return get.tag(i, "damage") && get.type(i) != "delay" && target.hasValueTarget(i, false, false);
+							}),
+							map = {};
+						for (const card of cards) {
+							const suit = get.suit(card, target);
+							if (typeof map[suit] != "number") {
+								map[suit] = 0;
+							}
+							map[suit]++;
+						}
+						const list = Object.keys(map)
+							.map(suit => [suit, map[suit]])
+							.sort((a, b) => b[1] - a[1])
+							.slice(0, 2);
+						if (!list.length) {
+							return false;
+						}
+						const num = list.reduce((sum, arr) => sum + arr[1], 0);
+						if (target.countCards("h") / 2 <= num && num >= 2) {
+							return list.map(arr => arr[0]);
+						}
+						return false;
+					})()
+				)
+				.set("ai", card => {
+					const { player, resultx } = get.event();
+					if (!resultx) {
+						return 0;
+					}
+					const suit = get.suit(card, player);
+					if (resultx.includes(suit)) {
+						if (!player.hasValueTarget(card, false, false)) {
+							return 16 - get.value(card);
+						}
+						return 5 - get.value(card);
+					}
+					return 7 - get.value(card);
+				})
+				.forResult();
+			if (result?.bool && result.cards?.length) {
+				const suits = result.cards.map(card => get.suit(card, target)).toUniqued(),
+					skill = `${event.name}_effect`;
+				target.addTempSkill(skill);
+				target.markAuto(skill, suits);
+				target.addTip(
+					skill,
+					`成略${target
+						.getStorage(skill)
+						.map(suit => get.translation(suit))
+						.join("")}`
+				);
+			} else {
+				const result =
+					target == player
+						? {
+								bool: false,
+							}
+						: await target
+								.chooseBool(`是否与${get.translation(player)}交换副将？`)
+								.set("choice", Math.random() > 0.5)
+								.forResult();
+				if (result.bool) {
+					await player.transCharacter(target);
+				}
+				const targetx = result.bool ? target : player;
+				if (targetx?.isIn()) {
+					await targetx.draw();
+				}
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				mod: {
+					cardUsable(card, player) {
+						const suit = get.suit(card);
+						if (suit == "unsure" || player.getStorage("gz_ol_chenglve_effect").includes(suit)) {
+							return Infinity;
+						}
+					},
+					targetInRange(card, player) {
+						const suit = get.suit(card);
+						if (suit == "unsure" || player.getStorage("gz_ol_chenglve_effect").includes(suit)) {
+							return true;
+						}
+					},
+				},
+				marktext: "略",
+				intro: {
+					content: "本回合使用$花色的牌无距离和次数限制",
+				},
+			},
+		},
+	},
+	gz_ol_fushi: {
+		trigger: {
+			global: ["phaseBegin", "showCharacterEnd", "hideCharacterEnd", "dieAfter", "changeGroupInGuozhan", "diaohulishanAfter"],
+		},
+		filter(event, player) {
+			return player.hasSkill("gz_ol_fushi");
+		},
+		silent: true,
+		forced: true,
+		direct: true,
+		init(player, skill) {
+			const list = [],
+				previous = player.getPrevious(),
+				next = player.getNext();
+			if (previous?.isIn() && previous.identity == "qun") {
+				list.add("gz_ol_zezhu");
+			}
+			if (next?.isIn() && next.identity == "wei") {
+				list.add("gz_ol_chenggong");
+			}
+			if (list.length) {
+				player.addAdditionalSkill(skill, list);
+			} else {
+				player.removeAdditionalSkill(skill);
+			}
+		},
+		onremove(player, skill) {
+			player.removeAdditionalSkill(skill);
+		},
+		async content(event, trigger, player) {
+			get.info(event.name).init(player, event.name);
+		},
+		derivation: ["gz_ol_zezhu", "gz_ol_chenggong"],
+	},
+	gz_ol_zezhu: {
+		audio: "gzshicai",
+		enable: "phaseUse",
+		usable: 1,
+		filterTarget(card, player, target) {
+			if (target != player.getNext() && target != player.getPrevious()) {
+				return false;
+			}
+			return target.countGainableCards(player, "he");
+		},
+		selectTarget: -1,
+		filter(event, player) {
+			return game.hasPlayer(current => get.info("gz_ol_zezhu").filterTarget(null, player, current));
+		},
+		async content(event, trigger, player) {
+			await player.gainPlayerCard(event.target, "he", true);
+		},
+		async contentAfter(event, trigger, player) {
+			for (const target of event.targets) {
+				if (player.countGainableCards(target, "he")) {
+					await player.chooseToGive(target, "he", true);
+				}
+			}
+		},
+		ai: {
+			order: 10,
+			result: {
+				player: 1,
+			},
+		},
+	},
+	gz_ol_chenggong: {
+		audio: "chenggong",
+		trigger: {
+			global: "useCardToPlayered",
+		},
+		filter(event, player) {
+			if (event.player != player.getNext() && event.player != player.getPrevious()) {
+				return false;
+			}
+			return event.isFirstTarget && event.targets?.length > 1;
+		},
+		usable: 1,
+		logTarget: "player",
+		check(event, player) {
+			const att = get.attitude(player, event.player),
+				targets = event.targets.filter(target => target.countDiscardableCards(event.player, "he"));
+			if (!targets.length) {
+				return true;
+			}
+			if (att > 0) {
+				return targets.some(target => get.effect(target, { name: "guohe_copy2" }, event.player, player) > 0);
+			}
+			return targets.every(target => get.effect(target, { name: "guohe_copy2" }, event.player, player) > 0);
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			await player.draw();
+			const targets = trigger.targets.filter(current => current.countDiscardableCards(target, "he"));
+			if (!targets?.length) {
+				return;
+			}
+			const result = await target
+				.chooseTarget(
+					"逞功：弃置一名目标角色一张牌",
+					(card, player, target) => {
+						return get.event().targetx.includes(target);
+					},
+					true
+				)
+				.set("targetx", targets)
+				.set("ai", target => {
+					const player = get.player();
+					return get.effect(target, { name: "guohe_copy2" }, player, player);
+				})
+				.forResult();
+			if (result?.bool && result.targets?.length) {
+				const func = async targetx => {
+					target.line(targetx);
+					await target.discardPlayerCard(targetx, "he", true);
+				};
+				await game.doAsyncInOrder(result.targets, func);
+			}
+		},
+	},
 	//OL程普
 	gz_ol_daohuo: {
 		audio: 2,
