@@ -1,7 +1,7 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
 import { nonameInitialized } from "@/util/index.js";
-import security from "@/util/security.js";
+import { security } from "@/util/sandbox.js"
 import { Character } from "@/library/element/index.js";
 
 export const extensionMenu = function (connectMenu) {
@@ -420,7 +420,7 @@ export const extensionMenu = function (connectMenu) {
 					str += ",connect:false"; //不写的话，这里会变成undefined喵，所以默认是不能联机的哦
 					str += "}";
 					const extension = {
-						"extension.js": `import { lib, game, ui, get, ai, _status } from "../../noname.js";\nexport const type = "extension";\nexport default function(){\n\treturn ${str} \n};`,
+						"extension.js": `import { lib, game, ui, get, ai, _status } from "noname";\nexport const type = "extension";\nexport default function(){\n\treturn ${str} \n};`,
 						"info.json": JSON.stringify({
 							intro: introExtLine.querySelector("input").value ?? "",
 							name: page.currentExtension,
