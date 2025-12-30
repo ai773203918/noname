@@ -1,7 +1,7 @@
 import { _status, get, lib, game, ai, ui } from "noname";
 import { CacheContext } from "../cache/cacheContext.js";
 import { ChildNodesWatcher } from "../cache/childNodesWatcher.js";
-import security from "@/util/security.js";
+import { security } from "@/util/sandbox.js";
 import { ContentCompiler } from "./gameEvent.js";
 import dedent from "dedent";
 
@@ -192,6 +192,7 @@ export class Player extends HTMLDivElement {
 			node.identity.addEventListener(lib.config.touchscreen ? "touchend" : "click", ui.click.identity);
 			if (lib.config.touchscreen) {
 				player.addEventListener("touchstart", ui.click.playertouchstart);
+				player.addEventListener("touchmove", ui.click.playertouchmove);
 			}
 		}
 	}
@@ -416,11 +417,11 @@ export class Player extends HTMLDivElement {
 		} else {
 			list = equip.map(card => [skill, card, preserve]);
 		}
-		player.extraEquip.add(...list);
+		player.extraEquip.addArray(list);
 		player.$handleEquipChange();
 		game.broadcast(
 			(player, list) => {
-				player.extraEquip.add(...list);
+				player.extraEquip.addArray(list);
 				player.$handleEquipChange();
 			},
 			player,
@@ -2439,6 +2440,7 @@ export class Player extends HTMLDivElement {
 			return;
 		}
 		this.$showCharacter(num, log);
+		this.$handleEquipChange();
 		var next = game.createEvent("showCharacter", false);
 		next.player = this;
 		next.num = num;
@@ -8519,19 +8521,47 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家死亡或进入休整状态
 	 * @param { GameEvent } reason 导致角色死亡的事件
-	 * @param { Boolean } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"代表在你的回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合；audio是休整播放的语音）
 	 * @returns { GameEvent }
 	 */
 	die(reason, restMap = { type: null, count: null, audio: null }) {
 		var next = game.createEvent("die");
 		next.player = this;
 		next.reason = reason;
-		next.restMap = restMap;
+		//next.restMap = restMap;
 		if (reason) {
 			next.source = reason.source;
 		}
 		next.excludeMark = [];
 		next.setContent("die");
+		return next;
+	}
+	/**
+	 * 令玩家休整，同时会触发rest时机
+	 * @param { object | undefined } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"是在你的额定回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合（为负数则永久休整，可以自主脱离））
+	 * @returns { GameEvent } 
+	 */
+	rest(restMap = { type: "phase", count: -1}) {//, audio: null
+		const next = game.createEvent("rest", false);
+		next.player = this;
+		next.restMap = restMap;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("rest");
+		return next;
+	}
+	/**
+	 * 令玩家结束休整
+	 * @param { object | undefined } reseEndMap 进入休整状态状态相关的参数（hp是脱离休整复活时回复至的体力值）
+	 * @returns { GameEvent }
+	 */
+	restEnd(restEndMap = { hp: null }) {//, audio: null
+		const next = game.createEvent("restEnd", false);
+		restEndMap.hp ??= this.maxHp;
+		next.player = this;
+		next.restEndMap = restEndMap;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("restEnd");
 		return next;
 	}
 	/**
@@ -11923,6 +11953,13 @@ export class Player extends HTMLDivElement {
 	isDead() {
 		return this.classList.contains("dead");
 	}
+	/**
+	 * 判断角色是否处于休整状态
+	 * @returns { boolean }
+	 */
+	isRest() {
+		return this.isAlive() && this.isOut() && _status._rest_return[this.playerid];
+	}
 	isDying() {
 		return _status.dying.includes(this) && this.hp <= 0 && this.isAlive();
 	}
@@ -14160,6 +14197,9 @@ export class Player extends HTMLDivElement {
 		const cardsResume = cards.slice(0);
 		const extraEquip = [];
 		player.extraEquip.forEach(info => {
+			if (player.hiddenSkills.includes(info[0])) {
+				return;
+			}
 			const extra = `${get.translation(info[0])} ${get.translation(info[1])}`;
 			const subtype = get.subtype(info[1]);
 			let preserve = info[2] && !info[2](player);
@@ -14182,10 +14222,10 @@ export class Player extends HTMLDivElement {
 				}
 			}
 			if (card.extraEquip && !remove) {
-				let info = card.extraEquip,
-					preserve = card.extraEquip[2] && !card.extraEquip[2](player);
-				const disable = card.classList.contains("feichu");
-				if (!extraEquip.some(infox => infox[0][0] == info[0] && infox[0][1] == info[1]) || preserve) {
+				const info = card.extraEquip,
+					disable = card.classList.contains("feichu");
+				const extra = extraEquip.find(infox => infox.every(item => info.includes(item)));
+				if (!extra) {
 					if (disable) {
 						card.node.name2.innerHTML = get.translation("equip" + num) + " 已废除";
 						delete card.extraEquip;
@@ -14193,6 +14233,8 @@ export class Player extends HTMLDivElement {
 						player.node.equips.removeChild(card);
 						cardsResume.remove(card);
 					}
+				} else {
+					extraEquip.remove(extra);
 				}
 			} else if (card.classList.contains("feichu")) {
 				let extra = extraEquip.find(info => info[2].includes("equip" + num));

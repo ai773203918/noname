@@ -1,4 +1,4 @@
-import { lib, game, ui, get, ai, _status } from "../noname.js";
+import { lib, game, ui, get, ai, _status } from "noname";
 export const type = "mode";
 /**
  * @type { () => importModeConfig }
@@ -2586,7 +2586,7 @@ export default () => {
 				async content(event, trigger, player) {
 					const { target } = event;
 					player.markAuto(`${event.name}_used`, target);
-					const { result } = await player.gainPlayerCard(target, [1, 2], "he", true);
+					const result = await player.gainPlayerCard(target, [1, 2], "he", true).forResult();
 					if (!result?.bool || !result.cards?.length) {
 						return;
 					}

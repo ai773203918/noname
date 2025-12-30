@@ -1,66 +1,67 @@
-import { game } from "noname";
+import { lib, game } from "noname";
 import { boot } from "@/init/index.js";
-import { nonameInitialized, userAgentLowerCase } from "@/util/index.js";
+import { userAgentLowerCase, device } from "@/util/index.js";
 import "core-js-bundle";
 import "../jit/index.js";
 // 保证打包时存在(importmap)
 import "vue/dist/vue.esm-browser.js";
 
-(async function () {
-	// 使用到的文本
-	const globalText = {
-		GPL_ALERT: ["①无名杀是一款基于GPLv3协议的开源软件！", "你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的拓展。", "点击“确定”即代表您认可并接受GPLv3协议↓️", "https://www.gnu.org/licenses/gpl-3.0.html", "②无名杀官方发布地址仅有GitHub仓库！", "其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关！"].join("\n"),
-		// REDIRECT_TIP: ["您使用的浏览器或无名杀客户端的版本过低，已经无法正常运行无名杀", "请检查浏览器或客户端是否需要更新", "目前使用的浏览器UA信息为: ", userAgentLowerCase].join("\n"),
-		// SAFARI_VERSION_NOT_SUPPORT: ["您使用的Safari浏览器无法支持当前无名杀所需的功能，请至少升级至16.4.0！", "当前浏览器的UA为: ", userAgentLowerCase, "稍后您的无名杀将自动退出（可能的话）"].join("\n"),
-	};
-
-	window["bannedExtensions"] = [
-		"\u4fa0\u4e49",
-		"\u5168\u6559\u7a0b",
-		"在线更新", //游戏内在线更新方式修改了，不再依赖于在线更新扩展了
-	];
-
-	// // 检查浏览器版本
-	// const [core, ...version] = get.coreInfo();
-	// if (core === "safari" && !get.checkVersion([16, 4, 0], version)) {
-	// 	alert(globalText.SAFARI_VERSION_NOT_SUPPORT);
-	// 	game.exit();
-	// 	return;
-	// } else if (core === "chrome" && !get.checkVersion([91, 0, 0], version)) {
-	// 	/*
-    //     const tip = "检测到您的浏览器内核版本小于91，请及时升级浏览器或手机webview内核！";
-    //     console.warn(tip);
-    //     game.print(tip);
-    //     const redirect_tip = `您使用的浏览器或无名杀客户端内核版本过低，将在未来的版本被废弃！\n目前使用的浏览器UA信息为：\n${userAgent}\n点击“确认”以前往GitHub下载最新版无名杀客户端（可能需要科学上网）。`;
-    //     if (confirm(redirect_tip)) {
-    //         window.open("https://github.com/libnoname/noname/releases/tag/chromium91-client");
-    //     }
-    //     */
-	// 	// game.tryUpdateClient(/** UpdateReason.UNDERSUPPORT **/ 4);
-	// }
-
-	// GPL确认
-	if (!localStorage.getItem("gplv3_noname_alerted")) {
-		const gameIntialized = nonameInitialized && nonameInitialized.length > 0;
-
-		if (gameIntialized || confirm(globalText.GPL_ALERT)) {
-			localStorage.setItem("gplv3_noname_alerted", String(true));
-		} else {
-			game.exit();
-			return;
-		}
-	}
-
+(async () => {
 	try {
+		window["bannedExtensions"] = [
+			"\u4fa0\u4e49",
+			"\u5168\u6559\u7a0b",
+			"在线更新", //游戏内在线更新方式修改了，不再依赖于在线更新扩展了
+		];
+
+		lib.device = device;
+
+		// 预加载脚本
+		const path = "/preload.js";
+		const { default: preload } = await import(/* @vite-ignore */ path).catch(() => {
+			// Electron平台
+			if (typeof window.require === "function") {
+				return import("./init/node.js");
+			} else {
+				// 仅在“确实是移动端客户端/cordova环境”时才走 cordova 分支；
+				// 否则（如 macOS 桌面 Safari/Chrome、普通手机浏览器）应走 browser 分支，避免请求 /cordova.js 并卡死在 deviceready。
+				const isCordovaLike = typeof window.cordova !== "undefined" || typeof window.NonameAndroidBridge !== "undefined" || typeof window.noname_shijianInterfaces !== "undefined";
+
+				if (import.meta.env.DEV || typeof lib.device == "undefined" || !isCordovaLike) {
+					return import("./init/browser.js");
+				} else {
+					return import("./init/cordova.js");
+				}
+			}
+		});
+		await preload();
+
+		// GPL确认
+		if (!localStorage.getItem("gplv3_noname_alerted")) {
+			if (
+				confirm(`①无名杀是一款基于GPLv3协议的开源软件
+你可以在遵守GPLv3协议的基础上任意使用，修改并转发《无名杀》，以及所有基于《无名杀》开发的扩展
+点击“确定”即代表您认可并接受GPLv3协议↓️
+https://www.gnu.org/licenses/gpl-3.0.html
+②无名杀官方发布地址仅有GitHub仓库
+其他所有的所谓“无名杀”社群（包括但不限于绝大多数“官方”QQ群、QQ频道等）均为玩家自发组织，与无名杀官方无关`)
+			) {
+				localStorage.setItem("gplv3_noname_alerted", String(true));
+			} else {
+				game.exit();
+				return;
+			}
+		}
+
 		await boot();
 	} catch (e) {
 		console.error(e);
 		alert(`《无名杀》加载内容失败
 浏览器UA信息: 
 ${userAgentLowerCase}
-报错信息: 
-${(e instanceof Error ? e.stack : String(e))}
-若您不理解该报错信息，请依次检查：
+错误信息: 
+${e instanceof Error ? e.stack : String(e)}
+若您不理解该信息，请依次检查：
 1. 游戏文件是否完整（重新下载完整包）
 2. 客户端是否需要更新
 3. 浏览器是否需要更新

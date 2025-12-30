@@ -8,18 +8,14 @@
  * @typedef { InstanceType<typeof lib.element.NodeWS> } NodeWS
  * @typedef { InstanceType<typeof lib.element.Control> } Control
  */
-import { ai, get, game, _status, ui, gnc } from "noname";
+import { ai, get, game, _status, ui } from "noname";
 import { LibInit } from "./init/index.js";
 import { Announce } from "./announce/index.js";
-import { Channel } from "./channel/index.js";
 import { experimental } from "./experimental/index.js";
 import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
-import { Concurrent } from "./concurrent/index.js";
-import { freezeButExtensible } from "@/util/index.js";
-import security from "@/util/security.js";
-import { ErrorManager } from "@/util/error.ts";
+import { security, ErrorManager } from "@/util/sandbox.js";
 import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
@@ -40,7 +36,6 @@ export class Library {
 	assetURL = assetURL;
 	userAgent = userAgentLowerCase;
 	characterDefaultPicturePath = characterDefaultPicturePath;
-	compatibleEdition = Boolean(typeof nonameInitialized == "string" && nonameInitialized.match(/\/(?:com\.widget|yuri\.nakamura)\.noname\//));
 	changeLog = [];
 	updates = [];
 	canvasUpdates = [];
@@ -387,30 +382,7 @@ export class Library {
 	 *
 	 * 你可以将hook机制类比为event.trigger()，但是这里只能放同步代码
 	 */
-	hooks = freezeButExtensible({ ...defaultHooks });
-
-	/**
-	 * **无名杀频道推送机制**
-	 *
-	 * 鉴于`Javascript`的特性及自身对所需功能的思考，这是一个参考`Golang`的`channel`设计的、完全和`go channel`不一样的异步消息传递对象
-	 *
-	 * 当且仅当接收方和发送方均存在时进行消息传递，完全保证信息传递的单一性（发送方/接收方一旦确定则无法更改）和准确性（发送方必然将消息发送给接收方）
-	 *
-	 * 若存在发送方/接收方时调用`send`/`receive`，将报错
-	 *
-	 * 若需要异步/不报错发送信息，请等待`lib.actor`
-	 *
-	 * @example
-	 * // 创建一个频道
-	 * const channel = new lib.channel();
-	 *
-	 * // 从某个角落接收channel发出的消息，若无消息则等待
-	 * const message = await channel.receive();
-	 *
-	 * // 从某个角落向channel发消息，若无消息接收则等待
-	 * await channel.send(item);
-	 */
-	channel = Channel;
+	hooks = { ...defaultHooks };
 
 	/**
 	 * **无名杀消息推送库**
@@ -438,11 +410,6 @@ export class Library {
 	 * lib.announce.unsubscribe("skinChange", method);
 	 */
 	announce = new Announce(new EventTarget(), new WeakMap());
-
-	/**
-	 * 提供一组用于并发异步操作的静态工具方法
-	 */
-	concurrent = Concurrent;
 
 	objectURL = new Map();
 	hookmap = {};
@@ -3702,6 +3669,12 @@ export class Library {
 					intro: "开启后出现属性伤害、回复体力等情况时会显示动画",
 					init: false,
 					unfrequent: true,
+				},
+				spread_card: {
+					name: "手牌展开",
+					intro: "手牌折叠时，点击卡牌会展开周围的手牌",
+					init: true,
+					unfrequent: false,
 				},
 				card_animation_info: {
 					name: "卡牌动画信息(Beta)",
@@ -9200,246 +9173,6 @@ export class Library {
 			game.export(lib.init.encode(JSON.stringify(_status.videoToSave)), "无名杀 - 录像 - " + _status.videoToSave.name[0] + " - " + _status.videoToSave.name[1]);
 		}
 	}
-	/**
-	 * @param {Function} fn
-	 */
-	genAsync(fn) {
-		return gnc.of(fn);
-	}
-	genAwait(item) {
-		return gnc.is.generator(item)
-			? gnc.of(function* () {
-					for (const content of item) {
-						yield content;
-					}
-				})()
-			: Promise.resolve(item);
-	}
-	gnc = {
-		of: fn => gnc.of(fn),
-		is: {
-			coroutine: item => gnc.is.coroutine(item),
-			generatorFunc: item => gnc.is.generatorFunc(item),
-			generator: item => gnc.is.generator(item),
-		},
-	};
-	comparator = {
-		equals: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] !== arguments[0]) {
-					return false;
-				}
-			}
-			return true;
-		},
-		equalAny: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] === arguments[0]) {
-					return true;
-				}
-			}
-			return false;
-		},
-		notEquals: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] === arguments[0]) {
-					return false;
-				}
-			}
-			return true;
-		},
-		notEqualAny: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return true;
-			}
-			for (let i = 1; i < arguments.length; ++i) {
-				if (arguments[i] !== arguments[0]) {
-					return true;
-				}
-			}
-			return false;
-		},
-		typeEquals: function () {
-			if (arguments.length == 0) {
-				return false;
-			}
-			if (arguments.length == 1) {
-				return arguments[0] !== null;
-			}
-			const type = typeof arguments[0];
-			for (let i = 1; i < arguments.length; ++i) {
-				if (type !== arguments[i]) {
-					return false;
-				}
-			}
-			return true;
-		},
-	};
-	creation = {
-		get array() {
-			return [];
-		},
-		get object() {
-			return {};
-		},
-		get nullObject() {
-			return Object.create(null);
-		},
-		get string() {
-			return "";
-		},
-	};
-	linq = {
-		cselector: {
-			hasAttr: name => `[${name}]`,
-			isAttr: (name, item) => `[${name}=${item}]`,
-			inAttr: (name, item) => `[${name}~=${item}]`,
-			conAttr: (name, item) => `[${name}*=${item}]`,
-			onAttr: (name, item) => `[${name}|=${item}]`,
-			bgnAttr: (name, item) => `[${name}^=${item}]`,
-			endAttr: (name, item) => `[${name}^=${item}]`,
-			merge: function () {
-				return Array.from(arguments).join(" ");
-			},
-			of: function () {
-				return Array.from(arguments).join("");
-			},
-			class: function () {
-				return `.${Array.from(arguments).join(".")}`;
-			},
-			group: function () {
-				return Array.from(arguments).join(",");
-			},
-			media: type => `@media ${type}`,
-		},
-		dom: {
-			attributes: {
-				style(name, value) {
-					return {
-						_type: "style",
-						name: name,
-						value: value,
-					};
-				},
-			},
-			inject(element, options) {
-				//处理id和class
-				if (options.identity) {
-					for (const item of options.identity) {
-						if (item.startsWith("#")) {
-							element.id = item.slice(1);
-						} else {
-							element.classList.add(item);
-						}
-					}
-				}
-				//处理属性
-				if (options.attributes) {
-					for (const item in options.attributes) {
-						element.setAttribute(item, options.attributes[item]);
-					}
-				}
-				//处理样式
-				if (options.style) {
-					for (const item in options.style) {
-						element.style[item] = options.style[item];
-					}
-				}
-				//处理内容
-				if (options.content) {
-					element.innerHTML = options.content;
-				}
-				//处理子元素
-				if (options.childs) {
-					for (const item of options.childs) {
-						element.appendChild(item);
-					}
-				}
-				return element;
-			},
-			generate() {
-				let result = Object.create(null);
-				const args = Array.from(arguments);
-				for (const item of args) {
-					switch (typeof item) {
-						case "object":
-							switch (item.constructor) {
-								case Object:
-								case null:
-									if ("_type" in item) {
-										const type = item["_type"];
-										if (!(type in result)) {
-											result[type] = Object.create(null);
-										}
-										result[type][item.name] = item.value;
-									} else {
-										if (!("style" in result)) {
-											result.style = Object.create(null);
-										}
-										for (const name in item) {
-											result.style[name] = item[name];
-										}
-									}
-									break;
-								default:
-									if (!("childs" in result)) {
-										result.childs = [];
-									}
-									result.childs.add(item);
-									break;
-							}
-							break;
-						case "string":
-							if (/^\.|#/.test(item)) {
-								if (!("identity" in result)) {
-									result.identity = [];
-								}
-								const identities = item.split(".").filter(Boolean);
-								for (const item of identities) {
-									result.identity.add(item);
-								}
-							} else {
-								result.content = item;
-							}
-							break;
-					}
-				}
-				return result;
-			},
-			attribute(name, value) {
-				return {
-					_type: "attributes",
-					name: name,
-					value: value,
-				};
-			},
-			div() {
-				const dom = lib.linq.dom;
-				return dom.inject(document.createElement("div"), dom.generate(...arguments));
-			},
-		},
-	};
 	init = new LibInit();
 	cheat = {
 		/**
@@ -14802,9 +14535,6 @@ export class Library {
 	selectGroup = ["shen", "devil"]; //"western",
 	phaseName = ["phaseZhunbei", "phaseJudge", "phaseDraw", "phaseUse", "phaseDiscard", "phaseJieshu"];
 	quickVoice = ["我从未见过如此厚颜无耻之人！", "这波不亏", "请收下我的膝盖", "你咋不上天呢", "放开我的队友，冲我来", "你随便杀，闪不了算我输", "见证奇迹的时刻到了", "能不能快一点啊，兵贵神速啊", "主公，别开枪，自己人", "小内再不跳，后面还怎么玩儿啊", "你们忍心，就这么让我酱油了？", "我，我惹你们了吗", "姑娘，你真是条汉子", "三十六计，走为上，容我去去便回", "人心散了，队伍不好带啊", "昏君，昏君啊！", "风吹鸡蛋壳，牌去人安乐", "小内啊，您老悠着点儿", "不好意思，刚才卡了", "你可以打得再烂一点吗", "哥们，给力点儿行嘛", "哥哥，交个朋友吧", "妹子，交个朋友吧"];
-	other = {
-		ignore: () => void 0,
-	};
 	InitFilter = {
 		noZhuHp: "不享受主公的额外体力上限",
 		noZhuSkill: "不享受地主的额外技能",
