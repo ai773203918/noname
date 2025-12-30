@@ -169,31 +169,38 @@ export class UI {
 	_handcardHover = null;
 	/**
 	 * 计算手牌展开偏移量
+	 * - 触屏设备：点击选中时展开
+	 * - PC端：仅鼠标悬浮时展开
 	 * @param {HTMLElement[]} cards - 手牌数组
 	 * @param {{cardWidth?: number, currentMargin?: number}} [options] - 配置选项
-	 * @returns {{selectedIndex: number, spreadLeft: number, spreadRight: number}}
+	 * @returns {{spreadIndex: number, spreadLeft: number, spreadRight: number}}
 	 */
 	getSpreadOffset(cards, options = {}) {
-		const result = { selectedIndex: -1, spreadLeft: 0, spreadRight: 0 };
+		const result = { spreadIndex: -1, spreadLeft: 0, spreadRight: 0 };
 		if (!lib.config.spread_card) return result;
 
 		const cardWidth = options.cardWidth || 112;
 		const currentMargin = options.currentMargin || cardWidth;
 		if (currentMargin >= cardWidth - 2) return result;
 
+		const isTouchscreen = lib.config.touchscreen;
 		for (let i = 0; i < cards.length; i++) {
-			const isSelected = cards[i].classList?.contains("selected");
-			const isHovered = !lib.config.touchscreen && cards[i] === ui._handcardHover;
-			if (isSelected || isHovered) {
-				if (result.selectedIndex !== -1) {
-					result.selectedIndex = -1;
+			let shouldSpread = false;
+			if (isTouchscreen) {
+				shouldSpread = cards[i].classList?.contains("selected");
+			} else {
+				shouldSpread = cards[i] === ui._handcardHover;
+			}
+			if (shouldSpread) {
+				if (result.spreadIndex !== -1) {
+					result.spreadIndex = -1;
 					break;
 				}
-				result.selectedIndex = i;
+				result.spreadIndex = i;
 			}
 		}
 
-		if (result.selectedIndex !== -1) {
+		if (result.spreadIndex !== -1) {
 			const spreadOffset = Math.max(0, cardWidth - currentMargin);
 			result.spreadLeft = Math.round(spreadOffset * 0.2);
 			result.spreadRight = spreadOffset;
@@ -458,11 +465,12 @@ export class UI {
 		for (var i = 0; i < hs1.length; i++) {
 			var x1 = i * offset1;
 			if (spread1.spreadLeft || spread1.spreadRight) {
-				if (i < spread1.selectedIndex) x1 -= spread1.spreadLeft;
-				else if (i > spread1.selectedIndex) x1 += spread1.spreadRight;
+				if (i < spread1.spreadIndex) x1 -= spread1.spreadLeft;
+				else if (i > spread1.spreadIndex) x1 += spread1.spreadRight;
 			}
-			hs1[i].style.transform = "translateX(" + x1 + "px)";
-			hs1[i]._transform = "translateX(" + x1 + "px)";
+			var baseTransform1 = "translateX(" + x1 + "px)";
+			hs1[i]._transform = baseTransform1;
+			hs1[i].style.transform = hs1[i].classList.contains("selected") ? baseTransform1 + " translateY(-20px)" : baseTransform1;
 			ui.refresh(hs1[i]);
 			hs1[i].classList.remove("drawinghidden");
 			if (offset12 > 40) {
@@ -505,11 +513,12 @@ export class UI {
 		for (var i = 0; i < hs2.length; i++) {
 			var x2 = i * offset2;
 			if (spread2.spreadLeft || spread2.spreadRight) {
-				if (i < spread2.selectedIndex) x2 -= spread2.spreadLeft;
-				else if (i > spread2.selectedIndex) x2 += spread2.spreadRight;
+				if (i < spread2.spreadIndex) x2 -= spread2.spreadLeft;
+				else if (i > spread2.spreadIndex) x2 += spread2.spreadRight;
 			}
-			hs2[i].style.transform = "translateX(" + x2 + "px)";
-			hs2[i]._transform = "translateX(" + x2 + "px)";
+			var baseTransform2 = "translateX(" + x2 + "px)";
+			hs2[i]._transform = baseTransform2;
+			hs2[i].style.transform = hs2[i].classList.contains("selected") ? baseTransform2 + " translateY(-20px)" : baseTransform2;
 			ui.refresh(hs2[i]);
 			hs2[i].classList.remove("drawinghidden");
 			if (offset22 > 40) {
