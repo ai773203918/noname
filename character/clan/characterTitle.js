@@ -1,7 +1,7 @@
 export default {
 	//clan_xunyu: "",
 	clan_yangzhong: "岐路也汤汤",
-	clan_chenqun: "九品中正",
+	clan_chenqun: "片言折狱",
 	clan_wangshen: "崇虎田光",
 	clan_wuxian: "庄姝晏晏",
 	clan_wuban: "豪侠督进",
