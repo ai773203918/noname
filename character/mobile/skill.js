@@ -141,6 +141,9 @@ const skills = {
 			if (!event.respondTo || !Array.isArray(event.respondTo)) {
 				return false;
 			}
+			if (!player.isPhaseUsing()) {
+				return false;
+			}
 			if (event.player == event.respondTo[0]) {
 				return false;
 			}
@@ -367,7 +370,7 @@ const skills = {
 								return get.event("canChoose").includes(button.link);
 							})
 							.set("ai", button => {
-								const player = get.player(),
+								const { player, getNum } = get.event(),
 									trigger = get.event().getTrigger();
 								if (button.link == "useCard") {
 									const cards = player.getCards("hs", card => {
@@ -380,11 +383,11 @@ const skills = {
 									return check(cards.maxBy(check));
 								}
 								if (button.link == "discard") {
-									const num = getNum(trigger.player, player);
-									return num * get.effect(player, { name: "guohe_copy2" }, player, player);
+									return get.effect(player, { name: "guohe_copy2" }, player, player) / getNum;
 								}
 								return get.damageEffect(player, player, player);
 							})
+							.set("getNum", getNum(player, target) + 1)
 							.set("canChoose", canChoose)
 							.forResult()
 					: {
@@ -12338,7 +12341,7 @@ const skills = {
 						player.hasUseTarget({ name: link[2], nature: link[3] }) &&
 						(get.type(link[2]) == "basic" ||
 							game.countPlayer(current => {
-								return player.canUse({ name: link[2] }, current);
+								return player.canUse({ name: link[2], nature: link[3] }, current);
 							}) <= numx)
 					);
 				})
@@ -12368,7 +12371,7 @@ const skills = {
 			if (typeof links[0] == "number") {
 				await player.draw(links[0]);
 			} else {
-				const card = get.autoViewAs({ name: links[0][2], isCard: true });
+				const card = get.autoViewAs({ name: links[0][2], nature: links[0][3], isCard: true });
 				player.markAuto(event.name, [card.name]);
 				await player.chooseUseTarget(card, true);
 			}

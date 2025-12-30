@@ -307,16 +307,19 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			return event.player != player && player.countMark("dcyanxi") > 0 && player.canUse({ name: "sha", isCard: true }, event.player, false, false);
+			const card = get.autoViewAs({ name: "sha", isCard: true, storage: { dcyanxi: true } });
+			return event.player != player && player.countMark("dcyanxi") > 0 && player.canUse(card, event.player, false, false);
 		},
 		logTarget: "player",
 		check(event, player) {
-			return get.effect(event.player, { name: "sha", isCard: true }, player, player) > 0;
+			const card = get.autoViewAs({ name: "sha", isCard: true, storage: { dcyanxi: true } });
+			return get.effect(event.player, card, player, player) > 0;
 		},
 		async content(event, trigger, player) {
 			const target = trigger.player,
-				card = get.autoViewAs({ name: "sha", isCard: true });
+				card = get.autoViewAs({ name: "sha", isCard: true, storage: { dcyanxi: true } });
 			let isFirst = true;
+			player.addTempSkill("dcyanxi_jueqing");
 			while (player.countMark(event.name) > 0 && player.canUse(card, target, false, false) && target.isIn()) {
 				if (isFirst) {
 					isFirst = false;
@@ -326,12 +329,32 @@ const skills = {
 				player.removeMark(event.name, 1, false);
 				await player.useCard(card, target, false);
 			}
+			player.removeSkill("dcyanxi_jueqing");
 		},
 		intro: {
 			content: "还可以发动#次",
 		},
 		ai: {
 			combo: "dczouyi",
+		},
+		subSkill: {
+			jueqing: {
+				trigger: {
+					source: "damageBefore",
+				},
+				charlotte: true,
+				filter(event, player) {
+					return event.card?.storage?.dcyanxi;
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					trigger.cancel();
+					trigger.player.loseHp(trigger.num);
+				},
+				ai: {
+					jueqing: true,
+				},
+			},
 		},
 	},
 	//新杀诸葛均

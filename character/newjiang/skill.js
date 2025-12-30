@@ -1477,8 +1477,11 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
+				if (info[0] == "delay") {
+					return false;
+				}
 				return (
-					get.tag({ name: info[2] }, "damage") > 0.5 &&
+					get.tag({ name: info[2] }, "damage") &&
 					player.countCards("hs", card => {
 						if (get.color(card) != "black") {
 							return false;

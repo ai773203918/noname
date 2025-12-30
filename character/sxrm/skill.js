@@ -1254,8 +1254,11 @@ const skills = {
 			while (target?.isIn()) {
 				await player.draw();
 				const names = get.inpileVCardList(info => {
+					if (info[0] == "delay") {
+						return false;
+					}
 					const card = new lib.element.VCard({ name: info[2], nature: info[3], isCard: true });
-					return get.tag(card, "damage") > 0.5;
+					return get.tag(card, "damage");
 				});
 				if (!names.length) {
 					return;

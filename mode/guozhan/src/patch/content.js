@@ -1598,6 +1598,8 @@ export const transCharacter = async (event, _trigger, player) => {
 	const { target, num1, num2 } = event;
 	const str = [num1, num2].map(i => (i == 1 ? "主" : "副")).toUniqued();
 	game.log(player, "与", target, `进行了${str}将易位`);
+	await player.showCharacter(num1 - 1);
+	await target.showCharacter(num2 - 1);
 	const name1 = player[`name${num1}`],
 		name2 = target[`name${num2}`];
 	const getSkills = (current, name) => {

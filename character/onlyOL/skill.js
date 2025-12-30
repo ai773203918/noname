@@ -213,21 +213,42 @@ const skills = {
 			}
 			return false;
 		},
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseControl("一张", "两张", "cancel2")
+				.set("prompt", get.prompt2(event.skill, trigger.player))
+				.set("ai", () => {
+					const { resultx, att } = get.event();
+					if (!resultx) {
+						return "cancel2";
+					}
+					return att > 0 ? 1 : 0;
+				})
+				.set("att", get.attitude(player, trigger.player))
+				.set("resultx", get.info(event.skill).check(trigger, player))
+				.forResult();
+			if (result.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.index + 1,
+				};
+			}
+		},
 		async content(event, trigger, player) {
-			const [target] = event.targets;
+			const { targets: [target], cost_data: num } = event;
 			player.addTempSkill(`${event.name}_used`, "roundStart");
 			player.markAuto(`${event.name}_used`, target);
-			await player.draw();
+			await player.draw(num);
 			if (player == target) {
 				return;
 			}
 			const damaged = player.getStorage(`${event.name}_damaged`);
-			const hs = player.getCards("he", card => !player.hasCard(cardx => cardx != card && get.name(cardx) == get.name(card) && !damaged.includes(get.name(card)), "he"));
+			const hs = player.getCards("he", card => !damaged.includes(get.name(card), "he"));
 			if (hs.length) {
 				player.addGaintag(hs, `${event.name}_tag`);
 			}
 			const result = await player
-				.chooseToGive(target, "he", true)
+				.chooseToGive(target, "he", true, num)
 				.set("hs", hs)
 				.set("custom", {
 					add: {
@@ -255,12 +276,13 @@ const skills = {
 				.forResult();
 			player.removeGaintag(`${event.name}_tag`);
 			if (result?.bool && result.cards?.length) {
-				const {
-					cards: [card],
-				} = result;
-				const name = get.name(card);
-				if (!player.hasCard(i => get.name(i) == name, "he") && !damaged.includes(name)) {
-					player.markAuto(`${event.name}_damaged`, name);
+				const { cards } = result;
+				const names = cards.filter(card => {
+					const name = get.name(card);
+					return !player.hasCard(i => get.name(i) == name, "he") && !damaged.includes(name);
+				}).map(card => get.name(card)).toUniqued();
+				if (names?.length) {
+					player.markAuto(`${event.name}_damaged`, names);
 					await target.damage();
 				}
 			}
@@ -2279,7 +2301,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const [target] = event.targets;
 			player.awakenSkill(event.name);
-			let cards = Array.from(ui.discardPile.childNodes).filter(card => get.tag(card, "damage") > 0.5);
+			let cards = Array.from(ui.discardPile.childNodes).filter(card => get.tag(card, "damage") && get.type(card) != "delay");
 			if (cards.length > game.players.length) {
 				cards = cards.randomGets(game.players.length);
 			}
@@ -3786,7 +3808,7 @@ const skills = {
 			const effect = async target => {
 				const card = get.cardPile(card => {
 					const info = get.info(card);
-					return get.tag(card, "damage") > 0.5 && info.selectTarget && get.select(info.selectTarget).every(i => i == 1);
+					return get.tag(card, "damage") && get.type(card) != "delay" && info.selectTarget && get.select(info.selectTarget).every(i => i == 1);
 				});
 				if (card) {
 					const next = target.gain(card, "draw");
@@ -4817,7 +4839,7 @@ const skills = {
 				.set("ai", card => {
 					const player = get.player();
 					let value = 0;
-					if (get.tag(card, "damage") > 0.5) {
+					if (get.tag(card, "damage") && get.type(card) != "delay") {
 						value += player.getUseValue(card);
 					}
 					value += get.color(card, player) == "red" ? 7 - get.value(card, player) : 6 - get.value(card, player);
@@ -4934,9 +4956,9 @@ const skills = {
 		},
 		filter(event, player, name) {
 			if (name == "useCardToPlayer") {
-				return get.tag(event.card, "damage") > 0.5 && event.targets.length == 1 && player.countDiscardableCards(player, "he", card => get.color(card, player) == "red") && !player.hasSkill("olsibing_used");
+				return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.length == 1 && player.countDiscardableCards(player, "he", card => get.color(card, player) == "red") && !player.hasSkill("olsibing_used");
 			}
-			return get.tag(event.card, "damage") > 0.5 && event.targets.includes(player) && !player.hasHistory("damage", evt => evt.getParent("useCard") == event) && player.countDiscardableCards(player, "he", card => get.color(card, player) == "black") && player.hasUseTarget({ name: "sha", isCard: true }, false, false);
+			return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.includes(player) && !player.hasHistory("damage", evt => evt.getParent("useCard") == event) && player.countDiscardableCards(player, "he", card => get.color(card, player) == "black") && player.hasUseTarget({ name: "sha", isCard: true }, false, false);
 		},
 		logTarget(event, player, name) {
 			if (name == "useCardToPlayer") {
@@ -6361,7 +6383,7 @@ const skills = {
 		filter(event, player) {
 			const { card } = event;
 			return (
-				(card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5)) &&
+				(card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") && get.type(card) != "delay")) &&
 				game.hasPlayer(current => {
 					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(card, event.player, current);
 				})
@@ -7554,7 +7576,7 @@ const skills = {
 							return;
 						}
 						const sum = num + numx;
-						if (numx > 0 || sum > 1) {
+						if (numx > 0 || sum >= 1) {
 							return sum;
 						}
 					},
@@ -9260,7 +9282,7 @@ const skills = {
 				.when("phaseJieshuBegin")
 				.filter(evt => evt.getParent() == trigger.getParent())
 				.then(() => {
-					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") > 0.5) && player.countDiscardableCards("he")) {
+					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") && get.type(evtx.card) != "delay") && player.countDiscardableCards("he")) {
 						player.chooseToDiscard("he", game.countGroup(), true);
 					}
 				});

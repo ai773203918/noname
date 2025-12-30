@@ -394,7 +394,7 @@ const skills = {
 		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			return (
-				(event.card.name == "sha" || (get.type(event.card, null, false) == "trick" && get.tag(event.card, "damage") > 0.5)) &&
+				(event.card.name == "sha" || (get.type(event.card, null, false) == "trick" && get.tag(event.card, "damage"))) &&
 				event.targets.some(target => {
 					return target.countCards("h") > 0 && !target.hasHistory("damage", evt => evt.card == event.card);
 				})

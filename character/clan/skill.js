@@ -346,9 +346,11 @@ const skills = {
 		},
 		locked: true,
 		filter(event, player) {
+			if (player.getStorage("clandingan_used").includes(event.card.name)) {
+				return false;
+			}
 			return game.getGlobalHistory("useCard", evt => evt.card.name == event.card.name).indexOf(event) > 0;
 		},
-		round: 1,
 		async cost(event, trigger, player) {
 			const targets = game.filterPlayer(current => {
 				if (trigger.targets?.includes(current)) {
@@ -399,7 +401,10 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			const { targets } = event;
+			const { targets } = event,
+				skill = "clandingan_used";
+			player.addTempSkill(skill, "roundStart");
+			player.markAuto(skill, trigger.card.name);
 			targets.sortBySeat();
 			await game.asyncDraw(targets);
 			const currents = targets.filter(target => target != player && target.isMaxHandcard(false, current => current != player && targets.includes(current)));
@@ -457,6 +462,12 @@ const skills = {
 			};
 			await game.doAsyncInOrder(currents, func);
 		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
 	},
 	clanfuning: {
 		audio: 2,
@@ -471,18 +482,18 @@ const skills = {
 			if (!game.hasPlayer(current => current != player)) {
 				return false;
 			}
-			const num = player.getDamagedHp(); //Math.max(1, player.getDamagedHp())
-			return num > 0 && player.countCards("he") >= num;
+			const num = Math.max(1, player.getDamagedHp());
+			return player.countCards("he") >= num;
 		},
 		async cost(event, trigger, player) {
-			const num = player.getDamagedHp(),
+			const num = Math.max(1, player.getDamagedHp()),
 				count = game.countPlayer2(current => current.hasHistory("damage"), true);
 			event.result = await player
 				.chooseCardTarget({
 					prompt: get.prompt2(event.skill),
 					filterCard: true,
 					position: "he",
-					selectCard: num,
+					selectCard: [num, Infinity],
 					filterTarget: lib.filter.notMe,
 					complexCard: true,
 					count: count,
@@ -1539,11 +1550,11 @@ const skills = {
 					await player.loseToDiscardpile(discard);
 				}
 				const result2 = await player
-					.chooseTarget(`绝途：令一名角色展示一张手牌`, true, (card, player, target) => {
-						return target.countCards("h");
+					.chooseTarget(`绝途：令一名角色弃置一张手牌`, true, (card, player, target) => {
+						return target.countDiscardableCards(target, "h");
 					})
 					.set("ai", target => {
-						return -get.attitude(get.player(), target);
+						return get.attitude(target, { name: "guohe_copy", position: "h" }, target, player);
 					})
 					.forResult();
 				if (!result2?.targets?.length) {
@@ -1551,24 +1562,18 @@ const skills = {
 					return;
 				}
 				const target = result2.targets[0];
-				if (!target.countCards("h")) {
+				if (!target.countDiscardableCards(target, "h")) {
 					return;
 				}
 				player.line(target);
-				const result3 = await target.chooseCard("绝途：请展示一张手牌", true, "h").forResult();
+				const result3 = await target.chooseToDiscard("绝途：请弃置一张手牌", true, "h").forResult();
 				if (!result3?.cards?.length) {
 					event.finish();
 					return;
 				}
 				const card = result3.cards[0],
 					suit = get.suit(card, target);
-				await target.showCards([card]);
-				if (player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
-					const guohe = get.autoViewAs({ name: "guohe" }, [card]);
-					if (player.hasUseTarget(guohe, null, false)) {
-						player.chooseUseTarget(guohe, [card], true, false);
-					}
-				} else {
+				if (!player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
 					target.damage();
 				}
 			},
@@ -3088,6 +3093,7 @@ const skills = {
 				cards = get.event("clanshengmo_cards") || [];
 			return (
 				cards.length > 0 &&
+				cards.some(card => !player.getStorage("clanshengmo_num").includes(get.number(card, false))) &&
 				names.some(name => {
 					return event.filterCard({ name, isCard: true }, player, event);
 				})
@@ -3121,9 +3127,14 @@ const skills = {
 		async content(event, trigger, player) {
 			const evt = event.getParent(2);
 			const names = lib.inpile.filter(name => get.type(name) == "basic" && !player.getStorage("clanshengmo").includes(name)),
-				cards = evt.clanshengmo_cards.sort((a, b) => get.number(a, false) - get.number(b, false));
+				cards = evt.clanshengmo_cards.sort((a, b) => get.number(a, false) - get.number(b, false)),
+				canChoose = cards.filter(card => !player.getStorage("clanshengmo_num").includes(get.number(card, false)));
 			const { links } = await player
 				.chooseButton(["剩墨：获得其中一张牌", cards], true)
+				.set("filterButton", button => {
+					return get.event("canChoose").includes(button.link);
+				})
+				.set("canChoose", canChoose)
 				.set("ai", button => {
 					return get.value(button.link);
 				})
@@ -3132,6 +3143,7 @@ const skills = {
 				return;
 			}
 			await player.gain(links, "gain2");
+			player.markAuto("clanshengmo_num", links.map(card => get.number(card, false)).toUniqued());
 			const numbers = cards.map(card => get.number(card, false)).unique();
 			const [min, max] = [Math.min(...numbers), Math.max(...numbers)],
 				num = get.number(links[0], false);

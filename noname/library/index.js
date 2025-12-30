@@ -13798,6 +13798,17 @@ export class Library {
 			},
 		],
 		[
+			"赛马",
+			{
+				getSpan: () => {
+					const span = document.createElement("span");
+					span.style.fontFamily = "NonameSuits";
+					span.textContent = "🏇";
+					return span.outerHTML;
+				},
+			},
+		],
+		[
 			"SP",
 			{
 				getSpan: () => {

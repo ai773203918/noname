@@ -1112,7 +1112,8 @@ export default {
 		},
 		filter(event, player) {
 			return (
-				get.tag(event.card, "damage") > 0.5 &&
+				get.tag(event.card, "damage") &&
+				get.type(event.card) != "delay" &&
 				event.targets.some(target => {
 					return target.countCards("h") > 0 && !target.hasHistory("damage", evt => evt.card == event.card);
 				})

@@ -5752,7 +5752,7 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 					}
 					if (lib.card[name].cardPrompt) {
-						var str = lib.card[name].cardPrompt(node.link || node, player),
+						var str = lib.card[name].cardPrompt(node.link || node, get.owner(node)),
 							placetext = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
 						if (!str.startsWith('<div class="skill"')) {
 							uiintro._place_text = placetext;
@@ -5784,6 +5784,22 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 							uiintro.addSmall(Vcard.cards);
 						} else {
 							uiintro.add('<div class="text center">（这是一张虚拟牌）</div>');
+						}
+					}
+					if (node.gaintag?.length) {
+						let gaintag = node.gaintag.map(tag => {
+							let translate = get.translation(tag);
+							if (translate === tag && tag.startsWith("eternal_")) {
+								translate = get.translation(tag.slice(8));
+							};
+							if (translate === "invisible") {
+								return "";
+							}
+							return translate;
+						}).filter(tag => tag.length);
+						if (gaintag?.length) {
+							uiintro.add(" ");
+							uiintro.add(`<div class="text" style="display:inline">此牌标签：${gaintag}</div>`);
 						}
 					}
 				}

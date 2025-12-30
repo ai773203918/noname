@@ -2617,7 +2617,7 @@ const skills = {
 			const { bool, cards } = await player.chooseToDiscard(true, "h", 3 - num).set("ai", card => {
 				const player = get.player(),
 					effect = player.getStorage("nzry_chenglve_effect");
-				const cards = player.getCards("h").filter(i => get.tag(i, "damage") > 0.5 && player.hasValueTarget(i, true, false)),
+				const cards = player.getCards("h").filter(i => get.tag(i, "damage") && get.type(i) != "delay" && player.hasValueTarget(i, true, false)),
 					map = {};
 				for (const cardx of cards) {
 					const suit = get.suit(cardx, player);
@@ -2654,7 +2654,7 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				if (player.countCards("h", card => get.tag(card, "damage") > 0.5 && player.hasValueTarget(card, true, false)) > 2) {
+				if (player.countCards("h", card => get.tag(card, "damage") && get.type(card) != "delay" && player.hasValueTarget(card, true, false)) > 2) {
 					return get.order({ name: "sha" }) + 0.14;
 				}
 				return 2.7;

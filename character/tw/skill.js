@@ -3341,7 +3341,7 @@ const skills = {
 			if (player.hp < event.target.hp || get.distance(player, event.target) > 1 || !player.countCards("h")) {
 				return false;
 			}
-			return get.tag(event.card, "damage") > 0.5 && get.type(event.card) == "trick";
+			return get.tag(event.card, "damage") && get.type(event.card) == "trick";
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
@@ -12099,14 +12099,14 @@ const skills = {
 						if (!Array.isArray(link)) {
 							return true;
 						}
-						return player.hasUseTarget({ name: link[2] });
+						return player.hasUseTarget({ name: link[2], nature: link[3] });
 					})
 					.set("ai", button => {
 						const { player, numx } = get.event();
 						const { link } = button;
 						const val = numx > 3 ? Math.min(1.5, 1 + (numx - 3) * 0.1) : 1;
 						if (Array.isArray(link)) {
-							if (player.getUseValue({ name: link[2] }) > 4 * val) {
+							if (player.getUseValue({ name: link[2], nature: link[3] }) > 4 * val) {
 								return 1;
 							}
 						}
@@ -12133,7 +12133,7 @@ const skills = {
 			if (typeof links[0] == "number") {
 				await player.draw(links[0]);
 			} else {
-				const card = get.autoViewAs({ name: links[0][2], isCard: true });
+				const card = get.autoViewAs({ name: links[0][2], nature: links[0][3], isCard: true });
 				player.markAuto(event.name, [card.name]);
 				await player.chooseUseTarget(card, true);
 			}
@@ -20945,41 +20945,110 @@ const skills = {
 	twgongsun: {
 		audio: "gongsun",
 		trigger: { player: "phaseUseBegin" },
-		forced: true,
-		direct: true,
+		locked: true,
 		filter(event, player) {
 			return game.hasPlayer(current => player.inRange(current));
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget("共损：请选择一名攻击范围内的角色", lib.translate.twgongsun_info, true, function (card, player, target) {
-					return player != target && player.inRange(target);
+		async cost(event, trigger, player) {
+			const result = await player
+				.chooseButtonTarget({
+					createDialog: ["共损：选择一名攻击范围内的其他角色，封印一种花色", [lib.suit.map(suit => {
+						return ["", "", `lukai_${suit}`];
+					}), "vcard"]],
+					filterTarget(card, player, target) {
+						return player != target && player.inRange(target);
+					},
+					forced: true,
+					ai1(button) {
+						return Math.random();
+					},
+					ai2(target) {
+						const player = get.player();
+						return -get.attitude(player, target) * (1 + target.countCards("h"));
+					},
 				})
-				.set("ai", function (target) {
-					return -get.attitude(_status.event.player, target) * (1 + target.countCards("h"));
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("twgongsun", target);
-				player.addTempSkill("twgongsun_shadow", { player: ["phaseBegin", "die"] });
-				player
-					.chooseControl(lib.suit)
-					.set("prompt", "共损：请选择一个花色")
-					.set("ai", function (button) {
-						return lib.suit.randomGet();
-					});
-			} else {
-				event.finish();
+				.forResult();
+			if (!result?.bool || !result.links?.length || !result.targets?.length) {
+				return;
 			}
-			"step 2";
-			var suit = result.control;
+			event.result = {
+				bool: true,
+				targets: result.targets,
+				cost_data: result.links[0][2],
+			}
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0],
+				suit = event.cost_data.slice(6),
+				skill = `${event.name}_shadow`;
 			player.popup(suit + 2, "soil");
 			game.log(player, "选择了", suit + 2);
-			player.storage.twgongsun_shadow.push([target, suit]);
-			player.markSkill("twgongsun_shadow");
+			player.addTempSkill(skill, { player: ["phaseBegin", "die"] });
+			player.markAuto(skill, [[target, suit]]);
+		},
+		subSkill: {
+			shadow: {
+				marktext: "损",
+				onremove: true,
+				intro: {
+					content(shadow) {
+						if (!shadow?.length) {
+							return "无效果";
+						}
+						return shadow.map(list => `${get.translation(list[0])}：${get.translation(list[1])}`).join("<br>");
+					},
+				},
+				global: "twgongsun_shadow2",
+			},
+			shadow2: {
+				mod: {
+					cardEnabled(card, player) {
+						const suits = [];
+						game.countPlayer(current => {
+							const list = current.getStorage("twgongsun_shadow");
+							if (!list?.length) {
+								return false;
+							}
+							list.forEach(info => {
+								if (info[0] == player || current == player) {
+									suits.add(info[1]);
+								}
+							});
+						});
+						const hs = player.getCards("h", card => suits.includes(get.suit(card, player))),
+							cards = [card];
+						if (card.cards && Array.isArray(card.cards)) {
+							cards.addArray(card.cards);
+						}
+						if (cards.containsSome(...hs)) {
+							return false;
+						}
+					},
+					cardRespondable(card, player) {
+						return lib.skill.twgongsun_shadow2.mod.cardEnabled.apply(this, arguments);
+					},
+					cardSavable(card, player) {
+						return lib.skill.twgongsun_shadow2.mod.cardEnabled.apply(this, arguments);
+					},
+					cardDiscardable(card, player) {
+						const suits = [];
+						game.countPlayer(current => {
+							const list = current.getStorage("twgongsun_shadow");
+							if (!list?.length) {
+								return false;
+							}
+							list.forEach(info => {
+								if (info[0] == player || current == player) {
+									suits.add(info[1]);
+								}
+							});
+						});
+						if (suits.includes(get.suit(card, player))) {
+							return false;
+						}
+					},
+				},
+			},
 		},
 	},
 	twgongsun_shadow: {

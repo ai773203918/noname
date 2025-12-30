@@ -365,6 +365,12 @@ const translates = {
 	xuyuan_info: "出牌阶段开始时，你可选择一个花色和一个装备的副类别，然后从牌堆中随机将一张满足要求的装备牌置入你的装备区。",
 	xiaomian: "笑面",
 	xiaomian_info: "你使用牌时，可以摸X张牌(X 为你装备区里与此牌花色相同的牌数）。若如此做，弃置你装备区里的一张牌。",
+	tw_dm_quyi: "TW魔麴义",
+	tw_dm_quyi_prefix: "TW|魔",
+	dmchongqi: "冲骑",
+	dmchongqi_info: `每回合限一次，你使用【杀】指定目标后，可以弃置目标角色一张牌。${get.poptip("rule_youji")}：此【杀】伤害+1。`,
+	dmfanquan: "反拳",
+	dmfanquan_info: `你受到伤害后，可以选择一名其他角色，令其受到1点伤害。${get.poptip("rule_boji")}：其受到X点伤害，本回合你计算与其他角色距离+1（X为你受到的伤害值）。`,
 };
 
 export default translates;

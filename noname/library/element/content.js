@@ -6829,7 +6829,7 @@ player.removeVirtualEquip(card);
 			event.lose_list = lose_list;
 			event.getNum = card => {
 				for (var i of event.lose_list) {
-					if (i[1].contains && i[1].includes(card)) {
+					if (i[1].includes && i[1].includes(card)) {
 						return get.number(card, i[0]);
 					}
 				}
@@ -7047,7 +7047,7 @@ player.removeVirtualEquip(card);
 			event.lose_list = lose_list;
 			event.getNum = function (card) {
 				for (var i of event.lose_list) {
-					if (i[1].contains && i[1].includes(card)) {
+					if (i[1].includes && i[1].includes(card)) {
 						return get.number(card, i[0]);
 					}
 				}

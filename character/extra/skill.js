@@ -2,14 +2,1074 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//SM神马超
+	sm_tuanlian: {
+		audio: 2,
+		trigger: {
+			global: "phaseBefore",
+			player: ["enterGame", "damageEnd"],
+			source: "damageSource",
+		},
+		filter(event, player, name) {
+			if (event.name == "damage") {
+				return (
+					game
+						.getGlobalHistory("everything", evt => {
+							if (evt.name != "damage") {
+								return false;
+							}
+							if (name == "damageEnd" && evt.player == evt.source) {
+								return false;
+							}
+							return evt.player == player || evt.source == player;
+						})
+						.indexOf(event) == 0
+				);
+			}
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const info = get.info(event.name);
+			const characters = info.getCharacters(trigger.name == "damage" ? 1 : 5);
+			info.addVisitors(characters, player);
+			const next = game.createEvent("addPrettyDerby", false);
+			next.player = player;
+			next.characters = characters;
+			next.setContent("emptyEvent");
+			await next;
+		},
+		onremove(player, skill) {
+			get.info(skill).removeVisitors(player.getStorage(skill), player);
+		},
+		getCharacters(num) {
+			if (!_status.characterlist) {
+				game.initCharacterList();
+			}
+			const list = _status.characterlist.filter(name => {
+				const title = get.characterTitle(name);
+				if (title.includes("马")) {
+					return true;
+				}
+				const surnames = get.characterSurname(name).map(list => list.join(""));
+				return surnames.length && surnames.some(surname => surname.includes("马"));
+			});
+			if (!list.length) {
+				return [];
+			}
+			return list.randomGets(Math.min(list.length, num));
+		},
+		getSkills(characters, player) {
+			if (!player.hasSkill("sm_jingji")) {
+				return [];
+			}
+			const list = [];
+			for (const name of characters) {
+				const { skills } = get.character(name);
+				if (Array.isArray(skills) && skills.length) {
+					list.add(skills[0]);
+				}
+			}
+			return list;
+		},
+		addVisitors(characters, player) {
+			_status.characterlist.removeArray(characters);
+			game.log(player, "将", "#y" + get.translation(characters), "加入了", "#g“赛马”");
+			game.broadcastAll(
+				function (player, characters) {
+					player.tempname.addArray(characters);
+					player.$draw(
+						characters.map(function (name) {
+							var cardname = "huashen_card_" + name;
+							lib.card[cardname] = {
+								fullimage: true,
+								image: "character:" + name,
+							};
+							lib.translate[cardname] = get.rawName2(name);
+							return game.createCard(cardname, " ", " ");
+						}),
+						"nobroadcast"
+					);
+				},
+				player,
+				characters
+			);
+			player.markAuto("sm_tuanlian", characters);
+		},
+		removeVisitors(characters, player) {
+			if (Array.isArray(player.tempname)) {
+				game.broadcastAll((player, characters) => player.tempname.removeArray(characters), player, characters);
+			}
+			player.unmarkAuto("sm_tuanlian", characters);
+			_status.characterlist.addArray(characters);
+		},
+		marktext: "马",
+		intro: {
+			name: "赛马",
+			mark(dialog, storage, player) {
+				if (!storage || !storage.length) {
+					return "当前没有“赛马”";
+				}
+				dialog.addSmall([storage, "character"]);
+				const skills = lib.skill.sm_tuanlian.getSkills(storage, player);
+				if (skills.length) {
+					dialog.addText("<li>当前可用技能：" + get.translation(skills), false);
+				}
+			},
+		},
+		ai: {
+			combo: "sm_jingji",
+		},
+	},
+	sm_jingji: {
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			if (!player.getStorage("sm_tuanlian").length) {
+				return false;
+			}
+			const equip = get.autoViewAs({ name: "sm_prettyDerby", isCard: true });
+			if (event.filterCard(equip, player, event)) {
+				return true;
+			}
+			return get.inpileVCardList(info => {
+				if (!["trick", "basic"].includes(info[0])) {
+					return false;
+				}
+				const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true });
+				return event.filterCard(card, player, event);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => {
+					if (!["trick", "basic"].includes(info[0])) {
+						return false;
+					}
+					const card = get.autoViewAs({ name: info[2], nature: info[3], isCard: true });
+					return event.filterCard(card, player, event);
+				});
+				const equip = get.autoViewAs({ name: "sm_prettyDerby", isCard: true });
+				if (event.filterCard(equip, player, event)) {
+					list.add(["equip", "", "sm_prettyDerby"]);
+				}
+				const dialog = ui.create.dialog("竞激", [list, "vcard"], "hidden");
+				return dialog;
+			},
+			check(button) {
+				if (get.event().getParent().type != "phase") {
+					return 1;
+				}
+				const card = get.autoViewAs({ name: button.link[2], nature: button.link[3], isCard: true });
+				return get.player().getUseValue(card);
+			},
+			prompt(links, player) {
+				return `移去一张“赛马”，然后视为使用${get.translation(links[0][3] || "")}${get.translation(links[0][2])}`;
+			},
+			backup(links, player) {
+				return {
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						isCard: true,
+					},
+					selectCard: -1,
+					filterCard: () => false,
+					popname: true,
+					log: false,
+					manualConfirm: true,
+					async precontent(event, trigger, player) {
+						const characters = player.getStorage("sm_tuanlian").slice(0);
+						const result =
+							characters.length > 1
+								? await player.chooseButton(["竟激：移去一张“赛马”", [characters, "character"]], true).forResult()
+								: {
+										bool: true,
+										links: characters,
+									};
+						if (result?.bool && result.links?.length) {
+							player.logSkill("sm_jingji");
+							get.info("sm_tuanlian").removeVisitors(result.links, player);
+							game.log(player, "移去了", "#y" + get.translation(result.links));
+							const next = game.createEvent("removePrettyDerby", false);
+							next.player = player;
+							next.characters = result.links;
+							next.setContent("emptyEvent");
+							await next;
+						}
+						const type = get.type(event.result.card);
+						player
+							.when({
+								player: "useCard",
+							})
+							.filter(evt => evt.getParent() == event.getParent())
+							.step(async (event, trigger, player) => {
+								if (type == "basic") {
+									trigger.baseDamage ??= 1;
+									trigger.baseDamage++;
+								}
+								if (type == "trick") {
+									await player.draw();
+								}
+							});
+					},
+				};
+			},
+		},
+		hiddenCard(player, name) {
+			if (!["trick", "basic"].includes(get.type(name))) {
+				return false;
+			}
+			return player.getStorage("sm_tuanlian").length;
+		},
+		init(player, skill) {
+			player.addSkill("sm_jingji_load");
+		},
+		onremove(player, skill) {
+			const skills = get.info("sm_tuanlian").getSkills(player.getStorage("sm_tuanlian"), player);
+			if (skills?.length) {
+				player.removeInvisibleSkill(skills);
+			}
+			player.removeSkill("sm_jingji_load");
+		},
+		ai: {
+			order: 2,
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+				},
+			},
+			combo: "sm_tuanlian",
+		},
+		group: ["sm_jingji_remove", "sm_jingji_trigger"],
+		subSkill: {
+			remove: {
+				audio: "sm_jingji",
+				trigger: { player: ["useSkill", "logSkillBegin"] },
+				forced: true,
+				locked: false,
+				filter(event, player) {
+					const skill = get.sourceSkillFor(event),
+						name = "sm_tuanlian";
+					if (!player.invisibleSkills.includes(skill)) {
+						return false;
+					}
+					return get.info(name).getSkills(player.getStorage(name), player).includes(skill);
+				},
+				async content(event, trigger, player) {
+					const name = "sm_tuanlian",
+						skill = get.sourceSkillFor(trigger),
+						info = get.info(name),
+						visitors = player.getStorage(name).filter(namex => get.character(namex).skills?.includes(skill));
+					if (!visitors?.length) {
+						return;
+					}
+					const result =
+						visitors.length > 1
+							? await player.chooseButton(["竟激：移去一张“赛马”", [visitors, "character"]], true).forResult()
+							: {
+									bool: true,
+									links: visitors,
+								};
+					if (result?.bool && result.links?.length) {
+						info.removeVisitors(result.links, player);
+						game.log(player, "移去了", "#y" + get.translation(result.links[0]));
+						const next = game.createEvent("removePrettyDerby", false);
+						next.player = player;
+						next.characters = result.links;
+						next.setContent("emptyEvent");
+						await next;
+					}
+				},
+			},
+			trigger: {
+				trigger: { player: "triggerInvisible" },
+				forced: true,
+				forceDie: true,
+				popup: false,
+				charlotte: true,
+				priority: 10,
+				filter(event, player) {
+					if (event.revealed) {
+						return false;
+					}
+					const info = get.info(event.skill);
+					if (info.charlotte) {
+						return false;
+					}
+					const skills = lib.skill.sm_tuanlian.getSkills(player.getStorage("sm_tuanlian"), player);
+					game.expandSkills(skills);
+					return skills.includes(event.skill);
+				},
+				async content(evt, event, player) {
+					const info = get.info(event.skill);
+					if (info.slient) {
+						return;
+					}
+					const trigger = evt._trigger,
+						check = info.check;
+					let str;
+					if (info.prompt) {
+						str = info.prompt;
+					} else {
+						if (typeof info.logTarget == "string") {
+							str = get.prompt(event.skill, trigger[info.logTarget], player);
+						} else if (typeof info.logTarget == "function") {
+							let logTarget = info.logTarget(trigger, player, trigger.triggername, trigger.indexedData);
+							if (get.itemtype(logTarget)?.indexOf("player") == 0) {
+								str = get.prompt(event.skill, logTarget, player);
+							}
+						} else {
+							str = get.prompt(event.skill, null, player);
+						}
+					}
+					if (typeof str == "function") {
+						str = str(trigger, player, trigger.triggername, trigger.indexedData);
+					}
+					const next = player.chooseBool(`竟激：${str}`);
+					next.set("yes", !info.check || info.check(trigger, player, trigger.triggername, trigger.indexedData));
+					next.set("hsskill", event.skill);
+					next.set("forceDie", true);
+					next.set("ai", function () {
+						return _status.event.yes;
+					});
+					if (typeof info.prompt2 == "function") {
+						next.set("prompt2", info.prompt2(trigger, player, trigger.triggername, trigger.indexedData));
+					} else if (typeof info.prompt2 == "string") {
+						next.set("prompt2", info.prompt2);
+					} else if (info.prompt2 != false) {
+						if (lib.dynamicTranslate[event.skill]) {
+							next.set("prompt2", lib.dynamicTranslate[event.skill](player, event.skill));
+						} else if (lib.translate[event.skill + "_info"]) {
+							next.set("prompt2", lib.translate[event.skill + "_info"]);
+						}
+					}
+					if (trigger.skillwarn) {
+						if (next.prompt2) {
+							next.set("prompt2", '<span class="thundertext">' + trigger.skillwarn + "。</span>" + next.prompt2);
+						} else {
+							next.set("prompt2", trigger.skillwarn);
+						}
+					}
+					const result = await next.forResult();
+					if (result?.bool) {
+						if (!info.cost) {
+							trigger.revealed = true;
+						}
+					} else {
+						trigger.untrigger();
+						trigger.cancelled = true;
+					}
+				},
+			},
+			load: {
+				trigger: {
+					player: ["addPrettyDerby", "removePrettyDerby"],
+				},
+				filter(event, player) {
+					return event.characters?.length;
+				},
+				direct: true,
+				firstDo: true,
+				charlotte: true,
+				init(player, skill) {
+					player.addSkillBlocker(skill);
+				},
+				onremove(player, skill) {
+					player.removeSkillBlocker(skill);
+				},
+				skillBlocker(skill, player) {
+					if (!player.invisibleSkills.includes(skill) || skill == "sm_tuanlian" || skill == "sm_jingji") {
+						return false;
+					}
+					return !player.hasSkill("sm_jingji");
+				},
+				async content(event, trigger, player) {
+					const skills = get.info("sm_tuanlian").getSkills(trigger.characters, player);
+					if (!skills?.length) {
+						return;
+					}
+					if (trigger.name == "addPrettyDerby") {
+						player.addInvisibleSkill(skills);
+					} else {
+						player.removeInvisibleSkill(skills);
+					}
+				},
+			},
+		},
+	},
+	sm_kuangchi: {
+		audio: 2,
+		trigger: {
+			source: "dieAfter",
+		},
+		filter(event, player) {
+			const target = event.player;
+			if (event.reserveOut || target.maxHp <= 0) {
+				return false;
+			}
+			return player.getStorage("sm_tuanlian").length;
+		},
+		logTarget: "player",
+		async cost(event, trigger, player) {
+			const names = player.getStorage("sm_tuanlian"),
+				target = trigger.player;
+			const result = await player
+				.chooseButton([get.prompt(event.skill, target), [names, "character"]])
+				.set("ai", () => {
+					return Math.random();
+				})
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const target = trigger.player,
+				name = event.cost_data;
+			trigger.cancel();
+			const names = get.nameList(target);
+			const result =
+				names.length > 1
+					? await player
+							.chooseControl(names)
+							.set("ai", () => {
+								const { controls } = get.event();
+								return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true))[0];
+							})
+							.set("prompt", "请选择替换的武将牌")
+							.forResult()
+					: { control: names[0] };
+			if (result.control) {
+				get.info("sm_tuanlian").removeVisitors([name], player);
+				game.log(player, "移去了", "#y" + get.translation(name));
+				const next = game.createEvent("removePrettyDerby", false);
+				next.player = player;
+				next.characters = [name];
+				next.setContent("emptyEvent");
+				await next;
+				await target.reviveEvent(2);
+				let doubleDraw = false;
+				let num = (get.character(name).maxHp || get.character(name).hp) - (get.character(result.control).maxHp || get.character(result.control).hp);
+				if (num !== 0) {
+					if (typeof target.singleHp === "boolean") {
+						if (num % 2 !== 0) {
+							if (target.singleHp) {
+								target.maxHp += (num + 1) / 2;
+								target.singleHp = false;
+							} else {
+								target.maxHp += (num - 1) / 2;
+								target.singleHp = true;
+								doubleDraw = true;
+							}
+						} else {
+							target.maxHp += num / 2;
+						}
+					} else {
+						target.maxHp += num;
+					}
+					target.update();
+				}
+				await target.reinitCharacter(result.control, name);
+				const owner = player["zombieshibian"] || player;
+				game.broadcastAll(
+					(player, target) => {
+						target["zombieshibian"] = player;
+						const identity = (target.identity = (identity => {
+							switch (identity) {
+								case "zhu":
+								case "mingzhong":
+									return "zhong";
+								case "zhu_false":
+									return "zhong_false";
+								case "bZhu":
+									return "bZhong";
+								case "rZhu":
+									return "rZhong";
+								default:
+									return identity;
+							}
+						})(player.identity));
+						if (!lib.translate[identity]) {
+							lib.translate[identity] = "马";
+						}
+						const goon = player !== game.me && target !== game.me && player.node.identity.classList.contains("guessing") && !player.identityShown;
+						if (goon) {
+							if (target.identityShown) {
+								delete target.identityShown;
+							}
+							if (!target.node.identity.classList.contains("guessing")) {
+								target.node.identity.classList.add("guessing");
+							}
+						}
+						target.setIdentity(goon ? "cai" : undefined);
+						if (target.node.dieidentity) {
+							target.node.dieidentity.innerHTML = get.translation(target.identity + 2);
+						}
+						if (typeof player.ai?.shown === "number" && target.ai) {
+							target.ai.shown = player.ai.shown;
+						}
+						if (typeof player.side == "boolean") {
+							target.side = player.side;
+							target.node.identity.firstChild.innerHTML = player.node.identity.firstChild.innerHTML;
+							target.node.identity.dataset.color = player.node.identity.dataset.color;
+						}
+						if (_status._zombieshibian) {
+							return;
+						}
+						_status.zombieshibian = true;
+						//检测游戏胜负
+						if (typeof game.checkResult === "function") {
+							const origin_checkResult = game.checkResult;
+							game.checkResult = function () {
+								const player = game.me._trueMe || game.me;
+								if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) {
+									game.over(true);
+								}
+								return origin_checkResult.apply(this, arguments);
+							};
+						}
+						if (typeof game.checkOnlineResult === "function") {
+							const origin_checkOnlineResult = game.checkOnlineResult;
+							game.checkOnlineResult = function (player) {
+								if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) {
+									return true;
+								}
+								return origin_checkOnlineResult.apply(this, arguments);
+							};
+						}
+						//敌友判定
+						if (typeof lib.element.player.getFriends === "function") {
+							const origin_getFriends = lib.element.player.getFriends;
+							const getFriends = function (func, includeDie) {
+								const player = this;
+								return [...origin_getFriends.apply(this, arguments), ...game[includeDie ? "filterPlayer2" : "filterPlayer"](target => (target["zombieshibian"] || target) === (player["zombieshibian"] || player))]
+									.filter(i => i !== player || func === true)
+									.unique()
+									.sortBySeat(player);
+							};
+							lib.element.player.getFriends = getFriends;
+							[...game.players, ...game.dead].forEach(i => (i.getFriends = getFriends));
+						}
+						if (typeof lib.element.player.isFriendOf === "function") {
+							const origin_isFriendOf = lib.element.player.isFriendOf;
+							const isFriendOf = function (player) {
+								if ((this["zombieshibian"] || this) === (player["zombieshibian"] || player)) {
+									return true;
+								}
+								return origin_isFriendOf.apply(this, arguments);
+							};
+							lib.element.player.isFriendOf = isFriendOf;
+							[...game.players, ...game.dead].forEach(i => (i.isFriendOf = isFriendOf));
+						}
+						if (typeof lib.element.player.getEnemies === "function") {
+							const origin_getEnemies = lib.element.player.getEnemies;
+							const getEnemies = function (func, includeDie) {
+								if (this["zombieshibian"]) {
+									return this["zombieshibian"].getEnemies(func, includeDie);
+								} else {
+									const player = this;
+									return [
+										...origin_getEnemies.apply(this, arguments),
+										...game[includeDie ? "filterPlayer2" : "filterPlayer"](target => {
+											return origin_getEnemies.apply(this, arguments).includes(target["zombieshibian"] || target);
+										}),
+									]
+										.filter(i => player != (i["zombieshibian"] || i))
+										.unique()
+										.sortBySeat(player);
+								}
+							};
+							lib.element.player.getEnemies = getEnemies;
+							[...game.players, ...game.dead].forEach(i => (i.getEnemies = getEnemies));
+						}
+					},
+					owner,
+					target
+				);
+				target.ai.modAttitudeFrom = function (from, to) {
+					if (to == from["zombieshibian"]) {
+						return 114514;
+					}
+					return get.attitude(from["zombieshibian"] || from, to["zombieshibian"] || to);
+				};
+				target.ai.modAttitudeTo = function (from, to, att) {
+					if (from == to["zombieshibian"]) {
+						return 7;
+					}
+					return get.attitude(from["zombieshibian"] || from, to["zombieshibian"] || to);
+				};
+				if (doubleDraw) {
+					await target.doubleDraw();
+				}
+			}
+		},
+		ai: {
+			combo: "sm_tuanlian",
+		},
+	},
+	sm_kulian: {
+		audio: 2,
+		trigger: {
+			player: "enterGame",
+			global: "phaseBefore",
+		},
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		forced: true,
+		logTarget(event, player) {
+			return game.filterPlayer(() => true);
+		},
+		async content(event, trigger, player) {
+			const func = async target => {
+				const card = get.cardPile2(card => {
+					return get.subtypes(card).containsSome("equip3", "equip4", "equip6");
+				}, "random");
+				if (card) {
+					target.$gain2(card);
+					await target.equip(card);
+				}
+				const card2 = game.createCard2("sm_mabian", "heart", 13);
+				target.$gain2(card2);
+				await target.equip(card2);
+				await game.delayx();
+			};
+			await game.doAsyncInOrder(event.targets, func);
+			game.addGlobalSkill("sm_kulian_prettyDerby");
+		},
+		derivation: "sm_kulian_reward",
+		subSkill: {
+			prettyDerby: {
+				trigger: {
+					global: ["roundStart", "roundEnd", "loseAsyncAfter", "gainAfter", "addJudgeAfter", "equipAfter", "addToExpansionAfter"],
+					source: "damageSource",
+					player: "loseAfter",
+				},
+				filter(event, player, name) {
+					if (name == "roundStart") {
+						return !event._PerttyDerbyed;
+					}
+					if (name == "roundEnd") {
+						return _status.prettyDerbyDoing?.length;
+					}
+					if (event.name == "damage") {
+						if (!player.getEquip("sm_mabian") || player.hasSkill("sm_kulian_damaged")) {
+							return false;
+						}
+						return event.player != player && event.player.getEquip("sm_mabian");
+					}
+					const es = event.getl(player)?.es;
+					return es?.length && es.some(card => card.name == "sm_mabian");
+				},
+				direct: true,
+				async content(event, trigger, player) {
+					switch (event.triggername) {
+						case "roundStart": {
+							trigger.set("_PerttyDerbyed", true);
+							game.log("#y新一轮赛马比赛开始！");
+							const list = get.info(event.name).initList(event.name);
+							list.forEach((obj, index) => {
+								game.log(`本轮赛马奖励${index + 1}：`, `#g${obj.info}[奖励：${obj.reward}]`);
+							});
+							game.broadcastAll(list => {
+								_status.prettyDerbyDoing = list;
+							}, list);
+							const target = game.findPlayer(current => current.hasSkill("sm_kulian")),
+								func = async target => {
+									target.markSkill(event.name);
+								};
+							if (target) {
+								await func(target);
+							} else {
+								await game.doAsyncInOrder(
+									game.filterPlayer(() => true),
+									func
+								);
+							}
+							return;
+						}
+						case "roundEnd": {
+							game.log("#y赛马比赛结束");
+							await game.doAsyncInOrder(
+								game.filterPlayer(() => true),
+								async target => {
+									target.unmarkSkill(event.name);
+								}
+							);
+							const next = game.createEvent("perttyDerbyEnd", false);
+							next.set("rewards", _status.prettyDerbyDoing);
+							next.setContent("emptyEvent");
+							await next;
+							while (_status.prettyDerbyDoing.length) {
+								const map = _status.prettyDerbyDoing.shift();
+								game.broadcastAll(list => {
+									_status.prettyDerbyDoing = list;
+								}, _status.prettyDerbyDoing);
+								const targets = game
+									.filterPlayer(current => {
+										return current.getEquip("sm_mabian");
+									})
+									.sort((a, b) => {
+										return map.filter(b) - map.filter(a);
+									});
+								if (!targets.length) {
+									continue;
+								}
+								if (targets.length > 1 && map.filter(targets[0]) == map.filter(targets[1])) {
+									continue;
+								}
+								const target = targets[0];
+								game.log(target, "执行了赛马奖励：", `#g${map.reward}`);
+								await map.content(target);
+							}
+							return;
+						}
+						case "damageSource": {
+							player.addTempSkill("sm_kulian_damaged");
+							player.logSkill("sm_kulian", trigger.player);
+							await player.draw();
+							return;
+						}
+						default: {
+							game.log(player, "#y退赛了！");
+							await event.trigger("withdrawPrettyDerby");
+							return;
+						}
+					}
+				},
+				mod: {
+					targetInRange(card, player) {
+						if (player.getEquip("sm_mabian") && ["equip3", "equip4", "equip6"].some(slot => player.getEquip(slot))) {
+							return true;
+						}
+					},
+				},
+				intro: {
+					content() {
+						const list = _status.prettyDerbyDoing;
+						if (!list?.length) {
+							return "未进行比赛";
+						}
+						return list.map((obj, index) => `目标${index + 1}：${obj.info}<br><li><span style='font-family: yuanli'>奖励：${obj.reward}</span>`).join("<br>");
+					},
+				},
+				rewardList: [
+					{
+						info: "受到伤害唯一最多",
+						reward: "回复全部体力",
+						filter(player) {
+							return player.getRoundHistory("damage").reduce((sum, evt) => sum + evt.num, 0);
+						},
+						async content(player) {
+							if (player.isDamaged()) {
+								await player.recoverTo(player.maxHp);
+							}
+						},
+					},
+					{
+						info: "手牌数唯一最多",
+						reward: "手牌上限改为体力上限",
+						filter(player) {
+							return player.countCards("h");
+						},
+						async content(player) {
+							player.addSkill("sm_kulian_yingzi");
+						},
+					},
+					{
+						info: "体力值唯一最高",
+						reward: "增加1点体力上限",
+						filter(player) {
+							return player.getHp();
+						},
+						async content(player) {
+							await player.gainMaxHp();
+						},
+					},
+					{
+						info: "装备区牌数唯一最多",
+						reward: "获得一张其他角色的装备牌",
+						filter(player) {
+							return player.countCards("e");
+						},
+						async content(player) {
+							const targets = game.filterPlayer(current => current != player && current.countGainableCards(player, "e"));
+							if (!targets?.length) {
+								return;
+							}
+							const result =
+								targets.length > 1
+									? await player
+											.chooseTarget(
+												"获得一名其他角色一张装备牌",
+												(card, player, target) => {
+													return player != target && target.countGainableCards(player, "e");
+												},
+												true
+											)
+											.set("ai", target => {
+												const player = get.player();
+												return get.effect(target, { name: "shunshou_copy2", position: "e" }, player, player);
+											})
+											.forResult()
+									: {
+											bool: true,
+											targets: targets,
+										};
+							if (!result?.bool || !result.targets?.length) {
+								return;
+							}
+							const target = result.targets[0];
+							await player.gainPlayerCard(target, "e", true);
+						},
+					},
+					{
+						info: "击杀数唯一最多",
+						reward: "执行一个仅有出牌阶段的额外回合",
+						filter(player) {
+							return game.getRoundHistory("everything", evt => evt.name == "die" && evt.source == player).length;
+						},
+						async content(player) {
+							const next = player.insertPhase("sm_kulian");
+							next.phaseList = ["phaseUse"];
+							next._noTurnOver = true;
+						},
+					},
+					{
+						info: "使用牌数唯一最多",
+						reward: "摸五张牌",
+						filter(player) {
+							return player.getRoundHistory("useCard").length;
+						},
+						async content(player) {
+							await player.draw(5);
+						},
+					},
+					{
+						info: "造成伤害唯一最多",
+						reward: "使用【杀】造成伤害+1",
+						filter(player) {
+							return player.getRoundHistory("sourceDamage").reduce((sum, evt) => sum + evt.num, 0);
+						},
+						async content(player) {
+							const skill = "sm_kulian_sha";
+							player.addSkill(skill);
+							player.addMark(skill, 1, false);
+						},
+					},
+				],
+				initList(skill) {
+					if (!_status.prettyDerbyList || _status.prettyDerbyList.length < 2) {
+						_status.prettyDerbyList = get.info(skill).rewardList.slice(0);
+					}
+					const list = _status.prettyDerbyList.randomRemove(2);
+					game.broadcastAll(list => {
+						_status.prettyDerbyList = list;
+					}, _status.prettyDerbyList);
+					return list;
+				},
+			},
+			yingzi: {
+				charlotte: true,
+				mark: true,
+				intro: {
+					content: "你的手牌上限改为体力上限",
+				},
+				mod: {
+					maxHandcardBase(player, num) {
+						return player.maxHp;
+					},
+				},
+			},
+			sha: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "使用杀造成的伤害+#",
+				},
+				trigger: {
+					source: "damageBegin1",
+				},
+				filter(event, player) {
+					return event.card?.name == "sha" && player.countMark("sm_kulian_sha");
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					trigger.num += player.countMark(event.name);
+				},
+			},
+			damaged: {
+				charlotte: true,
+			},
+			reward: {
+				nobracket: true,
+				nopop: true,
+			},
+		},
+	},
+	sm_lema: {
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			if (event.type === "wuxie") {
+				return false;
+			}
+			return get
+				.inpileVCardList(info => get.type(info[2]) == "basic")
+				.some(card => {
+					return event.filterCard(get.autoViewAs({ name: card[2], nature: card[3], isCard: true }), player, event);
+				});
+		},
+		usable: 1,
+		chooseButton: {
+			dialog(event, player) {
+				const list = get
+					.inpileVCardList(info => get.type(info[2]) == "basic")
+					.filter(card => {
+						return event.filterCard(get.autoViewAs({ name: card[2], nature: card[3], isCard: true }), player, event);
+					});
+				return ui.create.dialog("乐马", [list, "vcard"], "hidden");
+			},
+			check(button) {
+				const event = get.event().getParent();
+				if (event.type !== "phase") {
+					return 1;
+				}
+				return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3], isCard: true }));
+			},
+			prompt(links) {
+				const num = Math.max(
+					1,
+					game.countPlayer(
+						current =>
+							current.getCards("e", card => {
+								return get.subtypes(card).containsSome("equip3", "equip4", "equip6");
+							}).length
+					)
+				);
+				return `视为使用${get.translation(links[0][3]) || ""}${get.translation(links[0][2])}并摸${get.cnNumber(num)}张牌`;
+			},
+			backup(links, player) {
+				return {
+					audio: "sm_lema",
+					selectCard: -1,
+					filterCard: () => false,
+					viewAs: {
+						name: links[0][2],
+						nature: links[0][3],
+						isCard: true,
+					},
+					popname: true,
+					log: false,
+					async precontent(event, trigger, player) {
+						player.logSkill("sm_lema");
+						const num = Math.max(
+							1,
+							game.countPlayer(
+								current =>
+									current.getCards("e", card => {
+										return get.subtypes(card).containsSome("equip3", "equip4", "equip6");
+									}).length
+							)
+						);
+						await player.draw(num);
+					},
+				};
+			},
+		},
+		hiddenCard(player, name) {
+			if (player.getStat("skill").sm_lema) {
+				return false;
+			}
+			return get.type(name) == "basic";
+		},
+		ai: {
+			order: 10,
+			respondShan: true,
+			respondSha: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg === "respond") {
+					return false;
+				}
+				return get.info("sm_lema").hiddenCard(player, tag.slice("respond".length).toLowerCase());
+			},
+			result: {
+				player(player) {
+					if (_status.event.dying) {
+						return get.attitude(player, _status.event.dying);
+					}
+					return 1;
+				},
+			},
+		},
+		subSkill: {
+			backup: {},
+		},
+	},
+	sm_chaoxuan: {
+		audio: 2,
+		trigger: {
+			global: "perttyDerbyEnd",
+		},
+		filter(event, player) {
+			return event.rewards?.length;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			for (const reward of trigger.rewards) {
+				game.log(player, "执行了赛马奖励：", `#g${reward.reward}`);
+				await reward.content(player);
+			}
+		},
+	},
+	sm_wandou: {
+		audio: 2,
+		trigger: {
+			global: "withdrawPrettyDerby",
+		},
+		filter(event, player) {
+			return event.player.getHp() != 1;
+		},
+		check(event, player) {
+			const bool1 = event.player.getHp() > 1,
+				bool2 = get.attitude(player, event.player) > 0;
+			return bool1 != bool2;
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = event.targets[0],
+				num = target.getHp() - 1;
+			if (num > 0) {
+				await target.loseHp(num);
+			} else if (num < 0) {
+				await target.recoverTo(1);
+			}
+		},
+	},
+	sm_mabian_skill: {
+		equipSkill: true,
+		onremove: true,
+		charlotte: true,
+	},
 	//新杀神孙权
 	dccangming: {
 		audio: 2,
 		trigger: {
-			global: "gameDrawAfter",
+			//global: "gameDrawAfter",
+			global: "phaseBefore",
+			player: "enterGame",
 		},
 		forced: true,
 		filter(event, player) {
+			if (event.name == "phase" && game.phaseNumber != 0) {
+				return false;
+			}
 			return !!game.countPlayer(target => target.countCards("h") > 0);
 		},
 		logTarget() {
@@ -18,13 +1078,15 @@ const skills = {
 		async content(event, trigger, player) {
 			const { name, targets } = event;
 			const lose_list = targets.sortBySeat().map(target => [target, target.getCards("h")]);
-			await game.loseAsync({
-				lose_list: lose_list,
-				player: player,
-				log: true,
-				animate: "giveAuto",
-				gaintag: [name],
-			}).setContent("addToExpansionMultiple");
+			await game
+				.loseAsync({
+					lose_list: lose_list,
+					player: player,
+					log: true,
+					animate: "giveAuto",
+					gaintag: [name],
+				})
+				.setContent("addToExpansionMultiple");
 			/*const func = async target => {
 				if (!target.countCards("h")) {
 					return;
@@ -66,10 +1128,10 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					const { cards } = trigger;
-					await player.draw();
-					//const types = cards.map(card => get.type2(card)).unique();
-					//await player.draw(types.length);
-				}
+					//await player.draw();
+					const types = cards.map(card => get.color(card)).unique();
+					await player.draw(types.length);
+				},
 			},
 			gain: {
 				trigger: {
@@ -217,7 +1279,7 @@ const skills = {
 					choice: links[0],
 					manualConfirm: true,
 					filterTarget(card, player, target) {
-						return target != player && target.countCards("h") > 0;
+						return target != player && target.countCards("he") > 0;
 					},
 					selectTarget() {
 						const { choice } = get.info("dcjichao_backup");
@@ -234,7 +1296,7 @@ const skills = {
 						if (choice == "all") {
 							player.addTempSkill("dcjichao_blocker", { player: "dieAfter" });
 						}
-						const getCards = function(target) {
+						const getCards = function (target) {
 							let cards = target.getCards("h");
 							if (choice !== "all") {
 								let num = Math.ceil(cards.length / 2);
@@ -244,17 +1306,18 @@ const skills = {
 							}
 							cards = [...cards, ...target.getCards("e")];
 							return cards;
-						}
+						};
 						if (choice == "all") {
-							await game.loseAsync({
-								lose_list: targets.sortBySeat().map(target => [target, getCards(target)]),
-								player: player,
-								log: true,
-								animate: "giveAuto",
-								gaintag: ["dccangming"],
-							}).setContent("addToExpansionMultiple");
-						}
-						else {
+							await game
+								.loseAsync({
+									lose_list: targets.sortBySeat().map(target => [target, getCards(target)]),
+									player: player,
+									log: true,
+									animate: "giveAuto",
+									gaintag: ["dccangming"],
+								})
+								.setContent("addToExpansionMultiple");
+						} else {
 							const [target] = targets;
 							const next = target.addToExpansion(getCards(target), target, "giveAuto");
 							next.gaintag.add("dccangming");
@@ -332,7 +1395,7 @@ const skills = {
 					if (!player.hasMark(event.name)) {
 						player.removeSkill(event.name);
 					}
-				}
+				},
 			},
 			backup: {},
 		},

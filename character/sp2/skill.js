@@ -2,6 +2,193 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//星张郃
+	starjunxi: {
+		audio: 2,
+		trigger: {
+			player: ["phaseUseBegin", "phaseUseEnd"],
+		},
+		filter(event, player, name, list) {
+			if (name == "phaseUseEnd") {
+				return list[0]?.isIn();
+			}
+			return game.hasPlayer(current => current != player);
+		},
+		getIndex(event, player, name) {
+			if (name == "phaseUseEnd") {
+				return player.getStorage("starjunxi");
+			}
+			return 1;
+		},
+		async cost(event, trigger, player) {
+			if (event.triggername == "phaseUseEnd") {
+				event.result = {
+					bool: true,
+					targets: [event.indexedData[0]],
+				};
+				return;
+			}
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+				.set("ai", target => {
+					return -get.attitude(get.player(), target);
+				})
+				.forResult();
+		},
+		intro: {
+			content(storage) {
+				return storage.map(info => `${get.translation(info[0])}：${info[1]}`).join("<br>");
+			},
+		},
+		onremove: true,
+		async content(event, trigger, player) {
+			const target = event.targets[0],
+				num = player.countCards("h");
+			if (event.triggername == "phaseUseBegin") {
+				player.markAuto(event.name, [[target, num]]);
+				return;
+			}
+			const list = player.getStorage(event.name),
+				index = list.findIndex(info => info[0] == target);
+			if (index < 0) {
+				return;
+			}
+			const num2 = list.splice(index, 1)[0][1];
+			player.setStorage(event.name, list, true);
+			const numx = Math.abs(num - num2);
+			if (numx == 0) {
+				await player.chooseToDiscard("he", true, 2);
+				return;
+			}
+			const result =
+				target.countDiscardableCards(target, "he") > 0
+					? await target
+							.chooseToDiscard(`弃置${get.cnNumber(numx)}张牌，每少弃置一张牌便失去1点体力`, [1, numx], "he")
+							.set("ai", card => {
+								const { eff, maxNum: num, player } = get.event();
+								if (eff > 0) {
+									const numx = num - ui.selected.cards.length;
+									if (numx < player.hp) {
+										return 0;
+									}
+								}
+								return 10 - get.value(card);
+							})
+							.set("complexCard", true)
+							.set("maxNum", numx)
+							.set("eff", get.effect(target, { name: "losehp" }, target, target))
+							.forResult()
+					: {
+							bool: false,
+						};
+			if (result?.bool && result.cards?.length) {
+				const numx2 = numx - result.cards.length;
+				if (numx2 > 0) {
+					await target.loseHp(numx2);
+				}
+			} else {
+				await target.loseHp(numx);
+			}
+		},
+	},
+	starjixian: {
+		audio: 2,
+		trigger: {
+			player: "phaseBegin",
+		},
+		forced: true,
+		filter(event, player) {
+			return event.phaseList?.length > 1;
+		},
+		async content(event, trigger, player) {
+			const evts = game.getAllGlobalHistory("everything", evt => {
+					if (evt.name != "phase" || evt.player != player) {
+						return false;
+					}
+					return !evt._finished && evt.phaseList?.length;
+				}),
+				filter = phase => lib.phaseName.includes(phase);
+			let lastPhaseList = [];
+			if (evts?.length > 1) {
+				lastPhaseList = evts.at(-2).phaseList.filter(filter);
+			}
+			const list = trigger.phaseList.map((name, index) => [index + 1, "", name]).filter(info => filter(info[2]));
+			const result = await player
+				.chooseToMove("机先：调整本回合额定阶段顺序", true)
+				.set("list", [
+					[
+						"额定阶段",
+						[
+							list,
+							(item, type, position, noclick, node) => {
+								let showCard = [item[0], item[1], `lusu_${item[2]}`];
+								node = ui.create.buttonPresets.vcard(showCard, type, position, noclick);
+								node.node.info.innerHTML = `<span style = "color:#ffffff">${item[0]}</span>`;
+								node.node.info.style["font-size"] = "20px";
+								node._link = node.link = item;
+								node._customintro = uiintro => {
+									uiintro.add(get.translation(node._link[2]));
+									uiintro.addText(`此阶段为本回合第${get.cnNumber(node._link[0], true)}个阶段`);
+									return uiintro;
+								};
+								return node;
+							},
+						],
+					],
+				])
+				.set("filterOk", moved => {
+					const { lastPhaseList: preList } = get.event(),
+						list = moved[0];
+					if (preList.length != list.length) {
+						return true;
+					}
+					return list.some((info, index) => preList[index] != info[2]);
+				})
+				.set("lastPhaseList", lastPhaseList)
+				.set("filterMove", (from, to, moved) => {
+					return typeof to != "number";
+				})
+				.set("processAI", list => {
+					const { lastPhaseList: preList, player, filterOk } = get.event();
+					let moved = list[0][1][0].slice(0),
+						newList = [];
+					const addPhase = (name, pre) => {
+						const index = moved.findIndex(info => info[2] == name);
+						if (index < 0) {
+							return newList;
+						}
+						const tempList = [newList, moved.splice(index, 1)];
+						if (pre === true) {
+							tempList.reverse();
+						}
+						newList = tempList.flat();
+						return newList;
+					};
+					addPhase("phaseUse");
+					const bool = player.countCards("hs", card => player.hasValueTarget(card)) <= 1;
+					addPhase("phaseDraw", bool);
+					const bool2 = player.needsToDiscard() <= 0;
+					addPhase("phaseDiscard", bool2);
+					addPhase("phaseJudge");
+					while (moved.length) {
+						addPhase(moved.randomGet()[2], Math.random() > 0.5);
+					}
+					if (!filterOk([newList])) {
+						newList = [...newList.slice(0, -2), ...newList.slice(-2).reverse()];
+					}
+					return [newList];
+				})
+				.forResult();
+			if (!result?.bool || !result.moved?.length) {
+				return;
+			}
+			result.moved[0].forEach((info, index) => {
+				const name = info[2];
+				const newIndex = list[index][0] - 1;
+				trigger.phaseList[newIndex] = name;
+			});
+		},
+	},
 	//阎象
 	dcyuzheng: {
 		audio: 2,
@@ -116,10 +303,10 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
-				if (info[3]) {
+				if (info[3] || info[0] == "delay") {
 					return false;
 				}
-				return get.tag({ name: info[2] }, "damage") > 0.5;
+				return get.tag({ name: info[2] }, "damage");
 			});
 			if (list.length) {
 				const result = await player
@@ -196,12 +383,12 @@ const skills = {
 				onremove: true,
 				mod: {
 					cardEnabled(card, player) {
-						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
+						if ((get.type(card) == "equip" || (get.tag(card, "damage") && get.type(card) != "delay")) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
 							return false;
 						}
 					},
 					cardSavable(card, player) {
-						if ((get.type(card) == "equip" || get.tag(card, "damage") > 0.5) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
+						if ((get.type(card) == "equip" || (get.tag(card, "damage") && get.type(card) != "delay")) && player.getStorage("dcyxsuishi_debuff").includes(get.color(card))) {
 							return false;
 						}
 					},
@@ -2361,7 +2548,7 @@ const skills = {
 						})
 					) {
 						delete player._starruijun_effect_use;
-						return [1, 1 + player.getDamagedHp(), 1, -1.8 * player.countCards("hs", i => get.tag(i, "damage") > 0.5)];
+						return [1, 1 + player.getDamagedHp(), 1, -1.8 * player.countCards("hs", i => get.tag(i, "damage") && get.type(i) != "delay")];
 					}
 					delete player._starruijun_effect_use;
 				},

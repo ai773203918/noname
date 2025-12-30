@@ -74,7 +74,10 @@ const skills = {
 								hasSomeoneUsed = true;
 								event.result.card = card;
 								event.result.cards = cards;
-								event.result._apply_args = { throw: false };
+								event.result._apply_args = {
+									throw: false,
+									addSkillCount: false,
+								};
 								target.addExpose(0.2);
 								await player.draw(cardsNum);
 								break;

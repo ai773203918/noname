@@ -864,6 +864,9 @@ const skills = {
 			if (game.players.every(target => !event.getl(target)?.cards?.length) || event.getParent("phaseDiscard", true)) {
 				return false;
 			}
+			if (player.countMark("mbrenxing_used") >= 2) {
+				return false;
+			}
 			return (
 				game
 					.getGlobalHistory("everything", evt => {
@@ -934,7 +937,10 @@ const skills = {
 			};
 		},
 		async content(event, trigger, player) {
-			const { targets, cost_data: choice } = event;
+			const { targets, cost_data: choice } = event,
+				name = "mbrenxing_used";
+			player.addTempSkill(name, "roundStart");
+			player.addMark(name, 1, false);
 			if (choice.includes("draw")) {
 				if (player == _status.currentPhase) {
 					targets.push(player);
@@ -943,6 +949,12 @@ const skills = {
 			} else {
 				await player.discardPlayerCard(event.targets[0], "he", true);
 			}
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//势鲁肃
@@ -2016,7 +2028,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
-			return event.player != player && get.tag(event.card, "damage") > 0.5 && event.targets.includes(player);
+			return event.player != player && get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.includes(player);
 		},
 		async cost(event, trigger, player) {
 			const damaged = player.hasHistory("damage", evt => evt.card && evt.getParent(2) == trigger);
@@ -2285,7 +2297,7 @@ const skills = {
 	mbchizhang: {
 		mod: {
 			targetInRange(card, player, target) {
-				if (get.tag(card, "damage") > 0.5) {
+				if (get.tag(card, "damage") && get.type(card) != "delay") {
 					return true;
 				}
 			},
@@ -2296,7 +2308,8 @@ const skills = {
 		filter(event, player) {
 			return (
 				event.isFirstTarget &&
-				get.tag(event.card, "damage") > 0.5 &&
+				get.tag(event.card, "damage") &&
+				get.type(event.card) != "delay" &&
 				player.countDiscardableCards(player, "h") &&
 				player.hasHistory("lose", evt => {
 					const evtx = evt.relatedEvent || evt.getParent();
@@ -2894,7 +2907,7 @@ const skills = {
 				.set("ai", card => {
 					const player = get.player();
 					if (player.hasValueTarget(card, true)) {
-						return player.getUseValue(card, false, true) * (get.tag(card, "damage") > 0.5 ? 2 : 1);
+						return player.getUseValue(card, false, true) * ((get.tag(card, "damage") && get.type(card) != "delay") ? 2 : 1);
 					}
 					return 0.1 + Math.random();
 				})
