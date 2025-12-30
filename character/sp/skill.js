@@ -39976,14 +39976,17 @@ const skills = {
 		forced: true,
 		async content(event, trigger, player) {
 			const bool = game.filterPlayer(current => current != player).map(current => current.countCards("h")).toUniqued().length == 1;
-			const target = game
+			const targets = game
 				.filterPlayer(target => {
 					if (target == player || !target.countCards("h")) {
 						return false;
 					}
 					return bool || !target.isMaxHandcard(null, current => current != player);
-				})
-				.randomGet();
+				});
+			if (!targets?.length) {
+				return;
+			}
+			const target = targets.randomGet();
 			player.line(target);
 			game.log(player, "观看了", target, "的手牌");
 			await player.viewHandcards(target);

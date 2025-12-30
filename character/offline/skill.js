@@ -572,7 +572,7 @@ const skills = {
 					}
 				}
 			} else {
-				await player.damage("nosource");
+				await player.damage();
 				const { player: card, targets: cards } = result;
 				const list = cards.filter(cardx => get.position(cardx) == "d" && get.number(cardx) < get.number(card));
 				if (list?.length) {
@@ -621,7 +621,7 @@ const skills = {
 					trigger.getg(player).filter(card => player.hasUseTarget(card))
 				)
 				.set("ai", card => {
-					return player.getUseValue(card);
+					return get.player().getUseValue(card);
 				})
 				.forResult();
 		},

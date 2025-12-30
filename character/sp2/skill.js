@@ -75,7 +75,6 @@ const skills = {
 								return 10 - get.value(card);
 							})
 							.set("complexCard", true)
-							.set("allowChooseAll", true)
 							.set("maxNum", numx)
 							.set("eff", get.effect(target, { name: "losehp" }, target, target))
 							.forResult()

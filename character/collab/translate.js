@@ -370,7 +370,7 @@ const translates = {
 	dmchongqi: "冲骑",
 	dmchongqi_info: `每回合限一次，你使用【杀】指定目标后，可以弃置目标角色一张牌。${get.poptip("rule_youji")}：此【杀】伤害+1。`,
 	dmfanquan: "反拳",
-	dmfanquan_info: `你受到伤害后，可以选择一名其他角色，令其受到1点伤害。${get.poptip("rule_boji")}：其受到X点伤害，本回合你计算与其他角色距离+1（X未你受到的伤害值）。`,
+	dmfanquan_info: `你受到伤害后，可以选择一名其他角色，令其受到1点伤害。${get.poptip("rule_boji")}：其受到X点伤害，本回合你计算与其他角色距离+1（X为你受到的伤害值）。`,
 };
 
 export default translates;

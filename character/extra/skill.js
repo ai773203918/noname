@@ -453,7 +453,7 @@ const skills = {
 				next.characters = [name];
 				next.setContent("emptyEvent");
 				await next;
-				game.broadcastAll(player => player.revive(2), target);
+				await target.reviveEvent(2);
 				let doubleDraw = false;
 				let num = (get.character(name).maxHp || get.character(name).hp) - (get.character(result.control).maxHp || get.character(result.control).hp);
 				if (num !== 0) {

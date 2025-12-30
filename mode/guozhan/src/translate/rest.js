@@ -617,7 +617,7 @@ export default {
 	gz_ol_chenglve: "成略",
 	gz_ol_chenglve_info: `同势力角色的出牌阶段开始时，你可将一张牌置于牌堆顶，令其选择一项：1.弃置两张牌，本回合其使用这些花色的牌无距离次数限制；2.与你副将${get.poptip("guozhan_transCharacter")}，然后控制此武将牌的角色摸一张牌。`,
 	gz_ol_fushi: "附势",
-	gz_ol_fushi_info: `锁定技，若你的上家为群势力角色，你是为拥有${get.poptip("gz_ol_zezhu")}；若你的下家为魏势力角色，你视为拥有${get.poptip("gz_ol_chenggong")}。`,
+	gz_ol_fushi_info: `锁定技，若你的上家为群势力角色，你视为拥有${get.poptip("gz_ol_zezhu")}；若你的下家为魏势力角色，你视为拥有${get.poptip("gz_ol_chenggong")}。`,
 	gz_ol_zezhu: "择主",
 	gz_ol_zezhu_info: "出牌阶段限一次，你可以获得相邻角色各一张牌，然后交给这些角色各一张牌。",
 	gz_ol_chenggong: "逞功",

@@ -212,7 +212,7 @@ const skills = {
 					return `弃置一张基本牌并令${get.translation(targets)}${targets.length > 1 ? "中的一人" : ""}回复1点体力，然后其可令你发动一次X为2的${get.poptip("dcliexiang")}`;
 				},
 				filterCard(card, player) {
-					return get.type(card) == "basic";
+					return get.type(card) == "basic" && lib.filter.cardDiscardable(card, player, "dcrengou");
 				},
 				log: false,
 				prepare(cards, player, targets) {

@@ -1886,7 +1886,7 @@ const translates = {
 	chixia_jipao_info: `${get.poptip("rule_bianshenji")}（0/5），你造成或受到伤害后，获得1点速度；你死亡时，若有至少3点速度，你从游戏外获得一件${get.poptip("sm_mabian")}并令一名角色装备之。`,
 	chixia_jipao_append: "<span style='font-family: yuanli'>好好看着吧，这来自西域的———天之舞步！</span>",
 	sm_hualiu: "华琉",
-	sm_hualiu_info: "锁定技，其他角色计算与你的距离-X，你摸牌阶段摸牌数和你的手牌上限+X（X为你的速度且至少为1）。",
+	sm_hualiu_info: "锁定技，其他角色计算与你的距离+X，你摸牌阶段摸牌数和你的手牌上限+X（X为你的速度且至少为1）。",
 	sm_dianteng: "典滕",
 	sm_dianteng_info: "每回合限一次，一名其他角色造成伤害后，你可消耗1点速度，令其选择至多两项：1.摸两张牌；2.回复1点体力；3.使用一张牌；4.重铸两张牌。然后你执行剩余项。",
 	qiulin_jipao_append: "<span style='font-family: yuanli'>你的步伐有些乱了，请调整呼吸。</span>",
