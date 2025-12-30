@@ -3132,7 +3132,7 @@ const skills = {
 			const names = lib.inpile.filter(name => get.type(name) == "basic" && !player.getStorage("clanshengmo").includes(name)),
 				cards = evt.clanshengmo_cards.sort((a, b) => get.number(a, false) - get.number(b, false)),
 				canChoose = cards.filter(card => !player.getStorage("clanshengmo_num").includes(get.number(card, false)));
-			const links = await player
+			const { links } = await player
 				.chooseButton(["剩墨：获得其中一张牌", cards], true)
 				.set("filterButton", button => {
 					return get.event("canChoose").includes(button.link);
@@ -3141,7 +3141,7 @@ const skills = {
 				.set("ai", button => {
 					return get.value(button.link);
 				})
-				.forResultLinks();
+				.forResult();
 			if (!links || !links.length) {
 				return;
 			}
