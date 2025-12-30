@@ -5788,8 +5788,20 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 						}
 					}
 					if (node.gaintag?.length) {
-						uiintro.add(" ");
-						uiintro.add(`<div class="text" style="display:inline">此牌标签：${get.translation(node.gaintag)}</div>`);
+						let gaintag = node.gaintag.map(tag => {
+							let translate = get.translation(tag);
+							if (translate === tag && tag.startsWith("eternal_")) {
+								translate = get.translation(tag.slice(8));
+							};
+							if (translate === "invisible") {
+								return "";
+							}
+							return translate;
+						}).filter(tag => tag.length);
+						if (gaintag?.length) {
+							uiintro.add(" ");
+							uiintro.add(`<div class="text" style="display:inline">此牌标签：${gaintag}</div>`);
+						}
 					}
 				}
 				uiintro.add(ui.create.div(".placeholder.slim"));
