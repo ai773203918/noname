@@ -8538,9 +8538,10 @@ export class Player extends HTMLDivElement {
 	/**
 	 * 令玩家休整，同时会触发rest时机
 	 * @param { object | undefined } restMap 进入休整状态状态相关的参数（type是休整的计数方式，"round"是在你的额定回合开始前才计数，"phase"是每回合都计数；count是休整多少轮或者多少回合（为负数则永久休整，可以自主脱离））
-	 * @returns { GameEvent } 
+	 * @returns { GameEvent }
 	 */
-	rest(restMap = { type: "phase", count: -1}) {//, audio: null
+	rest(restMap = { type: "phase", count: -1 }) {
+		//, audio: null
 		const next = game.createEvent("rest", false);
 		next.player = this;
 		next.restMap = restMap;
@@ -8554,7 +8555,8 @@ export class Player extends HTMLDivElement {
 	 * @param { object | undefined } reseEndMap 进入休整状态状态相关的参数（hp是脱离休整复活时回复至的体力值）
 	 * @returns { GameEvent }
 	 */
-	restEnd(restEndMap = { hp: null }) {//, audio: null
+	restEnd(restEndMap = { hp: null }) {
+		//, audio: null
 		const next = game.createEvent("restEnd", false);
 		restEndMap.hp ??= this.maxHp;
 		next.player = this;
@@ -13833,58 +13835,20 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		ui.thrown.push(node);
-		var uithrowns = ui.thrown.slice(0);
-		var tops;
-		switch (Math.floor((ui.thrown.length - 1) / 4)) {
-			case 0:
-				tops = [0];
-				break;
-			case 1:
-				tops = [-57, 57];
-				break;
-			case 2:
-				tops = [-114, 0, 114];
-				break;
-			default:
-				tops = [-171, -57, 57, 171];
+		var cards = ui.thrown;
+		var pw = ui.arena.offsetWidth;
+		var cardWidth = 105;
+		var cardGap = 2;
+		var totalWidth = cards.length * cardWidth + (cards.length - 1) * cardGap;
+		var maxWidth = pw * 0.7;
+		var limitWidth = Math.min(maxWidth, pw);
+		var margin = totalWidth > limitWidth ? (limitWidth - cardWidth) / (cards.length - 1) : cardWidth + cardGap;
+		var actualWidth = Math.min(totalWidth, limitWidth);
+		var offsetX = -actualWidth / 2 + cardWidth / 2;
+		for (var j = 0; j < cards.length; j++) {
+			var x = Math.round(offsetX + j * margin);
+			cards[j].style.transform = "translate(" + x + "px, -30px)";
 		}
-		while (uithrowns.length) {
-			var throwns = uithrowns.splice(0, Math.min(uithrowns.length, 4));
-			switch (throwns.length) {
-				case 1:
-					throwns[0]._transthrown = "translate(0px,";
-					break;
-				case 2:
-					throwns[0]._transthrown = "translate(-57px,";
-					throwns[1]._transthrown = "translate(57px,";
-					break;
-				case 3:
-					throwns[0]._transthrown = "translate(-114px,";
-					throwns[1]._transthrown = "translate(0,";
-					throwns[2]._transthrown = "translate(114px,";
-					break;
-				case 4:
-					throwns[0]._transthrown = "translate(-171px,";
-					throwns[1]._transthrown = "translate(-57px,";
-					throwns[2]._transthrown = "translate(57px,";
-					throwns[3]._transthrown = "translate(171px,";
-					break;
-			}
-			var top;
-			if (tops.length) {
-				top = tops.shift();
-			} else {
-				top = 0;
-			}
-			if (game.chess) {
-				top -= 30;
-			}
-			for (var i = 0; i < throwns.length; i++) {
-				throwns[i].style.transform = throwns[i]._transthrown + top + "px)";
-				delete throwns[i]._transthrown;
-			}
-		}
-
 		node.show();
 		lib.listenEnd(node);
 		return node;

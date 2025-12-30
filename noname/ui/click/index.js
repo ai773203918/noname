@@ -2706,6 +2706,9 @@ export class Click {
 		} else {
 			ui.selected.cards.add(this);
 			this.classList.add("selected");
+			if (ui._handcardHover === this) {
+				ui._handcardHover = null;
+			}
 			this.updateTransform(true);
 		}
 		if (game.chess && get.config("show_range") && !_status.event.skill && this.classList.contains("selected") && _status.event.isMine() && _status.event.name == "chooseToUse") {
