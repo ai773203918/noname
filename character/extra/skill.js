@@ -177,6 +177,7 @@ const skills = {
 					filterCard: () => false,
 					popname: true,
 					log: false,
+					manualConfirm: true,
 					async precontent(event, trigger, player) {
 						const characters = player.getStorage("sm_tuanlian").slice(0);
 						const result =

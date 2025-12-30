@@ -1,4 +1,53 @@
 const characters = {
+	sm_chixia: {
+		sex: "female",
+		group: "qun",
+		hp: 4,
+		skills: ["sm_dayuan", "sm_tianwu", "chixia_jipao"],
+		names: "null|null",
+	},
+	sm_qiulin: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["sm_hualiu", "sm_dianteng", "qiulin_jipao"],
+		names: "null|null",
+	},
+	sm_zhuahuang: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["sm_feidian", "sm_xianxing", "zhuahuang_jipao"],
+		names: "null|null",
+	},
+	sm_zijian: {
+		sex: "female",
+		group: "wei",
+		hp: 3,
+		skills: ["sm_zixin", "sm_zhiyin", "zijian_jipao"],
+		names: "null|null",
+	},
+	sm_jieying: {
+		sex: "female",
+		group: "wei",
+		hp: 4,
+		skills: ["sm_jueying", "sm_xuneng", "jieying_jipao"],
+		names: "null|null",
+	},
+	sm_liaoyuan: {
+		sex: "female",
+		group: "qun",
+		hp: 4,
+		skills: ["sm_chitu", "sm_aozhan", "liaoyuan_jipao"],
+		names: "null|null",
+	},
+	sm_dailu: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["sm_dilu", "sm_boxing", "dailu_jipao"],
+		names: "null|null",
+	},
 	wxdl_caocao: {
 		sex: "male",
 		group: "wei",

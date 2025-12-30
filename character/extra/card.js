@@ -77,7 +77,7 @@ const cards = {
 				if (!list?.length || !list.includes(evt.name)) {
 					continue;
 				}
-				if (get.characterIntro(name) != "赛马娘") {
+				if (get.characterTitle(name) != "赛马娘") {
 					continue;
 				}
 				skills.add(list[0]);
@@ -107,7 +107,7 @@ const cards = {
 			const skill = "sm_mabian_skill",
 				map = player.getStorage(skill, new Map()),
 				vcard = card[card.cardSymbol];
-			if (!vcard || !map.has(vcard)) {
+			if (!vcard || !map.has(vcard) || !map.get(vcard).length) {
 				return lib.translate["sm_mabian_info"];
 			}
 			const skills = map.get(vcard);
