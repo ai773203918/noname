@@ -48,7 +48,7 @@ const skills = {
 			return player != target && target.countCards("h") > 0 && target.getHp() > 0;
 		},
 		async content(event, trigger, player) {
-			const { target } = event;
+			const { target, name } = event;
 			const result = await player.choosePlayerCard(target, "h", target.getHp(), true).forResult();
 			const { cards: shown } = result;
 			await player.showCards(shown, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
@@ -77,8 +77,11 @@ const skills = {
 			if (shown.some(i => get.suit(i) == get.suit(card))) {
 				await player.draw();
 			}
-			if (shown.some(i => get.name(i) == get.name(card)) && !player.hasMark(event.name)) {
-				player.addMark(event.name, 1, false);
+			if (shown.some(i => get.name(i) == get.name(card)) && !player.hasMark(name)) {
+				player.addMark(name, 1, false);
+				player.when({ global: "phaseChange" }).step(async (event, trigger, player) => {
+					player.clearMark(name, false);
+				});
 			}
 		},
 		ai: {
@@ -322,7 +325,10 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
-			const { targets: [target], cost_data: num } = event;
+			const {
+				targets: [target],
+				cost_data: num,
+			} = event;
 			player.addTempSkill(`${event.name}_used`, "roundStart");
 			player.markAuto(`${event.name}_used`, target);
 			await player.draw(num);
@@ -364,10 +370,13 @@ const skills = {
 			player.removeGaintag(`${event.name}_tag`);
 			if (result?.bool && result.cards?.length) {
 				const { cards } = result;
-				const names = cards.filter(card => {
-					const name = get.name(card);
-					return !player.hasCard(i => get.name(i) == name, "he") && !damaged.includes(name);
-				}).map(card => get.name(card)).toUniqued();
+				const names = cards
+					.filter(card => {
+						const name = get.name(card);
+						return !player.hasCard(i => get.name(i) == name, "he") && !damaged.includes(name);
+					})
+					.map(card => get.name(card))
+					.toUniqued();
 				if (names?.length) {
 					player.markAuto(`${event.name}_damaged`, names);
 					await target.damage();
