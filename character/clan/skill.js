@@ -5910,18 +5910,34 @@ const skills = {
 			const num = lib.skill.clansankuang.getNum(target),
 				num2 = target.countCards("he");
 			const cards = trigger.cards.filterInD("oe");
-			const bool =
-				num2 == 0
-					? false
-					: (await target
-							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity], "allowChooseAll")
-							.set("ai", get.unuseful)
-							.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌")
-							.forResult()).bool;
-			if (!bool || !cards.length) {
+			
+			// 保存选择结果
+			const chooseResult = num2 == 0
+				? { bool: false, cards: [] }
+				: await target
+						.chooseToGive(player, "he", num > 0, 
+							// 保持原来的选择范围：num>0时至少选num张，num=0时可以选0张
+							num > 0 ? [Math.min(num2, num), Infinity] : [0, Infinity], 
+							"allowChooseAll")
+						.set("ai", get.unuseful)
+						.set("prompt", 
+							num > 0 
+								? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？"
+								: "交给" + get.translation(player) + "任意张牌（可以选择0张）"
+						)
+						.forResult();
+			
+			// 关键修改：判断是否选择了牌
+			const selectedCards = chooseResult.cards || [];
+			
+			// 只有当选择了牌（selectedCards.length > 0）且cards存在时才继续
+			if (!chooseResult.bool || !cards.length || selectedCards.length === 0) {
 				return;
 			}
+			
 			await game.delayx();
+			
+			// 获取牌的后续逻辑
 			if (trigger.cards.filterInD().length) {
 				await target.gain(trigger.cards.filterInD(), "gain2", "bySelf");
 			} else if (trigger.cards.filterInD("e").length) {
