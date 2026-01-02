@@ -7705,7 +7705,7 @@ export class Player extends HTMLDivElement {
 					gaintag = [gaintag];
 				}
 				//cards[i].addGaintag(gaintag);
-				gaintag.forEach(i => cards[i].addGaintag(i));
+				gaintag.forEach(tag => cards[i].addGaintag(tag));
 			}
 			var sort = lib.config.sort_card(cards[i]);
 			if (this == game.me) {
@@ -7765,7 +7765,7 @@ export class Player extends HTMLDivElement {
 					gaintag = [gaintag];
 				}
 				//cards[i].addGaintag(gaintag);
-				gaintag.forEach(i => cards[i].addGaintag(i));
+				gaintag.forEach(tag => cards[i].addGaintag(tag));
 			}
 			cards[i].classList.add("glows");
 			if (this == game.me) {
