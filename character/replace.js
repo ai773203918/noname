@@ -190,7 +190,7 @@ window.noname_character_replace = {
 	majun: ["majun", "yj_majun", "std_majun", "cx_majun", "qq_majun"],
 	maliang: ["ol_maliang", "maliang", "re_maliang", "tw_maliang", "std_maliang", "old_maliang"],
 	mamidi: ["mamidi", "xin_mamidi"],
-	manchong: ["manchong", "re_manchong"],
+	manchong: ["manchong", "re_manchong", "ol_manchong"],
 	masu: ["xin_masu", "re_masu", "masu", "ns_masu"],
 	mateng: ["dc_mateng", "tw_mateng", "std_mateng", "mateng"],
 	mayunlu: ["mayunlu", "tw_mayunlu", "std_mayunlu"],

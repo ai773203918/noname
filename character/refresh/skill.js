@@ -16565,7 +16565,7 @@ const skills = {
 	},
 	retieji: {
 		audio: 2,
-		audioname: ["boss_lvbu3"],
+		audioname: ["boss_lvbu3", "tw_dm_quyi"],
 		trigger: { player: "useCardToPlayered" },
 		check(event, player) {
 			return get.attitude(player, event.target) <= 0;
