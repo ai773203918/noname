@@ -1917,6 +1917,8 @@ const translates = {
 	sm_chongji: "冲迹",
 	sm_chongji_info: "你使用单目标伤害牌/回复体力时，可以消耗1点速度，令此牌额外结算一次/令一名交给过你牌的角色回复等量体力并摸一张牌。",
 	dailu_jipao_append: "<span style='font-family: yuanli'>……离我远点，会变得不幸的。</span>",
+	ol_manchong: "将满宠",
+	ol_manchong_prefix: "将",
 };
 
 export default translates;

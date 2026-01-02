@@ -1,4 +1,11 @@
 const characters = {
+	ol_manchong: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["xinjunxing", "yuce"],
+		dieAudios: ["manchong"],
+	},
 	sm_chixia: {
 		sex: "female",
 		group: "qun",
@@ -1583,12 +1590,14 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["xincaishi", "xinzhongjian"],
+		dieAudios: ["xinxianying"],
 	},
 	ol_liuyu: {
 		sex: "male",
 		group: "qun",
 		hp: 2,
 		skills: ["xinzhige", "xinzongzuo"],
+		dieAudios: ["liuyu"],
 	},
 	ol_zhangrang: {
 		sex: "male",
@@ -1596,6 +1605,7 @@ const characters = {
 		hp: 3,
 		skills: ["xintaoluan"],
 		trashBin: ["sex:male_castrated"],
+		dieAudios: ["zhangrang"],
 	},
 	zhangliang: {
 		sex: "male",

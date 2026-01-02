@@ -140,7 +140,7 @@ const skills = {
 			}
 		},
 	},
-	ol_le_mojin: {
+	olmojin: {
 		audio: 2,
 		trigger: {
 			player: ["enterGame", "mojinSucces"],
@@ -276,16 +276,18 @@ const skills = {
 					"装备区牌数变化后最多",
 					{ player: "loseAfter", global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 					(evt, player) => {
-						if ((() => {
-							if (evt.name == "equip" && evt.player == player) {
-								return false;
-							}
-							const evtx = evt.getl(player);
-							if (evtx?.es?.length) {
-								return false;
-							}
-							return true;
-						})()) {
+						if (
+							(() => {
+								if (evt.name == "equip" && evt.player == player) {
+									return false;
+								}
+								const evtx = evt.getl(player);
+								if (evtx?.es?.length) {
+									return false;
+								}
+								return true;
+							})()
+						) {
 							return false;
 						}
 						return !evt.immojin && player.isMaxEquip();
@@ -367,7 +369,7 @@ const skills = {
 					list.addArray(cards);
 				}
 				game.countPlayer(current => {
-					if (current.hasSkill("ol_le_mojin", null, null, false)) {
+					if (current.hasSkill("olmojin", null, null, false)) {
 						current.markAuto("mojinAward", list);
 					}
 				});
@@ -402,7 +404,7 @@ const skills = {
 			if (data[3]) {
 				game.broadcastAll((player, data) => data[3](player), player, data);
 			}
-			player.setStorage("ol_le_mojin", data[0]);
+			player.setStorage("olmojin", data[0]);
 			player.markSkill(event.name);
 			player
 				.when(data[1])
@@ -412,7 +414,14 @@ const skills = {
 						game.broadcastAll((player, data) => data[3](player), player, data);
 					}
 					const type = ["basic", "trick", "equip"].randomGet();
-					const info = [player.getStorage("mojinAward").filter(name => get.type2(name) == type).randomGet(), lib.suit.randomGet(), get.rand(1, 13)];
+					const info = [
+						player
+							.getStorage("mojinAward")
+							.filter(name => get.type2(name) == type)
+							.randomGet(),
+						lib.suit.randomGet(),
+						get.rand(1, 13),
+					];
 					if (info[0] == "sha") {
 						info[3] = ["ice", "thunder", "fire", undefined].randomGet();
 					}
@@ -420,9 +429,9 @@ const skills = {
 					const next = player.gain(card, "draw");
 					next.set("immojin", true);
 					if (["basic", "trick"].includes(get.type2(card.name, false))) {
-						let gaintag = "ol_le_mojin_directHit";
+						let gaintag = "olmojin_directHit";
 						if (get.tag(card, "recover") && Math.random() > 0.5) {
-							gaintag = "ol_le_mojin_baseDamage";
+							gaintag = "olmojin_baseDamage";
 						}
 						next.gaintag.add(gaintag);
 					}
@@ -430,7 +439,7 @@ const skills = {
 					event.trigger("mojinSucces");
 				});
 		},
-		group: ["ol_le_mojin_equip", "ol_le_mojin_effect"],
+		group: ["olmojin_equip", "olmojin_effect"],
 		subSkill: {
 			equip: {
 				trigger: {
@@ -452,17 +461,20 @@ const skills = {
 				},
 				filter(event, player) {
 					const useCard = event.getParent("useCard", true, true);
-					return useCard?.player == player && player.hasHistory("lose", evt => {
-						const evtx = evt.relatedEvent || evt.getParent();
-						if (evtx != useCard) {
-							return false;
-						}
-						const list = Object.values(evt.gaintag_map).flat();
-						if (event.name == "useCard") {
-							return list.includes("ol_le_mojin_directHit")
-						}
-						return list.includes("ol_le_mojin_baseDamage");
-					});
+					return (
+						useCard?.player == player &&
+						player.hasHistory("lose", evt => {
+							const evtx = evt.relatedEvent || evt.getParent();
+							if (evtx != useCard) {
+								return false;
+							}
+							const list = Object.values(evt.gaintag_map).flat();
+							if (event.name == "useCard") {
+								return list.includes("olmojin_directHit");
+							}
+							return list.includes("olmojin_baseDamage");
+						})
+					);
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -475,7 +487,7 @@ const skills = {
 			},
 		},
 	},
-	ol_le_dingbao: {
+	oldingbao: {
 		audio: 2,
 		enable: ["phaseUse"],
 		filterTarget: () => false,
@@ -484,7 +496,7 @@ const skills = {
 		filterCArd: () => false,
 		selectCard: -1,
 		filter(event, player) {
-			return player.storage.ol_le_mojin;
+			return player.storage.olmojin;
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -492,12 +504,19 @@ const skills = {
 			if (phase?.name == "phaseUse") {
 				phase.skipped = true;
 			}
-			const data = player.getStorage("mojinMap").find(data => player.getStorage("ol_le_mojin") == data[0]);
+			const data = player.getStorage("mojinMap").find(data => player.getStorage("olmojin") == data[0]);
 			if (data?.[3]) {
 				game.broadcastAll((player, data) => data[3](player), player, data);
 			}
 			const type = ["basic", "trick", "equip"].randomGet();
-			const info = [player.getStorage("mojinAward").filter(name => get.type2(name) == type).randomGet(), lib.suit.randomGet(), get.rand(1, 13)];
+			const info = [
+				player
+					.getStorage("mojinAward")
+					.filter(name => get.type2(name) == type)
+					.randomGet(),
+				lib.suit.randomGet(),
+				get.rand(1, 13),
+			];
 			if (info[0] == "sha") {
 				info[3] = ["ice", "thunder", "fire", undefined].randomGet();
 			}
@@ -505,9 +524,9 @@ const skills = {
 			const next = player.gain(card, "draw");
 			next.set("immojin", true);
 			if (["basic", "trick"].includes(get.type2(card.name, false))) {
-				let gaintag = "ol_le_mojin_directHit";
+				let gaintag = "olmojin_directHit";
 				if (get.tag(card, "recover") && Math.random() > 0.5) {
-					gaintag = "ol_le_mojin_baseDamage";
+					gaintag = "olmojin_baseDamage";
 				}
 				next.gaintag.add(gaintag);
 			}
@@ -1591,7 +1610,7 @@ const skills = {
 				const prompt = `弃置一张${get.translation(get.type2(trigger.card, player))}牌令${get.translation(trigger.card)}额外结算一次，否则无效`;
 				const result = await player
 					.chooseToDiscard(prompt, "he", (card, player) => {
-						return get.type2(card, player) == get.event("cardType");
+						return get.type2(card, player) == get.event().cardType;
 					})
 					.set("cardType", get.type2(trigger.card, player))
 					.set("ai", card => {
@@ -2179,7 +2198,7 @@ const skills = {
 				str += "弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
 			}
 			event.result = await player
-				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(get.event("tag")))
+				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(get.event().tag))
 				.set("tag", tag)
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
@@ -2263,7 +2282,7 @@ const skills = {
 			game.log(player, "选择了一个数字");
 			player.chat("我选的" + [1, 2, 3, 114514, 1919810].randomGet() + "，你信吗");
 			await game.delayx();
-			const { control: num2 }  = await target
+			const { control: num2 } = await target
 				.chooseControl(numbers)
 				.set("ai", () => {
 					const { player, target } = get.event().getParent();
@@ -2421,7 +2440,7 @@ const skills = {
 						prompt2: "交给其中一名角色一张手牌，然后获得其至多两张手牌",
 						filterCard: true,
 						filterTarget(card, player, target) {
-							return get.event("targets").includes(target);
+							return get.event().targets.includes(target);
 						},
 						ai1(card) {
 							const { player, targets } = get.event();
@@ -4524,7 +4543,7 @@ const skills = {
 				next.set("forced", true);
 				next.set("ai", button => {
 					const skill = button.link,
-						choice = get.event("choice");
+						choice = get.event().choice;
 					if (get.info("olhuyi").prioritySkills.includes(skill)) {
 						return 3;
 					}
@@ -4571,7 +4590,7 @@ const skills = {
 					next.set("ai", button => {
 						const player = get.player();
 						const skill = button.link;
-						let skills = get.event("skills").slice(0);
+						let skills = get.event().skills.slice(0);
 						skills.removeArray(get.info("olhuyi").prioritySkills);
 						if (skills.length < 4) {
 							return 0;
@@ -4742,7 +4761,7 @@ const skills = {
 					if (!get.cardPile2(button.link[2])) {
 						return 0;
 					}
-					return get.value({ name: button.link[2] }, get.event("player"));
+					return get.value({ name: button.link[2] }, get.event().player);
 				})
 				.forResult();
 			if (result.bool) {
@@ -4807,7 +4826,7 @@ const skills = {
 						return target != player && !target.hasSkill("dchuanli_zhangzhang");
 					})
 					.set("ai", target => {
-						const player = get.event("player");
+						const player = get.event().player;
 						return (
 							get.rank("zhangzhang", true) -
 							["name", "name1", "name2"].reduce((sum, name) => {
@@ -4841,10 +4860,10 @@ const skills = {
 			if (targets.length) {
 				const result = await player
 					.chooseTarget(get.prompt("dchuanli"), "令一名其他角色的所有技能失效，然后令其获得〖英姿〗和〖反间〗直到其回合结束", (card, player, target) => {
-						return get.event("targets").includes(target);
+						return get.event().targets.includes(target);
 					})
 					.set("ai", target => {
-						const player = get.event("player");
+						const player = get.event().player;
 						return (
 							get.rank("re_zhouyu", true) -
 							["name", "name1", "name2"].reduce((sum, name) => {
