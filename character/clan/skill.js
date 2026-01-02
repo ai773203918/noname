@@ -5910,15 +5910,15 @@ const skills = {
 			const num = lib.skill.clansankuang.getNum(target),
 				num2 = target.countCards("he");
 			const cards = trigger.cards.filterInD("oe");
-			const bool =
+			const result =
 				num2 == 0
-					? false
-					: (await target
+					? { bool: false }
+					: await target
 							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity], "allowChooseAll")
 							.set("ai", get.unuseful)
 							.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌")
-							.forResult()).bool;
-			if (!bool || !cards.length) {
+							.forResult();
+			if (!result?.bool || !result.cards?.length || !cards.length) {
 				return;
 			}
 			await game.delayx();
