@@ -1374,7 +1374,7 @@ const skills = {
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return (
-				player.hasCards(card => {
+				player.hasCard(card => {
 					if (get.position(card) === "h" && _status.connectMode) {
 						return true;
 					}
