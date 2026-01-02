@@ -7701,7 +7701,11 @@ export class Player extends HTMLDivElement {
 		for (var i = 0; i < cards.length; i++) {
 			cards[i].fix();
 			if (gaintag) {
-				cards[i].addGaintag(gaintag);
+				if (typeof gaintag == "string") {
+					gaintag = [gaintag];
+				}
+				//cards[i].addGaintag(gaintag);
+				gaintag.forEach(i => cards[i].addGaintag(i));
 			}
 			var sort = lib.config.sort_card(cards[i]);
 			if (this == game.me) {
@@ -7757,7 +7761,11 @@ export class Player extends HTMLDivElement {
 			cards[i].fix();
 			cards[i].remove();
 			if (gaintag) {
-				cards[i].addGaintag(gaintag);
+				if (typeof gaintag == "string") {
+					gaintag = [gaintag];
+				}
+				//cards[i].addGaintag(gaintag);
+				gaintag.forEach(i => cards[i].addGaintag(i));
 			}
 			cards[i].classList.add("glows");
 			if (this == game.me) {
