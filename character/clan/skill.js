@@ -109,7 +109,10 @@ const skills = {
 				charlotte: true,
 				init(player, skill) {
 					player.removeGaintag(skill);
-					player.addGaintag(player.getCards("h", card => get.info("clanqingjue").isOnlySuit(card, player)), skill);
+					player.addGaintag(
+						player.getCards("h", card => get.info("clanqingjue").isOnlySuit(card, player)),
+						skill
+					);
 				},
 				onremove(player, skill) {
 					player.removeGaintag(skill);
@@ -125,7 +128,7 @@ const skills = {
 				async content(event, trigger, player) {
 					get.info(event.name).init(player, event.name);
 				},
-			}
+			},
 		},
 	},
 	clanxsyingxiang: {
@@ -1883,7 +1886,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseDiscardBefore" },
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			trigger.setContent(lib.skill[event.name].phaseDiscard);
 		},
 		phaseDiscard: [
@@ -1923,32 +1926,31 @@ const skills = {
 					const discard = cards.removeArray(result.cards);
 					await player.loseToDiscardpile(discard);
 				}
-				const result2 = await player
-					.chooseTarget(`绝途：令一名角色弃置一张手牌`, true, (card, player, target) => {
-						return target.countDiscardableCards(target, "h");
-					})
-					.set("ai", target => {
-						return get.attitude(target, { name: "guohe_copy", position: "h" }, target, player);
-					})
-					.forResult();
-				if (!result2?.targets?.length) {
-					event.finish();
-					return;
-				}
-				const target = result2.targets[0];
-				if (!target.countDiscardableCards(target, "h")) {
-					return;
-				}
-				player.line(target);
-				const result3 = await target.chooseToDiscard("绝途：请弃置一张手牌", true, "h").forResult();
-				if (!result3?.cards?.length) {
-					event.finish();
-					return;
-				}
-				const card = result3.cards[0],
-					suit = get.suit(card, target);
-				if (!player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
-					target.damage();
+				if (game.hasPlayer(target => target.countDiscardableCards(target, "h"))) {
+					const result2 = await player
+						.chooseTarget(`绝途：令一名角色弃置一张手牌`, true, (card, player, target) => {
+							return target.countDiscardableCards(target, "h");
+						})
+						.set("ai", target => {
+							return get.effect(target, { name: "guohe_copy", position: "h" }, target, player);
+						})
+						.forResult();
+					if (!result2?.targets?.length) {
+						event.finish();
+						return;
+					}
+					const target = result2.targets[0];
+					player.line(target);
+					const result3 = await target.chooseToDiscard("绝途：请弃置一张手牌", true, "h").forResult();
+					if (!result3?.cards?.length) {
+						event.finish();
+						return;
+					}
+					const card = result3.cards[0],
+						suit = get.suit(card, target);
+					if (!player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
+						await target.damage();
+					}
 				}
 			},
 		],
@@ -1956,19 +1958,26 @@ const skills = {
 	clankudu: {
 		audio: 2,
 		limited: true,
-		enable: "phaseUse",
+		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return player.countCards("h", card => player.canRecast(card)) > 1;
 		},
-		filterCard: (card, player) => player.canRecast(card),
-		selectCard: 2,
-		filterTarget: true,
-		position: "he",
-		lose: false,
-		discard: false,
-		delay: false,
-		check(card) {
-			return 6 - get.value(card);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt2(event.skill),
+					filterCard: (card, player) => player.canRecast(card),
+					selectCard: 2,
+					filterTarget: true,
+					position: "he",
+					ai1(card) {
+						return 6 - get.value(card);
+					},
+					ai2(target) {
+						return get.attitude(get.player(), target);
+					},
+				})
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
@@ -1977,14 +1986,10 @@ const skills = {
 				target = event.targets[0],
 				skill = event.name + "_effect";
 			await player.recast(cards);
-			target.addSkill(skill);
-			target.addMark(skill, num, false);
-		},
-		ai: {
-			order: 7,
-			result: {
-				target: 1,
-			},
+			if (num > 0) {
+				target.addSkill(skill);
+				target.addMark(skill, num, false);
+			}
 		},
 		subSkill: {
 			effect: {
@@ -1996,7 +2001,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				trigger: { global: "phaseEnd" },
-				content() {
+				async content(event, trigger, player) {
 					player.removeMark(event.name, 1, false);
 					player.draw();
 					if (!player.hasMark(event.name)) {
