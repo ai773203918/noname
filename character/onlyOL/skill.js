@@ -1330,6 +1330,9 @@ const skills = {
 				const result = await next.forResult();
 				if (result?.bool && result.cards?.length) {
 					num -= result.cards.length;
+					if (num <= 0) {
+						break;
+					}
 				}
 			}
 			player.addTempSkill("oljuelie_draw");
