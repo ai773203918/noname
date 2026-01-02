@@ -65,7 +65,7 @@ const characterSortTranslate = {
 	mobile_sp12: "SP·组12",
 	mobile_sp13: "SP·组13",
 	mobile_sp14: "SP·组14",
-	mobile_sp14: "SP·组15",
+	mobile_sp15: "SP·组15",
 	mobile_sp_default: "SP·未分组",
 	mobile_xlqk1: "袖里乾坤·组1",
 	mobile_xlqk2: "袖里乾坤·组2",
