@@ -762,7 +762,7 @@ const skills = {
 					.when({
 						global: "useCardAfter",
 					})
-					.filter(evt => (evt = trigger.getParent("useCard", true, true)))
+					.filter(evt => (evt == trigger.getParent("useCard", true, true)))
 					.step(async (event, trigger, player) => {
 						const cards = trigger.cards.filterInD("od");
 						if (!cards?.length) {
