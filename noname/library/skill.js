@@ -1547,6 +1547,9 @@ export default {
 						}
 					}
 					var cfg = player.storage.dualside;
+					if(!Array.isArray(cfg)){
+						return;
+					}
 					if (get.mode() == "guozhan") {
 						if (player.name1 == cfg[0]) {
 							player.showCharacter(0);

@@ -2340,12 +2340,13 @@ export default () => {
 						game.addRecentCharacter(result.buttons[0].link);
 					}
 					var name = event.choosed[0];
-					const groups = get.selectGroup(name);
-					if (groups.length > 1) {
-						game.me._groupChosen = get.selectGroup(name, true);
-						game.me.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true);
-					} else {
-						event.group = groups[0];
+					const groups = get.selectGroup(name),
+						type = get.selectGroup(name, true);
+					if (type !== "default") {
+						game.me._groupChosen = type;
+					}
+					if (groups.length) {
+						game.me.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true).set("direct", true);
 					}
 					"step 2";
 					if (result.links?.length) {
