@@ -91,7 +91,7 @@ const translates = {
 	olsbyinglve: "英略",
 	olsbyinglve_info: "出牌阶段各限一次，你可以令一名角色：1.失去1点体力，下个摸牌阶段摸牌数+2；2.摸两张牌，下个弃牌阶段手牌上限-2。",
 	olsbmengshi: "盟势",
-	olsbmengshi_info: "限定技，结束阶段，你可失去X点体力，然后交换两名其他角色的体力值（X为两者体力值的差）。每个回合结束时，你摸一张牌并回复1点体力，直到“盟势”一方死亡。",
+	olsbmengshi_info: "限定技，结束阶段，你可失去X点体力，然后交换两名其他角色的体力值（X为两者体力值的差且不能为0）。每个回合结束时，你摸一张牌并回复1点体力，直到“盟势”一方死亡。",
 	ol_sb_zhugeliang: "OL谋诸葛亮",
 	ol_sb_zhugeliang_prefix: "OL谋",
 	olsbzhitian: "知天",

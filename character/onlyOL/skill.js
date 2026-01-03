@@ -2713,13 +2713,21 @@ const skills = {
 		limited: true,
 		animationColor: "wood",
 		filter(event, player) {
-			return game.countPlayer(target => target !== player) >= 2;
+			return game.filterPlayer(target => target !== player).map(current => {
+				return current.getHp();
+			}).toUniqued().length >= 2;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "选择两名其他角色交换体力，然后失去其体力差点体力", lib.filter.notMe)
+				.chooseTarget(get.prompt(event.skill), "选择两名其他角色交换体力，然后失去其体力差点体力", (card, player, target) => {
+					if (target == player) {
+						return false;
+					}
+					return ui.selected.targets.every(current => current.getHp() != target.getHp());
+				})
 				.set("selectTarget", 2)
 				.set("multitarget", true)
+				.set("complexTarget", true)
 				.set("ai", target => {
 					const player = get.player();
 					const att = get.attitude(player, target);
