@@ -1482,7 +1482,8 @@ const skills = {
 		filter(event, player) {
 			return player != event.player && event.player.hp >= player.hp && player.countCards("hs", { color: "black" });
 		},
-		async cost(event, trigger, player) {
+		direct: true,
+		async content(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
 				if (info[0] == "delay") {
 					return false;
@@ -1502,7 +1503,7 @@ const skills = {
 				return;
 			}
 			const result = await player
-				.chooseButton([get.prompt2(event.skill, trigger.player), [list, "vcard"]])
+				.chooseButton([get.prompt2(event.name, trigger.player), [list, "vcard"]])
 				.set("ai", button => {
 					const { player, sourcex: target } = get.event();
 					const card = player.getCards("hs", { color: "black" }).maxBy(card => {
@@ -1540,18 +1541,14 @@ const skills = {
 			next.set("norestore", true);
 			next.set("addCount", false);
 			next.set("onlyTarget", trigger.player);
-			next.set("chooseonly", true);
 			next.set("_backupevent", "dchanjie_backup");
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
+			next.set("logSkill", event.name);
 			next.backup("dchanjie_backup");
 			event.result = await next.forResult();
-		},
-		async content(event, trigger, player) {
-			const { result } = event.cost_data;
-			await player.useResult(result, event);
 		},
 		subSkill: {
 			backup: {

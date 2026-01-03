@@ -9875,7 +9875,7 @@ const skills = {
 			if (trigger.name == "useCard") {
 				event.result = await player.chooseBool(get.prompt(event.skill), "摸两张牌").set("frequentSkill", event.skill).forResult();
 			} else {
-				event.result = await player
+				await player
 					.chooseToUse(
 						function (card, player, event) {
 							if (get.type(card) !== "basic") {
@@ -9885,9 +9885,10 @@ const skills = {
 						},
 						`###${get.prompt(event.skill)}###使用一张基本牌`
 					)
-					.set("chooseonly", true)
+					.set("logSkill", event.skill)
 					.set("addCount", false)
 					.forResult();
+				return;
 			}
 		},
 		async content(event, trigger, player) {

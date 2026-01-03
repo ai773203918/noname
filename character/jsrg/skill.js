@@ -9950,17 +9950,18 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		async cost(event, trigger, player) {
+			const card = new lib.element.VCard({ name: "guohe", isCard: true });
+			const targets = game.filterPlayer(current => player.canUse(card, current));
 			event.result = await player
-				.chooseToUse()
-				.set("openskilldialog", get.prompt2(event.skill))
-				.set("norestore", true)
-				.set("_backupevent", `${event.skill}_backup`)
-				.set("custom", {
-					add: {},
-					replace: { window() {} },
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return get.event().targetx.includes(target);
 				})
-				.backup(`${event.skill}_backup`)
-				.set("chooseonly", true)
+				.set("targetx", targets)
+				.set("ai", target => {
+					const card = new lib.element.VCard({ name: "guohe", isCard: true }),
+						player = get.player();
+					return get.effect(target, card, player, player);
+				})
 				.forResult();
 		},
 		async content(event, trigger, player) {

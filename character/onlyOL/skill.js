@@ -7055,7 +7055,8 @@ const skills = {
 					}
 					return !event.targets?.includes(event.player);
 				},
-				async cost(event, trigger, player) {
+				direct: true,
+				async content(event, trigger, player) {
 					const target = trigger.player;
 					const next = player.chooseToUse();
 					next.set("prompt", `狭勇：是否对${get.translation(target)}使用一张【杀】？`);
@@ -7077,13 +7078,8 @@ const skills = {
 						}
 					});
 					next.set("addCount", false);
-					next.set("chooseonly", true);
-					next.set("logSkill", event.name.slice(0, -5));
-					event.result = await next.forResult();
-				},
-				async content(event, trigger, player) {
-					const { result, logSkill } = event.cost_data;
-					await player.useResult(result, event);
+					next.set("logSkill", event.name);
+					await next;
 				},
 			},
 		},
