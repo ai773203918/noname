@@ -7,6 +7,7 @@ const characters = {
 		isZhugong: true,
 		clans: ["颍川钟氏"],
 		groupBorder: "qun",
+		doubleGroup: ["wei", "qun"],
 	},
 	pot_zanghong: {
 		sex: "male",

@@ -154,6 +154,7 @@ const characters = {
 		hp: 4,
 		skills: ["sbjieyin", "sbliangzhu", "sbxiaoji"],
 		groupBorder: "wu",
+		doubleGroup: ["shu", "wu"],
 	},
 	sb_sunquan: {
 		sex: "male",

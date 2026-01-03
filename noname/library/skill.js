@@ -1346,7 +1346,9 @@ export default {
 		priority: 25,
 		charlotte: true,
 		filter: function (event, player) {
-			return get.mode() != "guozhan" && get.is.double(player.name1) && !player._groupChosen;
+			const groups = get.selectGroup(player.name1),
+				type = get.selectGroup(player.name1, true);
+			return get.mode() != "guozhan" && groups.length > 1 && type == "double" && !player._groupChosen;
 		},
 		async content(event, trigger, player) {
 			player._groupChosen = "double";

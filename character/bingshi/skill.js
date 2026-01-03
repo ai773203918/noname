@@ -205,6 +205,7 @@ const skills = {
 			source: "dying",
 		},
 		juexingji: true,
+		initGroup: "wei",
 		forced: true,
 		skillAnimation: true,
 		animationColor: "purple",

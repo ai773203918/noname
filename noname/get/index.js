@@ -6208,6 +6208,43 @@ else if (entry[1] !== void 0) stringifying[key] = JSON.stringify(entry[1]);*/
 	groups() {
 		return ["wei", "shu", "wu", "qun", "jin", "western", "key"];
 	}
+	selectGroup(name, type) {
+		if (get.itemtype(name) == "player") {
+			name = name.name || name.name1;
+		}
+		const info = get.character(name);
+		if (info.skills?.length) {
+			const groups = [];
+			for (const skill of info.skills) {
+				const skillInfo = get.info(skill);
+				if (typeof skillInfo.initGroup === "string") {
+					groups.add(skillInfo.initGroup);
+				}
+			}
+			if (groups.length) {
+				if (type === true) {
+					return "double";
+				}
+				return groups;
+			}
+		}
+		if (Array.isArray(info.doubleGroup) && info.doubleGroup.length) {
+			if (type === true) {
+				return "double";
+			}
+			return info.doubleGroup.slice(0);
+		}
+		if (lib.selectGroup.includes(info.group) && get.config("choose_group") && !info.hasHiddenSkill) {
+			if (type === true) {
+				return "kami";
+			}
+			return this.groups().filter(group => lib.group.includes(group));
+		}
+		if (type === true) {
+			return "default";
+		}
+		return [info.group];
+	}
 	types() {
 		var types = [];
 		for (var i in lib.card) {
