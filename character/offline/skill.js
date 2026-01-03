@@ -13021,7 +13021,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
-					player.addSkill("hsfunan_used");
+					player.addTempSkill("hsfunan_used");
 					const targets = game.filterPlayer(target => target != player && target.group == "shu");
 					if (!targets.length) {
 						return;

@@ -15,23 +15,34 @@ const skills = {
 				.chooseToUse()
 				.set("openskilldialog", `###${get.prompt(event.skill)}###将任意张手牌当作【杀】使用`)
 				.set("norestore", true)
-				.set("_backupevent", `${event.name.slice(0, -5)}_backup`)
+				.set("_backupevent", `${event.skill}_backup`)
 				.set("custom", {
 					add: {},
 					replace: { window() {} },
 				})
-				.backup(`${event.name.slice(0, -5)}_backup`)
+				.backup(`${event.skill}_backup`)
 				.set("targetRequired", true)
 				.set("complexTarget", true)
 				.set("complexSelect", true)
 				.set("addCount", false)
 				.set("chooseonly", true)
-				.set("logSkill", event.name.slice(0, -5))
+				.set("logSkill", event.skill)
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const { result } = event.cost_data;
-			await player.useResult(result, event);
+			const next = player.useResult(result, event);
+			player
+				.when("useCard")
+				.filter(evt => evt == next)
+				.step(async (event, trigger, player) => {
+					const num = player.countCards("h");
+					if (trigger.targets?.some(target => target.countCards("h") === num)) {
+						trigger.directHit.addArray(game.players);
+						game.log(trigger.card, "不可被响应");
+					}
+				})
+			await next;
 		},
 		/*ai: {
 			effect: {
@@ -57,14 +68,6 @@ const skills = {
 				},
 				selectCard: [1, Infinity],
 				position: "h",
-				async precontent(event, trigger, player) {
-					event.getParent().oncard = (card, player) => {
-						if (get.event().targets.some(target => target.countCards("h") == player.countCards("h"))) {
-							get.event().directHit.addArray(game.players);
-							game.log(card, "不可被响应");
-						}
-					};
-				},
 				ai1(card) {
 					if (ui.selected.cards.length) {
 						return 0;
