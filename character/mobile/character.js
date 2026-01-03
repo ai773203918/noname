@@ -124,7 +124,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["mbxiezheng", "mbqiantun", "mbweisi", "mbzhaoxiong"],
+		skills: ["mbxiezheng", "mbqiantun", "mbweisi", "mbzhaoxiong", "sbjieyin"],
 		img: "image/character/jsrg_simazhao.jpg",
 		names: "司马|昭",
 		dieAudios: ["jsrg_simazhao"],
