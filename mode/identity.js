@@ -1474,41 +1474,18 @@ export default () => {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && lib.selectGroup.includes(lib.character[result[i][0]].group) && !lib.character[result[i][0]].hasHiddenSkill)) {
+						if (get.selectGroup(result[i][0]).length > 1) {
 							shen.push(lib.playerOL[i]);
 						}
 					}
 					event.result2 = result;
 					if (shen.length) {
-						var list = ["wei", "shu", "wu", "qun", "jin", "key"];
-						for (var i = 0; i < list.length; i++) {
-							if (!lib.group.includes(list[i])) {
-								list.splice(i--, 1);
-							} else {
-								list[i] = ["", "", "group_" + list[i]];
-							}
-						}
 						for (var i = 0; i < shen.length; i++) {
-							if (get.is.double(result[shen[i].playerid][0])) {
-								shen[i]._groupChosen = "double";
-								shen[i] = [
-									shen[i],
-									[
-										"请选择你的势力",
-										[
-											get.is.double(result[shen[i].playerid][0], true).map(function (i) {
-												return ["", "", "group_" + i];
-											}),
-											"vcard",
-										],
-									],
-									1,
-									true,
-								];
-							} else {
-								shen[i]._groupChosen = "kami";
-								shen[i] = [shen[i], ["请选择你的势力", [list, "vcard"]], 1, true];
-							}
+							const name = result[shen[i].playerid][0];
+							const groups = get.selectGroup(name).map(group => ["", "", `group_${group}`]),
+								type = get.selectGroup(name, true);
+							shen[i]._groupChosen = type;
+							shen[i] = [shen[i], ["请选择你的势力", [groups, "vcard"]], 1, true];
 						}
 						game.me
 							.chooseButtonOL(shen, function (player, result) {
@@ -2363,17 +2340,17 @@ export default () => {
 						game.addRecentCharacter(result.buttons[0].link);
 					}
 					var name = event.choosed[0];
-					if (get.is.double(name)) {
-						game.me._groupChosen = "double";
-						game.me.chooseControl(get.is.double(name, true)).set("prompt", "请选择你的势力");
-					} else if (lib.selectGroup.includes(lib.character[name].group) && !lib.character[name].hasHiddenSkill && get.config("choose_group")) {
-						game.me._groupChosen = "kami";
-						var list = lib.group.slice(0);
-						list.remove("shen");
-						game.me.chooseControl(list).set("prompt", "请选择你的势力");
+					const groups = get.selectGroup(name);
+					if (groups.length > 1) {
+						game.me._groupChosen = get.selectGroup(name, true);
+						game.me.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true);
+					} else {
+						event.group = groups[0];
 					}
 					"step 2";
-					event.group = result.control || false;
+					if (result.links?.length) {
+						event.group = result.links[0][2].slice(6);
+					}
 					if (event.choosed.length == 2) {
 						game.me.init(event.choosed[0], event.choosed[1]);
 					} else {
@@ -2671,31 +2648,11 @@ export default () => {
 						result.links[1],
 						game.players.length > 4
 					);
-
-					if (lib.selectGroup.includes(game.zhu.group) && !game.zhu.isUnseen(0)) {
-						game.zhu._groupChosen = "kami";
-						var list = ["wei", "shu", "wu", "qun", "jin", "key"];
-						for (var i = 0; i < list.length; i++) {
-							if (!lib.group.includes(list[i])) {
-								list.splice(i--, 1);
-							} else {
-								list[i] = ["", "", "group_" + list[i]];
-							}
-						}
-						game.zhu.chooseButton(["请选择你的势力", [list, "vcard"]], true).set("ai", function () {
-							return Math.random();
-						});
-					} else if (get.is.double(game.zhu.name1)) {
-						game.zhu._groupChosen = "double";
-						var list = get.is.double(game.zhu.name1, true);
-						for (var i = 0; i < list.length; i++) {
-							if (!lib.group.includes(list[i])) {
-								list.splice(i--, 1);
-							} else {
-								list[i] = ["", "", "group_" + list[i]];
-							}
-						}
-						game.zhu.chooseButton(["请选择你的势力", [list, "vcard"]], true).set("ai", function () {
+					const groups = get.selectGroup(game.zhu.name1),
+						type = get.selectGroup(game.zhu.name1, true);
+					if (groups.length > 1) {
+						game.zhu._groupChosen = type;
+						game.zhu.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true).set("ai", () => {
 							return Math.random();
 						});
 					} else {
@@ -2755,41 +2712,18 @@ export default () => {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (get.is.double(result[i][0]) || (lib.character[result[i][0]] && lib.selectGroup.includes(lib.character[result[i][0]].group) && !lib.character[result[i][0]].hasHiddenSkill)) {
+						if (get.selectGroup(result[i][0]).length > 1) {
 							shen.push(lib.playerOL[i]);
 						}
 					}
 					event.result2 = result;
 					if (shen.length) {
-						var list = ["wei", "shu", "wu", "qun", "jin", "key"];
-						for (var i = 0; i < list.length; i++) {
-							if (!lib.group.includes(list[i])) {
-								list.splice(i--, 1);
-							} else {
-								list[i] = ["", "", "group_" + list[i]];
-							}
-						}
 						for (var i = 0; i < shen.length; i++) {
-							if (get.is.double(result[shen[i].playerid][0])) {
-								shen[i]._groupChosen = "double";
-								shen[i] = [
-									shen[i],
-									[
-										"请选择你的势力",
-										[
-											get.is.double(result[shen[i].playerid][0], true).map(function (i) {
-												return ["", "", "group_" + i];
-											}),
-											"vcard",
-										],
-									],
-									1,
-									true,
-								];
-							} else {
-								shen[i]._groupChosen = "kami";
-								shen[i] = [shen[i], ["请选择你的势力", [list, "vcard"]], 1, true];
-							}
+							const name = result[shen[i].playerid][0];
+							const groups = get.selectGroup(name).map(group => ["", "", `group_${group}`]),
+								type = get.selectGroup(name, true);
+							shen[i]._groupChosen = type;
+							shen[i] = [shen[i], ["请选择你的势力", [groups, "vcard"]], 1, true];
 						}
 						game.me
 							.chooseButtonOL(shen, function (player, result) {

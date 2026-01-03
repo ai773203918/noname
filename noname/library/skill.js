@@ -1346,12 +1346,20 @@ export default {
 		priority: 25,
 		charlotte: true,
 		filter: function (event, player) {
-			return get.mode() != "guozhan" && get.is.double(player.name1) && !player._groupChosen;
+			const groups = get.selectGroup(player.name1),
+				type = get.selectGroup(player.name1, true);
+			return get.mode() != "guozhan" && groups.length > 1 && type != "kami" && !player._groupChosen;
 		},
 		async content(event, trigger, player) {
-			player._groupChosen = "double";
-			const result = await player.chooseControl(get.is.double(player.name1, true)).set("prompt", "请选择你的势力").forResult();
-			player.changeGroup(result.control);
+			const groups = get.selectGroup(player.name1),
+				type = get.selectGroup(player.name1, true);
+			player._groupChosen = type;
+			const result = await player
+				.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true)
+				.forResult();
+			if (result?.bool && result.links?.length) {
+				await player.changeGroup(result.links[0][2].slice(6));
+			}
 		},
 	},
 	aozhan: {

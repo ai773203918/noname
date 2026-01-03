@@ -9388,6 +9388,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		dutySkill: true,
+		initGroup: "shu",
 		group: ["sbjieyin_init", "sbjieyin_fail"],
 		filter(event, player) {
 			return game.hasPlayer(current => current.hasMark("sbjieyin_mark"));

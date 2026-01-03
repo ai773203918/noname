@@ -129,6 +129,7 @@ const characters = {
 		names: "司马|昭",
 		dieAudios: ["jsrg_simazhao"],
 		groupBorder: "jin",
+		doubleGroup: ["wei", "qun"],
 	},
 	friend_cuijun: {
 		sex: "male",

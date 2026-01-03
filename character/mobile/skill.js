@@ -5313,6 +5313,7 @@ const skills = {
 	mbxiezheng: {
 		audio: "jsrgxiezheng",
 		inherit: "jsrgxiezheng",
+		initGroup: "wei",
 		async cost(event, trigger, player) {
 			const mode = get.mode();
 			event.result = await player

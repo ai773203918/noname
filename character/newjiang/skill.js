@@ -3,7 +3,13 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	youtan: {
-		audio: 2,
+		audio: 4,
+		logAudio(event) {
+			if (event.name == "useCardToTarget") {
+				return ["youtan3.mp3", "youtan4.mp3"];
+			}
+			return 2;
+		},
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -90,7 +96,6 @@ const skills = {
 		global: "ciren_global",
 		subSkill: {
 			global: {
-				audio: "ciren",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
@@ -123,6 +128,7 @@ const skills = {
 							},
 						})
 						.forResult();
+					event.result.skill_popup = false;
 				},
 				async content(event, trigger, player) {
 					const {
@@ -130,6 +136,7 @@ const skills = {
 							targets: [target],
 						} = event,
 						suit = get.suit(cards[0]);
+					await target.logSkill("ciren", player);
 					await player.give(cards, target);
 					const result = await target
 						.chooseToGive(player, `交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
@@ -1475,7 +1482,9 @@ const skills = {
 		filter(event, player) {
 			return player != event.player && event.player.hp >= player.hp && player.countCards("hs", { color: "black" });
 		},
-		async cost(event, trigger, player) {
+		direct: true,
+		clearTime: true,
+		async content(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
 				if (info[0] == "delay") {
 					return false;
@@ -1495,7 +1504,7 @@ const skills = {
 				return;
 			}
 			const result = await player
-				.chooseButton([get.prompt2(event.skill, trigger.player), [list, "vcard"]])
+				.chooseButton([get.prompt2(event.name, trigger.player), [list, "vcard"]])
 				.set("ai", button => {
 					const { player, sourcex: target } = get.event();
 					const card = player.getCards("hs", { color: "black" }).maxBy(card => {
@@ -1533,18 +1542,14 @@ const skills = {
 			next.set("norestore", true);
 			next.set("addCount", false);
 			next.set("onlyTarget", trigger.player);
-			next.set("chooseonly", true);
 			next.set("_backupevent", "dchanjie_backup");
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
+			next.set("logSkill", event.name);
 			next.backup("dchanjie_backup");
 			event.result = await next.forResult();
-		},
-		async content(event, trigger, player) {
-			const { result } = event.cost_data;
-			await player.useResult(result, event);
 		},
 		subSkill: {
 			backup: {

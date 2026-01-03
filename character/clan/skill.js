@@ -2025,16 +2025,16 @@ const skills = {
 			}
 			return true;
 		},
-		async cost(event, trigger, player) {
-			event.result = await player.chooseToUse(get.prompt2(event.skill)).set("chooseonly", true).set("logSkill", event.name.slice(0, -5)).forResult();
-		},
+		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
-			const { result, logSkill } = event.cost_data;
-			const next = player.useResult(result, event);
-			await next;
-			const { card } = next;
+			const next = player.chooseToUse(get.prompt2(event.name)).set("logSkill", event.name);
+			const result = await next.forResult();
+			if (!result?.bool) {
+				return;
+			}
 			const target = _status.currentPhase;
-			if (!player.hasHistory("sourceDamage", evt => evt.card == card) && target?.canAddJudge("lebu")) {
+			if (!player.hasHistory("sourceDamage", evt => evt.getParent(next.name) == next) && target?.canAddJudge("lebu")) {
 				await player
 					.chooseToUse()
 					.set("openskilldialog", `佯疾：是否将一张黑桃牌当作【乐不思蜀】对${get.translation(target)}使用？`)
