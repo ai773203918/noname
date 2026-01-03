@@ -4113,6 +4113,11 @@ export class Library {
 					} else {
 						map.clear_log.hide();
 					}
+					if (lib.config.show_charactercard) {
+						map.show_charactercardMode.show();
+					} else {
+						map.show_charactercardMode.hide();
+					}
 					if (get.is.phoneLayout()) {
 						map.show_time2.show();
 						map.show_time.hide();
@@ -4490,6 +4495,16 @@ export class Library {
 					name: "显示武将资料",
 					intro: "在武将界面单击时弹出武将资料卡",
 					init: true,
+					unfrequent: true,
+				},
+				show_charactercardMode: {
+					name: "武将资料默认页",
+					intro: "弹出武将资料卡时默认打开的页面",
+					init: "intro",
+					item: {
+						intro: "介绍",
+						skill: "技能",
+					},
 					unfrequent: true,
 				},
 				show_favourite: {

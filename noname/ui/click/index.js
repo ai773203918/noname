@@ -3497,6 +3497,9 @@ export class Click {
 			applyViewMode("skill");
 		});
 		const applyViewMode = function (viewMode = "intro") {
+			if (viewMode !== "skill") {
+				viewMode = "intro";
+			}
 			// 控制显示的区域
 			const intro2Node = uiintro.querySelector(".intro2");
 			if (viewMode === "intro") {
@@ -4103,8 +4106,8 @@ export class Click {
 			}
 		};
 		refreshIntro();
-		// 默认显示人物简介
-		applyViewMode("intro");
+		// 跟设置走
+		applyViewMode(lib.config.show_charactercardMode);
 
 		// 创建皮肤容器并添加到intro底部
 		if (lib.characterSubstitute[name]) {
