@@ -3,7 +3,13 @@ import { lib, game, ui, get, ai, _status } from "noname";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	youtan: {
-		audio: 2,
+		audio: 4,
+		logAudio(event) {
+			if (event.name == "useCardToTarget") {
+				return ["youtan3.mp3", "youtan4.mp3"];
+			}
+			return 2;
+		},
 		trigger: {
 			player: "gainAfter",
 			global: "loseAsyncAfter",
@@ -90,7 +96,6 @@ const skills = {
 		global: "ciren_global",
 		subSkill: {
 			global: {
-				audio: "ciren",
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
@@ -123,6 +128,7 @@ const skills = {
 							},
 						})
 						.forResult();
+					event.result.skill_popup = false;
 				},
 				async content(event, trigger, player) {
 					const {
@@ -130,6 +136,7 @@ const skills = {
 							targets: [target],
 						} = event,
 						suit = get.suit(cards[0]);
+					await target.logSkill("ciren", player);
 					await player.give(cards, target);
 					const result = await target
 						.chooseToGive(player, `交给${get.translation(player)}另一张${get.translation(suit)}牌，否则其摸一张牌`, "he")
