@@ -4012,7 +4012,7 @@ export class Player extends HTMLDivElement {
 		);
 	}
 	emotion(pack, id) {
-		var str = `<img src="##assetURL##image/emotion/${pack}/${id}.gif" width="50" height="50">`;
+		var str = `<img src="##assetURL##image/emotion/${pack}/${id}" width="50" height="50">`;
 		this.say(str);
 		game.broadcast(
 			function (id, str) {
