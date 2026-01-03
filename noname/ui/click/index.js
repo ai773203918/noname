@@ -4124,9 +4124,8 @@ export class Click {
 			}
 		};
 		refreshIntro();
-		// 跟设置走
-		applyViewMode(lib.config.show_charactercardMode);
-
+		// 先打开介绍页
+		applyViewMode("intro");
 		// 创建皮肤容器并添加到intro底部
 		if (lib.characterSubstitute[name]) {
 			refreshSkin = function () {
@@ -4231,6 +4230,10 @@ export class Click {
 			};
 			refreshSkin();
 		}
+		
+		// 再跟设置走
+		applyViewMode(lib.config.show_charactercardMode);
+
 		var initskill = false;
 		let deri = [];
 		for (var i = 0; i < list.length; i++) {
