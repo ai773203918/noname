@@ -11,6 +11,7 @@ const skills = {
 			return player.countCards("h");
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			await player
 				.chooseToUse()
@@ -1490,6 +1491,7 @@ const skills = {
 			return player.countCards("hes") && player.hasUseTarget(get.autoViewAs({ name: "sha" }, "unsure"), false, false) && player.hasHistory("lose");
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			await player
 				.chooseToUse()
@@ -3144,6 +3146,7 @@ const skills = {
 			return player.countCards("hs", { color: "red" });
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const next = player.chooseToUse();
 			next.set("openskilldialog", get.prompt2("stdzhengnan"));
@@ -4843,6 +4846,7 @@ const skills = {
 			);
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const next = player.moveCard(
 				game.filterPlayer(current => current != trigger.source),
@@ -5377,6 +5381,7 @@ const skills = {
 			);
 		},
 		direct: true,
+		clearTime: true,
 		zhuSkill: true,
 		content() {
 			player

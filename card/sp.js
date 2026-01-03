@@ -655,6 +655,7 @@ game.import("card", function () {
 					return get.color(event.cards[0]) == "black" && player.hasHistory("lose", evt => evt.getParent() == event && evt.hs?.length == 1);
 				},
 				direct: true,
+				clearTime: true,
 				async content(event, trigger, player) {
 					await player
 						.chooseToUse(`###${get.prompt(event.name)}###对你攻击范围内的一名角色使用一张【杀】`)

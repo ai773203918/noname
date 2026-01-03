@@ -5612,6 +5612,7 @@ const skills = {
 			return event.targets?.some(target => player.canUse(card, target, false));
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const next = player
 				.chooseToUse(function (card, player, event) {
@@ -18368,6 +18369,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			 await player
 				.chooseToUse()

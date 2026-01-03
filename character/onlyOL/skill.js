@@ -7064,6 +7064,7 @@ const skills = {
 					return !event.targets?.includes(event.player);
 				},
 				direct: true,
+				clearTime: true,
 				async content(event, trigger, player) {
 					const target = trigger.player;
 					const next = player.chooseToUse();

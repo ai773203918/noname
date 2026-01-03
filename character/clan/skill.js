@@ -2026,6 +2026,7 @@ const skills = {
 			return true;
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const next = player.chooseToUse(get.prompt2(event.name)).set("logSkill", event.name);
 			const result = await next.forResult();

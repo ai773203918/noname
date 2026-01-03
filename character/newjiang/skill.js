@@ -1483,6 +1483,7 @@ const skills = {
 			return player != event.player && event.player.hp >= player.hp && player.countCards("hs", { color: "black" });
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const list = get.inpileVCardList(info => {
 				if (info[0] == "delay") {
