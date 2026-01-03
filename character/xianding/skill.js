@@ -4801,7 +4801,8 @@ const skills = {
 		filter(event, player) {
 			return event.targets?.includes(player);
 		},
-		frequent: true,
+		forced: true,
+		locked: false,
 		async content(event, trigger, player) {
 			await player.draw();
 			const triggerName = player == _status.currentPhase ? "回合结束" : "下个回合开始",
@@ -6371,10 +6372,17 @@ const skills = {
 				}
 			}
 			if (list.toUniqued().length == 3) {
+				player.setStorage(event.name, [], true);
+				player.removeTip(event.name);
+				const next = game.createEvent("removeFaluRecord", false);
+				next.player = player;
+				next.type = "diff";
+				next.setContent("emptyEvent");
+				await next;
 				const result = await player
 					.chooseButtonTarget({
 						createDialog: [
-							"法箓：是否清空记录并令一名角色失去或回复1点体力？",
+							"法箓：是否令一名角色失去或回复1点体力？",
 							[
 								[
 									["loseHp", "失去1点体力"],
@@ -6428,13 +6436,6 @@ const skills = {
 				if (!result?.bool) {
 					return;
 				}
-				player.setStorage(event.name, [], true);
-				player.removeTip(event.name);
-				const next = game.createEvent("removeFaluRecord", false);
-				next.player = player;
-				next.type = "diff";
-				next.setContent("emptyEvent");
-				await next;
 				const [target] = result.targets,
 					[link] = result.links;
 				player.line(target, "green");
