@@ -3093,7 +3093,7 @@ const skills = {
 	dckanyu: {
 		audio: 2,
 		trigger: {
-			player: "damageBegin3",
+			player: "damageEnd",
 			global: "judgeBegin",
 		},
 		frequent: true,
@@ -19270,7 +19270,7 @@ const skills = {
 							const result = await source.chooseButton([`请选择移去${get.translation(source)}的一张“硝引”牌`, cardsToDiscard], true).forResult();
 							await target.loseToDiscardpile(result.links);
 						}
-						trigger.addNumber("num", 1);
+						trigger.num++;
 					} else {
 						source.line(target, "fire");
 						const cards = target.getExpansions("dcxiaoyin");

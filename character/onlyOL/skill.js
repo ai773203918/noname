@@ -3510,8 +3510,8 @@ const skills = {
 			const name = event.name + "_effect";
 			player.markAuto(name, target);
 			target.markAuto(name, player);
-			player.addTip(name, "狂：" + player.getStorage(name).map(targetx => get.translation(targetx)));
-			target.addTip(name, "狂：" + target.getStorage(name).map(targetx => get.translation(targetx)));
+			player.addTip(name, "狂 " + player.getStorage(name).map(targetx => get.translation(targetx)));
+			target.addTip(name, "狂 " + target.getStorage(name).map(targetx => get.translation(targetx)));
 			target.addSkill(name);
 			player.addSkill(name);
 		},
@@ -3544,7 +3544,7 @@ const skills = {
 							return get.damageEffect(target, player, player);
 						})
 						.forResult();
-					if (!result?.targets[0]?.isIn()) {
+					if (!result?.targets?.[0]?.isIn()) {
 						return;
 					}
 					const target = result.targets[0];
@@ -3553,8 +3553,8 @@ const skills = {
 					player.unmarkAuto(name, trigger.player);
 					player.markAuto(name, target);
 					target.markAuto(name, player);
-					player.addTip(name, "狂：" + player.getStorage(name).map(targetx => get.translation(targetx)));
-					target.addTip(name, "狂：" + target.getStorage(name).map(targetx => get.translation(targetx)));
+					player.addTip(name, "狂 " + player.getStorage(name).map(targetx => get.translation(targetx)));
+					target.addTip(name, "狂 " + target.getStorage(name).map(targetx => get.translation(targetx)));
 					target.addSkill(name);
 					player.addSkill(name);
 				},
@@ -4798,10 +4798,10 @@ const skills = {
 							skills = storage["skill"];
 						let str = "";
 						if (cards.length) {
-							str += `<li>记录的牌：${get.translation(cards)}<br>`;
+							str += `<li>记录的牌：${cards.map(card=>get.poptip(card)).join("、")}<br>`;
 						}
 						if (skills.length) {
-							str += `<li>记录的技能：${get.translation(skills)}`;
+							str += `<li>记录的技能：${skills.map(skill=>get.poptip(skill)).join("、")}`;
 						}
 						if (!str) {
 							return "无记录的牌或技能";
@@ -11506,7 +11506,7 @@ const skills = {
 					} else {
 						target.popup("杯具");
 						game.log(target, "猜测", "#y错误");
-						trigger.increase("num");
+						trigger.num ++;
 					}
 				},
 			},

@@ -1831,6 +1831,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "fire",
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			if (typeof get.skillCount("dczhonge") == "number" && get.skillCount("dczhonge") >= 1) {
@@ -3401,28 +3402,40 @@ const skills = {
 			return player.countCards("h") < player.maxHp;
 		},
 		usable: 1,
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			await player.drawTo(player.maxHp);
 			if (!player.countCards("h")) {
 				return;
 			}
-			const suits = player
-				.getCards("h")
-				.reduce((list, card) => list.add(get.suit(card)), [])
-				.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+			const list = get.addNewRowList(player.getCards("h"), "suit", player);
 			const result = await player
-				.chooseControl(suits)
-				.set("prompt", "备预：将一种花色的手牌牌置于牌堆底")
-				.set("ai", () => {
-					const player = get.event().player;
-					let suits = get.event().controls.slice();
-					suits.sort((a, b) => player.countCards("h", { suit: a }) - player.countCards("h", { suit: b }));
-					return suits[0];
+				.chooseButton([
+					[
+						[[`备预：将一种花色的手牌置于牌堆底`], "addNewRow"],
+						[
+							dialog => {
+								dialog.classList.add("fullheight");
+								dialog.forcebutton = false;
+								dialog._scrollset = false;
+							},
+							"handle",
+						],
+						list.map(item => [Array.isArray(item) ? item : [item], "addNewRow"]),
+					],
+				])
+				.set("filterButton", button => {
+					return button.links.length > 0;
+				})
+				.set("ai", button => {
+					const player = get.player();
+					const { links } = button;
+					return Math.max(1, 5 - links.length);
 				})
 				.forResult();
-			if (result.control) {
-				const suit = result.control,
-					cards = player.getCards("h", { suit: suit });
+			if (result?.links?.length) {
+				const [suit] = result.links,
+					cards = player.getCards("h", card => get.suit(card, player) == suit);
 				if (cards.length) {
 					let resultx;
 					if (cards.length == 1) {
@@ -3436,7 +3449,7 @@ const skills = {
 							})
 							.forResult();
 					}
-					if (resultx.bool) {
+					if (resultx?.bool) {
 						const moved = resultx.moved[0];
 						if (moved.length) {
 							await player.lose(cards, ui.cardPile);
@@ -3616,7 +3629,7 @@ const skills = {
 					if (card) {
 						cards.push(card);
 						target.$gain2(card, false);
-						await game.asyncDelayx();
+						await game.delayx();
 						await target.chooseUseTarget(card, true, "nopopup");
 					} else {
 						break;

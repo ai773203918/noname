@@ -4525,7 +4525,7 @@ const skills = {
 			"step 0";
 			var num = player.countCards("s", card => card.hasGaintag("sbguanxing"));
 			if (!num && event.triggername == "damageBegin3") {
-				trigger.increase("num");
+				trigger.num ++;
 			} else if (num && event.triggername == "damageBegin4") {
 				player
 					.judge(function (result) {
@@ -4537,7 +4537,7 @@ const skills = {
 					.set("judge2", result => result.bool)
 					.set("callback", function () {
 						if (event.judgeResult.number <= player.countCards("s", card => card.hasGaintag("sbguanxing"))) {
-							event.getParent("sbkongcheng").getTrigger().decrease("num");
+							event.getParent("sbkongcheng").getTrigger().num--;
 						}
 					});
 			}
@@ -10562,6 +10562,7 @@ const skills = {
 						? await player.chooseButtonTarget({
 								createDialog: [`连营：请选择要分配的牌和目标`, cards],
 								forced: true,
+								allowChooseAll: true,
 								selectButton: [1, Infinity],
 								cardsx: cards,
 								ai1(button) {
@@ -10590,7 +10591,7 @@ const skills = {
 								})
 								.set("enemy", get.value(cards[0], player, "raw") < 0)
 								.forResult();
-				if (result.bool) {
+				if (result?.bool) {
 					if (!result.links?.length) {
 						result.links = cards.slice(0);
 					}

@@ -1943,7 +1943,7 @@ const skills = {
 		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
-			if (!player.hasSkill("olshuliang_used") && player.getExpansions("oljiyun").some(card => card.name == name)) {
+			if (player.getExpansions("oljiyun").some(card => card.name == name)) {
 				return true;
 			}
 		},
@@ -8513,7 +8513,7 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		content() {
-			trigger.increase("num");
+			trigger.num ++;
 		},
 		countSkill(player) {
 			return (
