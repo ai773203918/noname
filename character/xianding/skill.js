@@ -3093,7 +3093,7 @@ const skills = {
 	dckanyu: {
 		audio: 2,
 		trigger: {
-			player: "damageBegin3",
+			player: "damageEnd",
 			global: "judgeBegin",
 		},
 		frequent: true,
