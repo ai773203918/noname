@@ -6101,6 +6101,8 @@ export class Player extends HTMLDivElement {
 					next.complexSelect = true;
 				} else if (arguments[i] == "allowChooseAll") {
 					next.allowChooseAll = true;
+				} else if (arguments[i] == "direct") {
+					next.direct = true;
 				} else if (Array.isArray(arguments[i])) {
 					next.createDialog = arguments[i];
 				}

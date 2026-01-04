@@ -2651,11 +2651,16 @@ export default () => {
 					);
 					const groups = get.selectGroup(game.zhu.name1),
 						type = get.selectGroup(game.zhu.name1, true);
-					if (groups.length > 1) {
+					if (type !== "default") {
 						game.zhu._groupChosen = type;
-						game.zhu.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true).set("ai", () => {
-							return Math.random();
-						});
+					}
+					if (groups.length) {
+						game.zhu
+							.chooseButton(["请选择你的势力", [groups.map(group => ["", "", `group_${group}`]), "vcard"]], true)
+							.set("ai", () => {
+								return Math.random();
+							})
+							.set("direct", true);
 					} else {
 						event.goto(3);
 					}
@@ -2713,7 +2718,7 @@ export default () => {
 						} else {
 							result[i] = result[i].links;
 						}
-						if (get.selectGroup(result[i][0]).length > 1) {
+						if (get.selectGroup(result[i][0]).length > 0) {
 							shen.push(lib.playerOL[i]);
 						}
 					}
@@ -2723,8 +2728,10 @@ export default () => {
 							const name = result[shen[i].playerid][0];
 							const groups = get.selectGroup(name).map(group => ["", "", `group_${group}`]),
 								type = get.selectGroup(name, true);
-							shen[i]._groupChosen = type;
-							shen[i] = [shen[i], ["请选择你的势力", [groups, "vcard"]], 1, true];
+							if (type !== "default") {
+								shen[i]._groupChosen = type;
+							}
+							shen[i] = [shen[i], ["请选择你的势力", [groups, "vcard"]], 1, true, "direct"];
 						}
 						game.me
 							.chooseButtonOL(shen, function (player, result) {
