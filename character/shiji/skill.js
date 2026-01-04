@@ -6114,7 +6114,6 @@ const skills = {
 			}
 			const target = _status.currentPhase,
 				card = trigger.getl(player).cards2[0];
-			event.card = card;
 			player.addMark(event.name, 1, false);
 			const choiceList = [],
 				str = get.translation(player);
