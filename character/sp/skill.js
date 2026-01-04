@@ -8513,7 +8513,7 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		content() {
-			trigger.increase("num");
+			trigger.num ++;
 		},
 		countSkill(player) {
 			return (

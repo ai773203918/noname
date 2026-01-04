@@ -1,6 +1,5 @@
 import { menuContainer, popupContainer, updateActive, setUpdateActive, updateActiveCard, setUpdateActiveCard, menux, menuxpages, menuUpdates, openMenu, clickToggle, clickSwitcher, clickContainer, clickMenuItem, createMenu, createConfig } from "../index.js";
 import { ui, game, get, ai, lib, _status } from "noname";
-import { nonameInitialized } from "@/util/index.js";
 import { security } from "@/util/sandbox.js"
 import { Character } from "@/library/element/index.js";
 
@@ -342,14 +341,14 @@ export const extensionMenu = function (connectMenu) {
 							if (["arenaReady", "content", "prepare", "precontent"].includes(i)) {
 								ext[i] = security.exec2(`return (${dash4.content[i]});`).return;
 								if (typeof ext[i] != "function") {
-									throw "err";
+									throw new Error("err");
 								} else {
 									ext[i] = ext[i].toString();
 								}
 							} else {
 								ext[i] = security.exec2(dash4.content[i])[i];
 								if (ext[i] == null || typeof ext[i] != "object") {
-									throw "err";
+									throw new Error("err");
 								} else {
 									ext[i] = JSON.stringify(ext[i]);
 								}
@@ -836,50 +835,11 @@ export const extensionMenu = function (connectMenu) {
 						page.content.image = {};
 						for (var i in page.content.pack.character) {
 							var file = i + ".jpg";
-							var loadImage = function (file, data) {
-								var img = new Image();
-								img.crossOrigin = "Anonymous";
-								img.onload = function () {
-									var canvas = document.createElement("CANVAS");
-									var ctx = canvas.getContext("2d");
-									var dataURL;
-									canvas.height = this.height;
-									canvas.width = this.width;
-									ctx.drawImage(this, 0, 0);
-									canvas.toBlob(function (blob) {
-										var fileReader = new FileReader();
-										fileReader.onload = function (e) {
-											page.content.image[file] = e.target.result;
-										};
-										fileReader.readAsArrayBuffer(blob, "UTF-8");
-									});
-								};
-								img.src = data;
-							};
-							if (game.readFile) {
-								var url = lib.assetURL + "extension/" + name + "/" + file;
-								createButton(i, url);
-								if (lib.device == "ios" || lib.device == "android") {
-									window.resolveLocalFileSystemURL(nonameInitialized + "extension/" + name, function (entry) {
-										entry.getFile(file, {}, function (fileEntry) {
-											fileEntry.file(function (fileToLoad) {
-												var fileReader = new FileReader();
-												fileReader.onload = function (e) {
-													page.content.image[file] = e.target.result;
-												};
-												fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-											});
-										});
-									});
-								} else {
-									loadImage(file, url);
-								}
-							} else {
-								game.getDB("image", `extension-${name}:${file}`).then(value => {
-									createButton(i, value);
-									loadImage(file, value);
-								});
-							}
+							var url = lib.assetURL + "extension/" + name + "/" + file;
+							createButton(i, url);
+							game.promises.readFile(url).then(result => {
+								page.content.image[file] = result;
+							}).catch(e => console.error(e));
 						}
 					} else {
 						page.content = {
@@ -1460,50 +1420,11 @@ export const extensionMenu = function (connectMenu) {
 							} else {
 								file = i + ".jpg";
 							}
-							var loadImage = function (file, data) {
-								var img = new Image();
-								img.crossOrigin = "Anonymous";
-								img.onload = function () {
-									var canvas = document.createElement("CANVAS");
-									var ctx = canvas.getContext("2d");
-									var dataURL;
-									canvas.height = this.height;
-									canvas.width = this.width;
-									ctx.drawImage(this, 0, 0);
-									canvas.toBlob(function (blob) {
-										var fileReader = new FileReader();
-										fileReader.onload = function (e) {
-											page.content.image[file] = e.target.result;
-										};
-										fileReader.readAsArrayBuffer(blob, "UTF-8");
-									});
-								};
-								img.src = data;
-							};
-							if (game.readFile) {
-								var url = lib.assetURL + "extension/" + name + "/" + file;
-								createButton(i, url, fullskin);
-								if (lib.device == "ios" || lib.device == "android") {
-									window.resolveLocalFileSystemURL(nonameInitialized + "extension/" + name, function (entry) {
-										entry.getFile(file, {}, function (fileEntry) {
-											fileEntry.file(function (fileToLoad) {
-												var fileReader = new FileReader();
-												fileReader.onload = function (e) {
-													page.content.image[file] = e.target.result;
-												};
-												fileReader.readAsArrayBuffer(fileToLoad, "UTF-8");
-											});
-										});
-									});
-								} else {
-									loadImage(file, url);
-								}
-							} else {
-								game.getDB("image", `extension-${name}:${file}`).then(value => {
-									createButton(i, value, fullskin);
-									loadImage(file, value);
-								});
-							}
+							var url = lib.assetURL + "extension/" + name + "/" + file;
+							createButton(i, url, fullskin);
+							game.promises.readFile(url).then(result => {
+								page.content.image[file] = result;
+							}).catch(e => console.error(e));
 						}
 					} else {
 						page.content = {
@@ -1707,10 +1628,10 @@ export const extensionMenu = function (connectMenu) {
 					try {
 						var { card } = security.exec2(inputCode);
 						if (card == null || typeof card != "object") {
-							throw "err";
+							throw new Error("err");
 						}
 					} catch (e) {
-						if (e == "err") {
+						if (e?.message == "err") {
 							alert("代码格式有错误，请对比示例代码仔细检查");
 						} else {
 							var tip = lib.getErrorTip(e) || "";
@@ -1782,7 +1703,7 @@ export const extensionMenu = function (connectMenu) {
 					try {
 						var { card } = security.exec2(code);
 						if (card == null || typeof card != "object") {
-							throw "err";
+							throw new Error("err");
 						}
 						page.content.pack.card[name] = card;
 					} catch (e) {
@@ -2126,10 +2047,10 @@ export const extensionMenu = function (connectMenu) {
 					try {
 						var { skill } = security.exec2(resultCode);
 						if (skill == null || typeof skill != "object") {
-							throw "err";
+							throw new Error("err");
 						}
 					} catch (e) {
-						if (e == "err") {
+						if (e?.message == "err") {
 							alert("代码格式有错误，请对比示例代码仔细检查");
 						} else {
 							var tip = lib.getErrorTip(e) || "";
@@ -2337,7 +2258,7 @@ export const extensionMenu = function (connectMenu) {
 						try {
 							var { skill } = security.exec2(code);
 							if (skill == null || typeof skill != "object") {
-								throw "err";
+								throw new Error("err");
 							}
 							page.content.pack.skill[name] = skill;
 						} catch (e) {
@@ -2449,21 +2370,21 @@ export const extensionMenu = function (connectMenu) {
 							if (["arenaReady", "content", "prepare", "precontent"].includes(link)) {
 								var { func } = security.exec2(`func = ${resultCode}`);
 								if (typeof func != "function") {
-									throw "err";
+									throw new Error("err");
 								}
 							} else if (link == "config") {
 								var { config } = security.exec2(resultCode);
 								if (config == null || typeof config != "object") {
-									throw "err";
+									throw new Error("err");
 								}
 							} else if (link == "help") {
 								var { help } = security.exec2(resultCode);
 								if (help == null || typeof help != "object") {
-									throw "err";
+									throw new Error("err");
 								}
 							}
 						} catch (e) {
-							if (e == "err") {
+							if (e?.message == "err") {
 								alert("代码格式有错误，请对比示例代码仔细检查");
 							} else {
 								var tip = lib.getErrorTip(e) || "";

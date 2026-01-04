@@ -16,7 +16,7 @@ import * as Element from "./element/index.js";
 import { updateURLs } from "./update-urls.js";
 import { defaultHooks } from "./hooks/index.js";
 import { security, ErrorManager } from "@/util/sandbox.js";
-import { nonameInitialized, assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
+import { assetURL, userAgentLowerCase, GeneratorFunction, AsyncFunction, characterDefaultPicturePath } from "@/util/index.js";
 
 import { defaultSplashs } from "@/init/onload/index.js";
 import dedent from "dedent";
@@ -775,7 +775,11 @@ export class Library {
 						.when("useCard")
 						.filter(evt => evt == event)
 						.step(async (event, trigger, player) => {
-							trigger.getParent(2).decrease("shanRequired", 1);
+							const evt = trigger.getParent(2);
+							if (!evt.shanRequired) {
+								evt.shanRequired = 0;
+							}
+							evt.shanRequired --;
 						});
 				},
 			],
@@ -793,7 +797,7 @@ export class Library {
 						})
 						.filter(evt => evt.getParent(2) == event && event.targets.includes(evt.player))
 						.step(async (event, trigger) => {
-							trigger.increase("num");
+							trigger.num ++;
 						});
 				},
 			],
@@ -805,7 +809,7 @@ export class Library {
 					}
 					game.log(event.player, "触发了强化效果");
 					game.log(event.card, "造成的伤害+1");
-					event.increase("baseDamage", 1);
+					event.baseDamage ++;
 				},
 			],
 			[
@@ -816,7 +820,7 @@ export class Library {
 					}
 					game.log(event.player, "触发了强化效果");
 					game.log(event.card, "回复的体力+1");
-					event.increase("baseDamage", 1);
+					event.baseDamage ++;
 				},
 			],
 		]),
@@ -7218,7 +7222,7 @@ export class Library {
 							try {
 								var { character } = security.exec2(code);
 								if (!Array.isArray(character)) {
-									throw "err";
+									throw new Error("err");
 								}
 							} catch (e) {
 								var tip = lib.getErrorTip(e) || "";
@@ -7281,7 +7285,7 @@ export class Library {
 							try {
 								var { character } = security.exec2(code);
 								if (!Array.isArray(character)) {
-									throw "err";
+									throw new Error("err");
 								}
 							} catch (e) {
 								var tip = lib.getErrorTip(e) || "";
@@ -7879,26 +7883,26 @@ export class Library {
 							try {
 								var { character } = security.exec2(code);
 								if (!get.is.object(character)) {
-									throw "err";
+									throw new Error("err");
 								}
 								var groups = [];
 								for (var i in character) {
 									if (!Array.isArray(character[i])) {
-										throw "type";
+										throw new Error("type");
 									}
 									if (character[i].length >= 3) {
 										groups.push(i);
 									}
 								}
 								if (groups.length < 3) {
-									throw "enough";
+									throw new Error("enough");
 								}
 							} catch (e) {
-								if (e == "type") {
+								if (e?.message == "type") {
 									alert("请严格按照格式填写，不要写入不为数组的数据");
-								} else if (e == "enough") {
+								} else if (e?.message == "enough") {
 									alert("请保证至少写入了3个势力，且每个势力至少有3个武将");
-								} else if (e == "err") {
+								} else if (e?.message == "err") {
 									alert("代码格式有错误，请对比示例代码仔细检查");
 								} else {
 									var tip = lib.getErrorTip(e) || "";
@@ -8620,10 +8624,10 @@ export class Library {
 			try {
 				msg = msg.toString();
 				if (typeof msg != "string") {
-					throw "err";
+					throw new Error("err");
 				}
 			} catch (_) {
-				throw "传参错误:" + msg;
+				throw new Error("传参错误:" + msg);
 			}
 		}
 		if (msg.startsWith("Uncaught ")) {
@@ -10641,7 +10645,7 @@ export class Library {
 				try {
 					message = JSON.parse(messageevent.data);
 					if (!Array.isArray(message) || typeof lib.message.client[message[0]] !== "function") {
-						throw "err";
+						throw new Error("err");
 					}
 					if (game.sandbox) {
 						security.enterSandbox(game.sandbox);
