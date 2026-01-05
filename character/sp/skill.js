@@ -467,7 +467,7 @@ const skills = {
 			}
 			const type = result.links[0];
 			if (type == "tao") {
-				event.result = await player
+				const result = await player
 					.chooseToUse({
 						prompt: `温宜：是否对${get.translation(trigger.player)}使用一张桃？`,
 						filterCard(card, player) {
@@ -486,8 +486,17 @@ const skills = {
 						},
 						sourcex: trigger.player,
 					})
-					.set("chooseonly", true)
+					.set("logSkill", [event.skill, trigger.player])
 					.forResult();
+				if (result?.bool) {
+					event.result = {
+						bool: true,
+						targets: [trigger.player],
+						skill_popup: false,
+						cost_data: type,
+					};
+				}
+				return;
 			} else {
 				event.result = await player
 					.chooseCard(`温宜：是否交给${get.translation(trigger.player)}一张装备牌并令其使用之？`, "he")
@@ -512,8 +521,8 @@ const skills = {
 			player.addSkill("olwenyi_used");
 			player.addMark("olwenyi_used", 1, false);
 			player.markSkill("olwenyi_limit");
-			if (cost_data?.result) {
-				await player.useResult(cost_data.result, event);
+			if (cost_data == "tao") {
+				//await player.useResult(cost_data.result, event);
 			} else {
 				await player.give(cards, target);
 				if (target.getCards("h").includes(cards[0]) && target.hasUseTarget(cards[0])) {
@@ -1934,7 +1943,7 @@ const skills = {
 		audio: 2,
 		enable: ["chooseToUse", "chooseToRespond"],
 		hiddenCard(player, name) {
-			if (!player.hasSkill("olshuliang_used") && player.getExpansions("oljiyun").some(card => card.name == name)) {
+			if (player.getExpansions("oljiyun").some(card => card.name == name)) {
 				return true;
 			}
 		},
@@ -8504,7 +8513,7 @@ const skills = {
 		forced: true,
 		logTarget: "player",
 		content() {
-			trigger.increase("num");
+			trigger.num ++;
 		},
 		countSkill(player) {
 			return (

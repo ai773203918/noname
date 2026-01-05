@@ -3093,7 +3093,7 @@ const skills = {
 	dckanyu: {
 		audio: 2,
 		trigger: {
-			player: "damageBegin3",
+			player: "damageEnd",
 			global: "judgeBegin",
 		},
 		frequent: true,
@@ -4801,7 +4801,8 @@ const skills = {
 		filter(event, player) {
 			return event.targets?.includes(player);
 		},
-		frequent: true,
+		forced: true,
+		locked: false,
 		async content(event, trigger, player) {
 			await player.draw();
 			const triggerName = player == _status.currentPhase ? "回合结束" : "下个回合开始",
@@ -6371,10 +6372,17 @@ const skills = {
 				}
 			}
 			if (list.toUniqued().length == 3) {
+				player.setStorage(event.name, [], true);
+				player.removeTip(event.name);
+				const next = game.createEvent("removeFaluRecord", false);
+				next.player = player;
+				next.type = "diff";
+				next.setContent("emptyEvent");
+				await next;
 				const result = await player
 					.chooseButtonTarget({
 						createDialog: [
-							"法箓：是否清空记录并令一名角色失去或回复1点体力？",
+							"法箓：是否令一名角色失去或回复1点体力？",
 							[
 								[
 									["loseHp", "失去1点体力"],
@@ -6428,13 +6436,6 @@ const skills = {
 				if (!result?.bool) {
 					return;
 				}
-				player.setStorage(event.name, [], true);
-				player.removeTip(event.name);
-				const next = game.createEvent("removeFaluRecord", false);
-				next.player = player;
-				next.type = "diff";
-				next.setContent("emptyEvent");
-				await next;
 				const [target] = result.targets,
 					[link] = result.links;
 				player.line(target, "green");
@@ -9874,7 +9875,7 @@ const skills = {
 			if (trigger.name == "useCard") {
 				event.result = await player.chooseBool(get.prompt(event.skill), "摸两张牌").set("frequentSkill", event.skill).forResult();
 			} else {
-				event.result = await player
+				await player
 					.chooseToUse(
 						function (card, player, event) {
 							if (get.type(card) !== "basic") {
@@ -9884,9 +9885,10 @@ const skills = {
 						},
 						`###${get.prompt(event.skill)}###使用一张基本牌`
 					)
-					.set("chooseonly", true)
+					.set("logSkill", event.skill)
 					.set("addCount", false)
 					.forResult();
+				return;
 			}
 		},
 		async content(event, trigger, player) {
@@ -19268,7 +19270,7 @@ const skills = {
 							const result = await source.chooseButton([`请选择移去${get.translation(source)}的一张“硝引”牌`, cardsToDiscard], true).forResult();
 							await target.loseToDiscardpile(result.links);
 						}
-						trigger.addNumber("num", 1);
+						trigger.num++;
 					} else {
 						source.line(target, "fire");
 						const cards = target.getExpansions("dcxiaoyin");
