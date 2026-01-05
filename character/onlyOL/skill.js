@@ -1588,10 +1588,7 @@ const skills = {
 						game.log(trigger.card, "基础伤害+1");
 					},
 					olquanyu_qingmin: async (trigger, player) => {
-						const check = (card, player, target) => {
-							const trigger = get.event().getTrigger();
-							return !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target)
-						};
+						const check = (card, player, target) => !trigger.targets.includes(target) && lib.filter.targetEnabled2(card, player, target) && lib.filter.targetInRange(card, player, target);
 						if (game.hasPlayer(target => check(trigger.card, player, target))) {
 							const result = await player
 								.chooseTarget(`权御：为${get.translation(trigger.card)}额外选择一个目标`, check)
@@ -1674,7 +1671,7 @@ const skills = {
 			player.addTempSkill(`${event.name}_used`);
 			player.markAuto(`${event.name}_used`, bool);
 			if (!bool) {
-				await target.randomDiscard().set("discarder", player);
+				await target.randomDiscard(player);
 				const result = {
 					skill: "olquanyu",
 					targets: [target],

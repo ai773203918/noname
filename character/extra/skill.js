@@ -4434,13 +4434,9 @@ const skills = {
 					}
 					break;
 				case 2: {
-					const cards = target
-						.getEquips(1)
-						.slice()
-						.concat(target.getEquips("equip3_4"))
-						.filter(card => lib.filter.canBeDiscarded(card, player, target));
+					const cards = target.getEquips(1).slice().concat(target.getEquips("equip3_4"));
 					if (cards.length) {
-						await target.discard(cards).set("discarder", player);
+						await target.modedDiscard(cards, player);
 					}
 					break;
 				}
@@ -5627,11 +5623,8 @@ const skills = {
 			if (makeDraw) {
 				cards2 = await target.draw(round).forResult();
 			} else {
-				const cards = target.getCards("h", card => {
-					return lib.filter.cardDiscardable(card, target, "lvxin");
-				});
 				if (cards.length > 0) {
-					const evt = target.discard(cards.randomGets(round)).set("discarder", target);
+					const evt = target.randomDiscard(round);
 					await evt;
 					cards2 = evt.done.cards2;
 				}
@@ -6601,61 +6594,52 @@ const skills = {
 				},
 				forced: true,
 				onremove: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					var wuqinxi = player.storage.wuling_wuqinxi[0];
 					if (trigger.name == "phaseZhunbei") {
 						lib.skill.wuling.updateMark(player);
-						event.finish();
-					} else {
-						var name = event.triggername;
-						switch (name) {
-							case "damageBegin1":
-								player.line(trigger.player);
-								trigger.num++;
-								event.finish();
-								break;
-							case "damageBegin4":
-								player.addTempSkill("wuling_xiong");
-								trigger.num--;
-								event.finish();
-								break;
-							default:
-								switch (wuqinxi) {
-									case "鹿":
-										player.recover();
-										player.discard(player.getCards("j")).discarder = player;
-										event.finish();
-										break;
-									case "鹤":
-										player.draw(3);
-										event.finish();
-										break;
-									case "猿":
-										player
-											.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", function (card, player, target) {
-												return target != player && target.countGainableCards(player, "e");
-											})
-											.set("ai", function (target) {
-												var player = _status.event.player;
-												var att = get.attitude(player, target),
-													eff = 0;
-												target.getCards("e", function (card) {
-													var val = get.value(card, target);
-													eff = Math.max(eff, -val * att);
-												});
-												return eff;
-											});
-										break;
-								}
-								break;
-						}
+						return;
 					}
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.line(target, "green");
-						player.gainPlayerCard(target, "e", true);
+					var name = event.triggername;
+					switch (name) {
+						case "damageBegin1":
+							player.line(trigger.player);
+							trigger.num++;
+							break;
+						case "damageBegin4":
+							player.addTempSkill("wuling_xiong");
+							trigger.num--;
+							break;
+						default:
+							switch (wuqinxi) {
+								case "鹿":
+									await player.recover();
+									await player.discard(player.getCards("j"), player);
+									break;
+								case "鹤":
+									await player.draw(3);
+									break;
+								case "猿":
+									const targets = await player
+										.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", function (card, player, target) {
+											return target != player && target.countGainableCards(player, "e");
+										})
+										.set("ai", function (target) {
+											var player = _status.event.player;
+											var att = get.attitude(player, target),
+												eff = 0;
+											target.getCards("e", function (card) {
+												var val = get.value(card, target);
+												eff = Math.max(eff, -val * att);
+											});
+											return eff;
+										})
+										.forResultTargets();
+									player.line(targets, "green");
+									await player.gainPlayerCard(targets[0], "e", true);
+									break;
+							}
+							break;
 					}
 				},
 				ai: {

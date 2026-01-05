@@ -6130,7 +6130,7 @@ const skills = {
 		async content(event, trigger, player) {
 			if (trigger.name === "damage") {
 				const owner = get.owner(event.cards[0]);
-				await owner.discard(event.cards).set("discarder", owner);
+				await owner.modedDiscard(event.cards);
 				trigger.num++;
 			} else {
 				await player.recover();
