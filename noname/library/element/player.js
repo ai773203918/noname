@@ -7325,7 +7325,7 @@ export class Player extends HTMLDivElement {
 	 * discarder?: Player;
 	 * 弃牌来源，令Player弃牌的角色。默认目标角色
 	 *
-	 * position?: position;
+	 * position?: string;
 	 * 弃牌区域，默认 "he"
 	 * 
 	 * random?: "random";
