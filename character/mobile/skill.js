@@ -6829,6 +6829,7 @@ const skills = {
 					const player = get.player();
 					return typeof player.storage.friendyance !== "number" || player.hasMark("friendyance");
 				})
+				.set("ai", button => Math.random())
 				.forResult();
 			event.result = {
 				bool: result.bool,
