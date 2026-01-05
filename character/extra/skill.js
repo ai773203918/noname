@@ -204,10 +204,6 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "metal",
-		mark: true,
-		intro: {
-			content: "limited",
-		},
 		trigger: {
 			player: "dying",
 		},
@@ -225,7 +221,7 @@ const skills = {
 			if (num > 0) {
 				await player.recover(num);
 				const result = await player
-					.chooseTarget(`绝烬：选择一名其他角色对其造成${num}点火焰伤害`, true)
+					.chooseTarget(`绝烬：选择一名角色对其造成${num}点火焰伤害`, true)
 					.set("ai", target => {
 						const { player } = get.event();
 						return get.damageEffect(target, player, player, "fire");
