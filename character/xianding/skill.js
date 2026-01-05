@@ -2991,7 +2991,7 @@ const skills = {
 			const { targets } = await player
 				.chooseTarget("淑任：请选择一名其他角色", true, lib.filter.notMe)
 				.set("ai", target => {
-					return get.attitude(get.player(), target) * (20 - target.countCards("h"));
+					return get.attitude(get.player(), target) * (114514 - target.countCards("h"));
 				})
 				.forResult();
 			if (targets?.length) {
