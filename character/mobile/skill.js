@@ -6829,7 +6829,7 @@ const skills = {
 					const player = get.player();
 					return typeof player.storage.friendyance !== "number" || player.hasMark("friendyance");
 				})
-				.set("ai", button => Math.random())
+				.set("ai", button => button.link == "minigame" ? 2 : 1)
 				.forResult();
 			event.result = {
 				bool: result.bool,
