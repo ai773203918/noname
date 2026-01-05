@@ -5344,7 +5344,8 @@ const skills = {
 				const next = player.chooseButton(["连破：请选择一项", [skills.map(i => [i, `获得【${get.translation(i)}】`]).concat(["于此回合结束后获得一个额外回合"]), "textbutton"]]);
 				next.set("ai", button => {
 					const link = button.link,
-						skills = get.event().skills;
+						skills = get.event().skills,
+						player = get.player();
 					if ((skills.length <= 2 || game.countPlayer() <= 2) && !player.hasSkill("xinlianpo_mark", null, null, false) && link == "于此回合结束后获得一个额外回合") {
 						return 6;
 					}
@@ -5361,7 +5362,7 @@ const skills = {
 				});
 				next.set("skills", skills);
 				next.set("filterButton", button => {
-					return lib.skill[button.link] || !player.hasSkill("xinlianpo_mark");
+					return lib.skill[button.link] || !get.player().hasSkill("xinlianpo_mark");
 				});
 				const { bool, links } = await next.forResult();
 				event.result = {
