@@ -602,7 +602,7 @@ export class Library {
 								if (event.zhuzhanresult) {
 									var target = event.zhuzhanresult;
 									target.line(player, "green");
-									target.discard(event.zhuzhanresult2.cards).discarder = target;
+									target.modedDiscard(event.zhuzhanresult2.cards);
 									if (typeof event.afterYingbianZhuzhan == "function") {
 										event.afterYingbianZhuzhan(event, trigger);
 									}

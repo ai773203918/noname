@@ -1561,7 +1561,7 @@ const skills = {
 					player.logSkill("mbxiongtu", [target], null, null, [get.rand(3, 4)]);
 					await target.damage();
 				} else {
-					await target.modedDiscard(card).set("discarder", player);
+					await target.modedDiscard(card, player);
 				}
 			}
 		},
@@ -3022,7 +3022,7 @@ const skills = {
 										const cards = player.getCards("h", card => card.hasGaintag("mbrunwei"));
 										if (cards.length) {
 											player.logSkill("mbrunwei", null, null, null, [4]);
-											await player.modedDiscard(cards).set("discarder", player);
+											await player.modedDiscard(cards, player);
 										}
 									});
 							}

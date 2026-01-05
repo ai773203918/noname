@@ -1932,7 +1932,7 @@ const skills = {
 							return target.countDiscardableCards(target, "h");
 						})
 						.set("ai", target => {
-							return get.effect(target, { name: "guohe_copy", position: "h" }, target, player);
+							return get.effect(target, { name: "guohe_copy", position: "h" }, target, get.player());
 						})
 						.forResult();
 					if (!result2?.targets?.length) {

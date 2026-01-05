@@ -441,9 +441,7 @@ const skills = {
 			event.result = await player.discardPlayerCard(target, "he", get.prompt2(event.skill), 2).set("chooseonly", true).forResult();
 		},
 		async content(event, trigger, player) {
-			const next = trigger.target.discard(event.cards);
-			next.set("discarder", player);
-			await next;
+			await trigger.target.modedDiscard(event.cards, player);
 			if (event.cards.length > 1) {
 				const card = event.cards[0],
 					cardx = event.cards[1];

@@ -6829,6 +6829,7 @@ const skills = {
 					const player = get.player();
 					return typeof player.storage.friendyance !== "number" || player.hasMark("friendyance");
 				})
+				.set("ai", button => button.link == "minigame" ? 2 : 1)
 				.forResult();
 			event.result = {
 				bool: result.bool,
@@ -9629,7 +9630,7 @@ const skills = {
 			game.broadcastAll("closeDialog", event.videoId);
 			var cards2 = target.getCards("h", { suit: result.control });
 			event.cards2 = cards2;
-			target.discard(cards2, "notBySelf").set("discarder", player);
+			target.modedDiscard(cards2, player);
 			"step 4";
 			if (event.cards2.length < cards.length) {
 				target.damage();
@@ -9910,9 +9911,9 @@ const skills = {
 			if (!result?.links?.length) {
 				return;
 			}
-			const cards2 = target.getDiscardableCards(player, "h").filter(card => result.links.includes(get.suit(card, target)));
+			let cards2 = target.getCards("h", card => result.links.includes(get.suit(card, target)));
 			if (cards2.length) {
-				await target.discard(cards2, "notBySelf").set("discarder", player);
+				cards2 = await target.modedDiscard(cards2, player).forResultCards();
 			}
 			if (cards1.length > cards2.length) {
 				await target.damage(player);
@@ -10914,7 +10915,7 @@ const skills = {
 					player.gain(target.getGainableCards(player, "he").randomGet(), target, "giveAuto");
 					break;
 				case "熊":
-					target.discard(target.getGainableCards(player, "e").randomGet()).discarder = player;
+					target.randomDiscard("e", player);
 					break;
 				case "兔":
 					target.draw();
@@ -11082,7 +11083,7 @@ const skills = {
 							player.line(targetx);
 							targetx.gain(cards, target, "give");
 						} else {
-							target.discard(cards).discarder = player;
+							target.modedDiscard(cards, player);
 						}
 					}
 				}

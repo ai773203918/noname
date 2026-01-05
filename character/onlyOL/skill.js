@@ -1671,7 +1671,7 @@ const skills = {
 			player.addTempSkill(`${event.name}_used`);
 			player.markAuto(`${event.name}_used`, bool);
 			if (!bool) {
-				await target.randomDiscard().set("discarder", player);
+				await target.randomDiscard(player);
 				const result = {
 					skill: "olquanyu",
 					targets: [target],
