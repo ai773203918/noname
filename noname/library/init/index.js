@@ -200,23 +200,6 @@ export class LibInit {
 		return style;
 	}
 
-	/**
-	 * @deprecated
-	 * 在扩展的precontent中调用，用于加载扩展必需的JS文件。
-	 * 如果任意参数为数组，则按顺序加载加载相应的文件
-	 */
-	jsForExtension(path, file, onLoad, onError) {
-		if (!_status.javaScriptExtensions) {
-			_status.javaScriptExtensions = [];
-		}
-		_status.javaScriptExtensions.push({
-			path: path,
-			file: file,
-			onLoad: onLoad,
-			onError: onError,
-		});
-	}
-
 	js(path, file, onLoad, onError) {
 		if (path[path.length - 1] == "/") {
 			path = path.slice(0, path.length - 1);
@@ -689,25 +672,6 @@ export class LibInit {
 		}
 		// parsex 的 Legacy 主体移动到 noname/library/element/GameEvent/compilers/StepCompiler.ts
 		return ContentCompiler.compile(item);
-	}
-
-	eval(func) {
-		if (typeof func == "function") {
-			return security.eval(`return (${func.toString()});`);
-		} else if (typeof func == "object") {
-			for (var i in func) {
-				if (Object.prototype.hasOwnProperty.call(func, i)) {
-					if (typeof func[i] == "function") {
-						let checkObject = {};
-						checkObject[i] = func[i];
-						return security.eval(`return ${get.stringify(checkObject)};`)[i];
-					} else {
-						func[i] = lib.init.eval(func[i]);
-					}
-				}
-			}
-		}
-		return func;
 	}
 
 	encode(strUni) {

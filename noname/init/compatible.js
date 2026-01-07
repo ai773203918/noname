@@ -1,5 +1,8 @@
 // @ts-nocheck
 import { lib, game, get, _status, ui } from "noname";
+import ContentCompiler from "@/library/element/GameEvent/compilers/ContentCompiler";
+import ContentCompilerBase from "@/library/element/GameEvent/compilers/ContentCompilerBase";
+import { GeneratorFunction } from "@/util/index.js";
 
 // 改为HTMLDivElement.prototype.addTempClass
 HTMLDivElement.prototype.animate = function (keyframes, options) {
@@ -135,12 +138,6 @@ Object.assign(lib.element.GameEvent.prototype, {
 
 // forResult
 Object.assign(lib.element.GameEvent.prototype, {
-	toPromise() {
-		return this;
-	},
-	toEvent() {
-		return this;
-	},
 	then(onfulfilled, onrejected) {
 		return (this.parent ? this.parent.waitNext() : this.start()).then(
 			onfulfilled
@@ -203,4 +200,88 @@ get.event = function (key) {
 {
 	game.asyncDelay = game.delay;
 	game.asyncDelayx = game.delayx;
+}
+
+// jsForExtension
+lib.init.jsForExtension = function (path, file, onLoad, onError) {
+	if (!_status.javaScriptExtensions) {
+		_status.javaScriptExtensions = [];
+	}
+	_status.javaScriptExtensions.push({
+		path: path,
+		file: file,
+		onLoad: onLoad,
+		onError: onError,
+	});
+};
+
+// generator content (function*)
+{
+	const GameEvent = lib.element.GameEvent;
+	ContentCompiler.addCompiler(
+		new (class YieldCompiler extends ContentCompilerBase {
+			type = "yield";
+			static #mapArgs(event) {
+				const { step, source, target, targets, card, cards, skill, forced, num, _result, _trigger, player } = event;
+
+				return {
+					event,
+					step,
+					source,
+					player,
+					target,
+					targets,
+					card,
+					cards,
+					skill,
+					forced,
+					num,
+					trigger: _trigger,
+					result: _result,
+					_status,
+					lib,
+					game,
+					ui,
+					get,
+					ai,
+				};
+			}
+
+			filter(content) {
+				return typeof content === "function" && content instanceof GeneratorFunction;
+			}
+
+			compile(content) {
+				const compiler = this;
+				const middleware = async function (event) {
+					const args = YieldCompiler.#mapArgs(event);
+					const generator =
+						// @ts-expect-error ignore
+						Reflect.apply(content, this, [event, args]);
+
+					let result = null;
+					let done = false;
+
+					while (!done) {
+						let value = null;
+
+						if (!compiler.isPrevented(event)) {
+							({ value, done = true } = generator.next(result));
+							if (done) {
+								break;
+							}
+							result = await (value instanceof GameEvent ? value.forResult() : value);
+						}
+
+						const nextResult = await event.waitNext();
+						event._result = result ?? nextResult ?? event._result;
+					}
+
+					generator.return();
+				};
+
+				return ContentCompiler.compile([middleware]);
+			}
+		})()
+	);
 }
