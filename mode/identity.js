@@ -75,34 +75,38 @@ export default () => {
 				}
 			},
 			async (event, trigger, player) => {
-				if (!lib.config.new_tutorial) {
-					_status.new_tutorial = true;
-					lib.init.onfree();
-					game.saveConfig("version", lib.version);
-					var clear = function () {
-						ui.dialog.close();
-						while (ui.controls.length) {
-							ui.controls[0].close();
-						}
-					};
-					var clear2 = function () {
-						ui.auto.show();
-						ui.arena.classList.remove("only_dialog");
-					};
-					game.pause();
+				if (lib.config.new_tutorial) {
+					if (!_status.connectMode) {
+						game.showChangeLog();
+					}
+					return;
+				}
 
-					ui.create.dialog("欢迎来到无名杀，是否进入新手向导？");
-					game.saveConfig("new_tutorial", true);
-					ui.dialog.add('<div class="text center">跳过后，你可以在选项-其它中重置新手向导');
-					ui.auto.hide();
-					ui.create.control("跳过向导", function () {
-						clear();
-						clear2();
-						game.resume();
-						// lib.cheat.cfg(); // owidgets
-					});
-					await new Promise(resolve => ui.create.control("继续", resolve));
+				_status.new_tutorial = true;
+				lib.init.onfree();
+				game.saveConfig("version", lib.version);
 
+				await game.promises.saveConfig("new_tutorial", true);
+				ui.create.dialog("欢迎来到无名杀，是否进入新手向导？");
+				ui.dialog.add('<div class="text center">跳过后，你可以在选项-其它中重置新手向导');
+				ui.auto.hide();
+
+				const { promise, resolve } = Promise.withResolvers();
+
+				ui.create.control("跳过向导", () => resolve(true));
+				ui.create.control("继续", () => resolve(false));
+
+				const skip_tutorial = await promise;
+
+				if (!skip_tutorial) {
+					await tutorial();
+				}
+
+				clear();
+				ui.auto.show();
+				ui.arena.classList.remove("only_dialog");
+
+				async function tutorial() {
 					if (!lib.config.phonelayout) {
 						clear();
 						ui.create.dialog("如果你在使用手机，可能会觉得按钮有点小" + "，将布局改成移动可以使按钮变大");
@@ -127,7 +131,7 @@ export default () => {
 						ui.dialog.add('<div class="text center">你可以在选项-通用-中更改手势设置');
 						await new Promise(resolve => ui.create.control("继续", resolve));
 					}
-					
+
 					clear();
 					ui.window.classList.add("noclick_important");
 					ui.click.configMenu();
@@ -139,10 +143,10 @@ export default () => {
 					await new Promise(resolve => ui.controls[0].replace("在技能一栏中，可以设置自动发动或双将禁配的技能", resolve));
 					ui.click.menuTab("武将");
 					await new Promise(resolve => ui.controls[0].replace("在武将或卡牌一栏中，单击武将/卡牌可以将其禁用", resolve));
-					ui.click.menuTab("战局");
-					await new Promise(resolve => ui.controls[0].replace("在战局中可以输入游戏命令，或者管理录像", resolve));
-					ui.click.menuTab("帮助");
-					await new Promise(resolve => ui.controls[0].replace("在帮助中，可以检查更新和下载素材", resolve));
+					ui.click.menuTab("其它");
+					await new Promise(resolve => ui.controls[0].replace("在其它的关于一栏中，可以检查更新和下载素材", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在控制/命令一栏中，可以执行一些常见的操作/输入游戏命令", resolve));
+					await new Promise(resolve => ui.controls[0].replace("在录像一栏中，可以管理游戏录像", resolve));
 					ui.click.configMenu();
 					ui.window.classList.remove("noclick_important");
 					ui.control.classList.remove("noclick_click_important");
@@ -150,14 +154,13 @@ export default () => {
 
 					clear();
 					ui.create.dialog("如果还有其它问题，欢迎来到百度无名杀吧进行交流");
-					ui.create.control("完成", function () {
-						clear();
-						clear2();
-						game.resume();
-					});
-				} else {
-					if (!_status.connectMode) {
-						game.showChangeLog();
+					await new Promise(resolve => ui.create.control("完成", resolve));
+				}
+
+				function clear() {
+					ui.dialog.close();
+					while (ui.controls.length) {
+						ui.controls[0].close();
 					}
 				}
 			},
@@ -459,7 +462,7 @@ export default () => {
 			},
 			async (event, trigger, player) => {
 				game.phaseLoop(event.beginner);
-			}
+			},
 		],
 		game: {
 			canReplaceViewpoint: () => true,
