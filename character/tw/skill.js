@@ -14858,6 +14858,7 @@ const skills = {
 		filterCard: true,
 		position: "he",
 		async content(event, trigger, player) {
+			const { target } = event;
 			await target.viewHandcards(player);
 			var chooseButton;
 			if (player.countCards("h")) {
