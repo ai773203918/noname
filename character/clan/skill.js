@@ -804,9 +804,6 @@ const skills = {
 							names = cards.map(card => get.name(card)),
 							maxName = names.toUniqued().maxBy(name => get.numOf(names, name));
 						const num = get.numOf(names, maxName);
-						if (num <= 1) {
-							return;
-						}
 						const name = names
 							.toUniqued()
 							.filter(name => get.numOf(names, name) == num)
