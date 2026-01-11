@@ -392,6 +392,7 @@ const skills = {
 						}
 					});
 			} else {
+				await player.draw();
 				await player.link(true);
 				await target.link(true);
 			}
@@ -8503,7 +8504,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const target = event.targets[0],
 						skill = "dcdujun_effect";
-					player.storage.dcdujun = target;
+					player.setStorage("dcdujun", target);
 					player.addSkill(skill);
 					player.markAuto(skill, target);
 				},
