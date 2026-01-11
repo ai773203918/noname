@@ -1555,6 +1555,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
+					audio: "dcjichao",
 					choice: links[0],
 					manualConfirm: true,
 					filterTarget(card, player, target) {
