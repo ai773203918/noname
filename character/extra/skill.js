@@ -1422,7 +1422,8 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					await player.gain(player.getExpansions("dccangming"), "giveAuto");
+					game.log(player, "获得了", get.cnNumber(player.countExpansions("dccangming")), "张牌");
+					await player.gain(player.getExpansions("dccangming"), "draw");
 				},
 			},
 		},
