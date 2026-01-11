@@ -16142,7 +16142,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const cards = get.discarded().filterInD("d");
 			const result = await player
-				.chooseButton([`火策：获得其中每种颜色的牌的各一张`, cards], cards.map(card => get.color(card)).toUniqued().length)
+				.chooseButton([`飒爽：获得其中每种颜色的牌的各一张`, cards], cards.map(card => get.color(card)).toUniqued().length)
 				.set("filterButton", button => {
 					const { link } = button;
 					return !ui.selected.buttons.reduce((list, card) => list.add(get.color(card.link)), []).includes(get.color(link));
