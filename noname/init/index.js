@@ -670,6 +670,7 @@ async function getExtensionList() {
 		}
 		return true;
 	})();
+	const searchParamsImportExtension = new URLSearchParams(location.search).get("importExtensionName");
 
 	window.resetExtension = () => {
 		for (let ext of config.get("extensions")) {
@@ -704,6 +705,13 @@ async function getExtensionList() {
 		});
 		await Promise.allSettled(promises);
 
+		await game.promises.saveConfig("extensions", extensions);
+	} else if (searchParamsImportExtension) {
+		extensions.push(searchParamsImportExtension);
+		toLoad.push(searchParamsImportExtension);
+		if (!config.has(`extension_${searchParamsImportExtension}_enable`)) {
+			await game.promises.saveConfig(`extension_${searchParamsImportExtension}_enable`, true);
+		}
 		await game.promises.saveConfig("extensions", extensions);
 	}
 
@@ -862,6 +870,7 @@ async function loadConfig() {
 		lib.db = event.target.result;
 
 		const object = await game.getDB("config");
+		const hasConfigTxt = (await game.promises.checkFile("noname.config.txt")) === 1;
 
 		if (!object.storageImported) {
 			try {
@@ -898,6 +907,27 @@ async function loadConfig() {
 			game.saveConfig("storageImported", true);
 			lib.init.background();
 			localStorage.removeItem(`${lib.configprefix}config`);
+		} else if (hasConfigTxt) {
+			try {
+				const data = await game.promises.readFileAsText("noname.config.txt");
+
+				result = JSON.parse(lib.init.decode(data));
+				if (!result || typeof result != "object") {
+					throw new Error();
+				}
+			} catch (e) {
+				result = false;
+			}
+			if (result) {
+				for (let i in result.config) {
+					game.saveConfig(i, result.config[i]);
+				}
+				for (let i in result.data) {
+					await game.putDB("data", i, result.data[i]);
+				}
+			}
+			lib.init.background();
+			await game.promises.removeFile("noname.config.txt").catch(e => console.error(e));
 		} else {
 			result = object;
 		}
@@ -1110,7 +1140,7 @@ function setWindowListener() {
 			// }
 		}
 	};
-	
+
 	window.onbeforeunload = function (e) {
 		if (config.get("confirm_exit") && !_status.reloading) {
 			e.preventDefault();
