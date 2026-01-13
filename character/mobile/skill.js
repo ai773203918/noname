@@ -6684,7 +6684,10 @@ const skills = {
 				if (!links?.length) {
 					return;
 				}
-				player.unmarkAuto(skillName, links.map(link => link[2].slice(8)));
+				player.unmarkAuto(
+					skillName,
+					links.map(link => link[2].slice(8))
+				);
 				if (!storage.length) {
 					player.removeTip(skillName);
 				} else {
