@@ -1144,7 +1144,6 @@ export class Click {
 		list2.style.overflow = "scroll";
 		lib.setScroll(list2);
 		//uiintro.add(list2);
-		console.log(_status.emotion_cache);
 		const createEmotion = function (name) {
 			const srcBase = `${lib.assetURL}image/emotion/${name}/`;
 			const files = _status.emotion_cache[name];
