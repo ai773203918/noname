@@ -32,31 +32,33 @@ const skills = {
 				.set("filterCard", (card, player) => !get.info("clanqingjue").isOnlySuit(card, player))
 				.forResult();
 			const { cards } = result;
-			const resultx = await player
-				.chooseButton(
-					[
-						`清绝：执行${get.cnNumber(Math.min(cards.length, 2))}项`,
-						[
-							[
-								["give", `将${get.translation(cards)}交给其他角色`],
-								["gain", `获得未拥有花色的牌各一张（${get.translation(lib.suit.filter(suit => !player.hasCard({ suit: suit }, "h")))}）`],
-							],
-							"textbutton",
-						],
-					],
-					Math.min(cards.length, 2),
-					true
-				)
-				.set("ai", button => {
-					if (button.link == "give") {
-						if (game.hasPlayer(target => target != get.player() && get.attitude(get.player(), target) > 0)) {
-							return 2;
-						}
-						return 0.5;
-					}
-					return 1;
-				})
-				.forResult();
+			const resultx =
+				cards.length > 1
+					? { bool: true, links: ["give", "gain"] }
+					: await player
+							.chooseButton(
+								[
+									`清绝：执行${get.cnNumber(Math.min(cards.length, 2))}项`,
+									[
+										[
+											["give", `将${get.translation(cards)}交给其他角色`],
+											["gain", `获得未拥有花色的牌各一张（${get.translation(lib.suit.filter(suit => !player.hasCard({ suit: suit }, "h")))}）`],
+										],
+										"textbutton",
+									],
+								],
+								true
+							)
+							.set("ai", button => {
+								if (button.link == "give") {
+									if (game.hasPlayer(target => target != get.player() && get.attitude(get.player(), target) > 0)) {
+										return 2;
+									}
+									return 0.5;
+								}
+								return 1;
+							})
+							.forResult();
 			const { links } = resultx;
 			if (links?.includes("give") && game.hasPlayer(target => target != player) && cards?.someInD("d")) {
 				const toGive = cards?.filterInD("d");
