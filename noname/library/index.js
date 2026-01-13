@@ -192,6 +192,43 @@ export class Library {
 	 * @type { Function[] | undefined }
 	 */
 	arenaReady = [
+		//提前缓存表情包
+		function () {
+			if (!_status.connectMode) {
+				return;
+			}
+			_status.emotion_cache = {};
+			const findFiles = function (name) {
+				const srcBase = `${lib.assetURL}image/emotion/${name}/`;
+				game.getFileList(
+					srcBase,
+					function (folders, files) {
+						if (!files.length) {
+							return;
+						}
+						_status.emotion_cache[name] = files.sort((a, b) => parseInt(a.split(".")[0]) - parseInt(b.split(".")[0]));
+					},
+					() => {}
+				);
+			};
+			const srcBase = `${lib.assetURL}image/emotion/`;
+			game.getFileList(
+				srcBase,
+				function (folders, files) {
+					if (!folders.length) {
+						return;
+					}
+					for (const folder of folders) {
+						if (folder == "throw_emotion") {
+							continue;
+						}
+						_status.emotion_cache[folder] = [];
+						findFiles(folder);
+					}
+				},
+				() => {}
+			);
+		},
 		//增加ui.window的监听
 		function () {
 			lib.poptip.init();
@@ -763,7 +800,7 @@ export class Library {
 							if (!evt.shanRequired) {
 								evt.shanRequired = 0;
 							}
-							evt.shanRequired --;
+							evt.shanRequired--;
 						});
 				},
 			],
@@ -781,7 +818,7 @@ export class Library {
 						})
 						.filter(evt => evt.getParent(2) == event && event.targets.includes(evt.player))
 						.step(async (event, trigger) => {
-							trigger.num ++;
+							trigger.num++;
 						});
 				},
 			],
@@ -793,7 +830,7 @@ export class Library {
 					}
 					game.log(event.player, "触发了强化效果");
 					game.log(event.card, "造成的伤害+1");
-					event.baseDamage ++;
+					event.baseDamage++;
 				},
 			],
 			[
@@ -804,7 +841,7 @@ export class Library {
 					}
 					game.log(event.player, "触发了强化效果");
 					game.log(event.card, "回复的体力+1");
-					event.baseDamage ++;
+					event.baseDamage++;
 				},
 			],
 		]),

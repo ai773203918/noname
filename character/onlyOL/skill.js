@@ -5098,6 +5098,7 @@ const skills = {
 			}
 			return [];
 		},
+		usable: 1,
 		async cost(event, trigger, player) {
 			const name = event.triggername;
 			if (name == "useCardToPlayer") {
@@ -5131,9 +5132,6 @@ const skills = {
 		async content(event, trigger, player) {
 			const cards = event.cards,
 				name = event.triggername;
-			if (name == "useCardToPlayer") {
-				player.addTempSkill("olsibing_used");
-			}
 			await player.discard(cards);
 			if (name == "useCardToPlayer") {
 				const target = trigger.target;

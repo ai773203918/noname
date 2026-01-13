@@ -10,11 +10,7 @@ const skills = {
 			player: "changeHpAfter",
 		},
 		isOnlySuit(card, player) {
-			const hs = player.getCards("h");
-			if (!hs.some(i => i != card && get.suit(i) == get.suit(card))) {
-				return true;
-			}
-			return false;
+			return !player.hasCard(cardx => cardx != card && get.suit(cardx) == get.suit(card), "h");
 		},
 		init(player, skill) {
 			player.addSkill(`${skill}_mark`);
@@ -32,31 +28,33 @@ const skills = {
 				.set("filterCard", (card, player) => !get.info("clanqingjue").isOnlySuit(card, player))
 				.forResult();
 			const { cards } = result;
-			const resultx = await player
-				.chooseButton(
-					[
-						`清绝：执行${get.cnNumber(Math.min(cards.length, 2))}项`,
-						[
-							[
-								["give", `将${get.translation(cards)}交给其他角色`],
-								["gain", `获得未拥有花色的牌各一张（${get.translation(lib.suit.filter(suit => !player.hasCard({ suit: suit }, "h")))}）`],
-							],
-							"textbutton",
-						],
-					],
-					Math.min(cards.length, 2),
-					true
-				)
-				.set("ai", button => {
-					if (button.link == "give") {
-						if (game.hasPlayer(target => target != get.player() && get.attitude(get.player(), target) > 0)) {
-							return 2;
-						}
-						return 0.5;
-					}
-					return 1;
-				})
-				.forResult();
+			const resultx =
+				cards.length > 1
+					? { bool: true, links: ["give", "gain"] }
+					: await player
+							.chooseButton(
+								[
+									`清绝：执行${get.cnNumber(Math.min(cards.length, 2))}项`,
+									[
+										[
+											["give", `将${get.translation(cards)}交给其他角色`],
+											["gain", `获得未拥有花色的牌各一张（${get.translation(lib.suit.filter(suit => !player.hasCard({ suit: suit }, "h")))}）`],
+										],
+										"textbutton",
+									],
+								],
+								true
+							)
+							.set("ai", button => {
+								if (button.link == "give") {
+									if (game.hasPlayer(target => target != get.player() && get.attitude(get.player(), target) > 0)) {
+										return 2;
+									}
+									return 0.5;
+								}
+								return 1;
+							})
+							.forResult();
 			const { links } = resultx;
 			if (links?.includes("give") && game.hasPlayer(target => target != player) && cards?.someInD("d")) {
 				const toGive = cards?.filterInD("d");
@@ -118,12 +116,15 @@ const skills = {
 					player.removeGaintag(skill);
 				},
 				trigger: {
-					player: "loseEnd",
-					global: ["gainEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd", "addToExpansionEnd"],
+					player: ["loseEnd", "enterGame"],
+					global: ["gainEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd", "addToExpansionEnd", "phaseBefore"],
 				},
 				silent: true,
-				filter(event, player) {
-					return event.getg?.(player)?.length || event.getl?.(player)?.hs?.length;
+				filter(event, player, name) {
+					if (event.name == "phase") {
+						return game.phaseNumber == 0;
+					}
+					return name == "enterGame" || (event.getg?.(player)?.length || event.getl?.(player)?.hs?.length);
 				},
 				async content(event, trigger, player) {
 					get.info(event.name).init(player, event.name);
