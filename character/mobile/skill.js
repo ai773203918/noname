@@ -1,4 +1,3 @@
-import skill from "@/library/skill";
 import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig['skill'] } */
