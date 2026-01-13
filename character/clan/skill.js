@@ -120,12 +120,15 @@ const skills = {
 					player.removeGaintag(skill);
 				},
 				trigger: {
-					player: "loseEnd",
-					global: ["gainEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd", "addToExpansionEnd"],
+					player: ["loseEnd", "enterGame"],
+					global: ["gainEnd", "equipEnd", "addJudgeEnd", "loseAsyncEnd", "addToExpansionEnd", "phaseBefore"],
 				},
 				silent: true,
-				filter(event, player) {
-					return event.getg?.(player)?.length || event.getl?.(player)?.hs?.length;
+				filter(event, player, name) {
+					if (event.name == "phase") {
+						return game.phaseNumber == 0;
+					}
+					return name == "enterGame" || (event.getg?.(player)?.length || event.getl?.(player)?.hs?.length);
 				},
 				async content(event, trigger, player) {
 					get.info(event.name).init(player, event.name);
