@@ -6635,8 +6635,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const skillName = "friendqihui";
 					const storage = player.storage[skillName];
-					storage.removeArray(event.cost_data);
-					player.unmarkAuto(skillName);
+					player.unmarkAuto(skillName, event.cost_data);
 					if (storage.length) {
 						player.addTip(skillName, `${get.translation(skillName)} ${storage.map(i => get.translation(i)[0]).join("")}`);
 					} else {
@@ -6685,8 +6684,7 @@ const skills = {
 				if (!links?.length) {
 					return;
 				}
-				storage.removeArray(links.map(link => link[2].slice(8)));
-				player.unmarkAuto(skillName);
+				player.unmarkAuto(skillName, links.map(link => link[2].slice(8)));
 				if (!storage.length) {
 					player.removeTip(skillName);
 				} else {
