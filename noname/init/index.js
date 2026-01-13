@@ -28,7 +28,6 @@ export async function boot() {
 	// 现在不暴露到全局变量里了，直接传给onload
 	const resetGameTimeout = setTimeout(lib.init.reset, configLoadTime);
 
-	setServerIndex();
 	setBackground();
 
 	lib.get = get;
@@ -619,9 +618,7 @@ export async function boot() {
 		});
 	}
 
-	if (window.isNonameServer) {
-		lib.cheat.i();
-	} else if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
+	if (lib.config.dev && (!_status.connectMode || lib.config.debug)) {
 		lib.cheat.i();
 	}
 	lib.config.sort_card = get.sortCard(lib.config.sort);
@@ -838,113 +835,60 @@ async function loadConfig() {
 	lib.configOL = {};
 	delete window.config;
 
-	let result;
-	if (localStorage.getItem(`${lib.configprefix}nodb`)) {
-		window.nodb = true;
+	if (!window.indexedDB) {
+		throw new Error("您的环境不支持indexedDB，无法保存配置");
 	}
-	if (window.indexedDB && !window.nodb) {
-		const event = await new Promise((resolve, reject) => {
-			const idbOpenDBRequest = window.indexedDB.open(`${lib.configprefix}data`, 4);
-			idbOpenDBRequest.onerror = reject;
-			idbOpenDBRequest.onsuccess = resolve;
-			idbOpenDBRequest.onupgradeneeded = idbVersionChangeEvent => {
-				// @ts-expect-error MaybeHave
-				const idbDatabase = idbVersionChangeEvent.target.result;
-				if (!idbDatabase.objectStoreNames.contains("video")) {
-					idbDatabase.createObjectStore("video", { keyPath: "time" });
-				}
-				if (!idbDatabase.objectStoreNames.contains("image")) {
-					idbDatabase.createObjectStore("image");
-				}
-				if (!idbDatabase.objectStoreNames.contains("audio")) {
-					idbDatabase.createObjectStore("audio");
-				}
-				if (!idbDatabase.objectStoreNames.contains("config")) {
-					idbDatabase.createObjectStore("config");
-				}
-				if (!idbDatabase.objectStoreNames.contains("data")) {
-					idbDatabase.createObjectStore("data");
-				}
-			};
-		});
-		lib.db = event.target.result;
 
-		const object = await game.getDB("config");
-		const hasConfigTxt = (await game.promises.checkFile("noname.config.txt")) === 1;
+	const event = await new Promise((resolve, reject) => {
+		const idbOpenDBRequest = window.indexedDB.open(`${lib.configprefix}data`, 4);
+		idbOpenDBRequest.onerror = reject;
+		idbOpenDBRequest.onsuccess = resolve;
+		idbOpenDBRequest.onupgradeneeded = idbVersionChangeEvent => {
+			// @ts-expect-error MaybeHave
+			const idbDatabase = idbVersionChangeEvent.target.result;
+			if (!idbDatabase.objectStoreNames.contains("video")) {
+				idbDatabase.createObjectStore("video", { keyPath: "time" });
+			}
+			if (!idbDatabase.objectStoreNames.contains("image")) {
+				idbDatabase.createObjectStore("image");
+			}
+			if (!idbDatabase.objectStoreNames.contains("audio")) {
+				idbDatabase.createObjectStore("audio");
+			}
+			if (!idbDatabase.objectStoreNames.contains("config")) {
+				idbDatabase.createObjectStore("config");
+			}
+			if (!idbDatabase.objectStoreNames.contains("data")) {
+				idbDatabase.createObjectStore("data");
+			}
+		};
+	});
+	lib.db = event.target.result;
 
-		if (!object.storageImported) {
-			try {
-				const item = localStorage.getItem(`${lib.configprefix}config`);
-				if (!item) {
-					throw new Error();
-				}
-				result = JSON.parse(item);
-				if (!result || typeof result != "object") {
-					throw new Error();
-				}
-			} catch (err) {
-				result = {};
-			}
-			Object.keys(result).forEach(key => game.saveConfig(key, result[key]));
-			Object.keys(lib.mode).forEach(key => {
-				try {
-					const item = localStorage.getItem(`${lib.configprefix}${key}`);
-					if (!item) {
-						throw new Error();
-					}
-					result = JSON.parse(item);
-					if (!result || typeof result != "object" || get.is.empty(result)) {
-						throw new Error();
-					}
-				} catch (err) {
-					result = false;
-				}
-				localStorage.removeItem(`${lib.configprefix}${key}`);
-				if (result) {
-					game.putDB("data", key, result);
-				}
-			});
-			game.saveConfig("storageImported", true);
-			lib.init.background();
-			localStorage.removeItem(`${lib.configprefix}config`);
-		} else if (hasConfigTxt) {
-			try {
-				const data = await game.promises.readFileAsText("noname.config.txt");
+	let result;
+	// 懒人包配置
+	const hasConfigTxt = (await game.promises.checkFile("noname.config.txt")) === 1;
 
-				result = JSON.parse(lib.init.decode(data));
-				if (!result || typeof result != "object") {
-					throw new Error();
-				}
-			} catch (e) {
-				result = false;
-			}
-			if (result) {
-				for (let i in result.config) {
-					game.saveConfig(i, result.config[i]);
-				}
-				for (let i in result.data) {
-					await game.putDB("data", i, result.data[i]);
-				}
-			}
-			lib.init.background();
-			await game.promises.removeFile("noname.config.txt").catch(e => console.error(e));
-		} else {
-			result = object;
-		}
-	} else {
+	if (hasConfigTxt) {
 		try {
-			const item = localStorage.getItem(lib.configprefix + "config");
-			if (!item) {
-				throw new Error();
+			const configStr = await game.promises.readFileAsText("noname.config.txt");
+
+			let data;
+			({ config: result = {}, data = {} } = JSON.parse(lib.init.decode(configStr)));
+			for (let i in result) {
+				game.saveConfig(i, result[i]);
 			}
-			result = JSON.parse(item);
-			if (!result || typeof result != "object") {
-				throw new Error();
+			for (let i in data) {
+				game.putDB("data", i, data[i]);
 			}
-		} catch (err) {
+		} catch (e) {
+			console.error(e);
 			result = {};
-			localStorage.setItem(lib.configprefix + "config", JSON.stringify({}));
 		}
+		lib.init.background();
+		await game.promises.removeFile("noname.config.txt").catch(e => console.error(e));
+	} else {
+		result = await game.getDB("config");
 	}
 
 	// 读取模式
@@ -982,7 +926,6 @@ async function loadConfig() {
 
 	config.set("duration", 500);
 
-	if (window.isNonameServer) config.set("mode", "connect");
 	if (!config.get("gameRecord")) config.set("gameRecord", {});
 
 	return result;
@@ -1031,20 +974,6 @@ function setBackground() {
 			// 由于html没设高度或最小高度导致了图片重复问题
 			// 这是在layout.css加载完成之前才会有的问题
 			document.documentElement.style.height = "100%";
-		}
-	}
-}
-
-function setServerIndex() {
-	const index = window.location.href.indexOf("index.html?server=");
-	if (index !== -1) {
-		window.isNonameServer = window.location.href.slice(index + 18);
-		window.nodb = true;
-	} else {
-		const savedIndex = localStorage.getItem(lib.configprefix + "asserver");
-		if (savedIndex) {
-			window.isNonameServer = savedIndex;
-			window.isNonameServerIp = lib.hallURL;
 		}
 	}
 }
