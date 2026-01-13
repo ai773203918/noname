@@ -10,11 +10,7 @@ const skills = {
 			player: "changeHpAfter",
 		},
 		isOnlySuit(card, player) {
-			const hs = player.getCards("h");
-			if (!hs.some(i => i != card && get.suit(i) == get.suit(card))) {
-				return true;
-			}
-			return false;
+			return !player.hasCard(cardx => cardx != card && get.suit(cardx) == get.suit(card), "h");
 		},
 		init(player, skill) {
 			player.addSkill(`${skill}_mark`);
