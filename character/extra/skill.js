@@ -1862,6 +1862,7 @@ const skills = {
 		filter(event, player) {
 			return event.zc26_huaxiu?.length;
 		},
+		manualConfirm: true,
 		async content(event, trigger, player) {
 			const list = event.getParent(2).zc26_huaxiu.map(name => [get.type(name), "", name]);
 			const result = await player
