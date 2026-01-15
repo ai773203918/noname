@@ -3422,28 +3422,30 @@ player.removeVirtualEquip(card);
 			}
 		}
 	},
-	swapEquip: function () {
-		"step 0";
-		game.log(player, "和", target, "交换了装备区中的牌");
-		event.cards = [player.getCards("e"), target.getCards("e")];
-		//		event.vcards = [player.getVCards("e"), target.getVCards("e")];
-		game.loseAsync({
+	swapEquip: async function(event, trigger, player) {
+		const { target } = event;
+		const cards = event.cards = [player.getCards("e"), target.getCards("e")];
+		await game.loseAsync({
 			player: player,
 			target: target,
-			cards1: event.cards[0],
-			cards2: event.cards[1],
+			cards1: cards[0],
+			cards2: cards[1],
 		}).setContent("swapHandcardsx");
-		"step 1";
-		for (var i = 0; i < event.cards[1].length; i++) {
-			if (get.position(event.cards[1][i], true) == "o") {
-				player.equip(event.cards[1][i]);
+		
+		for (const card of cards[1]) {
+			const vcard = card[card.cardSymbol];
+			if (vcard.cards?.length && vcard.cards.some(i => get.position(i, true) !== "o")) {
+				continue;
 			}
+			await player.equip(vcard);
 		}
-		for (var i = 0; i < event.cards[0].length; i++) {
-			if (get.position(event.cards[0][i], true) == "o") {
-				target.equip(event.cards[0][i]);
+		for (const card of cards[0]) {
+			const vcard = card[card.cardSymbol];
+			if (vcard.cards?.length && vcard.cards.some(i => get.position(i, true) !== "o")) {
+				continue;
 			}
-		}
+			await target.equip(vcard);
+		}	
 	},
 	disableJudge: function () {
 		"step 0";
@@ -9272,7 +9274,7 @@ player.removeVirtualEquip(card);
 			const ownerLose = new Map();
 			event.ownerLose = ownerLose;
 			for (const card of cards) {
-				const pos = get.position(card);
+				const pos = get.position(card, true);
 				const owner = get.owner(card);
 				if (owner && !event.show_map.has(owner)) {
 					event.show_map.set(owner, {
