@@ -8886,7 +8886,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.storage.dcsbbaojia_effect = target;
+			player.setStorage("dcsbbaojia_effect", target);
 			player.markSkillCharacter("dcsbbaojia_effect", target, "保驾", `你为${get.translation(target)}保驾护航`);
 		},
 		group: ["dcsbbaojia_effect"],

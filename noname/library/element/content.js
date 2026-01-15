@@ -9240,7 +9240,7 @@ player.removeVirtualEquip(card);
 	},
 	showCards: [
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
+			const { cards, str } = event;
 			if (get.itemtype(cards) != "cards") {
 				return event.finish();
 			}
@@ -9257,7 +9257,7 @@ player.removeVirtualEquip(card);
 			await event.trigger("showCards");
 		},
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
+			const { cards, str, flashAnimation } = event;
 			if (get.itemtype(cards) != "cards") {
 				return event.finish();
 			}
@@ -9315,7 +9315,7 @@ player.removeVirtualEquip(card);
 				event.str = get.translation(player.name) + "展示的牌";
 			}
 			//展示牌的流程
-			if (!isFlash) {
+			if (!flashAnimation) {
 				//允许自定义dialog，类似chooseButton
 				if (typeof event.dialog == "number") {
 					event.videoId = event.dialog;
@@ -9470,9 +9470,9 @@ player.removeVirtualEquip(card);
 			await game.delayx(event.delay_time || 2.5);
 		},
 		async (event, trigger, player) => {
-			const { cards, str, isFlash } = event;
+			const { cards, str, flashAnimation } = event;
 			//关闭对话框，结束动画
-			if (!isFlash) {
+			if (!flashAnimation) {
 				if (event.closeDialog != false) {
 					game.broadcastAll("closeDialog", event.videoId);
 				}

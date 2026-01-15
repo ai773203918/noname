@@ -10608,7 +10608,7 @@ const skills = {
 			const { targets, name } = event;
 			const cards = get.cards(4);
 			await game.cardsGotoOrdering(cards);
-			await player.showCards(cards, `${get.translation(player)}发动了【礼让】`).set("isFlash", true);
+			await player.showCards(cards, `${get.translation(player)}发动了【礼让】`, true);
 			for (const target of targets) {
 				const gains = cards.filterInD();
 				if (!gains.length) {
