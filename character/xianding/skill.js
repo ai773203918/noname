@@ -1236,7 +1236,7 @@ const skills = {
 			if (event.targets?.length != 1) {
 				return false;
 			}
-			const evts = game.getGlobalHistory("useCard", evt => (evt.card.name == "sha" || get.type(evt.card) == "trick") && evt.targets?.includes(target));
+			const evts = game.getGlobalHistory("useCard", evt => (evt.card.name == "sha" || get.type(evt.card) == "trick") && evt.targets?.includes(target) && evt.player != target);
 			return evts.indexOf(event.getParent()) == 0;
 		},
 		logTarget(event, player) {
@@ -1514,7 +1514,7 @@ const skills = {
 			return player.countDiscardableCards(player, "h") > 0;
 		},
 		async cost(event, trigger, player) {
-			const num = Math.ceil(player.countCards("h") / 2);
+			const num = Math.min(5, Math.ceil(player.countCards("h") / 2));
 			event.result = await player
 				.chooseToDiscard(get.prompt2(event.skill, trigger.player), num, "h", "chooseonly")
 				.set("allowChooseAll", true)
@@ -1545,8 +1545,15 @@ const skills = {
 			}
 			if (gain.length) {
 				target.addTempSkill(`${event.name}_draw`, "phaseChange");
+				game.broadcastAll(
+					(name, translate) => {
+						lib.translate[name] = translate;
+					},
+					`${event.name}_draw_${player.playerid}`,
+					get.translation(event.name)
+				);
 				const next = target.gain(gain, "gain2");
-				next.gaintag.add(`${event.name}_draw`);
+				next.gaintag.add(`${event.name}_draw_${player.playerid}`);
 				await next;
 			}
 		},
@@ -1556,23 +1563,37 @@ const skills = {
 				forced: true,
 				charlotte: true,
 				onremove(player, skill) {
-					player.removeGaintag(skill);
+					const gaintag = player
+						.getCards("h")
+						.flatMap(card => card.gaintag.filter(tag => tag.startsWith(skill)))
+						.unique();
+					console.log(gaintag);
+					gaintag.forEach(tag => player.removeGaintag(tag));
 				},
-				trigger: { source: "damageBegin1" },
+				trigger: { player: "useCardAfter" },
 				filter(event, player) {
-					if (!event.card) {
-						return false;
-					}
-					const evt = event.getParent(evt => evt.name == "useCard" && evt.card == event.card, true);
-					if (evt?.player == player) {
-						return player.hasHistory("lose", evtx => {
-							return (evtx.relatedEvent || evtx.getParent()) == evt && Object.values(evtx.gaintag_map).flat().includes("dcwangzi_draw");
-						});
-					}
-					return false;
+					return player.hasHistory("lose", evt => {
+						return (
+							(evt.relatedEvent || evt.getParent()) == event &&
+							Object.values(evt.gaintag_map)
+								.flat()
+								.some(tag => tag.startsWith("dcwangzi_draw"))
+						);
+					});
 				},
 				async content(event, trigger, player) {
-					await player.draw();
+					const ids = [];
+					player.checkHistory("lose", evt => {
+						if ((evt.relatedEvent || evt.getParent()) == trigger) {
+							ids.addArray(
+								Object.values(evt.gaintag_map)
+									.flat()
+									.reduce((list, tag) => (tag.startsWith(event.name) ? [tag.slice(event.name.length + 1), ...list] : list), [])
+							);
+						}
+					});
+					const targets = ids.map(id => (_status.connectMode ? lib.playerOL[id] : game.playerMap[id]));
+					await game.doAsyncInOrder(targets, async target => game.asyncDraw([target, player]));
 				},
 			},
 		},
@@ -1617,28 +1638,84 @@ const skills = {
 			await player.swapHandcards(target, [card1], [card2]);
 			if (get.type2(card1) == get.type2(card2)) {
 				player.popup("洗具");
-				player.when("damageBegin4").step(async (event, trigger, player) => {
-					player.removeSkill(event.name);
-					await target.loseHp();
-					trigger.cancel();
-				});
-				target.when({ source: "damageSource" }).step(async (event, trigger, player) => {
-					const card = get.cardPile2(card => get.type(card) == "equip", "random");
-					if (card) {
-						await player.gain(card, "gain2");
-					}
-				});
+				player.addSkill(`${event.name}_defend`);
+				player.markAuto(`${event.name}_defend`, target);
+				player.addSkill(`${event.name}_gain`);
+				player.markAuto(`${event.name}_gain`, target);
 			} else {
 				player.popup("杯具");
-				await player.discardPlayerCard(target, "he", true);
-				target.damage();
-				player.damage(target);
+				await player.discardPlayerCard(target, "he", true, 2);
+				await target.damage();
 			}
 		},
 		ai: {
 			order: 5,
 			result: {
 				target: 1,
+			},
+		},
+		subSkill: {
+			gain: {
+				charlotte: true,
+				forced: true,
+				onremove: true,
+				logTarget: "source",
+				trigger: { global: "damageSource" },
+				filter(event, player) {
+					return player.getStorage("dcherong_gain").includes(event.source);
+				},
+				intro: {
+					content: "$下次造成伤害后你与其从牌堆获得一张装备牌",
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					player.unmarkAuto(event.name, target);
+					if (!player.getStorage(event.name).length) {
+						player.removeSkill(event.name);
+					}
+					await game.doAsyncInOrder(
+						[player, target],
+						async target => {
+							const card = get.cardPile2(card => get.type(card) == "equip", "random");
+							if (card) {
+								await target.gain(card, "gain2");
+							}
+						},
+						() => false
+					);
+				},
+			},
+			defend: {
+				charlotte: true,
+				forced: true,
+				onremove: true,
+				trigger: { global: "damageBegin4" },
+				filter(event, player) {
+					return event.player == player || player.getStorage(`dcherong_defend`).includes(event.player);
+				},
+				logTarget: "player",
+				intro: {
+					content: "防止你与$下次受到的伤害",
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					if (player == target) {
+						player.removeSkill(event.name);
+					}
+					game.players.forEach(current => {
+						if (current.getStorage(event.name).includes(target)) {
+							current.unmarkAuto(event.name, target);
+							if (!current.getStorage(event.name).length) {
+								current.removeSkill(event.name);
+							}
+						}
+					});
+					trigger.cancel();
+				},
 			},
 		},
 	},
