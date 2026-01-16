@@ -7059,7 +7059,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * position?: string;
 	 * 弃牌区域，默认 "he"
-	 * 
+	 *
 	 * random?: "random";
 	 * 是否纯随机，否则优先弃置能弃置的牌
 	 *
@@ -7094,7 +7094,7 @@ export class Player extends HTMLDivElement {
 			const discardable = this.getDiscardableCards(discarder, position);
 			cards = discardable.randomGets(num);
 			if (cards.length < num) {
-				cards.addArray(this.getCards(position, (c) => !discardable.includes(c)).randomGets(num - cards.length));
+				cards.addArray(this.getCards(position, c => !discardable.includes(c)).randomGets(num - cards.length));
 			}
 		}
 		const next = this.modedDiscard(cards, discarder, log);
@@ -7143,7 +7143,7 @@ export class Player extends HTMLDivElement {
 	 *
 	 * notBySelf?: 'notBySelf';
 	 * 是否是他人弃置。discarder设置后会自动判断
-	 * 
+	 *
 	 * @returns { GameEvent }
 	 */
 	discard() {
@@ -13639,9 +13639,50 @@ export class Player extends HTMLDivElement {
 		var margin = totalWidth > limitWidth ? (limitWidth - cardWidth) / (cards.length - 1) : cardWidth + cardGap;
 		var actualWidth = Math.min(totalWidth, limitWidth);
 		var offsetX = -actualWidth / 2 + cardWidth / 2;
+		var infoOffset = cardWidth + cardGap - margin;
+		if (infoOffset < 0) infoOffset = 0;
 		for (var j = 0; j < cards.length; j++) {
 			var x = Math.round(offsetX + j * margin);
 			cards[j].style.transform = "translate(" + x + "px, -30px)";
+			if (cards[j].node && j < cards.length - 1 && infoOffset > 0) {
+				var actualInfoOffset = infoOffset;
+				if (infoOffset > 40) {
+					actualInfoOffset = 90 - (cards[j].node.info ? cards[j].node.info.offsetWidth : 20);
+					if (cards[j].node.info) {
+						var infoSpan = cards[j].node.info.querySelector("span");
+						if (infoSpan) infoSpan.style.display = "none";
+						cards[j].node.info.style.transform = "translateX(-" + actualInfoOffset + "px) translateY(-3px)";
+					}
+					if (cards[j].node.name) {
+						if (cards[j].node.name.classList.contains("long")) {
+							cards[j].node.name.style.transform = "translateY(16px) scale(0.85)";
+							cards[j].node.name.style.transformOrigin = "top left";
+						} else {
+							cards[j].node.name.style.transform = "translateY(16px)";
+						}
+					}
+				} else {
+					if (cards[j].node.info) {
+						var infoSpan = cards[j].node.info.querySelector("span");
+						if (infoSpan) infoSpan.style.display = "";
+						cards[j].node.info.style.transform = "translateX(-" + actualInfoOffset + "px)";
+					}
+					if (cards[j].node.name) {
+						cards[j].node.name.style.transform = "";
+						cards[j].node.name.style.transformOrigin = "";
+					}
+				}
+			} else if (cards[j].node) {
+				if (cards[j].node.info) {
+					var infoSpan = cards[j].node.info.querySelector("span");
+					if (infoSpan) infoSpan.style.display = "";
+					cards[j].node.info.style.transform = "";
+				}
+				if (cards[j].node.name) {
+					cards[j].node.name.style.transform = "";
+					cards[j].node.name.style.transformOrigin = "";
+				}
+			}
 		}
 		node.show();
 		lib.listenEnd(node);
