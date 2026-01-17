@@ -292,7 +292,9 @@ const skills = {
 		},
 		filter(event, player, name) {
 			if (event.name == "damage") {
-				return (
+				const key = name == "damageSource" ? "sourceDamage" : "damage";
+				return player.getHistory(key, evt => evt.num > 0).indexOf(event) == 0;
+				/*return (
 					game
 						.getGlobalHistory("everything", evt => {
 							if (evt.name != "damage") {
@@ -304,7 +306,7 @@ const skills = {
 							return evt.player == player || evt.source == player;
 						})
 						.indexOf(event) == 0
-				);
+				);*/
 			}
 			return event.name != "phase" || game.phaseNumber == 0;
 		},

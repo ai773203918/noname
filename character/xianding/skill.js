@@ -11318,7 +11318,7 @@ const skills = {
 			return lib.filter.filterTarget(card, player, target);
 		},
 		async precontent(event, trigger, player) {
-			const result = event.forResult();
+			const { result } = event;
 			event.getParent().addCount = false;
 			player.addTempSkill("twodcspshichou_used");
 			const storage = player.getStorage("twodcspshichou_used");
