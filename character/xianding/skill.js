@@ -19411,7 +19411,7 @@ const skills = {
 						if (cardsToDiscard.length === 1) {
 							await target.loseToDiscardpile(cardsToDiscard);
 						} else if (cardsToDiscard.length > 1) {
-							const result = await source.chooseButton([`请选择移去${get.translation(source)}的一张“硝引”牌`, cardsToDiscard], true).forResult();
+							const result = await source.chooseButton([`请选择移去${get.translation(target)}的一张“硝引”牌`, cardsToDiscard], true).forResult();
 							await target.loseToDiscardpile(result.links);
 						}
 						trigger.num++;
@@ -19421,7 +19421,7 @@ const skills = {
 						if (cards.length === 1) {
 							await source.gain(cards, target, "give");
 						} else if (cards.length > 1) {
-							const result = await source.chooseButton([`请选择获得${get.translation(source)}的一张“硝引”牌`, cards], true).forResult();
+							const result = await source.chooseButton([`请选择获得${get.translation(target)}的一张“硝引”牌`, cards], true).forResult();
 							await source.gain(result.links, target, "give");
 						}
 						game.setNature(trigger, "fire");

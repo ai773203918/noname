@@ -6623,7 +6623,7 @@ const skills = {
 									await player.draw(3);
 									break;
 								case "猿": {
-									const targets = (await player
+									const { targets } = await player
 										.chooseTarget("五禽戏：获得一名其他角色装备区里的一张装备牌", function (card, player, target) {
 											return target != player && target.countGainableCards(player, "e");
 										})
@@ -6637,9 +6637,11 @@ const skills = {
 											});
 											return eff;
 										})
-										.forResult()).targets;
-									player.line(targets, "green");
-									await player.gainPlayerCard(targets[0], "e", true);
+										.forResult();
+									if (targets?.length) {
+										player.line(targets, "green");
+										await player.gainPlayerCard(targets[0], "e", true);
+									}
 									break;
 								}
 							}
