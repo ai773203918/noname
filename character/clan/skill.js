@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	//族荀莳
+	//族荀莳（族荀肘）
 	clanqingjue: {
 		audio: 2,
 		forced: true,

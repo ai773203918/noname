@@ -4603,7 +4603,7 @@ const skills = {
 					const storage = player.getStorage("mbjili_effect");
 					const target = storage[1],
 						num = storage[0],
-						count = target.getHistory("useCard", evt => evt?.targets?.includes(player)).length;
+						count = target.getHistory("useCard", evt => evt?.targets?.includes(player))?.length;
 					if (count < num) {
 						return ["mbjili7.mp3", "mbjili8.mp3", "mbjili9.mp3"];
 					}
