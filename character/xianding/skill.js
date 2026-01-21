@@ -594,10 +594,7 @@ const skills = {
 					return cards.filterInD("d");
 				},
 				filter(event, player, name) {
-					let key = "damage";
-					if (name == "damageSource") {
-						return (key = "sourceDamage");
-					}
+					const key = name == "damageSource" ? "sourceDamage" : "damage";
 					return player.getHistory(key, evt => evt.num > 0).indexOf(event) == 0 && get.info("dcsblingshu_gain").getCards(player).length > 0;
 				},
 				async cost(event, trigger, player) {
@@ -1188,7 +1185,9 @@ const skills = {
 				},
 				locked: false,
 				async content(event, trigger, player) {
-					trigger.targets.addArray(event.targets);
+					const { targets } = event;
+					game.log(targets, "成为", trigger.card, "的额外目标");
+					trigger.targets.addArray(targets);
 				},
 				mod: {
 					inRange(from, to) {
@@ -1228,15 +1227,12 @@ const skills = {
 				return false;
 			}
 			if (event.name == "useCard") {
-				if (!player.countDiscardableCards(player, "he")) {
-					return false;
-				}
 				return target.getHistory("useCard", evt => evt.card.name == "sha" || get.type(evt.card) == "trick").indexOf(event) == 0;
 			}
 			if (event.targets?.length != 1) {
 				return false;
 			}
-			const evts = game.getGlobalHistory("useCard", evt => (evt.card.name == "sha" || get.type(evt.card) == "trick") && evt.targets?.includes(target) && evt.player != target);
+			const evts = game.getGlobalHistory("useCard", evt => (evt.card.name == "sha" || get.type(evt.card) == "trick") && evt.targets?.includes(target) && evt.player != player);
 			return evts.indexOf(event.getParent()) == 0;
 		},
 		logTarget(event, player) {
@@ -1259,11 +1255,12 @@ const skills = {
 			await player.draw();
 			if (trigger.name == "useCard") {
 				const card = get.autoViewAs({ name: trigger.card.name, nature: trigger.card.nature, isCard: true });
-				if (player.hasUseTarget(card)) {
+				if (player.hasUseTarget(card) || (get.info(card).notarget && lib.filter.cardEnabled(card, player))) {
 					await player.chooseUseTarget(card, false, true);
 				}
 				return;
 			}
+			game.log(trigger.card, "被无效了");
 			const evt = trigger.getParent();
 			evt.all_excluded = true;
 		},
@@ -4675,7 +4672,7 @@ const skills = {
 						return att;
 					})
 					.forResult();
-				if (result?.bool && result?.targets) {
+				if (result?.bool && result?.targets?.length) {
 					target = result.targets[0];
 				}
 			}
