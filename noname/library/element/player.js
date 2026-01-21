@@ -4705,7 +4705,7 @@ export class Player extends HTMLDivElement {
 		let max = 0;
 		for (let skill of skills) {
 			let info = get.info(skill);
-			if (!info || !info.chargeSkill || typeof info.chargeSkill != "number") {
+			if (!info || typeof info.chargeSkill != "number") {//|| !info.chargeSkill
 				continue;
 			}
 			if (info.chargeSkill == Infinity) {

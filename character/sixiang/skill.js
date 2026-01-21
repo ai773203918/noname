@@ -22,7 +22,7 @@ const skills = {
 					add: {},
 					replace: { window() {} },
 				})
-				.backup(`${event.skill}_backup`)
+				.backup(`${event.name}_backup`)
 				.set("targetRequired", true)
 				.set("complexTarget", true)
 				.set("complexSelect", true)
