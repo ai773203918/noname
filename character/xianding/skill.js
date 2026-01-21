@@ -8486,16 +8486,17 @@ const skills = {
 			backup(result, player) {
 				return {
 					audio: "dcjiesi",
+					len: result.control,
 					async content(event, trigger, player) {
-						const len = result.control;
+						const len = get.info(event.name).len;
 						const card = get.cardPile(cardx => get.cardNameLength(cardx) == len);
 						if (!card) {
-							player.chat(`一张${num}字牌都没有？！`);
+							player.chat(`一张${len}字牌都没有？！`);
 							return;
 						}
 						await player.gain(card, "gain2");
 						const skill = "dcjiesi_used";
-						player.addTempSkill(skill, "phaseUseAfter");
+						player.addTempSkill(skill, { player: ["phaseUseAfter", "phaseChange"] });
 						const bool = !player.getStorage(skill).some(cardx => cardx.name == card.name);
 						player.markAuto(skill, card);
 						if (bool) {
