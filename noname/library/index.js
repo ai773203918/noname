@@ -14128,6 +14128,14 @@ export class Library {
 				},
 			},
 		],
+		[
+			"集蜜",
+			{
+				//showName: "徐",
+				color: "#e3d660",
+				nature: "metalmm",
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",

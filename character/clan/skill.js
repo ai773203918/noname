@@ -24,7 +24,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const result = await player
-				.chooseToDiscard(`###${get.translation(event.name)}###弃置手牌中任意张花色数量不为一的牌，并执行等量项`, "h", [1, Infinity], true)
+				.chooseToDiscard(`###${get.translation(event.name)}###弃置手牌中任意张花色数量不为一的牌，并执行等量项`, "h", [1, Infinity], true, "allowChooseAll")
 				.set("filterCard", (card, player) => !get.info("clanqingjue").isOnlySuit(card, player))
 				.forResult();
 			const { cards } = result;

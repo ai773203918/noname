@@ -133,6 +133,7 @@ const skills = {
 		trigger: {
 			global: ["useCard", "respond"],
 		},
+		usable: 1,
 		filter(event, player) {
 			if (!player.isPhaseUsing()) {
 				return false;
@@ -409,9 +410,9 @@ const skills = {
 				})
 			) {
 				await player.draw();
-				const skill = `${name}_effect`;
+				/*const skill = `${name}_effect`;
 				player.addTempSkill(skill, { global: "phaseAnyAfter" });
-				player.addMark(skill, 1, false);
+				player.addMark(skill, 1, false);*/
 			}
 			switch (type) {
 				case "useCard": {
