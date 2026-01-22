@@ -675,7 +675,7 @@ const skills = {
 	},
 	//旧的势邓艾（神笔三技能互绑的三血白）
 	old_pottuntian: {
-		audio: 2,
+		audio: "pottuntian",
 		beginMarkCount: 1,
 		chargeSkill: 3,
 		getNum(player) {
@@ -733,7 +733,7 @@ const skills = {
 		group: ["old_pottuntian_init", "old_pottuntian_biyue", "old_pottuntian_addCharge"],
 		subSkill: {
 			init: {
-				audio: "old_pottuntian",
+				audio: "pottuntian",
 				trigger: {
 					player: "enterGame",
 					global: "phaseBefore",
@@ -752,7 +752,7 @@ const skills = {
 				},
 			},
 			biyue: {
-				audio: "old_pottuntian",
+				audio: "pottuntian",
 				trigger: { player: "phaseEnd" },
 				filter(event, player) {
 					const num = lib.skill.old_pottuntian.getNum(player);
@@ -768,7 +768,7 @@ const skills = {
 				},
 			},
 			addCharge: {
-				audio: "old_pottuntian",
+				audio: "pottuntian",
 				trigger: {
 					player: "loseAfter",
 					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -840,7 +840,7 @@ const skills = {
 		},
 	},
 	old_potjixi: {
-		audio: 2,
+		audio: "potjixi",
 		mod: {
 			targetInRange(card) {
 				if (card.storage?.old_potjixi) {
@@ -879,7 +879,7 @@ const skills = {
 			},
 			backup(links, player) {
 				return {
-					audio: "old_potjixi",
+					audio: "potjixi",
 					filterCard(card) {
 						return card === lib.skill.old_potjixi_backup.card;
 					},
@@ -928,11 +928,11 @@ const skills = {
 			},
 		},
 		subSkill: {
-			backup: { audio: "old_potjixi" },
+			backup: { audio: "potjixi" },
 		},
 	},
 	old_potzaoxian: {
-		audio: 2,
+		audio: "potzaoxian",
 		trigger: {
 			global: "phaseEnd",
 		},
