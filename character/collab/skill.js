@@ -4,7 +4,7 @@ import { lib, game, ui, get, ai, _status } from "noname";
 const skills = {
 	//哈基术
 	mbjimi: {
-		audio: 2,
+		audio: 4,
 		forced: true,
 		trigger: {
 			global: "phaseBefore",
@@ -81,7 +81,7 @@ const skills = {
 		},
 	},
 	mbmaodie: {
-		audio: 2,
+		audio: 4,
 		forced: true,
 		trigger: { player: "useCardAfter" },
 		async content(event, trigger, player) {
