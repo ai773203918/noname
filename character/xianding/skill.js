@@ -4933,11 +4933,12 @@ const skills = {
 				})
 				.map(evt => evt.cards)
 				.flat();
+			const viewAs = card => get.autoViewAs({ name: get.name(card), nature: get.nature(card), suit: get.suit(card), number: get.number(card), isCard: true });
 			const canUse = player.getCards("h", card => {
-				if (shown.includes(card) || (card.name != "sha" && get.type(card) != "trick")) {
+				if (shown.includes(card) || (get.name(card) != "sha" && get.type(card) != "trick")) {
 					return false;
 				}
-				const vcard = new lib.element.VCard({ name: card.name, nature: card.nature, isCard: true });
+				const vcard = viewAs(card);
 				return player.canUse(vcard, trigger.player, false);
 			});
 			const result =
@@ -4960,7 +4961,7 @@ const skills = {
 			if (result?.bool && result.cards?.length) {
 				const cards = result.cards;
 				await player.showCards(cards, `${get.translation(player)}发动了【抗明】`);
-				const vcard = new lib.element.VCard({ name: cards[0].name, nature: cards[0].nature, isCard: true });
+				const vcard = viewAs(cards[0]);
 				if (player.canUse(vcard, trigger.player, false)) {
 					await player.useCard(vcard, trigger.player, false);
 				}
