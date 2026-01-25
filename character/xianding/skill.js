@@ -2989,7 +2989,7 @@ const skills = {
 				},
 				trigger: {
 					player: "useCard",
-					//global: "roundEnd",
+					global: "roundEnd",
 				},
 				filter(event, player) {
 					if (event.name != "useCard") {
@@ -3064,15 +3064,15 @@ const skills = {
 				forced: true,
 				popup: false,
 				async content(event, trigger, player) {
+					player.removeSkill(event.name);
 					const number = get.number(trigger.getd()[0]);
 					if (typeof number == "number") {
 						const [target, num] = player.getStorage(event.name);
 						if (target?.isIn() && typeof num == "number" && number > num) {
-							await player.logSkill("dcsbjielu", target);
-							await target.damage(player);
+							player.logSkill("dcsbjielu", target);
+							await target.damage();
 						}
 					}
-					player.removeSkill(event.name);
 				},
 			},
 		},
