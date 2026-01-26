@@ -4481,10 +4481,12 @@ const skills = {
 						if (cards?.length) {
 							game.deleteFakeCards(cards);
 						}
-						const card = trigger.result[trigger.targets.indexOf(player)].cards[0],
-							precard = player.getExpansions("mbfutu").find(cardx => cardx.cardid == card._cardid);
-						if (precard && !trigger.result[trigger.targets.indexOf(player)].skill) {
-							trigger.result[trigger.targets.indexOf(player)].cards = [precard];
+						if (!trigger.result[trigger.targets.indexOf(player)].skill) {
+							const card = trigger.result[trigger.targets.indexOf(player)].cards[0],
+								precard = player.getExpansions("mbfutu").find(cardx => cardx.cardid == card._cardid);
+							if (precard) {
+								trigger.result[trigger.targets.indexOf(player)].cards = [precard];
+							}
 						}
 					}
 				},

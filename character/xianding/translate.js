@@ -1009,7 +1009,7 @@ const translates = {
 	dc_sb_zhuran: "新杀谋朱然",
 	dc_sb_zhuran_prefix: "新杀|谋",
 	dcsbzhenyu: "镇御",
-	dcsbzhenyu_info: "当你需要使用基本牌时，你可以横置一名角色，然后视为使用此牌。若如此做，此技能失效你从手牌中使用同名牌。",
+	dcsbzhenyu_info: "当你需要使用基本牌时，你可以横置一名角色，然后视为使用此牌。若如此做，此技能直到每轮结束或失效你从手牌中使用同名牌。",
 	dcsbjielu: "截路",
 	dcsbjielu_info: "出牌阶段，你可以重置一名已横置的角色并弃置其一张牌，然后若此回合下一次进入弃牌堆的牌点数大于此牌，你对其造成一点伤害。",
 	v_sunshangxiang: "威孙尚香",

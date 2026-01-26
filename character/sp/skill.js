@@ -10930,17 +10930,18 @@ const skills = {
 				.forResult();
 			if (result.bool) {
 				const color = get.color(result.links[0], false);
-				await target.gain(result.links, "gain2").set("gaintag", ["resilv"]);
+				const next = target.gain(result.links, "gain2");
+				next.gaintag.add("resilv");
+				await next;
 				player
 					.when({ global: "phaseJieshuBegin" })
 					.filter(
-						evt =>
-							evt.player == target &&
+						evt => evt.player == target /*&&
 							target.hasHistory("useCard", evt => {
 								return (evt.cards || []).some(card => get.position(card, true) == "d" && get.color(card) != color);
-							})
+							})*/
 					)
-					.then(() => {
+					.step(async (event, trigger, player) => {
 						const cards = trigger.player
 							.getHistory("useCard", evt => {
 								return (evt.cards || []).some(card => get.position(card, true) == "d" && get.color(card) != color);
@@ -10948,21 +10949,24 @@ const skills = {
 							.reduce((sum, evt) => {
 								return sum.addArray(evt.cards.filter(card => get.position(card, true) == "d" && get.color(card) != color));
 							}, []);
-						player
+						if (!cards?.length) {
+							return;
+						}
+						const result = await player
 							.chooseButton(["联句：请选择获得的牌", cards], [1, 2], true)
 							.set("filterButton", button => {
 								return !ui.selected.buttons.some(but => get.color(but.link) != get.color(button.link));
 							})
 							.set("ai", button => {
 								return get.value(button.link, get.event().target);
-							});
-					})
-					.then(() => {
-						if (result.bool) {
-							player.gain(result.links, "gain2").gaintag.add("resilv");
+							})
+							.forResult();
+						if (result?.bool && result?.links?.length) {
+							const next = player.gain(result.links, "gain2");
+							next.gaintag.add("resilv");
+							await next;
 						}
-					})
-					.vars({ color: color });
+					});
 			}
 		},
 	},
@@ -10970,13 +10974,22 @@ const skills = {
 		audio: "olsilv",
 		trigger: { player: "damageEnd" },
 		forced: true,
-		content() {
-			player.draw().gaintag = ["resilv"];
+		async content(event, trigger, player) {
+			const next = player.draw();
+			next.gaintag.add("resilv");
+			await next;
 		},
-		group: "resilv_restore",
+		//group: "resilv_restore",
+		init(player, skill) {
+			player.addSkill(`${skill}_restore`);
+		},
+		onremove(player, skill) {
+			player.removeSkill(`${skill}_restore`);
+		},
 		subSkill: {
 			restore: {
 				audio: "olsilv",
+				charlotte: true,
 				trigger: { global: ["loseAfter", "loseAsyncAfter"] },
 				filter(event, player) {
 					if (event.type != "discard" || event.getlx === false) {
@@ -30887,7 +30900,7 @@ const skills = {
 		logLine: false,
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			player.addSkill(event.name + "_effect", { player: "phaseBegin" });
+			player.addTempSkill(event.name + "_effect", { player: "phaseBegin" });
 			player.markAuto(event.name + "_effect", [target]);
 		},
 		subSkill: {

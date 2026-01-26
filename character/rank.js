@@ -532,6 +532,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"tw_jsrg_wangyun",
 		"jm_yuanshu",
 		"sb_zhuran",
 		"star_jiangwan",
@@ -3091,6 +3092,7 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"tw_jsrg_wangyun",
 			"jm_yuanshu",
 			"sb_zhuran",
 			"ol_caojinyu",

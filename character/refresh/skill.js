@@ -1298,8 +1298,8 @@ const skills = {
 				return { bool: true, cards: cards };
 			});
 			trigger.set("filterDiscard", card => {
-				const { cards2 } = get.event().getParent();
-				return get.color(card) == get.color(cards2[0]);
+				const { cards2 } = get.event().getParent("huogong", true);
+				return get.color(card) == get.color(cards2[0]); 
 			});
 		},
 		async huogongContent(event, trigger, player) {

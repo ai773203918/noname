@@ -4705,7 +4705,8 @@ export class Player extends HTMLDivElement {
 		let max = 0;
 		for (let skill of skills) {
 			let info = get.info(skill);
-			if (!info || typeof info.chargeSkill != "number") {//|| !info.chargeSkill
+			if (!info || typeof info.chargeSkill != "number") {
+				//|| !info.chargeSkill
 				continue;
 			}
 			if (info.chargeSkill == Infinity) {
@@ -6562,8 +6563,7 @@ export class Player extends HTMLDivElement {
 		next.flashAnimation = flashAnimation;
 		if (flashAnimation && !isFlash) {
 			next.isFlash = true;
-		}
-		else {
+		} else {
 			next.isFlash = false;
 		}
 		next.getShown = function (player, key) {
@@ -8701,11 +8701,9 @@ export class Player extends HTMLDivElement {
 	}
 	addJudgeNext(card, unlimited) {
 		if (!card.expired) {
-			let target = this.getNext();
 			const name = card.viewAs || card.name;
 			const cards = get.itemtype(card) == "card" ? [card] : (card.cards ?? []);
 			//if (get.itemtype(cards) != "cards") return;
-			let bool = false;
 			if (
 				!unlimited &&
 				cards.some(card => {
@@ -8716,14 +8714,20 @@ export class Player extends HTMLDivElement {
 				game.log(card, "已被移出处理区，无法置入判定区");
 				return;
 			}
-			for (let iwhile = 0; iwhile < 20; iwhile++) {
+			let target = this;
+			do {
+				target = target.getNext();
+				if (!target) {
+					target = this;
+				}
 				if (lib.filter.judge(card, target, target)) {
-					bool = true;
 					break;
 				}
-				target = target.getNext();
-			}
-			if (bool) {
+				if (target == this) {
+					target = null;
+				}
+			} while (target);
+			if (target) {
 				return target.addJudge(card, cards);
 			}
 		} else {
