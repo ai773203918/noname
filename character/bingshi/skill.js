@@ -15,13 +15,10 @@ const skills = {
 			global: ["loseAsyncAfter", "gainAfter", "addToExpansionAfter", "addJudgeAfter", "equipAfter", "phaseBegin"],
 		},
 		filter(event, player) {
-			return event.name == "phase" ? !player.countCharge(true) : player.countCharge(true);
-		},
-		getIndex(event, player) {
 			if (event.name == "phase") {
-				return 1;
+				return !player.countCharge(true);
 			}
-			return event.getl?.(player)?.cards2.filter(card => !get.tag(card, "damage"));
+			return player.countCharge(true) && event.getl?.(player)?.cards2.some(card => !get.tag(card, "damage"));
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "phase") {
