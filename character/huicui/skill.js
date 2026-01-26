@@ -16632,7 +16632,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			player.addSkill(event.name + "_effect", { player: "phaseBegin" });
+			player.addTempSkill(event.name + "_effect", { player: "phaseBegin" });
 			player.markAuto(event.name + "_effect", [target]);
 			await game.delayx();
 		},
