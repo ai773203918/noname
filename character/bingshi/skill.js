@@ -51,7 +51,7 @@ const skills = {
 						.chooseNumbers(`###${get.translation(skill)}###出牌阶段限一次，你可以消耗任意点蓄力点，令至多等量名角色从牌堆或弃牌堆中各获得一张红桃牌`, [{ prompt: "请选择要移去的蓄力值", min: 1, max: player.countCharge() }])
 						.set("processAI", () => {
 							const player = get.player();
-							const num = Math.min(player.countCharge(), game.filterPlayer(target => get.attitude(player, target) > 0).length);
+							const num = Math.min(player.countCharge(), 3);
 							return [num];
 						})
 						.forResult();
@@ -93,7 +93,7 @@ const skills = {
 				ai: {
 					order: 8,
 					result: {
-						target: 1,
+						player: 1,
 					},
 				},
 			},
