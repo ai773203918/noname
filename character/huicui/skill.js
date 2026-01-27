@@ -95,6 +95,11 @@ const skills = {
 				}
 			});
 		},
+		subSkill: {
+			twice: {
+				charlotte: true,
+			}
+		}
 	},
 	dczhuguo: {
 		audio: 2,
