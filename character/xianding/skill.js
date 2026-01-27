@@ -42,7 +42,7 @@ const skills = {
 				.filter(evt => evt.card == card)
 				.step(async (event, trigger, player) => {
 					const bool = player.hasHistory("sourceDamage", evt => evt.card == card);
-					if (storage ^ bool) {
+					if ((!storage && bool) || (storage && !bool)) {
 						player.refreshSkill("dcquanshi");
 					}
 				});

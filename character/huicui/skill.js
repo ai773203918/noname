@@ -183,6 +183,7 @@ const skills = {
 		},
 		subSkill: {
 			gain: {
+				audio: "dcbinji",
 				charlotte: true,
 				forced: true,
 				trigger: {
@@ -240,7 +241,71 @@ const skills = {
 				return Math.random();
 			},
 			backup(links, player) {
-				return get.copy(get.info(`dczangmao_${links[0]}`));
+				return {
+					audio: "dczangmao",
+					position: "he",
+					...(links[0] == "discard" ? {} : { lose: false, discard: false, delay: false }),
+					check(card) {
+						return 6 - get.value(card);
+					},
+					...{
+						discard: {
+							filterCard(card, player) {
+								return get.suit(card) == "diamond" && lib.filter.cardDiscardable(card, player, "dczangmao");
+							},
+							async content(event, trigger, player) {
+								const card = get.cardPile(card => ["equip3", "equip4", "equip3_4"].includes(get.subtype(card)), void 0, "random");
+								if (card) {
+									await player.gain(card, "gain2");
+								} else {
+									player.chat("塞翁失马，焉知非福");
+								}
+							},
+						},
+						give: {
+							filterCard: { suit: "diamond" },
+							filterTarget: lib.filter.notMe,
+							async content(event, trigger, player) {
+								const { cards, target } = event;
+								await player.give(cards, target);
+								if (target.countGainableCards(player, "e", card => ["equip3", "equip4", "equip3_4"].includes(get.subtype(card)))) {
+									await player.gainPlayerCard(target, "e", true).set("filterButton", button => ["equip3", "equip4", "equip3_4"].includes(get.subtype(button.link)));
+								} else {
+									player.chat("其真无马邪？");
+								}
+							},
+							ai: {
+								result: {
+									target: 1,
+								},
+							},
+						},
+						equip: {
+							filterCard(card, player) {
+								return ["equip3", "equip4", "equip3_4"].includes(get.subtype(card));
+							},
+							filterTarget(card, player, target) {
+								return target != player && target.canEquip(ui.selected.cards[0], true);
+							},
+							async content(event, trigger, player) {
+								const { cards, target } = event;
+								player.$giveAuto(cards, target, false);
+								await target.equip(cards[0]);
+								const cardsx = target.getGainableCards(player, "h", { suit: "diamond" }).randomGets(2);
+								if (cardsx?.length) {
+									await player.gain(cardsx, target, "giveAuto");
+								} else {
+									player.chat("其真不知马也！");
+								}
+							},
+							ai: {
+								result: {
+									target: -1,
+								},
+							},
+						},
+					}[links[0]],
+				};
 			},
 			prompt(links, player) {
 				return `驵贸：${get.info("dczangmao").map[links[0]][0]}`;
@@ -248,79 +313,6 @@ const skills = {
 		},
 		subSkill: {
 			backup: {},
-			discard: {
-				filterCard(card, player) {
-					return get.suit(card) == "diamond" && lib.filter.cardDiscardable(card, player, "dczangmao");
-				},
-				position: "he",
-				check(card) {
-					return 6 - get.value(card);
-				},
-				async content(event, trigger, player) {
-					const card = get.cardPile(card => ["equip3", "equip4", "equip3_4"].includes(get.subtype(card)), void 0, "random");
-					if (card) {
-						await player.gain(card, "gain2");
-					} else {
-						player.chat("塞翁失马，焉知非福");
-					}
-				},
-			},
-			give: {
-				filterCard: { suit: "diamond" },
-				filterTarget: lib.filter.notMe,
-				lose: false,
-				discard: false,
-				delay: false,
-				position: "he",
-				check(card) {
-					return 6 - get.value(card);
-				},
-				async content(event, trigger, player) {
-					const { cards, target } = event;
-					await player.give(cards, target);
-					if (target.countGainableCards(player, "e", card => ["equip3", "equip4", "equip3_4"].includes(get.subtype(card)))) {
-						await player.gainPlayerCard(target, "e", true).set("filterButton", button => ["equip3", "equip4", "equip3_4"].includes(get.subtype(button.link)));
-					} else {
-						player.chat("其真无马邪？");
-					}
-				},
-				ai: {
-					result: {
-						target: 1,
-					},
-				},
-			},
-			equip: {
-				filterCard(card, player) {
-					return ["equip3", "equip4", "equip3_4"].includes(get.subtype(card));
-				},
-				filterTarget(card, player, target) {
-					return target != player && target.canEquip(ui.selected.cards[0], true);
-				},
-				check(card) {
-					return 6 - get.value(card);
-				},
-				position: "he",
-				lose: false,
-				discard: false,
-				delay: false,
-				async content(event, trigger, player) {
-					const { cards, target } = event;
-					player.$giveAuto(cards, target, false);
-					await target.equip(cards[0]);
-					const cardsx = target.getGainableCards(player, "h", { suit: "diamond" }).randomGets(2);
-					if (cardsx?.length) {
-						await player.gain(cardsx, target, "giveAuto");
-					} else {
-						player.chat("其真不知马也！");
-					}
-				},
-				ai: {
-					result: {
-						target: -1,
-					},
-				},
-			},
 		},
 		ai: {
 			order: 6,
