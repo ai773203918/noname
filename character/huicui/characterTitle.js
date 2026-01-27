@@ -1,4 +1,6 @@
 export default {
+	//dc_zhangshiping: "",
+	//dc_weifeng: "",
 	mamiao: "退路自有",
 	re_panfeng: "联军上将",
 	xingdaorong: "零陵上将",

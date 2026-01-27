@@ -1,4 +1,7 @@
 export default {
+	//dc_chenzhi: "",
+	//dc_sb_liuzhang: "",
+	//v_gongsunzan: "",
 	v_liubei: "志昭义烈",
 	dc_sb_jianggan: "反笺沉江",
 	dc_sb_chunyuqiong: "殊死难当",

@@ -532,6 +532,11 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"dc_sb_liuzhang",
+		"v_gongsunzan",
+		"dc_weifeng",
+		"dc_zhangshiping",
+		"dc_chenzhi",
 		"tw_jsrg_wangyun",
 		"jm_yuanshu",
 		"sb_zhuran",
@@ -1091,6 +1096,7 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
+		
 		"ol_caojinyu",
 		"ol_re_xinxianying",
 		"clan_chentai",
@@ -3092,6 +3098,11 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"dc_sb_liuzhang",
+			"v_gongsunzan",
+			"dc_weifeng",
+			"dc_zhangshiping",
+			"dc_chenzhi",
 			"tw_jsrg_wangyun",
 			"jm_yuanshu",
 			"sb_zhuran",
