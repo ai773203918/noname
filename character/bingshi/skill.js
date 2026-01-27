@@ -37,6 +37,7 @@ const skills = {
 		},
 		subSkill: {
 			phaseUse: {
+				audio: "potjixi",
 				enable: "phaseUse",
 				filter(event, player) {
 					return player.countCharge() > 0;
