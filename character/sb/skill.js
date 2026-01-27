@@ -2689,9 +2689,9 @@ const skills = {
 			decrease: {
 				audio: "sbjinjiu",
 				forced: true,
-				trigger: { player: "damageBegin4" },
+				trigger: { player: "damageBegin3" },
 				filter(event, player) {
-					return event.getParent(2).jiu;
+					return event.getParent(evt => evt.name == "useCard" && evt.card == event.card).jiu;
 				},
 				async content(event, trigger) {
 					trigger.num = 1;
