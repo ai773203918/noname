@@ -21539,7 +21539,9 @@ const skills = {
 	//田豫
 	twzhenxi: {
 		audio: 2,
-		trigger: { player: "useCardToPlayered" },
+		trigger: {
+			player: "useCardToPlayered",
+		},
 		filter(event, player) {
 			const { target } = event;
 			return (
@@ -21577,7 +21579,8 @@ const skills = {
 				list[1] = '<span style="opacity:0.5">' + list[1] + "</span>";
 			}
 			if (choices.length == 2 && (target.hp > player.hp || target.isMaxHp())) {
-				choices.push("全部执行");
+				list.push("背水！依次执行以上两项");
+				choices.push("背水！");
 			}
 			choices.push("cancel2");
 			const { control } = await player
@@ -21637,8 +21640,8 @@ const skills = {
 					}
 					if (eff1 > 0) {
 						if (eff2 > 0) {
-							if (choices.includes("全部执行")) {
-								return "全部执行";
+							if (choices.includes("背水！")) {
+								return "背水！";
 							} else if (eff2 >= eff1) {
 								return "选项二";
 							}
@@ -21682,7 +21685,7 @@ const skills = {
 			}
 		},
 		ai: {
-			unequip_ai: true,
+			"unequip_ai": true,
 			skillTagFilter(player, tag, arg) {
 				if (!arg || !arg.name || arg.name != "sha") {
 					return false;
@@ -21724,6 +21727,7 @@ const skills = {
 						return num + player.countMark("twyangshi_distance");
 					},
 				},
+				markimage: "image/card/attackRange.png",
 				intro: { content: "攻击范围+#" },
 			},
 		},
