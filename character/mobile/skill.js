@@ -5686,7 +5686,7 @@ const skills = {
 				return false;
 			}
 			const cards = player.getCards("h", i => i !== card && typeof get.number(i, player) === "number");
-			return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+			return !cards.length || number >= Math.max(...cards.map(i => get.number(i, player)));
 		},
 		position: "h",
 		filterTarget(card, player, target) {
@@ -5909,7 +5909,7 @@ const skills = {
 					return false;
 				}
 				const cards = cardx.slice().remove(card);
-				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+				return !cards.length || number >= Math.max(...cards.map(i => get.number(i, player)));
 			});
 		},
 		prompt2(event, player) {
