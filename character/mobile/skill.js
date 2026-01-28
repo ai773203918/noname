@@ -793,7 +793,7 @@ const skills = {
 			}
 		},
 	},
-	hefeizheji: {
+	hefeizherui: {
 		audio: 2,
 		trigger: {
 			global: "useCardToPlayered",
@@ -859,7 +859,7 @@ const skills = {
 			next.setContent(get.info(skill).content);
 			await next;
 		},
-		group: "hefeizheji_damage",
+		group: "hefeizherui_damage",
 		subSkill: {
 			damage: {
 				trigger: {
