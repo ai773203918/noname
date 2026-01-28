@@ -5659,16 +5659,7 @@ const skills = {
 				}
 			}
 			const tos = await player
-				.chooseButton(
-					[
-						'###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>",
-						[
-							toItems.map((item, index) => [index, `${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`]),
-							"textbutton",
-						],
-					],
-					true
-				)
+				.chooseButton(['###青书：请选择“天书”效果###<div class="text center">' + from.name + "</div>", [toItems.map((item, index) => [index, `${["", '<span style="color: #EEC900; text-shadow: 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white, 0.5px 0.5px 0.5px white;">'][item.toIndex - from.fromIndex]}${item.name}${["", "</span>"][item.toIndex - from.fromIndex]}`]), "textbutton"]], true)
 				.set("ai", () => 1 + Math.random())
 				.forResult();
 			if (!tos?.links?.length) {
@@ -18003,11 +17994,9 @@ const skills = {
 	oltongduo: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("oltongduo"), function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), function (card, player, target) {
 					return target != player && target.countCards("h") > 0;
 				})
 				.set("ai", function (target) {
@@ -18016,20 +18005,19 @@ const skills = {
 						return Math.sqrt(att) / 10;
 					}
 					return 5 - att;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("oltongduo", target);
-				target.chooseCard("h", true, "统度：将一张手牌交给" + get.translation(player) + "，然后其于此阶段结束时将此牌置于牌堆顶");
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const result = await target.chooseCard("h", true, "统度：将一张手牌交给" + get.translation(player) + "，然后其于此阶段结束时将此牌置于牌堆顶").forResult();
+			if (result.cards?.length) {
 				player.addTempSkill("oltongduo_put");
-				event.target.give(result.cards, player, true).gaintag.add("oltongduo");
+				const next = target.give(result.cards, player);
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 		subSkill: {
@@ -18041,16 +18029,16 @@ const skills = {
 				filter(event, player) {
 					return player.hasCard(card => card.hasGaintag("oltongduo"), "h");
 				},
-				content() {
-					var cards = player.getCards("h", card => card.hasGaintag("oltongduo"));
-					player.lose(cards, ui.cardPile, "insert");
+				async content(event, trigger, player) {
+					const cards = player.getCards("h", card => card.hasGaintag("oltongduo"));
 					game.log(player, "将", get.cnNumber(cards.length) + "张牌", "置于牌堆顶");
 					game.broadcastAll(function (player) {
-						var cardx = ui.create.card();
+						const cardx = ui.create.card();
 						cardx.classList.add("infohidden");
 						cardx.classList.add("infoflip");
 						player.$throw(cardx, 1000, "nobroadcast");
 					}, player);
+					await player.lose(cards, ui.cardPile, "insert");
 				},
 				onremove(player) {
 					player.removeGaintag("oltongduo");
@@ -18071,12 +18059,11 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.countCards("he") > 0;
 		},
-		content() {
-			"step 0";
-			target.chooseCard("he", true, "铸币：请重铸一张牌", lib.filter.cardRecastable);
-			"step 1";
-			if (result.bool) {
-				target.recast(result.cards, void 0, player => (player.draw().set("log", false).gaintag = ["olzhubi_tag"]));
+		async content(event, trigger, player) {
+			const { target } = event;
+			const result = await target.chooseCard("he", true, "铸币：请重铸一张牌", lib.filter.cardRecastable).forResult();
+			if (result.cards?.length) {
+				await target.recast(result.cards, void 0, player => (player.draw().set("log", false).gaintag = ["olzhubi_tag"]));
 			}
 		},
 		ai: {
@@ -18102,41 +18089,39 @@ const skills = {
 				forced: true,
 				locked: false,
 				logTarget: "player",
-				content() {
-					"step 0";
-					var cards = get.bottomCards(5);
-					event.cards2 = cards;
-					game.cardsGotoOrdering(cards);
-					var player = trigger.player;
-					var next = player.chooseToMove("铸币：用任意“币”交换牌堆底等量张牌");
-					var hs = player.getCards("h", card => card.hasGaintag("olzhubi_tag"));
-					next.set("filterMove", function (from, to) {
-						return typeof to != "number";
-					});
-					next.set("list", [
-						["牌堆底", cards],
-						["你的手牌", hs, "olzhubi_tag"],
-					]);
-					next.set("processAI", function (list) {
-						var all = list[0][1].concat(list[1][1]),
-							cards = all.slice(0);
-						var num = _status.event.num;
-						cards.sort(function (a, b) {
-							return get.value(b) - get.value(a);
-						});
-						return [cards.slice(num), cards.slice(0, num)];
-					});
-					next.set("num", hs.length);
-					"step 1";
+				async content(event, trigger, player) {
+					const cards = get.bottomCards(5, true);
+					await game.cardsGotoOrdering(cards);
+					const {
+						targets: [target],
+					} = event;
+					const hs = target.getCards("h", card => card.hasGaintag("olzhubi_tag"));
+					const result = await target
+						.chooseToMove("铸币：用任意“币”交换牌堆底等量张牌")
+						.set("filterMove", function (from, to) {
+							return typeof to != "number";
+						})
+						.set("list", [
+							["牌堆底", cards],
+							["你的手牌", hs, "olzhubi_tag"],
+						])
+						.set("processAI", function (list) {
+							var all = list[0][1].concat(list[1][1]),
+								cards = all.slice(0);
+							var num = _status.event.num;
+							cards.sort(function (a, b) {
+								return get.value(b) - get.value(a);
+							});
+							return [cards.slice(num), cards.slice(0, num)];
+						})
+						.set("num", hs.length)
+						.forResult();
 					if (result.bool) {
 						event.forceDie = true;
-						var cards = result.moved[0];
-						event.cards = cards;
-						var player = trigger.player;
-						var hs = player.getCards("h");
-						var lose = [],
-							gain = event.cards2;
-						for (var i of cards) {
+						const cards2 = result.moved[0];
+						const lose = [],
+							gain = cards.slice();
+						for (const i of cards2) {
 							if (hs.includes(i)) {
 								lose.push(i);
 							} else {
@@ -18144,22 +18129,13 @@ const skills = {
 							}
 						}
 						if (lose.length) {
-							player.lose(lose, ui.cardPile);
+							await player.lose(lose, ui.cardPile);
 						}
 						if (gain.length) {
-							player.gain(gain, "draw");
+							await player.gain(gain, "draw");
 						}
-					} else {
-						event.finish();
+						await game.cardsGotoPile(cards2.filter(i => !"hejsdx".includes(get.position(i, true))));
 					}
-					"step 2";
-					for (var i of cards) {
-						if (!"hejsdx".includes(get.position(i, true))) {
-							i.fix();
-							ui.cardPile.appendChild(i);
-						}
-					}
-					game.updateRoundNumber();
 				},
 			},
 		},
