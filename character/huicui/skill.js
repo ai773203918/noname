@@ -9346,8 +9346,8 @@ const skills = {
 		filter(event, player) {
 			return lib.skill.dcqinshen.getNum() > 0;
 		},
-		content() {
-			player.draw(lib.skill.dcqinshen.getNum());
+		async content(event, trigger, player) {
+			await player.draw(lib.skill.dcqinshen.getNum());
 		},
 	},
 	dcweidang: {
@@ -9357,43 +9357,38 @@ const skills = {
 		 * @deprecated
 		 */
 		getLength: card => get.cardNameLength(card),
-		direct: true,
 		filter(event, player) {
-			var num = lib.skill.dcqinshen.getNum();
+			const num = lib.skill.dcqinshen.getNum();
 			return event.player != player && (_status.connectMode ? player.countCards("he") : player.hasCard(card => get.cardNameLength(card) == num, "he"));
 		},
-		content() {
-			"step 0";
-			var num = lib.skill.dcqinshen.getNum();
-			event.num = num;
-			player
-				.chooseCard(get.prompt("dcweidang"), "将一张字数为" + num + "的牌置于牌堆底，然后获得一张字数为" + num + "的牌。若你能使用此牌，你使用之。", "he", (card, player, target) => {
+		async cost(event, trigger, player) {
+			const num = lib.skill.dcqinshen.getNum();
+			event.result = await player
+				.chooseCard(get.prompt(event.skill), "将一张字数为" + num + "的牌置于牌堆底，然后获得一张字数为" + num + "的牌。若你能使用此牌，你使用之。", "he", (card, player, target) => {
 					return get.cardNameLength(card) == _status.event.num;
 				})
 				.set("num", num)
 				.set("ai", card => {
 					return 5 - get.value(card);
-				});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("dcweidang");
-				player.lose(result.cards[0], ui.cardPile);
-				game.broadcastAll(function (player) {
-					var cardx = ui.create.card();
-					cardx.classList.add("infohidden");
-					cardx.classList.add("infoflip");
-					player.$throw(cardx, 1000, "nobroadcast");
-				}, player);
-				game.delayx();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var card = get.cardPile(cardx => get.cardNameLength(cardx) == num);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { cards } = event;
+			const num = lib.skill.dcqinshen.getNum();
+			game.broadcastAll(function (player) {
+				const cardx = ui.create.card();
+				cardx.classList.add("infohidden");
+				cardx.classList.add("infoflip");
+				player.$throw(cardx, 1000, "nobroadcast");
+			}, player);
+			await player.lose(cards, ui.cardPile);
+			await game.delayx();
+			const card = get.cardPile(cardx => get.cardNameLength(cardx) == num);
 			if (card) {
-				player.gain(card, "gain2");
+				await player.gain(card, "gain2");
 				if (player.hasUseTarget(card)) {
-					player.chooseUseTarget(card, true);
+					await player.chooseUseTarget(card, true);
 				}
 			}
 		},
@@ -12680,16 +12675,14 @@ const skills = {
 			return false;
 		},
 		prompt2: "检索一张【无中生有】并置于牌堆顶",
-		content() {
-			var card = get.cardPile(function (card) {
+		async content(event, trigger, player) {
+			const card = get.cardPile(function (card) {
 				return card.name == "wuzhong" && get.suit(card) != "diamond";
 			});
 			if (card) {
 				game.log(player, "将", card, "置于牌堆顶");
-				card.fix();
-				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
-				game.updateRoundNumber();
-				game.delayx();
+				await game.cardsGotoPile(card, "insert");
+				await game.delayx();
 			}
 		},
 	},
@@ -12762,30 +12755,30 @@ const skills = {
 						}
 					});
 				},
-				content() {
-					var cards,
-						current = _status.currentPhase;
+				async content(event, trigger, player) {
+					let cards;
+					const current = _status.currentPhase;
 					if (trigger.name == "lose") {
 						cards = trigger.hs.filter(function (i) {
 							return trigger.gaintag_map[i.cardid] && trigger.gaintag_map[i.cardid].includes("dcliuzhuan_tag") && get.position(i, true) == "d";
 						});
 					} else if (trigger.name == "cardsDiscard") {
-						var evtx = trigger.getParent();
-						var evtx2 = evtx.relatedEvent || evtx.getParent();
-						var bool = false;
-						var history = current.getHistory("lose", function (evtx3) {
-							var evtx4 = evtx3.relatedEvent || evtx3.getParent();
+						const evtx = trigger.getParent();
+						const evtx2 = evtx.relatedEvent || evtx.getParent();
+						let bool = false;
+						const history = current.getHistory("lose", function (evtx3) {
+							const evtx4 = evtx3.relatedEvent || evtx3.getParent();
 							if (evtx2 != evtx4) {
 								return false;
 							}
-							for (var i in evtx3.gaintag_map) {
+							for (const i in evtx3.gaintag_map) {
 								if (evtx3.gaintag_map[i].includes("dcliuzhuan_tag")) {
 									return true;
 								}
 							}
 						});
 						cards = trigger.cards.filter(function (i) {
-							for (var evt of history) {
+							for (const evt of history) {
 								if (evt.gaintag_map[i.cardid] && evt.gaintag_map[i.cardid].includes("dcliuzhuan_tag") && get.position(i, true) == "d") {
 									return true;
 								}
@@ -12798,11 +12791,11 @@ const skills = {
 							if (evt.getParent() != trigger || evt.position != ui.discardPile) {
 								return false;
 							}
-							for (var card of evt.hs) {
+							for (const card of evt.hs) {
 								if (get.position(card, true) != "d") {
 									continue;
 								}
-								var i = card.cardid;
+								const i = card.cardid;
 								if (evt.gaintag_map[i] && evt.gaintag_map[i].includes("dcliuzhuan_tag")) {
 									cards.push(card);
 								}
@@ -12810,7 +12803,7 @@ const skills = {
 						});
 					}
 					if (cards && cards.length > 0) {
-						player.gain(cards, "gain2");
+						await player.gain(cards, "gain2");
 					}
 				},
 			},
@@ -12830,7 +12823,7 @@ const skills = {
 					}
 					return true;
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.gaintag.add("dcliuzhuan_tag");
 					trigger.player.addTempSkill("dcliuzhuan_tag");
 				},
@@ -18633,9 +18626,9 @@ const skills = {
 		loseTo: "cardPile",
 		visible: true,
 		insert: true,
-		content() {
+		async content(event, trigger, player) {
 			game.log(player, "将", cards, "置于牌堆顶");
-			player.useCard({ name: "sha", isCard: true }, false, targets).card.cxliushi = true;
+			await player.useCard({ name: "sha", isCard: true, storage: { cxliushi: true } }, false, targets);
 		},
 		group: "cxliushi_damage",
 		subSkill: {
@@ -18644,9 +18637,9 @@ const skills = {
 				forced: true,
 				popup: false,
 				filter(event, player) {
-					return event.card && event.card.cxliushi == true && event.player.isIn() && event.getParent(3).name == "cxliushi";
+					return event.card?.storage?.cxliushi == true && event.player.isIn() && event.getParent(3).name == "cxliushi";
 				},
-				content() {
+				async content(event, trigger, player) {
 					trigger.player.addMark("cxliushi2", 1);
 					trigger.player.addSkill("cxliushi2");
 				},
@@ -18699,15 +18692,15 @@ const skills = {
 			);
 		},
 		logTarget: "player",
-		content() {
+		async content(event, trigger, player) {
 			trigger.player.removeSkill("cxliushi2");
-			var num = 0;
+			let num = 0;
 			trigger.player.getHistory("lose", function (evt) {
 				if (evt.type == "discard" && evt.getParent("phaseDiscard") == trigger) {
 					num += evt.cards2.length;
 				}
 			});
-			player.draw(num);
+			await player.draw(num);
 		},
 		ai: {
 			combo: "cxliushi",

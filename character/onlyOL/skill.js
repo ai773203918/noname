@@ -10522,9 +10522,7 @@ const skills = {
 			if (bool) {
 				let cards = moved[1].slice();
 				game.log(player, "将", cards, "置于了牌堆顶");
-				while (cards.length) {
-					ui.cardPile.insertBefore(cards.pop().fix(), ui.cardPile.firstChild);
-				}
+				await game.cardsGotoPile(cards.reverse(), "insert");
 			}
 		},
 		getCards(event, player) {
