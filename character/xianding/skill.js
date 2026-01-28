@@ -130,7 +130,7 @@ const skills = {
 				event.result = await player
 					.chooseToDiscard(get.prompt(event.skill), "弃置一张红色牌防止该伤害", { color: "red" }, "chooseonly")
 					.set("ai", card => {
-						const { player, source, nature } = get.event().getTrirgger();
+						const { player, source, nature } = get.event().getTrigger();
 						if (get.damageEffect(player, source, player, nature) < 0) {
 							return 7 - get.value(card);
 						}

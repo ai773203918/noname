@@ -174,7 +174,7 @@ const skills = {
 			return player.getStorage("youtan").length;
 		},
 		prompt() {
-			const num = get.player().getStorage("youtan").length
+			const num = get.player().getStorage("youtan").length;
 			return `摸${get.cnNumber(num)}张牌，然后移去一个记录的花色`;
 		},
 		manualConfirm: true,
@@ -1407,7 +1407,10 @@ const skills = {
 					.set("ai", button => {
 						return get.player().getUseValue(button.link);
 					})
-					.set("canUse", cards.filter(card => player.hasUseTarget(card) && get.position(card) == "d"))
+					.set(
+						"canUse",
+						cards.filter(card => player.hasUseTarget(card) && get.position(card) == "d")
+					)
 					.forResult();
 				if (result?.bool && result.links?.length) {
 					const card = result.links[0];
@@ -1727,7 +1730,10 @@ const skills = {
 						return;
 					}
 					num++;
-					const result2 = await player.chooseBool(`是否继续与${get.translation(trigger.source)}拼点？（已赢${num}次）`).set("choice", Math.random() > 0.7).forResult();
+					const result2 = await player
+						.chooseBool(`是否继续与${get.translation(trigger.source)}拼点？（已赢${num}次）`)
+						.set("choice", Math.random() > 0.7)
+						.forResult();
 					if (!result2.bool) {
 						return;
 					}
@@ -4048,10 +4054,7 @@ const skills = {
 				return;
 			}
 			const result = await player
-				.chooseButton([
-					`###${get.prompt(event.skill)}###<div class='text center'>选择任意个花色，令你本轮不能使用这些花色的牌</div>`, 
-					[lib.suit.map(i => ["", "", "lukai_" + i]), "vcard"],
-				], [1, 4])
+				.chooseButton([`###${get.prompt(event.skill)}###<div class='text center'>选择任意个花色，令你本轮不能使用这些花色的牌</div>`, [lib.suit.map(i => ["", "", "lukai_" + i]), "vcard"]], [1, 4])
 				.set("ai", button => {
 					const player = get.player(),
 						suit = button.link[2].slice(6),
@@ -4079,7 +4082,7 @@ const skills = {
 				event.result = {
 					bool: true,
 					cost_data: result.links,
-				}
+				};
 			}
 		},
 		async content(event, trigger, player) {
@@ -6576,6 +6579,73 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
+			return player.hasHistory("damage");
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), [1, 3])
+				.set("ai", target => {
+					const player = get.player();
+					if (get.attitude(player, target) <= 0) {
+						return 0;
+					}
+					var len = lib.skill.mbquesong.getNum(target),
+						hp = target.getHp();
+					return len + target.isTurnedOver() * 2 + (1.5 * Math.min(4, target.getDamagedHp())) / (hp + 1);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const { targets } = event;
+			const num = targets.length;
+			const list = [`摸${get.cnNumber(4 - num)}张牌并复原武将牌`, `${num > 1 ? `弃置${get.cnNumber(num - 1)}张牌然后` : ""}回复一点体力`];
+			if (player.getHistory("damage").length > num) {
+				list.push(`依次执行以上两项，然后非锁定失效直到你下个回合开始`);
+			}
+			await game.doAsyncInOrder(targets, async target => {
+				const result = await target
+					.chooseControl()
+					.set("choiceList", list)
+					.set("prompt", "雀颂：请选择一项")
+					.set("ai", () => {
+						const { num, player } = get.event();
+						return get.effect(player, { name: "draw" }, player, player) * (4 - num) >= get.effect(player, { name: "guohe_copy2" }, player, player) + get.recoverEffect(player, player, player) ? 0 : 1;
+					})
+					.set("num", num)
+					.forResult();
+				if (typeof result.index == "number") {
+					const { index } = result;
+					if (index % 2 == 0) {
+						await target.draw(4 - num);
+						await target.link(false);
+						await target.turnOver(false);
+					}
+					if (index > 0) {
+						if (num > 1) {
+							await target.chooseToDiscard(num - 1, "he", true);
+						}
+						await target.recover();
+					}
+					if (index == 2) {
+						target.addTempSkill("fengyin", { player: "phaseBeforeStart" });
+					}
+				}
+			});
+		},
+		ai: {
+			expose: 0.2,
+			maixie: true,
+			skillTagFilter(player, tag) {
+				if (player.getStat().damaged) {
+					return false;
+				}
+			},
+		},
+	},
+	old_mbquesong: {
+		audio: "mbquesong",
+		trigger: { global: "phaseJieshuBegin" },
+		filter(event, player) {
 			return player.getHistory("damage").length;
 		},
 		direct: true,
@@ -6976,7 +7046,7 @@ const skills = {
 			targets.remove(event.player);
 			return targets.length == game.countPlayer() - 2;
 		},
-		*content() {},
+		async content(event, trigger, player) {},
 		mod: {
 			targetEnabled(card) {
 				if (get.type2(card) == "trick" && get.tag(card, "damage") > 0) {
