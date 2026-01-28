@@ -3601,6 +3601,10 @@ const skills = {
 					return 0;
 				},
 			},
+			tag: {
+				recover: 1,
+				save: 1,
+			},
 		},
 	},
 	//族贝斯塔[doge]
