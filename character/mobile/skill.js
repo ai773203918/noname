@@ -6494,44 +6494,49 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
-			if (!get.discarded().length) {
+			/*if (!get.discarded().length) {
 				return false;
-			}
+			}*/
 			return (
 				player
 					.getHistory("lose", evt => {
 						return evt.getParent("phaseUse") === event;
 					})
-					.reduce((sum, evt) => sum + (evt.getl?.(player)?.hs?.length ?? 0), 0) >= 3
+					.reduce((sum, evt) => sum + (evt.getl?.(player)?.hs?.length ?? 0), 0) >= 2
 			);
 		},
 		frequent: true,
 		async content(event, trigger, player) {
 			let num = player.hasSkill("friendpangtonggongli") && get.info("friendgongli").isFriendOf(player, "friend_zhugeliang") ? 1 : 0;
-			num += get
+			/*num += get
 				.discarded()
 				.map(c => get.suit(c))
-				.unique().length;
-			const next = game.cardsGotoOrdering(get.cards(num));
+				.unique().length;*/
+			num += 4;
+			const cards = get.cards(num, true);
+			const next = player.addToExpansion(cards, "gain2");
+			next.gaintag.add(event.name);
+			await next;
+			/*const next = game.cardsGotoOrdering(get.cards(num));
 			await next;
 			let cards = next.cards;
-			await player.showCards(cards, get.translation(player) + "发动了【" + get.translation(event.name) + "】");
-			while (cards.some(card => player.hasUseTarget(card))) {
+			await player.showCards(cards, get.translation(player) + "发动了【" + get.translation(event.name) + "】");*/
+			while (cards.some(card => player.hasUseTarget(card, true, false))) {
 				const result2 = await player
 					.chooseCardButton(cards, "养名：请选择要使用的牌")
 					.set("filterButton", button => {
 						const card = button.link;
-						return get.player().hasUseTarget(card);
+						return get.player().hasUseTarget(card, true, false);
 					})
 					.set("ai", button => {
-						return get.player().getUseValue(button.link);
+						return get.player().getUseValue(button.link, true, false);
 					})
 					.forResult();
 				if (result2.bool) {
 					const card = result2.links[0];
 					player.$gain2(card, false);
 					await game.delayx();
-					const result3 = await player.chooseUseTarget(card, true, false);
+					const result3 = await player.chooseUseTarget(card, true, false).forResult();
 					if (result3.bool) {
 						cards.removeArray(cards.filter(cardx => get.suit(cardx) === get.suit(card)));
 						continue;
@@ -6551,6 +6556,11 @@ const skills = {
 					await player.gain(result.links, "gain2");
 				}
 			}
+			await player.loseToDiscardpile(player.getExpansions(event.name));
+		},
+		intro: {
+			markcount: "expansion",
+			content: "expansion",
 		},
 		//group: "friendyangming_check",
 		subSkill: {
