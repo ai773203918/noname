@@ -9583,41 +9583,6 @@ const skills = {
 				}
 			}
 		},
-		content() {
-			"step 0";
-			player.judge(function (card) {
-				return get.suit(card) == "heart" ? 2 : 0;
-			}).judge2 = function (result) {
-				return result.bool ? true : false;
-			};
-			"step 1";
-			event.card = result.card;
-			if (result.bool && get.position(event.card, true) == "d") {
-				player.chooseTarget("令一名角色获得" + get.translation(event.card) + "，或点【取消】将其置于牌堆顶").set("ai", function (target) {
-					var player = _status.event.player;
-					var att = get.attitude(player, target);
-					if (player == target) {
-						att /= 2;
-					}
-					return att;
-				});
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.targets && result.targets.length) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.gain(card, "gain2", "log");
-				if (player == target) {
-					player.chooseToDiscard("he", true);
-				}
-			} else {
-				card.fix();
-				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
-				game.updateRoundNumber();
-			}
-		},
 	},
 	xinyicong: {
 		audio: "yicong",
