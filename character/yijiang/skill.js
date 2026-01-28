@@ -2812,7 +2812,9 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			const { cards: [card] } = event;
+			const {
+				cards: [card],
+			} = event;
 			game.log(player, "将", card, "置于牌堆顶");
 			player.$throw(card, 1000);
 			await player.lose(card, ui.cardPile, "visible", "insert");

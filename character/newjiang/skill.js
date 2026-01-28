@@ -4383,7 +4383,9 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			player.addTempSkill("shiming_round", "roundStart");
-			const { targets: [target] } = event;
+			const {
+				targets: [target],
+			} = event;
 			const cards = get.cards(3, true);
 			const result = await player
 				.chooseButton(["识命：是否将其中一张置于牌堆底？", cards.slice(0)])
