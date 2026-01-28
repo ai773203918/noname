@@ -18731,7 +18731,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const cards = get.cards(3, true);
 			await player.showCards(cards, get.translation(player) + "发动了【星卜】", true).set("clearArena", false);
-			const num = cards.filter(i => get.color(i, false) == "red").length;
+			let num = cards.filter(i => get.color(i, false) == "red").length;
 			const result = await player
 				.chooseTarget("是否选择一名其他角色获得星卜效果（" + get.cnNumber(num) + "张）？", lib.filter.notMe)
 				.set("ai", function (target) {
