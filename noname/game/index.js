@@ -1887,9 +1887,9 @@ export class Game {
 		}
 	}
 	/**
-	 * @template { any[] } T
-	 * @param { (...args: T) => any } func
-	 * @param { ...T } args
+	 * @template { (...args: any[]) => unknown } T
+	 * @param { T } func
+	 * @param { Parameters<T> } args
 	 * @returns { void }
 	 */
 	broadcast(func, ...args) {
@@ -1903,9 +1903,9 @@ export class Game {
 		}
 	}
 	/**
-	 * @template { any[] } T
-	 * @param { (...args: T) => any } func
-	 * @param { ...T } args
+	 * @template { (...args: any[]) => unknown } T
+	 * @param { T } func
+	 * @param { Parameters<T> } args
 	 * @returns { void }
 	 */
 	broadcastAll(func, ...args) {
@@ -10305,7 +10305,7 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 		let sortedTargets = targets.sort(sort);
 		for (let i = 0; i < sortedTargets.length; i++) {
 			let target = sortedTargets[i];
-			await Promise.resolve(asyncFunc(target, i));
+			await Promise.try(asyncFunc, target, i);
 		}
 	}
 	/**
