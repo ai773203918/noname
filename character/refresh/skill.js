@@ -182,19 +182,20 @@ const skills = {
 					position: "he",
 					popname: true,
 					ignoreMod: true,
-					precontent() {
+					async precontent(event, trigger, player) {
 						player.logSkill("rehuomo");
-						var card = event.result.cards[0];
+						const card = event.result.cards[0];
 						game.log(player, "将", card, "置于牌堆顶");
-						player.loseToDiscardpile(card, ui.cardPile, "visible", "insert").log = false;
-						var viewAs = {
+						await player.loseToDiscardpile(card, ui.cardPile, "visible", "insert").set("log", false);
+						const viewAs = {
 							name: event.result.card.name,
 							nature: event.result.card.nature,
+							isCard: true,
 						};
 						event.result.card = viewAs;
 						event.result.cards = [];
 						if (!player.storage.rehuomo) {
-							player.when({ global: "phaseAfter" }).then(() => {
+							player.when({ global: "phaseAfter" }).step(async (event, trigger, player) => {
 								player.unmarkSkill("rehuomo");
 							});
 						}
@@ -5496,136 +5497,116 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var cards = [],
-				cards2 = trigger.getl(player).cards2;
-			for (var i = 0; i < cards2.length; i++) {
-				if (get.position(cards2[i], true) == "d") {
-					cards.push(cards2[i]);
-				}
-			}
-			var next = player.chooseToMove("纵玄：将任意张牌置于牌堆顶", true, "allowChooseAll");
-			next.set("list", [["本次弃置的牌（请将要给出的锦囊牌留在这里）", cards], ["牌堆顶"]]);
-			next.set("filterOk", function (moved) {
-				if (moved[0].length == 1 && get.type2(moved[0][0], false) == "trick") {
-					return true;
-				}
-				return moved[1].length > 0;
-			});
-			next.set("processAI", function (list) {
-				var cards = list[0][1].slice(0),
-					player = _status.event.player;
-				var result = [[], []];
-				if (
-					game.hasPlayer(function (current) {
-						return current != player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
-					})
-				) {
-					var max_val = 0;
-					var max_card = false;
-					for (var i of cards) {
-						if (get.type2(i, false) == "trick") {
-							var val = get.value(i, "raw");
-							if (val > max_val) {
+		async content(event, trigger, player) {
+			const cards = [], cards2 = trigger.getl(player).cards2;
+			cards.push(...cards2.filter(card => get.position(card, true) == "d"));
+			const result = await player
+				.chooseToMove("纵玄：将任意张牌置于牌堆顶（左边的牌更接近牌堆顶）", true, "allowChooseAll")
+				.set("list", [["本次弃置的牌（请将要给出的锦囊牌留在这里）", cards], ["牌堆顶"]])
+				.set("filterOk", function (moved) {
+					if (moved[0].length == 1 && get.type2(moved[0][0], false) == "trick") {
+						return true;
+					}
+					return moved[1].length > 0;
+				})
+				.set("processAI", function (list) {
+					const cards = list[0][1].slice(0),
+						player = _status.event.player;
+					let result = [[], []];
+					if (
+						game.hasPlayer(function (current) {
+							return current != player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
+						})
+					) {
+						var max_val = 0;
+						var max_card = false;
+						for (var i of cards) {
+							if (get.type2(i, false) == "trick") {
+								var val = get.value(i, "raw");
+								if (val > max_val) {
+									max_card = i;
+									max_val = val;
+								}
+							}
+						}
+						if (max_card) {
+							result[0].push(max_card);
+							cards.remove(max_card);
+						}
+					}
+					if (cards.length) {
+						var max_val = 0;
+						var max_card = false;
+						var equip = game.hasPlayer(function (current) {
+							return current.isDamaged() && get.recoverEffect(current, player, player) > 0;
+						});
+						for (var i of cards) {
+							var val = get.value(i);
+							var type = get.type2(i, false);
+							if (type == "basic") {
+								val += 3;
+							}
+							if (type == "equip" && equip) {
+								val += 9;
+							}
+							if (max_val == 0 || val > max_val) {
 								max_card = i;
 								max_val = val;
 							}
 						}
-					}
-					if (max_card) {
-						result[0].push(max_card);
-						cards.remove(max_card);
-					}
-				}
-				if (cards.length) {
-					var max_val = 0;
-					var max_card = false;
-					var equip = game.hasPlayer(function (current) {
-						return current.isDamaged() && get.recoverEffect(current, player, player) > 0;
-					});
-					for (var i of cards) {
-						var val = get.value(i);
-						var type = get.type2(i, false);
-						if (type == "basic") {
-							val += 3;
+						if (max_card) {
+							result[1].push(max_card);
+							cards.remove(max_card);
 						}
-						if (type == "equip" && equip) {
-							val += 9;
-						}
-						if (max_val == 0 || val > max_val) {
-							max_card = i;
-							max_val = val;
-						}
+						result[0].addArray(cards);
 					}
-					if (max_card) {
-						result[1].push(max_card);
-						cards.remove(max_card);
-					}
-					result[0].addArray(cards);
-				}
-				return result;
-			});
-			"step 1";
+					return result;
+				})
+				.forResult();
 			if (result.bool) {
-				var cards = result.moved[1].slice(0);
-				if (cards.length) {
-					game.log(player, "将", cards, "置于了牌堆顶");
-					while (cards.length) {
-						ui.cardPile.insertBefore(cards.pop().fix(), ui.cardPile.firstChild);
-					}
+				const cards = result.moved[1].slice(0);
+				if (cards?.length) {
+					cards.reverse();
+					game.log(player, "将", cards, "置于牌堆顶");
+					await game.cardsGotoPile(cards, "insert");
 				}
-				var list = result.moved[0].filter(function (i) {
+				const list = result.moved[0].filter(function (i) {
 					return get.type2(i, false) == "trick";
 				});
-				if (list.length && game.hasPlayer(current => current != player)) {
-					var next = player
-						.chooseButton(["是否将一张锦囊牌交给一名其他角色？", list])
-						.set("ai", function (button) {
+				if (!list.length || !game.hasPlayer(current => current != player)) {
+					return;
+				}
+				const result2 = await player
+					.chooseButtonTarget({
+						createDialog: ["纵玄：是否将一张锦囊牌交给一名其他角色？", list],
+						filterButton: true,
+						filterTarget: lib.filter.notMe,
+						ai1(button) {
 							if (_status.event.goon) {
 								return Math.max(0.1, get.value(button.link, "raw"));
 							}
 							return 0;
-						})
-						.set(
-							"goon",
-							game.hasPlayer(function (current) {
-								return current != player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
-							})
-						);
-					if (!result.moved[1].length) {
-						next.set("forced", true);
-					}
-				} else {
-					event.finish();
-				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				var card = result.links[0];
-				event.card = card;
-				player
-					.chooseTarget(lib.filter.notMe, true, "令一名其他角色获得" + get.translation(card))
-					.set("card", card)
-					.set("ai", function (target) {
-						var card = _status.event.card,
-							player = _status.event.player;
-						var eff = Math.max(0.1, get.value(card, target)) * get.attitude(player, target);
-						if (target.hasSkill("nogain")) {
-							eff /= 10;
+						},
+						forced: !result.moved[1].length,
+						goon: game.hasPlayer(function (current) {
+							return current != player && get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
+						}),
+						ai2(target) {
+							const card = ui.selected.cards[0],
+								player = get.player();
+							let eff = Math.max(0.1, get.value(card, target)) * get.attitude(player, target);
+							if (target.hasSkill("nogain")) {
+								eff /= 10;
+							}
+							return eff;
 						}
-						return eff;
-					});
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line(target, "green");
-				target.gain(card, "gain2");
+					})
+					.forResult();
+				if (result2.bool && result2.links?.length && result2.targets?.length) {
+					const { links: cards, targets: [target] } = result2;
+					player.line(target, "green");
+					await target.gain(cards, "gain2");
+				}
 			}
 		},
 	},
@@ -9247,10 +9228,9 @@ const skills = {
 		check(card) {
 			return 8 - get.value(card);
 		},
-		content() {
-			"step 0";
-			player.showCards(cards);
-			"step 1";
+		async content(event, trigger, player) {
+			const { target, cards } = event;
+			await player.showCards(cards, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
 			if (
 				!target.countCards("he", function (card) {
 					if (get.type2(card) == "trick") {
@@ -9259,37 +9239,28 @@ const skills = {
 					return lib.filter.cardDiscardable(card, target, "remieji");
 				})
 			) {
-				event.finish();
+				return;
 			} else {
-				target
+				const result = await target
 					.chooseCard("he", true, function (card, player) {
 						if (get.type2(card) == "trick") {
 							return true;
 						}
 						return lib.filter.cardDiscardable(card, player, "remieji");
 					})
-					.set("prompt", "选择交给" + get.translation(player) + "一张锦囊牌，或依次弃置两张非锦囊牌。");
-			}
-			"step 2";
-			if (result.cards && result.cards.length) {
-				if (get.type2(result.cards[0]) == "trick") {
-					target.give(result.cards, player);
-					event.finish();
-				} else {
-					target.discard(result.cards);
-				}
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (
-				target.countCards("he", function (card) {
-					return get.type2(card) != "trick";
-				})
-			) {
-				target.chooseToDiscard("he", true, function (card) {
-					return get.type2(card) != "trick";
-				});
+					.set("prompt", "选择交给" + get.translation(player) + "一张锦囊牌，或依次弃置两张非锦囊牌。")
+					.forResult();
+					if (result.cards?.length) {
+						const { cards: [card] } = result;
+						if (get.type2(card) == "trick") {
+							await target.give(card, player);
+						} else {
+							await target.discard(card);
+							await target.chooseToDiscard("he", true, function (card) {
+								return get.type2(card) != "trick";
+							});
+						}
+					}
 			}
 		},
 		ai: {
@@ -9575,6 +9546,43 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		frequent: true,
+		async content(event, trigger, player) {
+			const result = await player
+				.judge(function (card) {
+					return get.suit(card) == "heart" ? 2 : 0;
+				})
+				.set("judge2", function (result) {
+					return result.bool ? true : false;
+				})
+				.forResult();
+			if (result?.card && result.suit == "heart") {
+				const { card } = result;
+				if (get.position(card, true) == "d") {
+					const result2 = await player
+					.chooseTarget("飘零：令一名角色获得" + get.translation(card) + "，或点【取消】将其置于牌堆顶").set("ai", function (target) {
+						var player = _status.event.player;
+						var att = get.attitude(player, target);
+						if (player == target) {
+							att /= 2;
+						}
+						return att;
+					})
+					.forResult();
+					if (result2.bool && result2.target?.length) {
+						const { targets: [target] } = result2;
+						player.line(target, "green");
+						target.gain(card, "gain2");
+						if (player == target) {
+							await player.chooseToDiscard("he", true);
+						}
+					}
+					else {
+						game.log(player, "将", card, "置于牌堆顶");
+						await game.cardsGotoPile(card, "insert");
+					}
+				}
+			}
+		},
 		content() {
 			"step 0";
 			player.judge(function (card) {
@@ -17098,39 +17106,35 @@ const skills = {
 		trigger: { player: "phaseDrawBegin1" },
 		preHidden: true,
 		frequent: true,
-		content() {
-			"step 0";
-			var cards = get.cards(4);
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove("恂恂：将两张牌置于牌堆顶", true);
-			next.set("list", [["牌堆顶", cards], ["牌堆底"]]);
-			next.set("filterMove", function (from, to, moved) {
-				if (to == 1 && moved[1].length >= 2) {
-					return false;
-				}
-				return true;
-			});
-			next.set("filterOk", function (moved) {
-				return moved[1].length == 2;
-			});
-			next.set("processAI", function (list) {
-				var cards = list[0][1].slice(0).sort(function (a, b) {
-					return get.value(b) - get.value(a);
-				});
-				return [cards, cards.splice(2)];
-			});
-			"step 1";
-			var top = result.moved[0];
-			var bottom = result.moved[1];
+		async content(event, trigger, player) {
+			const cards = get.cards(4, true);
+			await game.cardsGotoOrdering(cards);
+			const result = await player
+				.chooseToMove("恂恂：将两张牌置于牌堆顶（靠左的牌更靠上）", true)
+				.set("list", [["牌堆顶", cards], ["牌堆底"]])
+				.set("filterMove", function (from, to, moved) {
+					if (to == 1 && moved[1].length >= 2) {
+						return false;
+					}
+					return true;
+				})
+				.set("filterOk", function (moved) {
+					return moved[1].length == 2;
+				})
+				.set("processAI", function (list) {
+					var cards = list[0][1].slice(0).sort(function (a, b) {
+						return get.value(b) - get.value(a);
+					});
+					return [cards, cards.splice(2)];
+				})
+				.forResult();
+			const top = result.moved[0];
+			const bottom = result.moved[1];
 			top.reverse();
-			for (var i = 0; i < top.length; i++) {
-				ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-			}
-			for (i = 0; i < bottom.length; i++) {
-				ui.cardPile.appendChild(bottom[i]);
-			}
-			game.updateRoundNumber();
-			game.delayx();
+			game.log(player, "将两张牌置于牌堆顶");
+			await game.cardsGotoPile(top, "insert");
+			game.log(player, "将两张牌置于牌堆底");
+			await game.cardsGotoPile(bottom);
 		},
 	},
 	wangxi: {
