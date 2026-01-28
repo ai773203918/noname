@@ -2536,9 +2536,6 @@ const skills = {
 				}
 				return null;
 			});
-			for (let i = 0; i < bottom.length; i++) {
-				ui.cardPile.appendChild(bottom[i]);
-			}
 			game.addCardKnower(top, player);
 			game.addCardKnower(bottom, player);
 			player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");

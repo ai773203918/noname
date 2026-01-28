@@ -5893,12 +5893,8 @@ const skills = {
 					if (result.bool) {
 						const cards = result.moved[1];
 						target.$throw(cards.length, 1000);
-						await target.lose(cards, ui.cardPile);
 						game.log(target, "的" + get.cnNumber(cards.length) + "张牌被置入了", "#y牌堆顶");
-						for (let i = cards.length - 1; i--; i >= 0) {
-							ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-						}
-						game.updateRoundNumber();
+						await target.lose(cards.reverse(), ui.cardPile, "insert");
 					}
 				},
 			},

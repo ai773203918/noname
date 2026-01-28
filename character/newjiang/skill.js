@@ -3053,10 +3053,7 @@ const skills = {
 					await player.gain(result.links, "gain2");
 					cards.removeArray(result.links);
 				}
-				cards.reverse();
-				for (var i = 0; i < cards.length; i++) {
-					ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-				}
+				await game.cardsGotoPile(cards.reverse(), "insert");
 				if (!result.bool || result.links.length < num) {
 					await player.addAdditionalSkills(event.name, get.info(event.name)?.derivation);
 				}
@@ -4232,30 +4229,28 @@ const skills = {
 			return player != target && target.countCards("he") > 0;
 		},
 		audio: "duliang",
-		content() {
-			"step 0";
-			player.gainPlayerCard(target, "he", true);
-			"step 1";
-			var name = get.translation(target);
-			player
+		async content(event, trigger, player) {
+			const { target } = event;
+			await player.gainPlayerCard(target, "he", true);
+			const name = get.translation(target);
+			const result = await player
 				.chooseControl(function () {
 					return Math.random() < 0.5 ? "选项一" : "选项二";
 				})
 				.set("prompt", "督粮：请选择一项")
-				.set("choiceList", ["你观看牌堆顶的两张牌，然后令" + name + "获得其中的一或两张基本牌", "令" + name + "于下回合的摸牌阶段额外摸一张牌"]);
-			"step 2";
+				.set("choiceList", ["你观看牌堆顶的两张牌，然后令" + name + "获得其中的一或两张基本牌", "令" + name + "于下回合的摸牌阶段额外摸一张牌"])
+				.forResult();
 			if (result.control == "选项一") {
-				var cards = get.cards(2),
-					bool = false;
-				event.cards = cards;
-				game.cardsGotoOrdering(cards);
-				for (var card of cards) {
+				const cards = get.cards(2, true);
+				let bool = false;
+				await game.cardsGotoOrdering(cards);
+				for (const card of cards) {
 					if (get.type(card) == "basic") {
 						bool = true;
 						break;
 					}
 				}
-				player
+				const result = await player
 					.chooseButton(["督粮：选择令" + get.translation(target) + "获得的牌", cards], [1, 2], bool)
 					.set("filterButton", button => {
 						return get.type(button.link) == "basic";
@@ -4263,24 +4258,19 @@ const skills = {
 					.set("ai", button => {
 						return _status.event.sgn * get.value(button.link);
 					})
-					.set("sgn", get.sgnAttitude(player, target) > 0);
+					.set("sgn", get.sgnAttitude(player, target) > 0)
+					.forResult();
+				if (result.links?.length) {
+					const cardsx = result.links;
+					await target.gain(cardsx, "draw");
+					game.log(target, "获得了" + get.cnNumber(cardsx.length) + "张牌");
+					cards.removeArray(cardsx);
+					await game.cardsGotoPile(cards.reverse(), "insert");
+				}
 			} else {
 				target.addTempSkill("dcduliang2", { player: "phaseAfter" });
 				target.addMark("dcduliang2", 1, false);
-				event.finish();
 			}
-			"step 3";
-			if (result.bool) {
-				var cardsx = result.links;
-				target.gain(cardsx, "draw");
-				game.log(target, "获得了" + get.cnNumber(cardsx.length) + "张牌");
-				cards.removeArray(cardsx);
-				cards.reverse();
-			}
-			for (var i = 0; i < cards.length; i++) {
-				ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-			}
-			game.updateRoundNumber();
 		},
 		ai: {
 			order: 4,

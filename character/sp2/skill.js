@@ -2268,9 +2268,7 @@ const skills = {
 						ui.special
 					);
 				}
-				for (let i = lose.length - 1; i--; i >= 0) {
-					ui.cardPile.insertBefore(lose[i], ui.cardPile.firstChild);
-				}
+				await game.cardsGotoPile(lose.slice().reverse(), "insert");
 				game.updateRoundNumber();
 				if (gain.length) {
 					await target.gain(gain, "draw");
@@ -2336,9 +2334,7 @@ const skills = {
 					}
 				}
 			} else {
-				for (let i = topCards.length - 1; i--; i >= 0) {
-					ui.cardPile.insertBefore(topCards[i], ui.cardPile.firstChild);
-				}
+				await game.cardsGotoPile(topCards.slice().reverse(), "insert");
 				game.updateRoundNumber();
 			}
 		},
@@ -8787,18 +8783,13 @@ const skills = {
 	nhguanyue: {
 		trigger: { player: "phaseJieshuBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			var cards = get.cards(2);
-			player.chooseButton(["观月：选择获得一张牌", cards.slice(0)], true).set("ai", function (button) {
+		async content(event, trigger, player) {
+			const cards = get.cards(2, true);
+			const result = await player.chooseButton(["观月：选择获得一张牌", cards.slice(0)], true).set("ai", function (button) {
 				return get.value(button.link, _status.event.player);
-			});
-			while (cards.length) {
-				ui.cardPile.insertBefore(cards.pop(), ui.cardPile.firstChild);
-			}
-			"step 1";
-			if (result.bool) {
-				player.gain(result.links, "gain2");
+			}).forResult();
+			if (result.bool && result.links?.length) {
+				await player.gain(result.links, "gain2");
 			}
 		},
 	},

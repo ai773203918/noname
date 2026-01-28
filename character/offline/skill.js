@@ -28849,7 +28849,8 @@ const skills = {
 					} else {
 						ui.discardPile.removeChild(card);
 					}
-					ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
+					await game.cardsGotoPile(card, "insert");
+					//ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
 					game.updateRoundNumber();
 					game.log(target, "将" + get.translation(card) + "置于牌堆顶");
 				} else {

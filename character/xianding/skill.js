@@ -3686,17 +3686,13 @@ const skills = {
 				player.setStorage(name, map, true);
 				player.addSkill(name);
 			}
-			if (tops.length) {
-				tops.reverse();
-				for (let i = 0; i < tops.length; i++) {
-					ui.cardPile.insertBefore(tops[i], ui.cardPile.firstChild);
+			tops.reverse();
+			await game.cardsGotoPile(tops.concat(bottoms), ["top_cards", tops], (event, card) => {
+				if (event.top_cards.includes(card)) {
+					return ui.cardPile.firstChild;
 				}
-			}
-			if (bottoms.length) {
-				for (let i = 0; i < bottoms.length; i++) {
-					ui.cardPile.appendChild(bottoms[i]);
-				}
-			}
+				return null;
+			});
 			game.updateRoundNumber();
 			await game.delay();
 		},
@@ -6807,7 +6803,8 @@ const skills = {
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		frequent: true,
 		async content(event, trigger, player) {
-			const cards = get.cards(4);
+			const cards = get.cards(4, true);
+			await game.cardsGotoOrdering(cards);
 			const result = await player
 				.chooseToMove(true)
 				.set("list", [["牌堆顶", cards], ["获得"]])
@@ -6844,9 +6841,7 @@ const skills = {
 				const top = result.moved[0].reverse(),
 					gains = result.moved[1];
 				if (top?.length) {
-					for (let i = 0; i < top.length; i++) {
-						ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-					}
+					await game.cardsGotoPile(top, "insert");
 				}
 				if (gains?.length) {
 					await player.gain(gains, "gain2");
@@ -7053,7 +7048,8 @@ const skills = {
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		frequent: true,
 		async content(event, trigger, player) {
-			const cards = get.cards(1 + player.countMark("y_dc_zhenyi"));
+			const cards = get.cards(1 + player.countMark("y_dc_zhenyi"), true);
+			await game.cardsGotoOrdering(cards);
 			const result = await player
 				.chooseToMove(true)
 				.set("list", [["牌堆顶", cards], ["获得"]])
@@ -7087,9 +7083,7 @@ const skills = {
 				const top = result.moved[0].reverse(),
 					gains = result.moved[1];
 				if (top?.length) {
-					for (let i = 0; i < top.length; i++) {
-						ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-					}
+					await game.cardsGotoPile(top, "insert");
 				}
 				if (gains?.length) {
 					await player.gain(gains, "gain2");
@@ -14426,9 +14420,7 @@ const skills = {
 							ui.special
 						);
 					}
-					for (let i = lose.length - 1; i--; i >= 0) {
-						ui.cardPile.insertBefore(lose[i], ui.cardPile.firstChild);
-					}
+					await game.cardsGotoPile(lose.reverse(), "insert");
 					game.updateRoundNumber();
 					if (gain.length) {
 						await target.gain(gain, "draw");
@@ -14437,9 +14429,7 @@ const skills = {
 					if (!showCards.length) {
 						return;
 					}
-					for (let i = showCards.length - 1; i--; i >= 0) {
-						ui.cardPile.insertBefore(showCards[i], ui.cardPile.firstChild);
-					}
+					await game.cardsGotoPile(showCards.slice().reverse(), "insert");
 					game.updateRoundNumber();
 				}
 			}
@@ -31456,16 +31446,17 @@ const skills = {
 			return event.player.isIn() && get.distance(player, event.player) <= list[0];
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
-			event.list = lib.skill.yuqi.getInfo(player);
-			var cards = get.cards(event.list[1]);
-			event.cards = cards;
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove_new(true, "隅泣");
+		async content(event, trigger, player) {
+			const list = lib.skill.yuqi.getInfo(player);
+			const {
+				targets: [target],
+			} = event;
+			const cards = get.cards(list[1], true);
+			await game.cardsGotoOrdering(cards);
+			const next = player.chooseToMove_new(true, "隅泣");
 			next.set("list", [
 				["牌堆顶的牌", cards],
-				[["交给" + get.translation(trigger.player) + '<div class="text center">至少一张' + (event.list[2] > 1 ? "<br>至多" + get.cnNumber(event.list[2]) + "张" : "") + "</div>"], ['交给自己<div class="text center">至多' + get.cnNumber(event.list[3]) + "张</div>"]],
+				[["交给" + get.translation(target) + '<div class="text center">至少一张' + (list[2] > 1 ? "<br>至多" + get.cnNumber(event.list[2]) + "张" : "") + "</div>"], ['交给自己<div class="text center">至多' + get.cnNumber(list[3]) + "张</div>"]],
 			]);
 			next.set("filterMove", function (from, to, moved) {
 				var info = lib.skill.yuqi.getInfo(_status.event.player);
@@ -31496,23 +31487,25 @@ const skills = {
 			next.set("filterOk", function (moved) {
 				return moved[1].length > 0;
 			});
-			"step 1";
+			const result = await next.forResult();
 			if (result.bool) {
-				var moved = result.moved;
+				const moved = result.moved;
 				cards.removeArray(moved[1]);
 				cards.removeArray(moved[2]);
-				while (cards.length) {
-					ui.cardPile.insertBefore(cards.pop().fix(), ui.cardPile.firstChild);
+				if (cards.length) {
+					await game.cardsGotoPile(cards.slice().reverse(), "insert");
 				}
-				var list = [[trigger.player, moved[1]]];
+				const list = [[target, moved[1]]];
 				if (moved[2].length) {
 					list.push([player, moved[2]]);
 				}
-				game.loseAsync({
-					gain_list: list,
-					giver: player,
-					animate: "draw",
-				}).setContent("gaincardMultiple");
+				await game
+					.loseAsync({
+						gain_list: list,
+						giver: player,
+						animate: "draw",
+					})
+					.setContent("gaincardMultiple");
 			}
 		},
 		mark: true,
@@ -32450,14 +32443,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		frequent: true,
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("xingzuo2");
-			var cards = get.bottomCards(3);
-			event.cards2 = cards;
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove("兴作：将三张牌置于牌堆底");
-			var list = [["牌堆底", cards]],
+			const cards = get.bottomCards(3, true);
+			await game.cardsGotoOrdering(cards);
+			const next = (next = player.chooseToMove("兴作：将三张牌置于牌堆底"));
+			const list = [["牌堆底", cards]],
 				hs = player.getCards("h");
 			if (hs.length) {
 				list.push(["手牌", hs]);
@@ -32498,16 +32489,15 @@ const skills = {
 				}
 				return [cards, canchoose];
 			});
-			"step 1";
+			const result = await next.forResult();
 			if (result.bool) {
 				event.forceDie = true;
-				var cards = result.moved[0];
-				event.cards = cards;
-				player.storage.xingzuo2 = cards;
-				var hs = player.getCards("h");
-				var lose = [],
-					gain = event.cards2;
-				for (var i of cards) {
+				const bottom = result.moved[0];
+				game.addCardKnower(bottom, player);
+				player.storage.xingzuo2 = bottom;
+				const lose = [],
+					gain = cards;
+				for (const i of bottom) {
 					if (hs.includes(i)) {
 						lose.push(i);
 					} else {
@@ -32515,27 +32505,21 @@ const skills = {
 					}
 				}
 				if (lose.length) {
-					player.lose(lose, ui.cardPile);
+					player.$throw(lose.length, 1000);
+					await player.lose(lose, ui.cardPile);
 				}
 				if (gain.length) {
-					player.gain(gain, "draw");
+					await player.gain(gain, "draw");
 				}
-			} else {
-				event.finish();
-			}
-			"step 2";
-			for (var i of cards) {
-				if (!"hejsdx".includes(get.position(i, true))) {
-					i.fix();
-					ui.cardPile.appendChild(i);
+				const other = bottom.filter(i => !"hejsdx".includes(get.position(i, true)));
+				if (other.length) {
+					await game.cardsGotoPile(other);
 				}
 			}
-			game.updateRoundNumber();
 		},
 	},
 	xingzuo2: {
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		charlotte: true,
 		onremove: true,
 		sourceSkill: "xingzuo",
@@ -32544,9 +32528,8 @@ const skills = {
 				return target.countCards("h") > 0;
 			});
 		},
-		content() {
-			"step 0";
-			player
+		async cost(event, trigger, player) {
+			event.result = await player
 				.chooseTarget(function (card, player, target) {
 					return target.countCards("h") > 0;
 				}, "兴作：是否令一名角色将其手牌与牌堆底的三张牌替换？")
@@ -32573,24 +32556,21 @@ const skills = {
 						return 0;
 					}
 					return -att * Math.sqrt(Math.max(0, val));
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("xingzuo", target);
-				var cards = get.bottomCards(3);
-				game.cardsGotoOrdering(cards);
-				var hs = target.getCards("h");
-				target.lose(hs, ui.cardPile);
-				target.gain(cards, "draw");
-				if (hs.length > 3) {
-					player.loseHp();
-				}
-			} else {
-				event.finish();
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const cards = get.bottomCards(3, true);
+			await game.cardsGotoOrdering(cards);
+			const hs = target.getCards("h");
+			await target.lose(hs, ui.cardPile);
+			await target.gain(cards, "draw");
+			if (hs.length > 3) {
+				await player.loseHp();
 			}
-			"step 2";
-			game.updateRoundNumber();
 		},
 	},
 	miaoxian: {
@@ -32687,8 +32667,8 @@ const skills = {
 					}
 					return event.hs && event.hs.length == 1 && event.cards && event.cards.length == 1 && get.color(event.hs[0], player) == "red" && !player.countCards("h", { color: "red" });
 				},
-				content() {
-					player.draw();
+				async content(event, trigger, player) {
+					await player.draw();
 				},
 			},
 			backup: { audio: "miaoxian" },
@@ -35560,17 +35540,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			var cards = get.cards(3);
-			event.cards = cards;
+		async content(event, trigger, player) {
+			const cards = get.cards(3, true);
+			await game.cardsGotoOrdering(cards);
 			game.log(player, "观看了牌堆顶的" + get.cnNumber(cards.length) + "张牌");
-			player.chooseControl("ok").set("dialog", ["推演", cards]);
-			"step 1";
-			while (cards.length) {
-				ui.cardPile.insertBefore(cards.pop(), ui.cardPile.firstChild);
-			}
-			game.updateRoundNumber();
+			await player.viewCards("推演：牌堆顶三张牌", cards);
+			await game.cardsGotoPile(cards.reverse(), "insert");
 		},
 	},
 	busuan: {
