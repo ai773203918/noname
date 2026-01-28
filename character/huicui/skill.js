@@ -2522,7 +2522,7 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			const target = trigger.target;
-			const cards = await player.draw().forResult();
+			const cards = (await player.draw().forResult()).cards;
 			if (get.itemtype(cards) != "cards") {
 				return;
 			}
@@ -3225,7 +3225,7 @@ const skills = {
 								player.storage.dcshicao_aiRecord.pop();
 							}
 						}
-						const drawnCards = await next.forResult();
+						const drawnCards = (await next.forResult()).cards;
 						if (get.type2(drawnCards[0], player) === type) {
 							return;
 						}
