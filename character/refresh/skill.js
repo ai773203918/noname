@@ -5498,7 +5498,8 @@ const skills = {
 			return false;
 		},
 		async content(event, trigger, player) {
-			const cards = [], cards2 = trigger.getl(player).cards2;
+			const cards = [],
+				cards2 = trigger.getl(player).cards2;
 			cards.push(...cards2.filter(card => get.position(card, true) == "d"));
 			const result = await player
 				.chooseToMove("纵玄：将任意张牌置于牌堆顶（左边的牌更接近牌堆顶）", true, "allowChooseAll")
@@ -5599,11 +5600,14 @@ const skills = {
 								eff /= 10;
 							}
 							return eff;
-						}
+						},
 					})
 					.forResult();
 				if (result2.bool && result2.links?.length && result2.targets?.length) {
-					const { links: cards, targets: [target] } = result2;
+					const {
+						links: cards,
+						targets: [target],
+					} = result2;
 					player.line(target, "green");
 					await target.gain(cards, "gain2");
 				}
@@ -9230,7 +9234,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { target, cards } = event;
-			await player.showCards(cards, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
+			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【${get.translation(event.name)}】`);
 			if (
 				!target.countCards("he", function (card) {
 					if (get.type2(card) == "trick") {
@@ -9250,17 +9254,19 @@ const skills = {
 					})
 					.set("prompt", "选择交给" + get.translation(player) + "一张锦囊牌，或依次弃置两张非锦囊牌。")
 					.forResult();
-					if (result.cards?.length) {
-						const { cards: [card] } = result;
-						if (get.type2(card) == "trick") {
-							await target.give(card, player);
-						} else {
-							await target.discard(card);
-							await target.chooseToDiscard("he", true, function (card) {
-								return get.type2(card) != "trick";
-							});
-						}
+				if (result.cards?.length) {
+					const {
+						cards: [card],
+					} = result;
+					if (get.type2(card) == "trick") {
+						await target.give(card, player);
+					} else {
+						await target.discard(card);
+						await target.chooseToDiscard("he", true, function (card) {
+							return get.type2(card) != "trick";
+						});
 					}
+				}
 			}
 		},
 		ai: {
@@ -9559,24 +9565,26 @@ const skills = {
 				const { card } = result;
 				if (get.position(card, true) == "d") {
 					const result2 = await player
-					.chooseTarget("飘零：令一名角色获得" + get.translation(card) + "，或点【取消】将其置于牌堆顶").set("ai", function (target) {
-						var player = _status.event.player;
-						var att = get.attitude(player, target);
-						if (player == target) {
-							att /= 2;
-						}
-						return att;
-					})
-					.forResult();
+						.chooseTarget("飘零：令一名角色获得" + get.translation(card) + "，或点【取消】将其置于牌堆顶")
+						.set("ai", function (target) {
+							var player = _status.event.player;
+							var att = get.attitude(player, target);
+							if (player == target) {
+								att /= 2;
+							}
+							return att;
+						})
+						.forResult();
 					if (result2.bool && result2.target?.length) {
-						const { targets: [target] } = result2;
+						const {
+							targets: [target],
+						} = result2;
 						player.line(target, "green");
 						target.gain(card, "gain2");
 						if (player == target) {
 							await player.chooseToDiscard("he", true);
 						}
-					}
-					else {
+					} else {
 						game.log(player, "将", card, "置于牌堆顶");
 						await game.cardsGotoPile(card, "insert");
 					}
