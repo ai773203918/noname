@@ -4561,12 +4561,12 @@ const skills = {
 		check(event, player) {
 			return ui.cardPile.childElementCount % 10 > 3;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			var cards = game.cardsGotoOrdering(get.cards(ui.cardPile.childElementCount % 10)).cards;
-			var num = Math.ceil(cards.length / 2);
-			var next = player.chooseToMove("慧识：将" + get.cnNumber(num) + "张牌置于牌堆底并获得其余的牌", true);
+			const cards = get.cards(ui.cardPile.childElementCount % 10, true);
+			await game.cardsGotoOrdering(cards);
+			const num = Math.ceil(cards.length / 2);
+			const next = player.chooseToMove("慧识：将" + get.cnNumber(num) + "张牌置于牌堆底并获得其余的牌", true);
 			next.set("list", [["牌堆顶的展示牌", cards], ["牌堆底"]]);
 			next.set("filterMove", function (from, to, moved) {
 				if (moved[0].includes(from) && to == 1) {
@@ -4584,14 +4584,14 @@ const skills = {
 				});
 				return [cards, cards.splice(cards.length - _status.event.num)];
 			});
-			"step 1";
-			if (result.bool) {
-				var list = result.moved;
-				if (list[0].length) {
-					player.gain(list[0], "gain2");
+			const result = await next.forResult();
+			if (result.moved?.length) {
+				const { moved: [gain, bottom] } = result;
+				if (gain.length) {
+					await player.gain(gain, "gain2");
 				}
-				while (list[1].length) {
-					ui.cardPile.appendChild(list[1].shift().fix());
+				if (bottom.length) {
+					await game.cardsGotoPile(bottom);
 				}
 			}
 		},

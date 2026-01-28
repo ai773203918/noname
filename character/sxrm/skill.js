@@ -2530,12 +2530,12 @@ const skills = {
 			let top = result.moved[0],
 				bottom = result.moved[1];
 			top.reverse();
-			if (top.length) {
-				await game.cardsGotoPile(top, "insert");
-			}
-			if (bottom.length) {
-				await game.cardsGotoPile(bottom);
-			}
+			await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+				if (event.top_cards.includes(card)) {
+					return ui.cardPile.firstChild;
+				}
+				return null;
+			});
 			for (let i = 0; i < bottom.length; i++) {
 				ui.cardPile.appendChild(bottom[i]);
 			}

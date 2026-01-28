@@ -17104,10 +17104,13 @@ const skills = {
 			const top = result.moved[0];
 			const bottom = result.moved[1];
 			top.reverse();
-			game.log(player, "将两张牌置于牌堆顶");
-			await game.cardsGotoPile(top, "insert");
-			game.log(player, "将两张牌置于牌堆底");
-			await game.cardsGotoPile(bottom);
+			player.popup(`${get.cnNumber(top.length)}上${get.cnNumber(bottom.length)}下`);
+			await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+				if (event.top_cards.includes(card)) {
+					return ui.cardPile.firstChild;
+				}
+				return null;
+			});
 		},
 	},
 	wangxi: {

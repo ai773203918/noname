@@ -19109,14 +19109,17 @@ const skills = {
 				top.reverse();
 				player.$throw(cards.length, 1000);
 				player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");
-				if (top.length) {
-					game.log(player, `将${get.cnNumber(top.length)}张牌置于牌堆顶`);
-					await player.lose(top, ui.carePile, "insert");
-				}
-				if (bottom.length) {
-					game.log(player, `将${get.cnNumber(bottom.length)}张牌置于牌堆顶`);
-					await player.lose(bottom, ui.carePile, "insert");
-				}
+				game.log(player, `将${get.cnNumber(top.length)}张牌置于牌堆顶`);
+				game.log(player, `将${get.cnNumber(bottom.length)}张牌置于牌堆底`);
+				await player
+					.lose(top.concat(bottom), ui.cardPile)
+					.set("top_cards", top)
+					.set("insert_index", (event, card) => {
+						if (event.top_cards.includes(card)) {
+							return ui.cardPile.firstChild;
+						}
+						return null;
+					});
 				await game.delayx();
 			}
 			if (cards.length >= 3) {

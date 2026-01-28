@@ -11623,12 +11623,12 @@ export default {
 					var top = result.moved[0];
 					var bottom = result.moved[1];
 					top.reverse();
-					for (var i = 0; i < top.length; i++) {
-						ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-					}
-					for (i = 0; i < bottom.length; i++) {
-						ui.cardPile.appendChild(bottom[i]);
-					}
+					game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+						if (event.top_cards.includes(card)) {
+							return ui.cardPile.firstChild;
+						}
+						return null;
+					});
 					game.updateRoundNumber();
 					game.delayx();
 				},
