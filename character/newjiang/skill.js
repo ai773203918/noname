@@ -3456,12 +3456,14 @@ const skills = {
 					if (resultx?.bool) {
 						const moved = resultx.moved[0];
 						if (moved.length) {
-							await player.lose(cards, ui.cardPile);
-							for (let i = 0; i < moved.length; i++) {
+							game.log(player, `将${get.cnNumber(moved.length)}张牌置于牌堆底`);
+							player.$throw(moved.length, 1000);
+							await player.lose(moved, ui.cardPile);
+							/*for (let i = 0; i < moved.length; i++) {
 								const card = moved[i];
 								card.fix();
 								ui.cardPile.appendChild(card);
-							}
+							}*/
 						}
 					}
 				}
@@ -4379,11 +4381,11 @@ const skills = {
 			return true; //get.attitude(player,event.player)<0||get.damageEffect(event.player,event.player,player)>0;
 		},
 		logTarget: "player",
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.addTempSkill("shiming_round", "roundStart");
-			var cards = get.cards(3);
-			player
+			const { targets: [target] } = event;
+			const cards = get.cards(3, true);
+			const result = await player
 				.chooseButton(["识命：是否将其中一张置于牌堆底？", cards.slice(0)])
 				.set("ai", button => {
 					var att = _status.event.att,
@@ -4394,33 +4396,25 @@ const skills = {
 					}
 					return val - 5.99;
 				})
-				.set("att", get.attitude(player, trigger.player))
-				.set("damage", get.damageEffect(trigger.player, trigger.player, player) > 0 && trigger.player.hp <= 3 ? 1 : -1);
-			while (cards.length) {
-				ui.cardPile.insertBefore(cards.pop(), ui.cardPile.firstChild);
-			}
-			"step 1";
-			if (result.bool) {
-				var card = result.links[0];
-				card.fix();
-				ui.cardPile.appendChild(card);
+				.set("att", get.attitude(player, target))
+				.set("damage", get.damageEffect(target, target, player) > 0 && target.hp <= 3 ? 1 : -1)
+				.forResult();
+			if (result.bool && result.links?.length) {
+				const { links: cards } = result;
 				player.popup("一下", "wood");
 				game.log(player, "将一张牌置于了牌堆底");
+				await game.cardsGotoPile(cards);
 			}
-			"step 2";
-			trigger.player
+			const result2 = await target
 				.chooseBool("是否跳过摸牌阶段并对自己造成1点伤害，然后从牌堆底摸三张牌？")
 				.set("ai", () => _status.event.bool)
-				.set("bool", get.damageEffect(trigger.player, trigger.player) >= -6 || trigger.player.hp > 3);
-			"step 3";
-			if (result.bool) {
+				.set("bool", get.damageEffect(target, target) >= -6 || target.hp > 3)
+				.forResult();
+			if (result2.bool) {
 				trigger.cancel();
-				trigger.player.damage(trigger.player);
-			} else {
-				event.finish();
+				await target.damage(target);
+				await target.draw(3);
 			}
-			"step 4";
-			trigger.player.draw(3, "bottom");
 		},
 		subSkill: {
 			round: {
