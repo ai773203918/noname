@@ -9093,6 +9093,25 @@ const skills = {
 		getIndex(event, player) {
 			return event.num;
 		},
+		getNum(player, num) {
+			const mark = player.countMark("olchengxiang");
+			player.clearMark("olchengxiang", false);
+			return num + mark;
+		},
+		async callback(event, trigger, player) {
+			if (
+				event.cards2?.length &&
+				event.cards2
+					.map(card => {
+						return get.number(card);
+					})
+					.reduce((sum, num) => {
+						return (sum += num);
+					}, 0) == 13
+			) {
+				player.addMark(event.name, 1, false);
+			}
+		},
 		intro: { content: "下次发动【称象】多亮出$张牌" },
 	},
 	olrenxin: {

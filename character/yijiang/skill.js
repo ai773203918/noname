@@ -13737,8 +13737,103 @@ const skills = {
 	oldchengxiang: {
 		audio: "chengxiang",
 		inherit: "chengxiang",
+		maxNum: 12,
 	},
 	chengxiang: {
+		audio: 2,
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.num > 0;
+		},
+		//模版继承会用到，别问，问就是四个称象合一起，全靠event.name分效果
+		//能拿的牌的点数和
+		maxNum: 13,
+		//亮出牌的数量
+		getNum(player, num) {
+			return num;
+		},
+		//拿完牌之后的回调
+		async callback(event, trigger, player) {
+			return;
+		},
+		frequent: true,
+		async content(event, trigger, player) {
+			const num = get.info(event.name).getNum(player, 4);
+			event.showCards ??= [];
+			const cards = [];
+			event.cards = cards;
+			//给肌肉曹冲用的，修改称象亮出的牌
+			await event.trigger("chengxiangShowBegin");
+			cards.addArray(event.showCards);
+			if (num > cards.length) {
+				cards.addArray(get.cards(num - cards.length));
+			}
+			await player.showCards(cards, `${get.translation(player)}发动了〖${get.translation(event.name)}〗`, true).set("clearArena", false);
+			const maxNum = get.info(event.name).maxNum;
+			const result = await player
+				.chooseCardButton(cards, `称象：选择任意张点数不大于${maxNum}的牌`, [1, Infinity], true)
+				.set("filterButton", function (button) {
+					let num = 0;
+					for (let i = 0; i < ui.selected.buttons.length; i++) {
+						num += get.number(ui.selected.buttons[i].link);
+					}
+					return num + get.number(button.link) <= _status.event.maxNum;
+				})
+				.set("maxNum", maxNum)
+				.set("ai", function (button) {
+					let player = _status.event.player,
+						name = get.name(button.link),
+						val = get.value(button.link, player);
+					if (name === "tao") {
+						return val + 2 * Math.min(3, 1 + player.getDamagedHp());
+					}
+					if (name === "jiu" && player.hp < 3) {
+						return val + 2 * (2.8 - player.hp);
+					}
+					if (name === "wuxie" && player.countCards("j") && !player.hasWuxie()) {
+						return val + 5;
+					}
+					if (player.hp > 1 && (player.hasSkill("renxin") || player.hasSkill("olrenxin")) && player.hasFriend() && get.type(button.link) === "equip") {
+						return val + 4;
+					}
+					return val;
+				})
+				.forResult();
+			game.broadcastAll(ui.clear);
+			if (result.links?.length) {
+				const { links } = result;
+				event.cards2 = links;
+				await player.gain(links, "gain2");
+				await get.info(event.name).callback(event, trigger, player);
+			}
+		},
+		ai: {
+			maixie: true,
+			maixie_hp: true,
+			effect: {
+				target(card, player, target) {
+					if (get.tag(card, "damage")) {
+						if (player.hasSkillTag("jueqing", false, target)) {
+							return [1, -2];
+						}
+						if (!target.hasFriend()) {
+							return;
+						}
+						if (target.hp >= 4) {
+							return [1, 2];
+						}
+						if (target.hp == 3) {
+							return [1, 1.5];
+						}
+						if (target.hp == 2) {
+							return [1, 0.5];
+						}
+					}
+				},
+			},
+		},
+	},
+	/*chengxiang: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
@@ -13860,7 +13955,7 @@ const skills = {
 				},
 			},
 		},
-	},
+	},*/
 	oldrenxin: {
 		audio: "renxin",
 		trigger: { global: "dying" },

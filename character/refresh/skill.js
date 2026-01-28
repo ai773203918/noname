@@ -634,15 +634,10 @@ const skills = {
 	//不想突破可以不突破的界曹冲
 	rechengxiang: {
 		audio: 2,
-		group: "rechengxiang_gain",
-		trigger: {
-			player: "rechengxiang_gainEnd",
-		},
-		direct: true,
-		subfrequent: ["gain"],
-		filter(event, player) {
-			return (
-				event.cards2 &&
+		inherit: "chengxiang",
+		async callback(event, trigger, player) {
+			if (
+				event.cards2?.length &&
 				event.cards2
 					.map(card => {
 						return get.number(card);
@@ -650,17 +645,10 @@ const skills = {
 					.reduce((sum, num) => {
 						return (sum += num);
 					}, 0) == 13
-			);
-		},
-		async content(event, trigger, player) {
-			await player.link(false);
-			await player.turnOver(false);
-		},
-		subSkill: {
-			gain: {
-				inherit: "chengxiang",
-				audio: "rechengxiang",
-			},
+			) {
+				await player.link(false);
+				await player.turnOver(false);
+			}
 		},
 	},
 	//OL界二张
@@ -1299,7 +1287,7 @@ const skills = {
 			});
 			trigger.set("filterDiscard", card => {
 				const { cards2 } = get.event().getParent("huogong", true);
-				return get.color(card) == get.color(cards2[0]); 
+				return get.color(card) == get.color(cards2[0]);
 			});
 		},
 		async huogongContent(event, trigger, player) {
@@ -8356,7 +8344,10 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { player: target } = trigger;
-			const result = await player.chooseToCompare(target).set("small", player.hp > 1 && get.effect(player, { name: "sha" }, target, player) > 0 && Math.random() < 0.9).forResult();
+			const result = await player
+				.chooseToCompare(target)
+				.set("small", player.hp > 1 && get.effect(player, { name: "sha" }, target, player) > 0 && Math.random() < 0.9)
+				.forResult();
 			if (result.bool) {
 				target.addTempSkill("zishou2");
 			} else {
@@ -11370,14 +11361,17 @@ const skills = {
 		animationColor: "orange",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const result = await player.chooseNumbers(get.prompt(event.name), [{ prompt: "请选择你要失去的体力值", min: 1, max: player.getHp() }], true).set("processAI", () => {
-				const player = get.player();
-				let num = player.getHp() - 1;
-				if (player.countCards("hs", { name: ["tao", "jiu"] })) {
-					num = player.getHp();
-				}
-				return [num];
-			}).forResult();
+			const result = await player
+				.chooseNumbers(get.prompt(event.name), [{ prompt: "请选择你要失去的体力值", min: 1, max: player.getHp() }], true)
+				.set("processAI", () => {
+					const player = get.player();
+					let num = player.getHp() - 1;
+					if (player.countCards("hs", { name: ["tao", "jiu"] })) {
+						num = player.getHp();
+					}
+					return [num];
+				})
+				.forResult();
 			const number = result.numbers[0];
 			player.storage.reqimou2 = number;
 			await player.loseHp(number);
@@ -14544,7 +14538,10 @@ const skills = {
 				} else if (get.color(card) == "red") {
 					await player.gain(card, target, "give", "bySelf");
 					if (target.isDamaged()) {
-						const result = await player.chooseBool(`是否让${get.translation(target)}回复1点体力？`).set("choice", get.recoverEffect(target, player, player) > 0).forResult();
+						const result = await player
+							.chooseBool(`是否让${get.translation(target)}回复1点体力？`)
+							.set("choice", get.recoverEffect(target, player, player) > 0)
+							.forResult();
 						if (result?.bool) {
 							await target.recover();
 						}
@@ -15430,9 +15427,12 @@ const skills = {
 				return info[0] == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3], isCard: true }), null, true);
 			});
 			if (num < 2 && num + cards.length > 1 && list.length) {
-				const result = await player.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]]).set("ai", button => {
-					return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
-				}).forResult();
+				const result = await player
+					.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]])
+					.set("ai", button => {
+						return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
+					})
+					.forResult();
 				if (!result?.links?.length) {
 					return;
 				}
@@ -15775,12 +15775,14 @@ const skills = {
 		preHidden: true,
 		async content(event, trigger, player) {
 			const { source } = trigger;
-			const result = await player.judge(card => {
-				if (get.color(card) == "red") {
-					return 1;
-				}
-				return 0;
-			}).forResult();
+			const result = await player
+				.judge(card => {
+					if (get.color(card) == "red") {
+						return 1;
+					}
+					return 0;
+				})
+				.forResult();
 			switch (result?.color) {
 				case "black":
 					if (source.countDiscardableCards(player, "he")) {
