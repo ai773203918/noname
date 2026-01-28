@@ -68,7 +68,9 @@ const skills = {
 					targets: [target],
 				} = result;
 				player.line(target);
-				await target.gain(toGive, "gain2");
+				const next = target.gain(toGive, "gain2");
+				next.giver = player;
+				await next;
 			}
 			if (links?.includes("gain")) {
 				const hs = player.getCards("h").map(i => get.suit(i));
@@ -134,43 +136,67 @@ const skills = {
 	},
 	clanxsyingxiang: {
 		audio: 2,
-		forced: true,
 		trigger: {
-			global: ["loseAfter", "loseAsyncAfter", "gainAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
+			global: ["useCardAfter", "loseAfter", "loseAsyncAfter", "gainAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 		},
-		getIndex(event, player) {
-			return game
-				.filterPlayer(target => {
-					const evt = event.getl?.(target);
-					return evt?.hs?.length && evt.hs.some(card => evt.gaintag_map?.[card.cardid]?.includes("clanxsyingxiang"));
-				})
-				.sortBySeat();
+		filter(event, player) {
+			if (event.name === "useCard") {
+				return event.player.hasHistory("lose", evt => {
+					if (evt.getParent() !== event) {
+						return false;
+					}
+					return Object.values(evt.gaintag_map).flat().includes("clanxsyingxiang");
+				});
+			}
+			if (player.hasSkill("clanxsyingxiang_used") || !player.countDiscardableCards(player, "h", card => !get.info("clanqingjue").isOnlySuit(card, player))) {
+				return false;
+			}
+			if (event.name === "lose" && event.getParent().name === "useCard") {
+				return false;
+			}
+			return game.hasPlayer(target => {
+				const evt = event.getl?.(target);
+				return evt?.hs?.some(card => evt.gaintag_map?.[card.cardid]?.includes("clanxsyingxiang"));
+			});
 		},
-		filter(event, player, name, target) {
-			return true;
+		logTarget(event, player) {
+			if (event.name === "useCard") {
+				return game
+					.filterPlayer(i => {
+						if (i === event.player) {
+							return true;
+						}
+						return i.hasCard(card => card.hasGaintag("clanxsyingxiang"), "h");
+					})
+					.sortBySeat();
+			}
+			return player;
 		},
-		logTarget(event, player, name, target) {
-			return target;
-		},
+		forced: true,
 		async content(event, trigger, player) {
-			const drawer = [player, ...game.filterPlayer(i => i.hasCard(card => card.hasGaintag(event.name), "h")).sortBySeat()];
-			await game.asyncDraw(drawer);
-			if ((trigger.relatedEvent || trigger.getParent()).name !== "useCard") {
+			if (trigger.name === "useCard") {
+				await game.asyncDraw([player, ...event.targets].sortBySeat());
+				await game.delayx();
+			} else {
 				const skill = "clanqingjue";
-				if (!player.hasSkill("clanxsyingxiang_used") && player.countDiscardableCards(player, "h", card => !get.info(skill).isOnlySuit(card, player)) > 0) {
-					player.logSkill(skill);
-					player.addTempSkill(`${event.name}_used`, "roundStart");
-					const next = game.createEvent(skill);
-					next.player = player;
-					next.setContent(get.info(skill).content);
-					await next;
-				}
+				player.logSkill(skill);
+				player.addTempSkill(`${event.name}_used`, "roundStart");
+				const next = game.createEvent(skill);
+				next.player = player;
+				next.setContent(get.info(skill).content);
+				await next;
 			}
 		},
-		group: ["clanxsyingxiang_mark"],
+		group: "clanxsyingxiang_mark",
 		subSkill: {
 			used: {
 				charlotte: true,
+				init(player, skill) {
+					player.addTip(skill, `${get.translation(skill)} 已${get.translation("clanqingjue")}`);
+				},
+				onremove(player, skill) {
+					player.removeTip(skill);
+				},
 			},
 			mark: {
 				audio: "clanxsyingxiang",
@@ -184,9 +210,9 @@ const skills = {
 							if (target == player) {
 								return false;
 							}
-							const gain = event.getg?.(target);
-							const lose = event.getl?.(player)?.cards2;
-							return lose.some(i => gain.includes(i));
+							const gain = event.getg?.(target) ?? [];
+							const lose = event.getl?.(player)?.cards2 ?? [];
+							return gain.length > 0 && (event.giver === player || lose.some(i => gain.includes(i)));
 						})
 						.sortBySeat();
 				},
@@ -201,7 +227,7 @@ const skills = {
 					const gain = trigger.getg?.(target);
 					const lose = trigger.getl?.(player)?.cards2;
 					target.addGaintag(
-						gain.filter(i => lose.includes(i)),
+						gain.filter(i => trigger.giver === player || lose.includes(i)),
 						"clanxsyingxiang"
 					);
 				},
