@@ -319,7 +319,7 @@ const skills = {
 				return false;
 			}
 			const evt = lib.skill.dcjianying.getLastUsed(player, event);
-			if (!evt || !evt.card || evt.dcjizhan) {
+			if (!evt || !evt.card || evt.dczhuitao) {
 				return false;
 			}
 			return get.color(evt.card) == "black" && game.hasPlayer(target => target != player && !player.getStorage("dczhuitao_effect").includes(target));
