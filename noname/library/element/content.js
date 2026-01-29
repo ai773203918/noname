@@ -3,7 +3,7 @@ import { _status, game, get, lib, ui, ai } from "noname";
 import { GameEvent } from "./gameEvent.js";
 import { Player } from "./player.js";
 
-import { delay } from "@/util/index.js";
+import { delay } from "../../util/index.js";
 
 // 未来再改
 /**
