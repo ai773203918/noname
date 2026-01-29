@@ -8718,37 +8718,37 @@ const skills = {
 				str += "并";
 			}
 			if (draw > 0) {
-				str += "摸" + get.cnNumber(1 - player.countMark("sbjianxiong")) + "张牌";
+				str += "摸" + get.cnNumber(3 - player.countMark("sbjianxiong")) + "张牌";
 			}
 			if (player.countMark("sbjianxiong")) {
 				str += "，然后可以弃1枚“治世”";
 			}
 			return str;
 		},
-		content() {
-			"step 0";
-			if (get.itemtype(trigger.cards) == "cards" && trigger.cards.some(i => get.position(i, true) == "o")) {
-				player.gain(trigger.cards, "gain2");
+		async content(event, trigger, player) {
+			const { cards } = trigger;
+			if (get.itemtype(cards) == "cards" && cards.someInD()) {
+				await player.gain(cards.filterInD(), "gain2");
 			}
-			var num = player.countMark("sbjianxiong");
-			if (1 - num > 0) {
-				player.draw(1 - num, "nodelay");
+			const num = player.countMark(event.name);
+			if (3 - num > 0) {
+				await player.draw(3 - num, "nodelay");
 			}
-			if (!num) {
-				event.finish();
-			}
-			"step 1";
-			player.chooseBool("是否弃1枚“治世”？").set("ai", () => {
-				var player = _status.event.player,
-					current = _status.currentPhase;
-				if (get.distance(current, player, "absolute") > 3 && player.hp <= 2) {
-					return true;
+			if (num) {
+				const result = await player
+					.chooseBool("是否弃1枚“治世”？")
+					.set("ai", () => {
+						const player = _status.event.player,
+							current = _status.currentPhase;
+						if (get.distance(current, player, "absolute") > 3 && player.hp <= 2) {
+							return true;
+						}
+						return false;
+					})
+					.forResult();
+				if (result.bool) {
+					player.removeMark(event.num, 1);
 				}
-				return false;
-			});
-			"step 2";
-			if (result.bool) {
-				player.removeMark("sbjianxiong", 1);
 			}
 		},
 		ai: {
@@ -8798,25 +8798,23 @@ const skills = {
 				filter(event, player) {
 					return event.name != "phase" || game.phaseNumber == 0;
 				},
-				content() {
-					"step 0";
-					var map = {};
-					var list = [];
-					for (var i = 1; i <= 2; i++) {
-						var cn = get.cnNumber(i, true);
+				async content(event, trigger, player) {
+					const map = {};
+					const list = [];
+					for (let i = 1; i <= 2; i++) {
+						const cn = get.cnNumber(i, true);
 						map[cn] = i;
 						list.push(cn);
 					}
-					event.map = map;
 					list.push("cancel2");
-					player
+					const result = await player
 						.chooseControl(list, function () {
 							return get.cnNumber(2, true);
 						})
-						.set("prompt", "奸雄：获得任意枚“治世”标记");
-					"step 1";
+						.set("prompt", "奸雄：获得任意枚“治世”标记")
+						.forResult();
 					if (result.control != "cancel2") {
-						player.addMark("sbjianxiong", event.map[result.control]);
+						player.addMark("sbjianxiong", map[result.control]);
 					}
 				},
 			},

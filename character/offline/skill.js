@@ -19841,13 +19841,12 @@ const skills = {
 					const top = result.moved[0],
 						bottom = result.moved[1];
 					top.reverse();
-					for (var i = 0; i < top.length; i++) {
-						ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-					}
-					for (i = 0; i < bottom.length; i++) {
-						ui.cardPile.appendChild(bottom[i]);
-					}
-					game.updateRoundNumber();
+					await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+						if (event.top_cards.includes(card)) {
+							return ui.cardPile.firstChild;
+						}
+						return null;
+					});
 					await game.delayx();
 				}
 			}
@@ -28850,7 +28849,8 @@ const skills = {
 					} else {
 						ui.discardPile.removeChild(card);
 					}
-					ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
+					await game.cardsGotoPile(card, "insert");
+					//ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
 					game.updateRoundNumber();
 					game.log(target, "将" + get.translation(card) + "置于牌堆顶");
 				} else {
@@ -31181,10 +31181,7 @@ const skills = {
 			"step 0";
 			player.addTempSkill("psqichu_used");
 			var evt = event.getParent(2);
-			var cards = get.cards(2);
-			for (var i = cards.length - 1; i >= 0; i--) {
-				ui.cardPile.insertBefore(cards[i].fix(), ui.cardPile.firstChild);
-			}
+			var cards = get.cards(2, true);
 			var aozhan = player.hasSkill("aozhan");
 			player
 				.chooseButton(["七出：选择要" + (evt.name == "chooseToUse" ? "使用" : "打出") + "的牌", cards])
@@ -32315,11 +32312,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var cards = get.cards(2);
-			for (var i = cards.length - 1; i >= 0; i--) {
-				ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-			}
-			game.updateRoundNumber();
+			var cards = get.cards(2, true);
 			event.cards = cards;
 			event.videoId = lib.status.videoId++;
 			game.broadcastAll(

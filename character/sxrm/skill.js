@@ -2530,12 +2530,12 @@ const skills = {
 			let top = result.moved[0],
 				bottom = result.moved[1];
 			top.reverse();
-			for (let i = 0; i < top.length; i++) {
-				ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-			}
-			for (let i = 0; i < bottom.length; i++) {
-				ui.cardPile.appendChild(bottom[i]);
-			}
+			await game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+				if (event.top_cards.includes(card)) {
+					return ui.cardPile.firstChild;
+				}
+				return null;
+			});
 			game.addCardKnower(top, player);
 			game.addCardKnower(bottom, player);
 			player.popup(get.cnNumber(top.length) + "上" + get.cnNumber(bottom.length) + "下");

@@ -1096,7 +1096,7 @@ window.noname_character_rank = {
 		"pot_zanghong",
 	],
 	b: [
-		
+		"ol_caojie",
 		"ol_caojinyu",
 		"ol_re_xinxianying",
 		"clan_chentai",
@@ -3098,6 +3098,7 @@ window.noname_character_rank = {
 			"dc_sb_chunyuqiong",
 		],
 		rare: [
+			"ol_caojie",
 			"dc_sb_liuzhang",
 			"v_gongsunzan",
 			"dc_weifeng",

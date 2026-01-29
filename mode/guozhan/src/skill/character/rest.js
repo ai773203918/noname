@@ -11623,12 +11623,12 @@ export default {
 					var top = result.moved[0];
 					var bottom = result.moved[1];
 					top.reverse();
-					for (var i = 0; i < top.length; i++) {
-						ui.cardPile.insertBefore(top[i], ui.cardPile.firstChild);
-					}
-					for (i = 0; i < bottom.length; i++) {
-						ui.cardPile.appendChild(bottom[i]);
-					}
+					game.cardsGotoPile(top.concat(bottom), ["top_cards", top], (event, card) => {
+						if (event.top_cards.includes(card)) {
+							return ui.cardPile.firstChild;
+						}
+						return null;
+					});
 					game.updateRoundNumber();
 					game.delayx();
 				},
@@ -18045,17 +18045,16 @@ export default {
 		filter(event, player) {
 			return get.population("qun") > 0;
 		},
-		content() {
-			"step 0";
-			var num = get.population("qun");
+		async content(event, trigger, player) {
+			let num = get.population("qun");
 			// if (player.hasSkill("hongfa")) {
 			// 村规
 			if (player.hasSkill("hongfa", null, null, false)) {
 				num += player.getExpansions("huangjintianbingfu").length;
 			}
-			var cards = get.cards(num);
-			game.cardsGotoOrdering(cards);
-			var next = player.chooseToMove("悟心：将卡牌以任意顺序置于牌堆顶");
+			const cards = get.cards(num, true);
+			await game.cardsGotoOrdering(cards);
+			const next = player.chooseToMove("悟心：将卡牌以任意顺序置于牌堆顶");
 			next.set("list", [["牌堆顶", cards]]);
 			next.set("processAI", function (list) {
 				var cards = list[0][1].slice(0);
@@ -18064,12 +18063,10 @@ export default {
 				});
 				return [cards];
 			});
-			"step 1";
+			const result = await next.forResult();
 			if (result.bool) {
-				var list = result.moved[0].slice(0);
-				while (list.length) {
-					ui.cardPile.insertBefore(list.pop(), ui.cardPile.firstChild);
-				}
+				const list = result.moved[0].slice(0);
+				await game.cardsGotoPile(list.reverse(), "insert");
 				game.updateRoundNumber();
 			}
 		},
@@ -18190,10 +18187,9 @@ export default {
 					for (const i of cards) {
 						const owner = get.owner(i);
 						if (owner) {
-							owner.lose(i, ui.cardPile)._triggered = null;
+							await owner.lose(i, ui.cardPile).set("_triggered", null);
 						} else {
-							i.fix();
-							ui.cardPile.appendChild(i);
+							await game.cardsGotoPile(i);
 						}
 					}
 					await player.draw(2);
