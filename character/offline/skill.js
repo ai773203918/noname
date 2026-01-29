@@ -31181,10 +31181,7 @@ const skills = {
 			"step 0";
 			player.addTempSkill("psqichu_used");
 			var evt = event.getParent(2);
-			var cards = get.cards(2);
-			for (var i = cards.length - 1; i >= 0; i--) {
-				ui.cardPile.insertBefore(cards[i].fix(), ui.cardPile.firstChild);
-			}
+			var cards = get.cards(2, true);
 			var aozhan = player.hasSkill("aozhan");
 			player
 				.chooseButton(["七出：选择要" + (evt.name == "chooseToUse" ? "使用" : "打出") + "的牌", cards])
@@ -32315,11 +32312,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var cards = get.cards(2);
-			for (var i = cards.length - 1; i >= 0; i--) {
-				ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-			}
-			game.updateRoundNumber();
+			var cards = get.cards(2, true);
 			event.cards = cards;
 			event.videoId = lib.status.videoId++;
 			game.broadcastAll(

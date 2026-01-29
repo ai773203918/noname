@@ -602,9 +602,7 @@ const skills = {
 				const bottoms = result2.moved[1].slice();
 				if (bottoms.length) {
 					await game.cardsGotoOrdering(bottoms);
-					for (let i = 0; i < bottoms.length; i++) {
-						ui.cardPile.appendChild(bottoms[i]);
-					}
+					await game.cardsGotoPile(bottoms);
 					game.updateRoundNumber();
 				}
 			}
@@ -22130,13 +22128,12 @@ const skills = {
 			return [event.player, event.target].some(current => current == player);
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			var str = '<div class="text center">牌堆顶';
-			var cards = get.cards();
+		async content(event, trigger, player) {
+			let str = '<div class="text center">牌堆顶';
+			const cards = get.cards(1, true);
 			if (trigger.name == "chooseToCompare" && trigger.compareMeanwhile) {
-				var result = trigger.result;
-				var list = [[result.num1[0], result.player]];
+				const result = trigger.result;
+				const list = [[result.num1[0], result.player]];
 				list.addArray(
 					result.num2.map(function (card, i) {
 						return [card, result.targets[i]];
@@ -22169,18 +22166,16 @@ const skills = {
 				}
 			}
 			str += "</div>";
-			event.cards = cards;
-			player.chooseButton(["纵适：选择要获得的牌", str, cards]).set("ai", get.buttonValue);
-			"step 1";
+			const result = await player.chooseButton(["纵适：选择要获得的牌", str, cards]).set("ai", get.buttonValue).forResult();
 			if (result.bool) {
-				var draw = result.links[0] == cards[0];
-				player.gain(result.links, draw ? "draw" : "gain2").log = false;
+				const draw = result.links[0] == cards[0];
 				game.log(player, "获得了", draw ? "牌堆顶的一张牌" : result.links);
-				if (!draw) {
+				await player.gain(result.links, draw ? "draw" : "gain2").set("log", false);
+				/*if (!draw) {
 					cards[0].fix();
 					ui.cardPile.insertBefore(cards[0], ui.cardPile.firstChild);
 					game.updateRoundNumber();
-				}
+				}*/
 			}
 		},
 	},
@@ -22191,11 +22186,10 @@ const skills = {
 			player: ["damageEnd", "phaseJieshuBegin"],
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			event.cards = get.cards(3);
-			player
-				.chooseButton(["【镇行】：请选择要获得的牌", event.cards])
+		async content(event, trigger, player) {
+			const cards = get.cards(3, true);
+			const result = await player
+				.chooseButton(["【镇行】：请选择要获得的牌", cards])
 				.set("filterButton", function (button) {
 					var cards = _status.event.cards;
 					for (var i = 0; i < cards.length; i++) {
@@ -22208,17 +22202,11 @@ const skills = {
 				.set("ai", function (button) {
 					return get.value(button.link);
 				})
-				.set("cards", event.cards);
-			"step 1";
-			for (var i = event.cards.length - 1; i >= 0; i--) {
-				if (result.bool && result.links.includes(event.cards[i])) {
-					player.gain(event.cards[i], "gain2");
-				} else {
-					event.cards[i].fix();
-					ui.cardPile.insertBefore(event.cards[i], ui.cardPile.childNodes[0]);
-				}
+				.set("cards", cards)
+				.forResult();
+			if (result.bool && result.links?.length) {
+				await player.gain(result.links, "gain2");
 			}
-			game.updateRoundNumber();
 		},
 	},
 	//芙蓉，手杀界廖化，手杀界曹彰

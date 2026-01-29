@@ -8785,9 +8785,12 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			const cards = get.cards(2, true);
-			const result = await player.chooseButton(["观月：选择获得一张牌", cards.slice(0)], true).set("ai", function (button) {
-				return get.value(button.link, _status.event.player);
-			}).forResult();
+			const result = await player
+				.chooseButton(["观月：选择获得一张牌", cards.slice(0)], true)
+				.set("ai", function (button) {
+					return get.value(button.link, _status.event.player);
+				})
+				.forResult();
 			if (result.bool && result.links?.length) {
 				await player.gain(result.links, "gain2");
 			}
@@ -15578,20 +15581,20 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player;
 		},
-		content() {
-			"step 0";
-			event.cards = get.cards(1);
-			player.showCards(get.translation(player) + "对" + get.translation(target) + "发动了【图南】", event.cards);
-			"step 1";
-			var card = cards[0];
-			var bool1 = game.hasPlayer(function (current) {
+		async content(event, trigger, player) {
+			const { target } = event;
+			const cards = get.cards(1, true);
+			await player.showCards(cards, get.translation(player) + "对" + get.translation(target) + "发动了【图南】", true).set("clearArena", false);
+			const [card] = cards;
+			const bool1 = game.hasPlayer(function (current) {
 				return target.canUse(card, current, false);
 			});
-			var bool2 = game.hasPlayer(function (current) {
-				return target.canUse({ name: "sha" }, current);
+			const bool2 = game.hasPlayer(function (current) {
+				return target.canUse(get.autoViewAs({ name: "sha" }, [card]), current);
 			});
+			let result;
 			if (bool1 && bool2) {
-				target
+				result = await target
 					.chooseControl(function () {
 						return 0;
 					})
@@ -15599,24 +15602,24 @@ const skills = {
 					.set("ai", function () {
 						return _status.event.choice;
 					})
-					.set("choice", target.getUseValue(card, false) > target.getUseValue({ name: "sha", cards: cards }) ? 0 : 1);
+					.set("choice", target.getUseValue(card, false) > target.getUseValue({ name: "sha", cards: cards }) ? 0 : 1)
+					.forResult();
 			} else if (bool1) {
-				event.directindex = 0;
+				result = { index: 0 };
 			} else if (bool2) {
-				event.directindex = 1;
+				result = { index: 1 };
 			} else {
-				ui.cardPile.insertBefore(card, ui.cardPile.firstChild);
-				event.finish();
+				game.broadcastAll(ui.clear);
+				return;
 			}
-			"step 2";
-			var card = cards[0];
-			if (result && typeof event.directindex != "number") {
-				event.directindex = result.index;
-			}
-			if (event.directindex == 1) {
-				target.chooseUseTarget({ name: "sha" }, cards, true, false).viewAs = false;
-			} else {
-				target.chooseUseTarget(card, true, false, "nodistance");
+			game.broadcastAll(ui.clear);
+			if (typeof result.index == "number") {
+				const { index } = result;
+				if (index == 1) {
+					await target.chooseUseTarget({ name: "sha" }, cards, true, false).set("viewAs", false);
+				} else {
+					await target.chooseUseTarget(card, true, false, "nodistance");
+				}
 			}
 		},
 		ai: {

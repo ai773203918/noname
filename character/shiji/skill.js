@@ -5122,7 +5122,6 @@ const skills = {
 	},
 	mjchenshi_player: {
 		trigger: { player: "useCardToPlayered" },
-		direct: true,
 		sourceSkill: "mjchenshi",
 		filter(event, player) {
 			if (!event.card || event.card.name != "binglinchengxiax" || !event.isFirstTarget) {
@@ -5135,69 +5134,62 @@ const skills = {
 				})
 			);
 		},
-		content() {
-			"step 0";
-			var list = game.filterPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const list = game.filterPlayer(function (current) {
 				return current != player && current.hasSkill("mjchenshi");
 			});
-			player.chooseCardTarget({
-				prompt: "是否交给" + get.translation(list) + "一张牌，将牌堆顶三张牌中不为【杀】的牌置于弃牌堆？",
-				filterCard: true,
-				position: "he",
-				filterTarget(card, player, target) {
-					return _status.event.list.includes(target);
-				},
-				list: list,
-				selectTarget: list.length > 1 ? 1 : -1,
-				goon: (function () {
-					for (var i of list) {
-						if (get.attitude(player, i) > 0) {
-							return 1;
+			event.result = await player
+				.chooseCardTarget({
+					prompt: "是否交给" + get.translation(list) + "一张牌，将牌堆顶三张牌中不为【杀】的牌置于弃牌堆？",
+					filterCard: true,
+					position: "he",
+					filterTarget(card, player, target) {
+						return _status.event.list.includes(target);
+					},
+					list: list,
+					selectTarget: list.length > 1 ? 1 : -1,
+					goon: (function () {
+						for (var i of list) {
+							if (get.attitude(player, i) > 0) {
+								return 1;
+							}
+							return -1;
 						}
-						return -1;
-					}
-				})(),
-				ai1(card) {
-					if (_status.event.goon > 0) {
-						return 7 - get.value(card);
-					}
-					return 0.01 - get.value(card);
-				},
-				ai2(target) {
-					var card = ui.selected.cards[0];
-					return get.value(card, target) * get.attitude(_status.event.player, target);
-				},
-			});
-			"step 1";
-			if (result.bool && result.cards.length && result.targets.length) {
-				var target = result.targets[0];
-				target.logSkill("mjchenshi");
-				player.line(target, "green");
-				player.give(result.cards, target);
-				trigger.getParent().mjchenshi_ai = true;
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var cards = get.cards(3);
-			for (var i = cards.length - 1; i >= 0; i--) {
-				if (cards[i].name == "sha") {
-					cards[i].fix();
-					ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-					cards.splice(i, 1);
-				}
-			}
-			if (cards.length) {
-				player.$throw(cards, 1000);
-				game.delayx();
-				game.cardsDiscard(cards);
-				game.log(cards, "进入了弃牌堆");
+					})(),
+					ai1(card) {
+						if (_status.event.goon > 0) {
+							return 7 - get.value(card);
+						}
+						return 0.01 - get.value(card);
+					},
+					ai2(target) {
+						var card = ui.selected.cards[0];
+						return get.value(card, target) * get.attitude(_status.event.player, target);
+					},
+				})
+				.forResult();
+		},
+		popup: false,
+		async content(event, trigger, player) {
+			const {
+				cards,
+				targets: [target],
+			} = event;
+			target.logSkill("mjchenshi");
+			player.line(target, "green");
+			trigger.getParent().mjchenshi_ai = true;
+			await player.give(cards, target);
+			const top = get.cards(3, true).filter(card => get.name(card) != "sha");
+			if (top.length) {
+				game.log(top, "进入了弃牌堆");
+				player.$throw(top, 1000);
+				await game.cardsDiscard(top);
+				await game.delayx();
 			}
 		},
 	},
 	mjchenshi_target: {
 		trigger: { target: "useCardToTargeted" },
-		direct: true,
 		sourceSkill: "mjchenshi",
 		filter(event, player) {
 			if (!event.card || event.card.name != "binglinchengxiax") {
@@ -5210,65 +5202,59 @@ const skills = {
 				})
 			);
 		},
-		content() {
-			"step 0";
-			var list = game.filterPlayer(function (current) {
+		async cost(event, trigger, player) {
+			const list = game.filterPlayer(function (current) {
 				return current != player && current.hasSkill("mjchenshi");
 			});
-			player.chooseCardTarget({
-				prompt: "是否交给" + get.translation(list) + "一张牌，将牌堆顶三张牌中的【杀】置于弃牌堆？",
-				filterCard: true,
-				position: "he",
-				filterTarget(card, player, target) {
-					return _status.event.list.includes(target);
-				},
-				list: list,
-				selectTarget: list.length > 1 ? 1 : -1,
-				goon: (function () {
-					if (trigger.getParent().chenshi_ai) {
-						return 1;
-					}
-					for (var i of list) {
-						if (get.attitude(player, i) > 0) {
+			event.result = await player
+				.chooseCardTarget({
+					prompt: "是否交给" + get.translation(list) + "一张牌，将牌堆顶三张牌中的【杀】置于弃牌堆？",
+					filterCard: true,
+					position: "he",
+					filterTarget(card, player, target) {
+						return _status.event.list.includes(target);
+					},
+					list: list,
+					selectTarget: list.length > 1 ? 1 : -1,
+					goon: (function () {
+						if (trigger.getParent().chenshi_ai) {
 							return 1;
 						}
-						return -1;
-					}
-				})(),
-				ai1(card) {
-					if (_status.event.goon > 0) {
-						return 7 - get.value(card);
-					}
-					return 3 - get.value(card);
-				},
-				ai2(target) {
-					var card = ui.selected.cards[0];
-					return Math.max(0.1, get.value(card, target) * get.attitude(_status.event.player, target));
-				},
-			});
-			"step 1";
-			if (result.bool && result.cards.length && result.targets.length) {
-				var target = result.targets[0];
-				target.logSkill("mjchenshi");
-				player.line(target, "green");
-				player.give(result.cards, target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var cards = get.cards(3);
-			for (var i = cards.length - 1; i >= 0; i--) {
-				if (cards[i].name != "sha") {
-					cards[i].fix();
-					ui.cardPile.insertBefore(cards[i], ui.cardPile.firstChild);
-					cards.splice(i, 1);
-				}
-			}
-			if (cards.length) {
-				player.$throw(cards, 1000);
-				game.delayx();
-				game.cardsDiscard(cards);
-				game.log(cards, "进入了弃牌堆");
+						for (var i of list) {
+							if (get.attitude(player, i) > 0) {
+								return 1;
+							}
+							return -1;
+						}
+					})(),
+					ai1(card) {
+						if (_status.event.goon > 0) {
+							return 7 - get.value(card);
+						}
+						return 3 - get.value(card);
+					},
+					ai2(target) {
+						var card = ui.selected.cards[0];
+						return Math.max(0.1, get.value(card, target) * get.attitude(_status.event.player, target));
+					},
+				})
+				.forResult();
+		},
+		popup: false,
+		async content(event, trigger, player) {
+			const {
+				cards,
+				targets: [target],
+			} = event;
+			target.logSkill("mjchenshi");
+			player.line(target, "green");
+			await player.give(cards, target);
+			const top = get.cards(3, true).filter(card => get.name(card) == "sha");
+			if (top.length) {
+				game.log(top, "进入了弃牌堆");
+				player.$throw(top, 1000);
+				await game.cardsDiscard(top);
+				await game.delayx();
 			}
 		},
 	},
