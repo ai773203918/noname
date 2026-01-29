@@ -233,7 +233,7 @@ window.noname_character_replace = {
 	sundeng: ["sundeng", "re_sundeng", "ns_sundeng"],
 	sunhanhua: ["dc_sunhanhua", "sunhanhua", "scl_sunhanhua"],
 	sunhao: ["sunhao", "std_sunhao", "hs_sunhao"],
-	sunjian: ["sunjian", "ol_sunjian", "ol_sb_sunjian", "re_sunjian", "star_sunjian", "tw_jsrg_sunjian", "jsrg_sunjian", "ns_sunjian"],
+	sunjian: ["sunjian", "ol_sunjian", "ol_sb_sunjian", "re_sunjian", "ol_jsrg_sunjian", "star_sunjian", "tw_jsrg_sunjian", "jsrg_sunjian", "ns_sunjian"],
 	sunliang: ["sunliang", "xin_sunliang"],
 	sunluban: ["re_sunluban", "xin_sunluban", "tw_sunluban", "std_sunluban", "sunluban", "ol_sunluban"],
 	sunluyu: ["sunluyu", "re_sunluyu", "mb_sunluyu", "std_sunluyu"],
@@ -363,7 +363,7 @@ window.noname_character_replace = {
 	zhugeliang: ["zhugeliang", "re_zhugeliang", "ol_sb_zhugeliang", "wu_zhugeliang", "friend_zhugeliang", "huan_zhugeliang", "jsrg_zhugeliang", "ps_zhugeliang", "ps2066_zhugeliang", "prp_zhugeliang", "ns_zhugeliang", "jy_zhugeliang", "zj_zhugeliang", "you_zhugeliang"],
 	zhugezhan: ["zhugezhan", "old_zhugezhan", "zj_zhugezhan"],
 	zhuhuan: ["zhuhuan", "re_zhuhuan", "xin_zhuhuan", "old_zhuhuan"],
-	zhujun: ["ol_zhujun", "zhujun", "sp_zhujun", "jsrg_zhujun"],
+	zhujun: ["ol_zhujun", "ol_jsrg_zhujun", "zhujun", "sp_zhujun", "jsrg_zhujun"],
 	zhuling: ["ol_zhuling", "dc_zhuling", "zhuling", "wn_zhuling"],
 	zhuran: ["zhuran", "re_zhuran", "xin_zhuran", "dc_sb_zhuran", "sb_zhuran", "old_zhuran"],
 	zhurong: ["zhurong", "ol_zhurong", "re_zhurong", "sb_zhurong", "dc_sp_zhurong"],
@@ -445,4 +445,5 @@ window.noname_character_replace = {
 	caojinyu: ["ol_caojinyu", "caojinyu"],
 	zhangshiping: ["zhangshiping", "dc_zhangshiping"],
 	dc_chenzhi: ["dc_chenzhi", "mb_chenzhi"],
+	caojie: ["caojie", "ol_re_caojie"],
 };
