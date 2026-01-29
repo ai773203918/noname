@@ -1,5 +1,5 @@
 const characters = {
-	ol_re_caojie: {
+	ol_caojie: {
 		sex: "female",
 		group: "qun",
 		hp: 3,

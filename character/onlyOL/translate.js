@@ -1,8 +1,8 @@
 import { lib, game, ui, get, ai, _status } from "noname";
 
 const translates = {
-	ol_re_caojie: "OL界曹节",
-	ol_re_caojie_prefix: "OL界",
+	ol_caojie: "OL界曹节",
+	ol_caojie_prefix: "OL界",
 	olshouxi: "守玺",
 	olshouxi_info: "每回合限一次，当你成为【杀】的目标后，你可弃置至少一张【杀】，对使用者造成1点伤害。然后若此【杀】未对你造成伤害，你将手牌摸至手牌上限（至多摸至5）。",
 	olhuimin: "惠民",

@@ -445,5 +445,5 @@ window.noname_character_replace = {
 	caojinyu: ["ol_caojinyu", "caojinyu"],
 	zhangshiping: ["zhangshiping", "dc_zhangshiping"],
 	dc_chenzhi: ["dc_chenzhi", "mb_chenzhi"],
-	caojie: ["caojie", "ol_re_caojie"],
+	caojie: ["caojie", "ol_caojie"],
 };
