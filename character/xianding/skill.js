@@ -32447,7 +32447,7 @@ const skills = {
 			player.addTempSkill("xingzuo2");
 			const cards = get.bottomCards(3, true);
 			await game.cardsGotoOrdering(cards);
-			const next = (next = player.chooseToMove("兴作：将三张牌置于牌堆底"));
+			const next = player.chooseToMove("兴作：将三张牌置于牌堆底");
 			const list = [["牌堆底", cards]],
 				hs = player.getCards("h");
 			if (hs.length) {
