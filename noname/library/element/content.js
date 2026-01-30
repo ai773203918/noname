@@ -704,6 +704,7 @@ export const Content = {
 	//装备栏相关
 	async disableEquip(event, trigger, player) {
 		const cards = [];
+		event.cards = cards;
 		const slots = [];
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
@@ -6099,6 +6100,7 @@ player.removeVirtualEquip(card);
 		},
 	],
 	async gaincardMultiple(event, trigger, player) {
+		const { cards } = event;
 		event.type = "gain";
 		if (event.animate == "give" || event.animate == "gain2") {
 			event.visible = true;
@@ -6239,6 +6241,7 @@ player.removeVirtualEquip(card);
 		}
 
 		const evt = event;
+		const { cards } = event;
 		if (evt.animate != false) {
 			evt.discardid = lib.status.videoId++;
 			game.broadcastAll(
@@ -6320,7 +6323,7 @@ player.removeVirtualEquip(card);
 					if (!map2[myId]) {
 						map2[myId] = [];
 					}
-					for (var i of cards) {
+					for (const i of cards) {
 						var owner = get.owner(i, "judge");
 						if (owner && (owner != player || get.position(i) != "x")) {
 							var id = owner.playerid;
@@ -6342,7 +6345,7 @@ player.removeVirtualEquip(card);
 				}
 				event.losing_map = map;
 				event.gaining_map = map2;
-				for (var i in map) {
+				for (const i in map) {
 					var owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 					var next = owner.lose(map[i][0], ui.special).set("forceDie", true).set("getlx", false);
 					next.set("relatedEvent", event.getParent());
@@ -11304,7 +11307,7 @@ player.removeVirtualEquip(card);
 		for (let i = 0; i < targets.length; ++i) {
 			const target = targets[i];
 			const result = await player
-				.gainPlayerCard(targets[num], event.position, true)
+				.gainPlayerCard(targets[i], event.position, true)
 				.set("boolline", false)
 				.set("delay", i == targets.length - 1)
 				.forResult();

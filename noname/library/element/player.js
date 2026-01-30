@@ -10383,7 +10383,8 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 中流（×）批量重置技能
-	 * @param { string[] | string } [skills]
+	 * @param { string[] | string } [skills] 需要被重置的技能，不填默认武将牌上的所有技能
+	 * @returns { string [] } 返回被重置的技能
 	 */
 	refreshSkill(skills) {
 		const player = this;
@@ -10437,7 +10438,7 @@ export class Player extends HTMLDivElement {
 			}
 			game.log(player, "重置了技能", "#g" + str.slice(0, -1));
 		}
-		return player;
+		return resetSkills;
 	}
 	awakenSkill(skill, nounmark) {
 		if (!nounmark) {

@@ -182,7 +182,6 @@ const skills = {
 				.loseAsync({
 					gain_list: targets.map((target, i) => [target, cards[i]]),
 					giver: player,
-					player: player,
 					gaintag: [event.name],
 					animate: "giveAuto",
 				})
@@ -18627,6 +18626,7 @@ const skills = {
 		visible: true,
 		insert: true,
 		async content(event, trigger, player) {
+			const { cards } = event;
 			game.log(player, "将", cards, "置于牌堆顶");
 			await player.useCard({ name: "sha", isCard: true, storage: { cxliushi: true } }, false, targets);
 		},

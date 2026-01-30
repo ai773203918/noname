@@ -5248,6 +5248,9 @@ const skills = {
 				return false;
 			}
 			if (event.name == "_wuxie") {
+				if (!event.list.includes(player)) {
+					return false;
+				}
 				if (event.wuxieresult && event.wuxieresult == player) {
 					return false;
 				}

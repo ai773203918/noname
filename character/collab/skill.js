@@ -1552,7 +1552,7 @@ const skills = {
 									}
 								});
 						}
-						const next = await player
+						const next = player
 							.chooseToCompare(event.targets, card => {
 								return get.number(card);
 							})
