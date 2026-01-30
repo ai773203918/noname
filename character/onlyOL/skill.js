@@ -1519,7 +1519,8 @@ const skills = {
 					return lib.filter.cardDiscardable(card, player);
 				}, "he") &&
 				event.card.name == "sha" &&
-				player.getHp() > 0
+				player.getHp() > 0 &&
+				event.isFirstTarget
 			);
 		},
 		logTarget: "targets",
