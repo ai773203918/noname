@@ -6099,6 +6099,7 @@ player.removeVirtualEquip(card);
 		},
 	],
 	async gaincardMultiple(event, trigger, player) {
+		const { cards } = event;
 		event.type = "gain";
 		if (event.animate == "give" || event.animate == "gain2") {
 			event.visible = true;
