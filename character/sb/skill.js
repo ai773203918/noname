@@ -10525,7 +10525,8 @@ const skills = {
 						if (evt.name != "chooseToUse") {
 							evt = evt.getParent("chooseToUse");
 						}
-						if (!evt || !evt.respondTo || evt.respondTo[1].name != "sha") {
+						const cards = player.storage.sbliegong_block.map(i => i[0]);
+						if (!evt || !evt.respondTo || !cards.includes(evt.respondTo[1])) {
 							return;
 						}
 						if (player.storage.sbliegong_blocker.includes(suit)) {
