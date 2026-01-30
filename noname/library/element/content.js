@@ -11307,7 +11307,7 @@ player.removeVirtualEquip(card);
 		for (let i = 0; i < targets.length; ++i) {
 			const target = targets[i];
 			const result = await player
-				.gainPlayerCard(targets[num], event.position, true)
+				.gainPlayerCard(targets[i], event.position, true)
 				.set("boolline", false)
 				.set("delay", i == targets.length - 1)
 				.forResult();
