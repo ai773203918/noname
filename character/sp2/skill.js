@@ -15584,7 +15584,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const { target } = event;
 			const cards = get.cards(1, true);
-			await player.showCards(cards, get.translation(player) + "对" + get.translation(target) + "发动了【图南】", true).set("clearArena", false);
+			await target.viewCards(get.translation(player) + "对你发动了【图南】", cards);
 			const [card] = cards;
 			const bool1 = game.hasPlayer(function (current) {
 				return target.canUse(card, current, false);
@@ -15609,10 +15609,8 @@ const skills = {
 			} else if (bool2) {
 				result = { index: 1 };
 			} else {
-				game.broadcastAll(ui.clear);
 				return;
 			}
-			game.broadcastAll(ui.clear);
 			if (typeof result.index == "number") {
 				const { index } = result;
 				if (index == 1) {
