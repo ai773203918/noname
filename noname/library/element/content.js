@@ -6240,6 +6240,7 @@ player.removeVirtualEquip(card);
 		}
 
 		const evt = event;
+		const { cards } = event;
 		if (evt.animate != false) {
 			evt.discardid = lib.status.videoId++;
 			game.broadcastAll(
@@ -6321,7 +6322,7 @@ player.removeVirtualEquip(card);
 					if (!map2[myId]) {
 						map2[myId] = [];
 					}
-					for (var i of cards) {
+					for (const i of cards) {
 						var owner = get.owner(i, "judge");
 						if (owner && (owner != player || get.position(i) != "x")) {
 							var id = owner.playerid;
@@ -6343,7 +6344,7 @@ player.removeVirtualEquip(card);
 				}
 				event.losing_map = map;
 				event.gaining_map = map2;
-				for (var i in map) {
+				for (const i in map) {
 					var owner = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
 					var next = owner.lose(map[i][0], ui.special).set("forceDie", true).set("getlx", false);
 					next.set("relatedEvent", event.getParent());
