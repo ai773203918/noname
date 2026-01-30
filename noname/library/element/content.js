@@ -704,6 +704,7 @@ export const Content = {
 	//装备栏相关
 	async disableEquip(event, trigger, player) {
 		const cards = [];
+		event.cards = cards;
 		const slots = [];
 		if (get.is.mountCombined()) {
 			for (const slot of event.slots) {
