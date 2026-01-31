@@ -4264,8 +4264,7 @@ player.removeVirtualEquip(card);
 		}
 		next.indexedData = event.indexedData;
 
-		await next;
-
+		//删除when生成的临时技能
 		if (event.skill.startsWith("player_when_")) {
 			player.removeSkill(event.skill);
 			game.broadcastAll(skill => {
@@ -4273,6 +4272,9 @@ player.removeVirtualEquip(card);
 				delete lib.translate[skill];
 			}, event.skill);
 		}
+
+		await next;
+		
 		if (!player._hookTrigger) {
 			return;
 		}

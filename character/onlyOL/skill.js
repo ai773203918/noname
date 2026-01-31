@@ -299,27 +299,25 @@ const skills = {
 				target.popup(get.translation(type));
 				const { source } = trigger;
 				if (source?.isIn()) {
-					const sourcex = player;
 					const last = source.getHistory("useCard").slice()?.reverse()?.[0];
-					source
+					player
 						.when({
-							player: ["useCardAfter"],
-							global: ["phaseAfter", "phaseBeforeStart"],
+							global: ["useCardAfter", "phaseAfter", "phaseBeforeStart"],
 						})
 						.filter(evt => {
 							if (evt.name == "phase") {
 								return true;
 							}
-							return evt.card != last?.card;
+							return evt.player == source && evt.card != last?.card;
 						})
 						.step(async (event, trigger, player) => {
 							if (trigger.name == "phase") {
 								return;
 							}
 							const typex = get.type2(trigger.card);
-							await sourcex.chooseUseTarget(get.autoViewAs({ name: "wuzhong", isCard: true }), true);
+							await player.chooseUseTarget(get.autoViewAs({ name: "wuzhong", isCard: true }), true);
 							if (typex != type) {
-								await sourcex.chooseUseTarget(get.autoViewAs({ name: "sha", isCard: true }), false);
+								await player.chooseUseTarget(get.autoViewAs({ name: "sha", isCard: true }), false);
 							}
 						});
 				}
