@@ -35,7 +35,7 @@ const characters = {
 	pot_huanjie: {
 		sex: "male",
 		group: "wei",
-		hp: 3,
+		hp: 4,
 		skills: ["potgongmou", "potzhengshuo"],
 	},
 	pot_xinxianying: {

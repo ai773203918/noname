@@ -912,7 +912,7 @@ const skills = {
 	},
 	oldmingjian: {
 		audio: "mingjian",
-		trigger: { player: "phaseZhunbeiBefore" },
+		trigger: { player: "phaseUseBefore" },
 		filter(event, player) {
 			return player.countCards("h");
 		},

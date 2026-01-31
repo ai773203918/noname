@@ -9575,12 +9575,12 @@ const skills = {
 							return att;
 						})
 						.forResult();
-					if (result2.bool && result2.target?.length) {
+					if (result2.bool && result2.targets?.length) {
 						const {
 							targets: [target],
 						} = result2;
 						player.line(target, "green");
-						target.gain(card, "gain2");
+						await target.gain(card, "gain2");
 						if (player == target) {
 							await player.chooseToDiscard("he", true);
 						}

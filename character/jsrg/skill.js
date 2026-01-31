@@ -8732,9 +8732,11 @@ const skills = {
 							game.log(player, "移去了", "#y" + get.translation(result.links));
 						}
 					}
-					var characters = _status.characterlist.randomRemove(4 - player.getStorage("sbyingmen").length);
-					lib.skill.sbyingmen.addVisitors(characters, player);
-					game.delayx();
+					const characters = _status.characterlist.randomRemove(4 - player.getStorage("sbyingmen").length);
+					if (characters.length) {
+						lib.skill.sbyingmen.addVisitors(characters, player);
+					}
+					await game.delayx();
 				},
 			},
 		},
@@ -8805,7 +8807,10 @@ const skills = {
 			if (!player.invisibleSkills.includes(skill) || skill == "sbpingjian" || skill == "sbpingjian") {
 				return false;
 			}
-			return !player.hasSkill("sbpingjian");
+			player.removeSkillBlocker("sbyingmen");
+			const bool = !player.hasSkill("sbpingjian");
+			player.addSkillBlocker("sbyingmen");
+			return bool;
 		},
 		marktext: "客",
 		intro: {
@@ -12762,7 +12767,7 @@ const skills = {
 			if (
 				!game.hasPlayer2(current => {
 					return current.getHistory("damage", evt => evt.getParent(card.name)?.card?.xiezheng).length;
-				})
+				}, true)
 			) {
 				await player.loseHp();
 			}

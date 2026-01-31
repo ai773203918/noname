@@ -1851,7 +1851,7 @@ player.removeVirtualEquip(card);
 			if (signal?.aborted) {
 				return rejectOnAbort ? Promise.reject(signal.reason) : Promise.resolve();
 			}
-		
+
 			return new Promise((resolve, reject) => {
 				const abort = () => {
 					clearTimeout(timeout);
@@ -2970,7 +2970,7 @@ player.removeVirtualEquip(card);
 		}
 		await Promise.all(waitings);
 	},
-	async orderingDiscard(event) {
+	async orderingDiscard(event, trigger, player) {
 		const cards = event.relatedEvent.orderingCards.filter(card => get.position(card, true) == "o");
 		if (cards.length) {
 			await game.cardsDiscard(cards);
@@ -4255,8 +4255,7 @@ player.removeVirtualEquip(card);
 		}
 		next.indexedData = event.indexedData;
 
-		await next;
-
+		//删除when生成的临时技能
 		if (event.skill.startsWith("player_when_")) {
 			player.removeSkill(event.skill);
 			game.broadcastAll(skill => {
@@ -4264,6 +4263,9 @@ player.removeVirtualEquip(card);
 				delete lib.translate[skill];
 			}, event.skill);
 		}
+
+		await next;
+		
 		if (!player._hookTrigger) {
 			return;
 		}
@@ -11278,7 +11280,7 @@ player.removeVirtualEquip(card);
 		await next1;
 
 		cards = event.cards2;
-		const next2 = target.lose(event.cards, ui.ordering);
+		const next2 = target.lose(cards, ui.ordering);
 		next2.getlx = false;
 		next2.relatedEvent = event.getParent();
 		if (target == game.me) {

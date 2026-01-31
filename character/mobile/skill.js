@@ -5382,7 +5382,7 @@ const skills = {
 			if (
 				!game.hasPlayer2(current => {
 					return current.hasHistory("damage", evt => evt.getParent(card.name)?.card?.mbxiezheng);
-				})
+				}, true)
 			) {
 				await player.loseHp();
 			}
@@ -5615,7 +5615,7 @@ const skills = {
 			const cards = [...hs, ...player.getCards("h")].unique().filter(i => {
 				return i !== card && typeof get.number(i, player) === "number";
 			});
-			return !cards.length || number < Math.min(...cards.map(i => get.number(i, player)));
+			return !cards.length || number <= Math.min(...cards.map(i => get.number(i, player)));
 		},
 		prompt2(event, player, name, card) {
 			return "将所有" + get.translation(get.suit(card, player)) + "的牌扣置于武将牌上直到回合结束，然后摸一张牌";
