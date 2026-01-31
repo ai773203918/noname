@@ -10109,7 +10109,7 @@ export class Player extends HTMLDivElement {
 		}
 		if (Array.isArray(skill)) {
 			for (var i = 0; i < skill.length; i++) {
-				this.removeSkill(skill[i]);
+				this.removeInvisibleSkill(skill[i]);
 			}
 		} else {
 			var info = lib.skill[skill];

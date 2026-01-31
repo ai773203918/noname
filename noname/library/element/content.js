@@ -631,7 +631,7 @@ export const Content = {
 	//Gift
 	//赠予
 	async gift(event, trigger, player) {
-		const { cards } = event;
+		const { cards, target } = event;
 
 		for (const card of cards) {
 			event.card = card;
@@ -762,7 +762,7 @@ export const Content = {
 							const evt = get.event();
 
 							let result = 0;
-							for (const buttom of ui.selected.buttons) {
+							for (const button of ui.selected.buttons) {
 								if (evt.slot == "equip3_4") {
 									result += Math.max(get.numOf(get.subtypes(button.link, false), "equip3"), get.numOf(get.subtypes(button.link, false), "equip4"));
 								} else {
@@ -822,10 +822,10 @@ export const Content = {
 		const slotsx = [];
 		if (get.is.mountCombined()) {
 			for (const slot of slots) {
-				if (type == "equip3" || type == "equip4") {
+				if (slot == "equip3" || slot == "equip4") {
 					slotsx.add("equip3_4");
 				} else {
-					slotsx.add(type);
+					slotsx.add(slot);
 				}
 			}
 		} else {
@@ -1849,7 +1849,7 @@ player.removeVirtualEquip(card);
 			if (signal?.aborted) {
 				return rejectOnAbort ? Promise.reject(signal.reason) : Promise.resolve();
 			}
-		
+
 			return new Promise((resolve, reject) => {
 				const abort = () => {
 					clearTimeout(timeout);
@@ -2968,13 +2968,13 @@ player.removeVirtualEquip(card);
 		}
 		await Promise.all(waitings);
 	},
-	async orderingDiscard(event) {
+	async orderingDiscard(event, trigger, player) {
 		const cards = event.relatedEvent.orderingCards.filter(card => get.position(card, true) == "o");
 		if (cards.length) {
 			await game.cardsDiscard(cards);
 		}
 	},
-	async cardsGotoOrdering(event) {
+	async cardsGotoOrdering(event, trigger, player) {
 		const { cards } = event;
 		game.getGlobalHistory().cardMove.push(event);
 		let withPile = false;
@@ -3060,6 +3060,7 @@ player.removeVirtualEquip(card);
 		await Promise.all(waitings);
 	},
 	async cardsGotoPile(event, trigger, player) {
+		const { cards } = event;
 		const waitings = [];
 		if (event.washCard) {
 			waitings.push(event.trigger("washCard"));
@@ -3605,6 +3606,7 @@ player.removeVirtualEquip(card);
 		}
 	},
 	async reverseOrder(event, trigger, player) {
+		const { card } = event;
 		await game.delay();
 
 		let choice;
@@ -4063,7 +4065,7 @@ player.removeVirtualEquip(card);
 						continue;
 					}
 
-					if (!game.expandSkills(player.additionalSkills[i]).includes(event.skill)) {
+					if (!game.expandSkills(player.additionalSkills[skill]).includes(event.skill)) {
 						continue;
 					}
 
@@ -4264,8 +4266,7 @@ player.removeVirtualEquip(card);
 		}
 		next.indexedData = event.indexedData;
 
-		await next;
-
+		//删除when生成的临时技能
 		if (event.skill.startsWith("player_when_")) {
 			player.removeSkill(event.skill);
 			game.broadcastAll(skill => {
@@ -4273,6 +4274,9 @@ player.removeVirtualEquip(card);
 				delete lib.translate[skill];
 			}, event.skill);
 		}
+
+		await next;
+		
 		if (!player._hookTrigger) {
 			return;
 		}
@@ -7637,7 +7641,8 @@ player.removeVirtualEquip(card);
 				event.result = [];
 				event.goto(7);
 			} else {
-				for (const target of event.list) {
+				for (let i = 0; i < event.list.length; i++) {
+					const target = event.list[i];
 					target.wait();
 					if (target.isOnline()) {
 						target.send(
@@ -7685,7 +7690,8 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			event.result = [];
-			for (const target of event.targets) {
+			for (let i = 0; i < event.targets.length; i++) {
+				const target = event.targets[i];
 				event.result.push(event.resultOL[target.playerid] || {});
 				if (event.result[i] == "ai" && event.aiCard) {
 					event.result[i] = event.aiCard(event.targets[i]);
@@ -7801,6 +7807,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player, result) => {
+			const { target } = event;
 			event.result[target.playerid] = result;
 			if (event.list.length) {
 				event.goto(7);
@@ -9189,7 +9196,7 @@ player.removeVirtualEquip(card);
 			await event.trigger("rewriteGainResult");
 		},
 		async (event, trigger, player) => {
-			const { target } = event;
+			const { target, cards } = event;
 			if (event.boolline) {
 				player.line(target, "green");
 			}
@@ -11284,7 +11291,7 @@ player.removeVirtualEquip(card);
 		await next1;
 
 		cards = event.cards2;
-		const next2 = target.lose(event.cards, ui.ordering);
+		const next2 = target.lose(cards, ui.ordering);
 		next2.getlx = false;
 		next2.relatedEvent = event.getParent();
 		if (target == game.me) {
