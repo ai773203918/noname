@@ -5382,7 +5382,7 @@ const skills = {
 			if (
 				!game.hasPlayer2(current => {
 					return current.hasHistory("damage", evt => evt.getParent(card.name)?.card?.mbxiezheng);
-				})
+				}, true)
 			) {
 				await player.loseHp();
 			}
