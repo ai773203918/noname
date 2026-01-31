@@ -3245,12 +3245,12 @@ const skills = {
 					player.$throw(puts, 1000);
 					await player.lose(puts, ui.special);
 					await player.gain(gains, "gain2");
-					const cardx = moved[0].slice();
-					if (cardx.length) {
-						await game.cardsGotoOrdering(cardx);
-						await game.cardsGotoPile(cardx.slice().reverse(), "insert");
-						game.updateRoundNumber();
-					}
+				}
+				const cardx = moved[0].slice();
+				if (cardx.length) {
+					await game.cardsGotoOrdering(cardx);
+					await game.cardsGotoPile(cardx.slice().reverse(), "insert");
+					game.updateRoundNumber();
 				}
 			}
 		},
