@@ -632,7 +632,7 @@ export const Content = {
 	//Gift
 	//赠予
 	async gift(event, trigger, player) {
-		const { cards } = event;
+		const { target, cards } = event;
 
 		for (const card of cards) {
 			event.card = card;
@@ -2177,7 +2177,7 @@ player.removeVirtualEquip(card);
 				 *
 				 * move事件是在button元素上监听的，而不是在dialog.content上。
 				 *
-				 * @this dialog
+				 * @this {Dialog}
 				 * @param { TouchEvent | MouseEvent } e
 				 */
 				var onDrag = function (e) {
@@ -3062,6 +3062,7 @@ player.removeVirtualEquip(card);
 		await Promise.all(waitings);
 	},
 	async cardsGotoPile(event, trigger, player) {
+		const { cards } = event;
 		const waitings = [];
 		if (event.washCard) {
 			waitings.push(event.trigger("washCard"));
@@ -3594,6 +3595,7 @@ player.removeVirtualEquip(card);
 		}
 	},
 	async reverseOrder(event, trigger, player) {
+		const { card } = event;
 		await game.delay();
 
 		let choice;
@@ -7792,6 +7794,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player, result) => {
+			const { target } = event;
 			event.result[target.playerid] = result;
 			if (event.list.length) {
 				event.goto(7);
@@ -9180,7 +9183,7 @@ player.removeVirtualEquip(card);
 			await event.trigger("rewriteGainResult");
 		},
 		async (event, trigger, player) => {
-			const { target } = event;
+			const { cards, target } = event;
 			if (event.boolline) {
 				player.line(target, "green");
 			}
