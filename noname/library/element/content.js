@@ -7805,6 +7805,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player, result) => {
+			const { target } = event;
 			event.result[target.playerid] = result;
 			if (event.list.length) {
 				event.goto(7);
