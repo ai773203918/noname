@@ -762,7 +762,7 @@ export const Content = {
 							const evt = get.event();
 
 							let result = 0;
-							for (const buttom of ui.selected.buttons) {
+							for (const button of ui.selected.buttons) {
 								if (evt.slot == "equip3_4") {
 									result += Math.max(get.numOf(get.subtypes(button.link, false), "equip3"), get.numOf(get.subtypes(button.link, false), "equip4"));
 								} else {
@@ -822,10 +822,10 @@ export const Content = {
 		const slotsx = [];
 		if (get.is.mountCombined()) {
 			for (const slot of slots) {
-				if (type == "equip3" || type == "equip4") {
+				if (slot == "equip3" || slot == "equip4") {
 					slotsx.add("equip3_4");
 				} else {
-					slotsx.add(type);
+					slotsx.add(slot);
 				}
 			}
 		} else {
@@ -2968,13 +2968,13 @@ player.removeVirtualEquip(card);
 		}
 		await Promise.all(waitings);
 	},
-	async orderingDiscard(event) {
+	async orderingDiscard(event, trigger, player) {
 		const cards = event.relatedEvent.orderingCards.filter(card => get.position(card, true) == "o");
 		if (cards.length) {
 			await game.cardsDiscard(cards);
 		}
 	},
-	async cardsGotoOrdering(event) {
+	async cardsGotoOrdering(event, trigger, player) {
 		const { cards } = event;
 		game.getGlobalHistory().cardMove.push(event);
 		let withPile = false;
@@ -3060,6 +3060,7 @@ player.removeVirtualEquip(card);
 		await Promise.all(waitings);
 	},
 	async cardsGotoPile(event, trigger, player) {
+		const { cards } = event;
 		const waitings = [];
 		if (event.washCard) {
 			waitings.push(event.trigger("washCard"));
@@ -3605,6 +3606,7 @@ player.removeVirtualEquip(card);
 		}
 	},
 	async reverseOrder(event, trigger, player) {
+		const { card } = event;
 		await game.delay();
 
 		let choice;
@@ -4063,7 +4065,7 @@ player.removeVirtualEquip(card);
 						continue;
 					}
 
-					if (!game.expandSkills(player.additionalSkills[i]).includes(event.skill)) {
+					if (!game.expandSkills(player.additionalSkills[skill]).includes(event.skill)) {
 						continue;
 					}
 
