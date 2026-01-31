@@ -11291,7 +11291,7 @@ player.removeVirtualEquip(card);
 		await next1;
 
 		cards = event.cards2;
-		const next2 = target.lose(event.cards, ui.ordering);
+		const next2 = target.lose(cards, ui.ordering);
 		next2.getlx = false;
 		next2.relatedEvent = event.getParent();
 		if (target == game.me) {

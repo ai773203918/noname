@@ -1029,24 +1029,23 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		filter(event, player) {
-			return !game.hasPlayer(target => target.countCards("h") == 4);
+			return true;
+			//return !game.hasPlayer(target => target.countCards("h") == 4);
 		},
-		prompt: "你可令全场角色依次弃置所有牌，然后洗牌并重新分发手牌",
+		filterTarget: true,
+		selectTarget: -1,
+		multiline: true,
+		multitarget: true,
+		line: "thunder",
+		prompt: "你可令全场角色依次弃置所有手牌，然后洗牌并重新分发手牌",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const targets = game.filterPlayer().sortBySeat();
+			const { targets } = event;
 			player.chat("新年好啊！");
-			player.line(targets, "thunder");
-			for (const target of targets) {
-				if (target.countDiscardableCards(target, "he")) {
-					await target.modedDiscard(target.getCards("he"));
-				}
-			}
+			await game.doAsyncInOrder(targets, async target => target.modedDiscard(target.getCards("h")));
 			await game.washCard();
 			player.chat("发牌！");
-			for (const target of targets) {
-				await target.draw(4);
-			}
+			await game.asyncDraw(targets.sortBySeat(), 4);
 		},
 		ai: {
 			//贯彻搅屎棍精神，有大直接开
