@@ -763,7 +763,7 @@ export const Content = {
 							const evt = get.event();
 
 							let result = 0;
-							for (const buttom of ui.selected.buttons) {
+							for (const button of ui.selected.buttons) {
 								if (evt.slot == "equip3_4") {
 									result += Math.max(get.numOf(get.subtypes(button.link, false), "equip3"), get.numOf(get.subtypes(button.link, false), "equip4"));
 								} else {
@@ -823,10 +823,10 @@ export const Content = {
 		const slotsx = [];
 		if (get.is.mountCombined()) {
 			for (const slot of slots) {
-				if (type == "equip3" || type == "equip4") {
+				if (slot == "equip3" || slot == "equip4") {
 					slotsx.add("equip3_4");
 				} else {
-					slotsx.add(type);
+					slotsx.add(slot);
 				}
 			}
 		} else {
@@ -2976,7 +2976,7 @@ player.removeVirtualEquip(card);
 			await game.cardsDiscard(cards);
 		}
 	},
-	async cardsGotoOrdering(event) {
+	async cardsGotoOrdering(event, trigger, player) {
 		const { cards } = event;
 		game.getGlobalHistory().cardMove.push(event);
 		let withPile = false;
@@ -3202,7 +3202,7 @@ player.removeVirtualEquip(card);
 				str += "个装备栏";
 
 				const next = source.chooseButton(selectButton, true, [str, [sortedList, "tdnodes"]]);
-				next.set("filterButton", botton => player.hasEnabledSlot(button.link));
+				next.set("filterButton", button => player.hasEnabledSlot(button.link));
 				event.ai ??= () => Math.random();
 				next.set("ai", event.ai);
 
@@ -3849,11 +3849,11 @@ player.removeVirtualEquip(card);
 			for (const charaPackName in characters) {
 				const charaPack = characters[charaPackName];
 				if (charaPack.character) {
-					const characterPack = lib.characterPack[charaPack];
+					const characterPack = lib.characterPack[charaPackName];
 					if (characterPack) {
 						Object.assign(characterPack, charaPack.character);
 					} else {
-						lib.characterPack[i] = charaPack.character;
+						lib.characterPack[charaPackName] = charaPack.character;
 					}
 				}
 				if (charaPack.forbid && charaPack.forbid.includes(lib.config.mode)) {
@@ -3869,24 +3869,23 @@ player.removeVirtualEquip(card);
 				// 	continue;
 				// }
 				for (const itemName in charaPack) {
-					if (itemName == "mode" || itemName == "forbid" || itemName == "characterSort") {
+					if (itemName == "name" || itemName == "mode" || itemName == "forbid" || itemName == "characterSort") {
 						continue;
 					}
 					const item = charaPack[itemName];
-					for (const termName in character[i][j]) {
+					for (const termName in item) {
 						const term = item[termName];
 
 						if (itemName == "character") {
-							if (!term[4]) {
-								term[4] = [];
-							}
-							if (term[4].includes("boss") || term[4].includes("hiddenboss")) {
+							const character = get.convertedCharacter(term);
+
+							if (character.isBoss || character.isHiddenBoss) {
 								lib.config.forbidai.add(termName);
 							}
 							if (lib.config.forbidai_user && lib.config.forbidai_user.includes(termName)) {
 								lib.config.forbidai.add(termName);
 							}
-							for (const skill of term[3]) {
+							for (const skill of character.skills) {
 								lib.skilllist.add(skill);
 							}
 						}
@@ -3904,35 +3903,36 @@ player.removeVirtualEquip(card);
 					}
 				}
 
-				for (const cardPackName in card) {
+				for (const cardPackName in cards) {
 					lib.cardPack[cardPackName] ??= [];
 					const cardPack = lib.cardPack[cardPackName];
-					if (card[cardPackName].card) {
-						for (const cardName in card[cardPackName].card) {
-							if (!card[cardPackName].card[cardName].hidden && card[cardPackName].translate[cardName + "_info"]) {
+					if (cards[cardPackName].card) {
+						for (const cardName in cards[cardPackName].card) {
+							if (!cards[cardPackName].card[cardName].hidden && cards[cardPackName].translate[cardName + "_info"]) {
 								cardPack.push(cardName);
 							}
 						}
 					}
-					for (const itemName in card[cardPackName]) {
-						const item = card[cardPackName][itemName];
-						if (itemName == "mode" || itemName == "forbid") {
+					for (const itemName in cards[cardPackName]) {
+						const item = cards[cardPackName][itemName];
+						if (itemName == "name" || itemName == "mode" || itemName == "forbid") {
 							continue;
 						}
 						if (itemName == "list") {
 							continue;
 						}
-						for (const termName in card[cardPackName][itemName]) {
+						for (const termName in item) {
+							const term = item[termName];
 							if (itemName == "skill" && termName[0] == "_" && !lib.config.cards.includes(cardPackName)) {
 								continue;
 							}
 							if (itemName == "translate" && termName == cardPackName) {
-								lib[itemName][termName + "_card_config"] = card[cardPackName][itemName][termName];
+								lib[itemName][termName + "_card_config"] = term;
 							} else {
 								if (lib[itemName][termName] == undefined) {
-									Object.defineProperty(lib[itemName], termName, Object.getOwnPropertyDescriptor(card[cardPackName][itemName], termName));
+									Object.defineProperty(lib[itemName], termName, Object.getOwnPropertyDescriptor(item, termName));
 								} else {
-									console.log(`duplicated ${itemName} in card ${cardPackName}:\n${termName}\nlib.${itemName}.${termName}`, lib[itemName][termName], `\ncard.${cardPackName}.${itemName}.${termName}`, card[cardPackName][itemName][termName]);
+									console.log(`duplicated ${itemName} in card ${cardPackName}:\n${termName}\nlib.${itemName}.${termName}`, lib[itemName][termName], `\ncard.${cardPackName}.${itemName}.${termName}`, term);
 								}
 							}
 						}
@@ -4052,7 +4052,7 @@ player.removeVirtualEquip(card);
 						continue;
 					}
 
-					if (!game.expandSkills(player.additionalSkills[i]).includes(event.skill)) {
+					if (!game.expandSkills(player.additionalSkills[skill]).includes(event.skill)) {
 						continue;
 					}
 
@@ -7626,7 +7626,8 @@ player.removeVirtualEquip(card);
 				event.result = [];
 				event.goto(7);
 			} else {
-				for (const target of event.list) {
+				for (let i = 0; i < event.list.length; i++) {
+					const target = event.list[i];
 					target.wait();
 					if (target.isOnline()) {
 						target.send(
@@ -7674,7 +7675,8 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			event.result = [];
-			for (const target of event.targets) {
+			for (let i = 0; i < event.targets.length; i++) {
+				const target = event.targets[i];
 				event.result.push(event.resultOL[target.playerid] || {});
 				if (event.result[i] == "ai" && event.aiCard) {
 					event.result[i] = event.aiCard(event.targets[i]);

@@ -4073,7 +4073,8 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 			if (player && identity) {
 				player.setIdentity(identity);
 			} else {
-				console.log(num);
+				// ?
+				// console.log(num);
 			}
 		},
 		showCharacter: function (player, num) {
@@ -4263,7 +4264,8 @@ ${(e instanceof Error ? e.stack : String(e))}`);
 					}
 				}
 			} else {
-				console.log(player, cards);
+				// ?
+				// console.log(player, cards);
 			}
 		},
 		uiClear: function () {
