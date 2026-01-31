@@ -12767,7 +12767,7 @@ const skills = {
 			if (
 				!game.hasPlayer2(current => {
 					return current.getHistory("damage", evt => evt.getParent(card.name)?.card?.xiezheng).length;
-				})
+				}, true)
 			) {
 				await player.loseHp();
 			}
