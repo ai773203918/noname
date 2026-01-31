@@ -1825,6 +1825,24 @@ export default {
 		inherit: "gz_mashu",
 	},
 
+	// gz_huangyueying
+	gz_jizhi: {
+		audio: "jizhi",
+		trigger: { player: "useCard" },
+		frequent: true,
+		preHidden: true,
+		filter(event) {
+			return get.type(event.card) == "trick" && event.card.isCard;
+		},
+		async content(event, trigger, player) {
+			await player.draw("nodelay");
+		},
+		ai: {
+			threaten: 1.4,
+			noautowuxie: true,
+		},
+	},
+
 	// gz_huangzhong
 	/** @type {Skill} */
 	gz_liegong: {
