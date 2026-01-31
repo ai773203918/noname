@@ -631,7 +631,7 @@ export const Content = {
 	//Gift
 	//赠予
 	async gift(event, trigger, player) {
-		const { cards } = event;
+		const { cards, target } = event;
 
 		for (const card of cards) {
 			event.card = card;
