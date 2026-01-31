@@ -49,6 +49,7 @@ export const defaultHooks: {
 					},
 				});
 			}
+			lib.translate[`group_${id}`] ??= `${_short}势力`;
 		},
 	],
 
