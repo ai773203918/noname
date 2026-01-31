@@ -205,7 +205,7 @@ export default {
 		group: "shu",
 		hp: 3,
 		maxHp: 3,
-		skills: ["jizhi", "qicai"],
+		skills: ["gz_jizhi", "qicai"],
 		hasSkinInGuozhan: true,
 		dieAudios: ["huangyueying"],
 	}),
