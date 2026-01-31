@@ -1849,7 +1849,7 @@ player.removeVirtualEquip(card);
 			if (signal?.aborted) {
 				return rejectOnAbort ? Promise.reject(signal.reason) : Promise.resolve();
 			}
-		
+
 			return new Promise((resolve, reject) => {
 				const abort = () => {
 					clearTimeout(timeout);
@@ -7637,7 +7637,8 @@ player.removeVirtualEquip(card);
 				event.result = [];
 				event.goto(7);
 			} else {
-				for (const target of event.list) {
+				for (let i = 0; i < event.list.length; i++) {
+					const target = event.list[i];
 					target.wait();
 					if (target.isOnline()) {
 						target.send(
@@ -7685,7 +7686,8 @@ player.removeVirtualEquip(card);
 		},
 		async (event, trigger, player) => {
 			event.result = [];
-			for (const target of event.targets) {
+			for (let i = 0; i < event.targets.length; i++) {
+				const target = event.targets[i];
 				event.result.push(event.resultOL[target.playerid] || {});
 				if (event.result[i] == "ai" && event.aiCard) {
 					event.result[i] = event.aiCard(event.targets[i]);
@@ -9189,7 +9191,7 @@ player.removeVirtualEquip(card);
 			await event.trigger("rewriteGainResult");
 		},
 		async (event, trigger, player) => {
-			const { target } = event;
+			const { target, cards } = event;
 			if (event.boolline) {
 				player.line(target, "green");
 			}
