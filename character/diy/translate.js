@@ -38,6 +38,12 @@ const translates = {
 	ns_xinnanhua: "南华老仙",
 	ns_luyusheng: "陆郁生",
 
+	huan_noname: "幻小无",
+	huan_noname_prefix: "幻",
+	noname_gongchuang: "共创",
+	noname_gongchuang_info: "锁定技，准备阶段，所有角色依次选择：1.交给你一张牌；2.令你获得2枚“漏洞”（至多24枚）。然后你交给任意名角色至多四张牌，若牌数不小于2/4，本回合你使用牌时不可被响应/摸一张牌。",
+	huan_duocai: "多彩",
+	huan_duocai_info: `出牌阶段，你可弃置4枚“漏洞”，获得一名其他角色的一个技能，其该技能失效，效果直至其下回合结束。当其他角色使用牌指定你为目标时，你可弃置1枚“漏洞”取消之。当你受到伤害后，你可视为对伤害来源发动一次${get.poptip("noname_gongchuang")}。`,
 	noname: "小无",
 	noname_zhuyuan: "祝愿",
 	noname_zhuyuan_info: "①每回合每名角色限一次。出牌阶段，你可以将四张花色各不相同的牌交给一名其他角色。你与其获得技能〖铁骑〗和〖激昂〗至各自的回合结束。②锁定技，若你于当前回合内：未发动过〖祝愿〗，则你使用牌无次数限制；发动过〖祝愿〗，则你使用牌无距离限制。",
