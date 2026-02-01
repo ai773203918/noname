@@ -3432,12 +3432,11 @@ export default {
 					}
 					target
 						.when(["phaseBegin", "die"])
-						.vars({ target: player })
-						.then(() => {
-							const removes = target.getStorage("fakeqingleng_effect").filter(list => list[0] == player);
-							target.unmarkAuto("fakeqingleng_effect", removes);
-							if (!target.getStorage("fakeqingleng_effect").length) {
-								target.removeSkill("fakeqingleng_effect");
+						.step(async () => {
+							const removes = player.getStorage("fakeqingleng_effect").filter(list => list[0] == target);
+							player.unmarkAuto("fakeqingleng_effect", removes);
+							if (!player.getStorage("fakeqingleng_effect").length) {
+								player.removeSkill("fakeqingleng_effect");
 							}
 						});
 					await target.hideCharacter(target.name1 == links[0] ? 0 : 1);
@@ -4260,7 +4259,7 @@ export default {
 						player
 							.when("yingbian")
 							.filter(evt => evt.skill == "fakezhuosheng_backup")
-							.then(() => {
+							.step(async (event, trigger, player) => {
 								if (trigger.cards && trigger.cards.length) {
 									let cards = trigger.cards.slice();
 									cards = cards.filter(i => get.is.yingbian(i));
@@ -4378,10 +4377,10 @@ export default {
 				target
 					.when({ global: "useCardAfter" })
 					.filter(evt => evt == trigger.getParent())
-					.then(() => {
-						const cards = player.getExpansions("fakejuhou");
+					.step(async () => {
+						const cards = target.getExpansions("fakejuhou");
 						if (cards.length) {
-							player.gain(cards, "gain2");
+							await target.gain(cards, "gain2");
 						}
 					});
 			}
@@ -4634,7 +4633,7 @@ export default {
 				await target.carryOutJunling(player, junling, targets);
 			} else {
 				if (!player.storage.fakenaxiang) {
-					player.when(["phaseBegin", "die"]).then(() => {
+					player.when(["phaseBegin", "die"]).step(async () => {
 						player.unmarkSkill("fakenaxiang");
 						delete player.storage.fakenaxiang;
 					});
@@ -5228,7 +5227,7 @@ export default {
 			"step 0";
 			if (!player._fakesanchen) {
 				player._fakesanchen = true;
-				player.when({ global: "phaseAfter" }).then(() => {
+				player.when({ global: "phaseAfter" }).step(async () => {
 					delete player._fakesanchen;
 					if (player.hasMark("gzsanchen")) {
 						player.removeMark("gzsanchen", player.countMark("gzsanchen"), false);
