@@ -239,7 +239,7 @@ export class LibInit {
 			}
 		}
 		const script = document.createElement("script");
-		script.type = "module";
+		//script.type = "module";
 		(scriptSource.startsWith("db:") ? game.getDB("image", scriptSource.slice(3)).then(get.objectURL) : new Promise(resolve => resolve(scriptSource))).then(resolvedScriptSource => {
 			script.src = resolvedScriptSource;
 			if (path.startsWith("http")) {

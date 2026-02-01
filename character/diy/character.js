@@ -1,4 +1,11 @@
 const characters = {
+	huan_noname: {
+		sex: "female",
+		group: "qun",
+		hp: 4,
+		skills: ["noname_gongchuang", "huan_duocai", "noname_changeGroup"],
+		names: "null|无",
+	},
 	noname: {
 		sex: "female",
 		group: "key",

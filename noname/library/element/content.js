@@ -12904,7 +12904,7 @@ player.removeVirtualEquip(card);
 		}, player);
 		player.removeSkill("undist");
 
-		await player.reviveEvent(hp);
+		await player.reviveEvent(hp, false);
 		await event.trigger("restEnd");
 	},
 	//复活事件
