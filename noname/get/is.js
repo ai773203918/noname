@@ -233,8 +233,12 @@ export class Is {
 	 * @returns { boolean } 是否是伤害牌
 	 */
 	damageCard(card, includeDelay = false) {
-		if (!get.tag(card, "damage")) return false;
-		if (!includeDelay && get.type(card) === "delay") return false;
+		if (!get.tag(card, "damage")) {
+			return false;
+		}
+		if (!includeDelay && get.type(card) === "delay") {
+			return false;
+		}
 		return true;
 	}
 	/**

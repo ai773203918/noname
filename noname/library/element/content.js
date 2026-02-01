@@ -91,6 +91,7 @@ export const Content = {
 			}
 			if (result.bool) {
 				if (dying.hp > 0 || trigger.nodying || dying.nodying || !dying.isAlive() || dying.isOut() || dying.removed) {
+					trigger.untrigger();
 					break;
 				}
 			} else {
