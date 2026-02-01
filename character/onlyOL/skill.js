@@ -2550,9 +2550,7 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "metal",
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill))
@@ -2562,14 +2560,16 @@ const skills = {
 		async content(event, trigger, player) {
 			const [target] = event.targets;
 			player.awakenSkill(event.name);
-			let cards = Array.from(ui.discardPile.childNodes).filter(card => get.tag(card, "damage") && get.type(card) != "delay");
+			let cards = Array.from(ui.discardPile.childNodes).filter(card => get.is.damageCard(card));
 			if (cards.length > game.players.length) {
 				cards = cards.randomGets(game.players.length);
 			}
 			target.addSkill(event.name + "_fire");
-			const next = target.gain(cards, "gain2");
-			next.gaintag.add(event.name + "_fire");
-			await next;
+			if (cards.length) {
+				const next = target.gain(cards, "gain2");
+				next.gaintag.add(event.name + "_fire");
+				await next;
+			}
 		},
 		subSkill: {
 			fire: {
@@ -3027,12 +3027,12 @@ const skills = {
 		audio: 2,
 		trigger: { player: "damageBegin4" },
 		filter(event, player) {
-			return player.countCards("he", card => !get.tag(card, "damage"));
+			return player.countCards("he", card => !get.is.damageCard(card));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseToDiscard("he", get.prompt2(event.skill), function (card, player) {
-					return !get.tag(card, "damage");
+					return !get.is.damageCard(card);
 				})
 				.set("ai", function (card) {
 					let player = _status.event.player;
@@ -4084,7 +4084,7 @@ const skills = {
 			if (result.bool) {
 				event.result = {
 					bool: true,
-					targets: game.filterPlayer(),
+					targets: game.filterPlayer().sortBySeat(),
 				};
 			}
 		},
@@ -4098,7 +4098,7 @@ const skills = {
 			const effect = async target => {
 				const card = get.cardPile(card => {
 					const info = get.info(card);
-					return get.tag(card, "damage") && get.type(card) != "delay" && info.selectTarget && get.select(info.selectTarget).every(i => i == 1);
+					return get.is.damageCard(card) && info.selectTarget && get.select(info.selectTarget).every(num => num == 1);
 				});
 				if (card) {
 					const next = target.gain(card, "draw");
@@ -5246,15 +5246,9 @@ const skills = {
 		},
 		filter(event, player, name) {
 			if (name == "useCardToPlayer") {
-				return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.length == 1 && player.countDiscardableCards(player, "he", card => get.color(card, player) == "red") && !player.hasSkill("olsibing_used");
+				return get.is.damageCard(event.card) && event.targets.length == 1 && player.countDiscardableCards(player, "he", card => get.color(card, player) == "red") && !player.hasSkill("olsibing_used");
 			}
-			return get.tag(event.card, "damage") && get.type(event.card) != "delay" && event.targets.includes(player) && !player.hasHistory("damage", evt => evt.getParent("useCard") == event) && player.countDiscardableCards(player, "he", card => get.color(card, player) == "black") && player.hasUseTarget({ name: "sha", isCard: true }, false, false);
-		},
-		logTarget(event, player, name) {
-			if (name == "useCardToPlayer") {
-				return [event.target];
-			}
-			return [];
+			return get.is.damageCard(event.card) && event.targets?.includes(player) && !player.hasHistory("damage", evt => evt.getParent("useCard") == event) && player.countDiscardableCards(player, "he", card => get.color(card, player) == "black") && player.hasUseTarget({ name: "sha", isCard: true }, false, false);
 		},
 		usable: 1,
 		async cost(event, trigger, player) {
@@ -5275,6 +5269,9 @@ const skills = {
 						return 7 - get.value(card);
 					})
 					.forResult();
+				if (event.result.bool) {
+					event.result.targets = [trigger.target];
+				}
 			} else {
 				event.result = await player
 					.chooseToDiscard(`###${get.prompt(event.skill)}###弃置一张黑色牌并视为使用一张【杀】`, "he", "chooseonly", (card, player) => get.color(card, player) == "black")
@@ -5320,9 +5317,7 @@ const skills = {
 				await player.chooseUseTarget(card, true, false, "nodistance");
 			}
 		},
-		subSkill: {
-			used: { charlotte: true },
-		},
+		subSkill: { used: { charlotte: true } },
 	},
 	olliance: {
 		audio: 2,
@@ -9582,9 +9577,7 @@ const skills = {
 	//OL界刘表（袁术
 	olzishou: {
 		audio: 2,
-		trigger: {
-			player: "phaseDrawBegin2",
-		},
+		trigger: { player: "phaseDrawBegin2" },
 		filter(event, player) {
 			return !event.numFixed;
 		},
@@ -9603,14 +9596,12 @@ const skills = {
 				.when("phaseJieshuBegin")
 				.filter(evt => evt.getParent() == trigger.getParent())
 				.then(() => {
-					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") && get.type(evtx.card) != "delay") && player.countDiscardableCards("he")) {
+					if (player.hasHistory("useCard", evtx => get.is.damageCard(evtx.card)) && player.countDiscardableCards("he")) {
 						player.chooseToDiscard("he", game.countGroup(), true);
 					}
 				});
 		},
-		ai: {
-			threaten: 1.5,
-		},
+		ai: { threaten: 1.5 },
 	},
 	olzongshi: {
 		mod: {
