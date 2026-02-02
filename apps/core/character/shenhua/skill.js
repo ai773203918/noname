@@ -8429,6 +8429,12 @@ const skills = {
 				},
 			},
 		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) {
+				player.loseToDiscardpile(cards);
+			}
+		},
 		intro: {
 			content: "expansion",
 			markcount: "expansion",
