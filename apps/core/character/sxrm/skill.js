@@ -1981,7 +1981,8 @@ const skills = {
 		logTarget: "source",
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const next = await player.chooseToCompare(target).set("isDelay", true);
+			const next = player.chooseToCompare(target).set("isDelay", true);
+			await next;
 			trigger.cancel();
 			let bool = get.damageEffect(player, target, target) + get.effect(target, { name: "guohe_copy2" }, player, target) > 0;
 			bool = Math.random() > 0.4 ? bool : false;
