@@ -4742,7 +4742,7 @@ const skills = {
 				filter(event, player) {
 					const map = lib.skill.oljueyan_draw.getFirstShow(player);
 					return (
-						event.getShown(player, "hs").length &&
+						event.getShown(player)?.hs?.length &&
 						Object.values(map)
 							.flat()
 							.some(evt => evt == event)
@@ -4762,7 +4762,7 @@ const skills = {
 								if (evt.name !== "showCards") {
 									return false;
 								}
-								const cards = evt.getShown(player, "hs");
+								const cards = evt.getShown(player).hs;
 								if (cards.length) {
 									cards
 										.map(card => get.suit(card))

@@ -10428,10 +10428,11 @@ const skills = {
 				.set("callback", async (event, trigger, player) => {
 					const { cards } = event;
 					const [card] = cards;
-					const { type } = event.getParent();
+					const evt = event.getParent();
+					const { type, videoId, highlightRemove } = evt;
 					if (get.type2(card) == type) {
 						const result = await player
-							.chooseTarget("选择获得此牌的角色")
+							.chooseTarget("涯角：选择获得此牌的角色")
 							.set("ai", function (target) {
 								var att = get.attitude(_status.event.player, target);
 								if (_status.event.du) {
@@ -10452,11 +10453,12 @@ const skills = {
 								targets: [target],
 							} = result;
 							player.line(target, "green");
+							highlightRemove();
 							await target.gain(cards, "gain2");
 						}
 					} else {
 						const result = await player
-							.chooseTarget("是否弃置攻击范围内包含你的一名角色区域内的一张牌？", function (card, player, target) {
+							.chooseTarget("涯角：是否弃置攻击范围内包含你的一名角色区域内的一张牌？", function (card, player, target) {
 								return target.inRange(player) && target.countDiscardableCards(player, "hej") > 0;
 							})
 							.set("ai", function (target) {
@@ -10469,167 +10471,18 @@ const skills = {
 								targets: [target],
 							} = result;
 							player.line(target, "green");
+							highlightRemove();
 							await player.discardPlayerCard(target, "hej", true);
 						}
 					}
-					//清楚残留的动画，同时移除arena的高亮
+					//清楚残留的动画
 					game.broadcastAll(ui.clear);
-					const videoId = event.getParent().videoId;
-					game.broadcastAll(function (id) {
-						const dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
-						}
-						ui.arena.classList.remove("thrownhighlight");
-					}, videoId);
 					game.addVideo("judge2", null, videoId);
 					if (cards.someInD()) {
 						await game.cardsGotoPile(cards.filterInD(), "insert");
 					}
 				});
 		},
-		/*content() {
-			"step 0";
-			event.card = get.cards()[0];
-			game.cardsGotoOrdering(event.card);
-			event.videoId = lib.status.videoId++;
-			var judgestr = get.translation(player) + "发动了【涯角】";
-			game.addVideo("judge1", player, [get.cardInfo(event.card), judgestr, event.videoId]);
-			game.broadcastAll(
-				function (player, card, str, id, cardid) {
-					var event;
-					if (game.online) {
-						event = {};
-					} else {
-						event = _status.event;
-					}
-					if (game.chess) {
-						event.node = card.copy("thrown", "center", ui.arena).addTempClass("start");
-					} else {
-						event.node = player.$throwordered(card.copy(), true);
-					}
-					if (lib.cardOL) {
-						lib.cardOL[cardid] = event.node;
-					}
-					event.node.cardid = cardid;
-					event.node.classList.add("thrownhighlight");
-					ui.arena.classList.add("thrownhighlight");
-					event.dialog = ui.create.dialog(str);
-					event.dialog.classList.add("center");
-					event.dialog.videoId = id;
-				},
-				player,
-				event.card,
-				judgestr,
-				event.videoId,
-				get.id()
-			);
-
-			game.log(player, "展示了", event.card);
-			game.delay(2);
-			if (get.type(event.card, "trick") == get.type(trigger.getParent().card, "trick")) {
-				player
-					.chooseTarget("选择获得此牌的角色")
-					.set("ai", function (target) {
-						var att = get.attitude(_status.event.player, target);
-						if (_status.event.du) {
-							if (target.hasSkillTag("nodu")) {
-								return 0;
-							}
-							return -att;
-						}
-						if (att > 0) {
-							return att + Math.max(0, 5 - target.countCards("h"));
-						}
-						return att;
-					})
-					.set("du", event.card.name == "du");
-			} else {
-				event.disbool = true;
-				player
-					.chooseTarget("是否弃置攻击范围内包含你的一名角色区域内的一张牌？", function (card, player, target) {
-						return target.inRange(player) && target.countDiscardableCards(player, "hej") > 0;
-					})
-					.set("ai", function (target) {
-						var player = _status.event.player;
-						return get.effect(target, { name: "guohe" }, player, player);
-					});
-			}
-			"step 1";
-			if (event.disbool) {
-				if (result.bool) {
-					player.line(result.targets[0], "green");
-					player.discardPlayerCard(result.targets[0], "hej", true);
-				}
-				event.dialog.close();
-				game.addVideo("judge2", null, event.videoId);
-				game.addVideo("deletenode", player, [get.cardInfo(event.node)]);
-				event.node.delete();
-				game.broadcast(
-					function (id, card) {
-						var dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
-						}
-						if (card.clone) {
-							card.clone.delete();
-						}
-						ui.arena.classList.remove("thrownhighlight");
-					},
-					event.videoId,
-					event.card
-				);
-				ui.arena.classList.remove("thrownhighlight");
-			} else if (result.targets) {
-				event.dialog.close();
-				game.addVideo("judge2", null, event.videoId);
-				player.line(result.targets, "green");
-				result.targets[0].gain(event.card, "log");
-				event.node.moveDelete(result.targets[0]);
-				game.addVideo("gain2", result.targets[0], [get.cardInfo(event.node)]);
-				ui.arena.classList.remove("thrownhighlight");
-				game.broadcast(
-					function (card, target, id) {
-						var dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
-						}
-						ui.arena.classList.remove("thrownhighlight");
-						if (card.clone) {
-							card.clone.moveDelete(target);
-						}
-					},
-					event.card,
-					result.targets[0],
-					event.videoId
-				);
-			} else {
-				game.addVideo("deletenode", player, [get.cardInfo(event.node)]);
-				event.node.delete();
-				game.broadcast(
-					function (id) {
-						var dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
-						}
-						if (card.clone) {
-							card.clone.delete();
-						}
-						ui.arena.classList.remove("thrownhighlight");
-					},
-					event.videoId,
-					event.card
-				);
-				event.dialog.close();
-				game.addVideo("judge2", null, event.videoId);
-				ui.arena.classList.remove("thrownhighlight");
-			}
-			"step 2";
-			let cards = [event.card].filterInD();
-			if (cards.length) {
-				game.cardsGotoPile(cards, "insert");
-			}
-		},*/
 		ai: {
 			effect: {
 				target(card, player, target) {

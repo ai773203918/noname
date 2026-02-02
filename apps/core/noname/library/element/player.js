@@ -6488,20 +6488,12 @@ export class Player extends HTMLDivElement {
 		} else {
 			next.isFlash = false;
 		}
-		next.getShown = function (player, key) {
+		next.getShown = function (player) {
 			const event = this;
 			if (get.itemtype(player) != "player") {
-				if (player == "others" && typeof key == "string") {
-					return event.show_map?.get?.("others")?.[key] || [];
-				} else if (typeof player == "string") {
-					return event.show_map?.get?.("others")?.[player] || [];
-				}
-				return null;
+				return event.show_map?.get?.("others") || {};
 			}
-			if (!key) {
-				return event.show_map?.get?.(player) || {};
-			}
-			return event.show_map?.get?.(player)?.[key] || [];
+			return event.show_map?.get?.(player) || {};
 		};
 		next.setContent("showCards");
 		next._args = Array.from(arguments);

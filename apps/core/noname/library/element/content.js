@@ -9245,276 +9245,276 @@ player.removeVirtualEquip(card);
 		game.broadcast("closeDialog", event.dialogid);
 		event.dialog.close();
 	},
-	showCards: [
-		async (event, trigger, player) => {
-			const { cards, str, flashAnimation } = event;
-			if (get.itemtype(cards) != "cards") {
-				return event.finish();
+	showCards: async function(event, trigger, player) {
+		const { cards, str, flashAnimation, triggeronly } = event;
+		if (get.itemtype(cards) != "cards") {
+			return event.finish();
+		}
+		//初始化show_map用来存储展示牌的位置和来源
+		event.show_map = new Map();
+		event.show_map.set("others", {
+			cardPile: [],
+			discardPile: [],
+			ordering: [],
+			special: [],
+			noPosition: [],
+		});
+		//触发展示牌时机该时机允许修改展示牌
+		await event.trigger("showCards");
+
+		if (get.itemtype(cards) != "cards") {
+			return event.finish();
+		}
+
+		//确定要展示的牌
+		event.result = {
+			cards: cards.slice(0),
+			show_map: event.show_map,
+		};
+		await event.trigger("showCardsFixing");
+		event.cards = event.result.cards;
+
+		//被展示牌的所在的区域
+		const directLose = [];
+		event.directLose = directLose;
+		const ownerLose = new Map();
+		event.ownerLose = ownerLose;
+		for (const card of cards) {
+			const pos = get.position(card, true);
+			const owner = get.owner(card);
+			if (owner && !event.show_map.has(owner)) {
+				event.show_map.set(owner, {
+					hs: [],
+					es: [],
+					js: [],
+					xs: [],
+					ss: [],
+					cards2: [],
+					cards: [],
+				});
+				ownerLose.set(owner, []);
 			}
-			//初始化show_map用来存储展示牌的位置和来源
-			event.show_map = new Map();
-			event.show_map.set("others", {
-				cardPile: [],
-				discardPile: [],
-				ordering: [],
-				special: [],
-				noPosition: [],
-			});
-			//触发展示牌时机该时机允许修改展示牌
-			await event.trigger("showCards");
-		},
-		async (event, trigger, player) => {
-			const { cards, str, flashAnimation, triggeronly } = event;
-			if (get.itemtype(cards) != "cards") {
-				return event.finish();
-			}
-			//确定要展示的牌
-			event.result = {
-				cards: cards.slice(0),
-				show_map: event.show_map,
-			};
-			await event.trigger("showCardsFixing");
-			event.cards = event.result.cards;
-			//要被置入处理区的牌
-			const directLose = [];
-			event.directLose = directLose;
-			const ownerLose = new Map();
-			event.ownerLose = ownerLose;
-			for (const card of cards) {
-				const pos = get.position(card, true);
-				const owner = get.owner(card);
-				if (owner && !event.show_map.has(owner)) {
-					event.show_map.set(owner, {
-						hs: [],
-						es: [],
-						js: [],
-						xs: [],
-						ss: [],
-						cards2: [],
-						cards: [],
-					});
-					ownerLose.set(owner, []);
+			//给牌分区域处理，各回各家各找各妈
+			if ("hejsx".includes(pos) && owner) {
+				event.show_map.get(owner)[`${pos}s`].push(card);
+				event.show_map.get(owner)["cards"].push(card);
+				if ("he".includes(pos)) {
+					event.show_map.get(owner)["cards2"].push(card);
 				}
-				//给牌分区域处理，各回各家各找各妈
-				if ("hejsx".includes(pos) && owner) {
-					event.show_map.get(owner)[`${pos}s`].push(card);
-					event.show_map.get(owner)["cards"].push(card);
-					if ("he".includes(pos)) {
-						event.show_map.get(owner)["cards2"].push(card);
-					}
-					ownerLose.get(owner).push(card);
-				} else if ("cds".includes(pos)) {
-					directLose.push(card);
+				ownerLose.get(owner).push(card);
+			} else if ("cds".includes(pos)) {
+				directLose.push(card);
+				event.show_map.get("others")[["cardPile", "discardPile", "special"].find(i => i.startsWith(pos))]?.push(card);
+			} else {
+				directLose.push(card);
+				if ("cds".includes(card.original)) {
+					//沟槽的get.cards
 					event.show_map.get("others")[["cardPile", "discardPile", "special"].find(i => i.startsWith(pos))]?.push(card);
+				} else if (pos == "o") {
+					event.show_map.get("others")["ordering"].push(card);
 				} else {
-					directLose.push(card);
-					if ("cds".includes(card.original)) {
-						//沟槽的get.cards
-						event.show_map.get("others")[["cardPile", "discardPile", "special"].find(i => i.startsWith(pos))]?.push(card);
-					} else if (pos == "o") {
-						event.show_map.get("others")["ordering"].push(card);
-					} else {
-						event.show_map.get("others")["noPosition"].push(card);
-					}
+					event.show_map.get("others")["noPosition"].push(card);
 				}
 			}
-			if (triggeronly) {
-				event.finish();
-				return;
+		}
+
+		//仅触发时机，不做后续处理		
+		if (triggeronly) {
+			return;
+		}
+
+		//展示牌的动画
+		if (!event.str) {
+			event.str = get.translation(player.name) + "展示的牌";
+		}
+		if (!flashAnimation) {
+			//允许自定义dialog，类似chooseButton
+			if (typeof event.dialog == "number") {
+				event.videoId = event.dialog;
+				event.dialog = get.idDialog(event.dialog);
+			} else {
+				event.videoId = lib.status.videoId++;
 			}
-			if (!event.str) {
-				event.str = get.translation(player.name) + "展示的牌";
-			}
-			//展示牌的流程
-			if (!flashAnimation) {
-				//允许自定义dialog，类似chooseButton
-				if (typeof event.dialog == "number") {
-					event.videoId = event.dialog;
-					event.dialog = get.idDialog(event.dialog);
-				} else {
-					event.videoId = lib.status.videoId++;
-				}
-				if (event.createDialog && !event.dialog) {
-					if (Array.isArray(event.createDialog)) {
-						//event.createDialog.add("hidden");
-						game.broadcastAll(
-							(id, createDialog) => {
-								const dialog = ui.create.dialog.apply(this, createDialog);
-								dialog.videoId = id;
-							},
-							event.videoId,
-							event.createDialog
-						);
-					}
-					//event.closeDialog = true;
-				}
-				if (event.dialog == undefined) {
+			if (event.createDialog && !event.dialog) {
+				if (Array.isArray(event.createDialog)) {
+					//event.createDialog.add("hidden");
 					game.broadcastAll(
-						(id, str, cards) => {
-							const dialog = ui.create.dialog(str, cards);
+						(id, createDialog) => {
+							const dialog = ui.create.dialog.apply(this, createDialog);
 							dialog.videoId = id;
 						},
 						event.videoId,
-						event.str,
-						cards
+						event.createDialog
 					);
 				}
-				event.dialog = get.idDialog(event.videoId);
-
-				const createDialog = function (cards2, id, customButton) {
-					const dialog = get.idDialog(id);
-					dialog.forcebutton = true;
-					//dialog.style.display = "none";
-					//处理隐藏牌（这东西有人用过？）
-					if (cards2) {
-						for (let i = 0; i < dialog.buttons.length; i++) {
-							if (cards2.includes(dialog.buttons[i].link)) {
-								dialog.buttons[i].className = "button card";
-								dialog.buttons[i].innerHTML = "";
-							}
-						}
-					}
-					//允许自定义展示牌时对话框里的按钮
-					if (typeof customButton == "function") {
-						dialog.buttons.forEach(button => customButton(button));
-					}
-					//dialog.style.display = "";
-				};
-				const customButton = event.customButton || function () {};
-				//创建对话框
-				createDialog(event.hiddencards, event.videoId, customButton);
-				game.broadcast(
-					function (func, cards2, id, customButton) {
-						func(cards2, id, customButton);
+				//event.closeDialog = true;
+			}
+			if (event.dialog == undefined) {
+				game.broadcastAll(
+					(id, str, cards) => {
+						const dialog = ui.create.dialog(str, cards);
+						dialog.videoId = id;
 					},
-					createDialog,
-					event.hiddencards,
 					event.videoId,
-					customButton
+					event.str,
+					cards
 				);
-				const cards2 = cards.slice(0);
-				if (event.hiddencards) {
-					cards2.removeArray(event.hiddencards);
-				}
-				//处理历史记录的log，允许自定义log的内容，log函数参数为对应角色要展示的牌cards和角色player
-				if (event.log != false) {
-					if (get.itemtype(event.showers) !== "players") {
-						const logList = event.log?.(cards2, player) || [player, "展示了", cards2];
-						game.log(...logList);
-					} else {
-						const targets = event.showers.concat(Array.from(ownerLose.keys()));
-						for (const target of targets.unique().sortBySeat()) {
-							const cardsx = ownerLose.get(target)?.filter(card => !event.hiddenCards?.includes(card));
-							if (cardsx?.length) {
-								const logList = event.log?.(cardsx, target) || [target, "展示了", cardsx];
-								game.log(...logList);
-							}
+			}
+			event.dialog = get.idDialog(event.videoId);
+
+			const createDialog = function (cards2, id, customButton) {
+				const dialog = get.idDialog(id);
+				dialog.forcebutton = true;
+				//dialog.style.display = "none";
+				//处理隐藏牌（这东西有人用过？）
+				if (cards2) {
+					for (let i = 0; i < dialog.buttons.length; i++) {
+						if (cards2.includes(dialog.buttons[i].link)) {
+							dialog.buttons[i].className = "button card";
+							dialog.buttons[i].innerHTML = "";
 						}
-						if (directLose.length) {
-							const logList = event.log?.(directLose, player) || [player, "展示了", directLose];
+					}
+				}
+				//允许自定义展示牌时对话框里的按钮
+				if (typeof customButton == "function") {
+					dialog.buttons.forEach(button => customButton(button));
+				}
+				//dialog.style.display = "";
+			};
+			const customButton = event.customButton || function () {};
+			//创建对话框
+			createDialog(event.hiddencards, event.videoId, customButton);
+			game.broadcast(
+				function (func, cards2, id, customButton) {
+					func(cards2, id, customButton);
+				},
+				createDialog,
+				event.hiddencards,
+				event.videoId,
+				customButton
+			);
+			const cards2 = cards.slice(0);
+			if (event.hiddencards) {
+				cards2.removeArray(event.hiddencards);
+			}
+			//处理历史记录的log，允许自定义log的内容，log函数参数为对应角色要展示的牌cards和角色player
+			if (event.log != false) {
+				if (get.itemtype(event.showers) !== "players") {
+					const logList = event.log?.(cards2, player) || [player, "展示了", cards2];
+					game.log(...logList);
+				} else {
+					const targets = event.showers.concat(Array.from(ownerLose.keys()));
+					for (const target of targets.unique().sortBySeat()) {
+						const cardsx = ownerLose.get(target)?.filter(card => !event.hiddenCards?.includes(card));
+						if (cardsx?.length) {
+							const logList = event.log?.(cardsx, target) || [target, "展示了", cardsx];
 							game.log(...logList);
 						}
 					}
-				}
-				game.addVideo("showCards", player, [event.str, get.cardsInfo(cards)]);
-			} else {
-				event.videoId = lib.status.videoId++;
-				//这部分是处理亮出牌的，动画效果类似判定，需要另外处理
-				if (!event.noOrdering) {
-					//有noOrdering属性亮出牌就不会把牌丢进处理区
-					//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
-					if (Array.from(ownerLose.values())?.flat()?.length > 0) {
-						const next = game.loseAsync({ lose_list: Array.from(ownerLose.entries()) }).set("relatedEvent", event.relatedEvent || event.getParent());
-						next.setContent("chooseToCompareLose");
-						await next;
-					}
-					if (directLose.length > 0) {
-						await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || event.getParent());
+					if (directLose.length) {
+						const logList = event.log?.(directLose, player) || [player, "展示了", directLose];
+						game.log(...logList);
 					}
 				}
-				for (const card of cards) {
-					game.addVideo("judge1", player, [get.cardInfo(card), event.str, event.videoId]);
+			}
+			game.addVideo("showCards", player, [event.str, get.cardsInfo(cards)]);
+		} else {
+			event.videoId = lib.status.videoId++;
+			//这部分是处理亮出牌的，动画效果类似判定，需要另外处理
+			if (!event.noOrdering) {
+				//有noOrdering属性亮出牌就不会把牌丢进处理区
+				//showCards的relatedEvent属性是牌要在某个特定事件之后进入弃牌堆的，比如一些需要多次亮出牌的，因为多个展示牌事件独立，不set的话会在展示牌事件结束后就置入弃牌堆
+				if (Array.from(ownerLose.values())?.flat()?.length > 0) {
+					const next = game.loseAsync({ lose_list: Array.from(ownerLose.entries()) }).set("relatedEvent", event.relatedEvent || event.getParent());
+					next.setContent("chooseToCompareLose");
+					await next;
 				}
-				//创建动画，其实就跟judge的类似
-				game.broadcastAll(
-					function (player, cards, str, id, cardids) {
-						var event;
-						if (game.online) {
-							event = {};
+				if (directLose.length > 0) {
+					await game.cardsGotoOrdering(directLose).set("relatedEvent", event.relatedEvent || event.getParent());
+				}
+			}
+			for (const card of cards) {
+				game.addVideo("judge1", player, [get.cardInfo(card), event.str, event.videoId]);
+			}
+			//创建动画，其实就跟judge的类似
+			game.broadcastAll(
+				function (player, cards, str, id, cardids) {
+					var event;
+					if (game.online) {
+						event = {};
+					} else {
+						event = _status.event;
+					}
+					event.nodes ??= [];
+					cards.forEach((card, index) => {
+						let node;
+						const cardid = cardids[index];
+						if (game.chess) {
+							node = card.copy("thrown", "center", ui.arena).addTempClass("start");
 						} else {
-							event = _status.event;
+							node = player.$throwordered(card.copy(), true);
 						}
-						event.nodes ??= [];
-						cards.forEach((card, index) => {
-							let node;
-							const cardid = cardids[index];
-							if (game.chess) {
-								node = card.copy("thrown", "center", ui.arena).addTempClass("start");
-							} else {
-								node = player.$throwordered(card.copy(), true);
-							}
-							if (lib.cardOL) {
-								lib.cardOL[cardid] = node;
-							}
-							node.cardid = cardid;
-							node.classList.add("thrownhighlight");
-							event.nodes.push(node);
-						});
-						ui.arena.classList.add("thrownhighlight");
-						event.dialog = ui.create.dialog(str);
-						event.dialog.classList.add("center");
-						event.dialog.videoId = id;
-					},
-					player,
-					cards,
-					event.str,
-					event.videoId,
-					cards.map(i => get.id())
-				);
-				if (event.log != false) {
-					const logList = event.log?.(cards, player) || [player, "亮出了", cards];
-					game.log(...logList);
-				}
-			}
-			game.addCardKnower(cards, "everyone");
-			await game.delayx(event.delay_time || 2.5);
-		},
-		async (event, trigger, player) => {
-			const { cards, str, flashAnimation } = event;
-			//关闭对话框，结束动画
-			if (!flashAnimation) {
-				if (event.closeDialog != false) {
-					game.broadcastAll("closeDialog", event.videoId);
-				}
-			} else {
-				//亮出牌的还需要清理一次中央的区域残留的动画效果
-				if (event.clearArena !== false) {
-					game.broadcastAll(ui.clear);
-				}
-				if (event.removeHighlight !== false) {
-					game.broadcastAll(function (id) {
-						const dialog = get.idDialog(id);
-						if (dialog) {
-							dialog.close();
+						if (lib.cardOL) {
+							lib.cardOL[cardid] = node;
 						}
-						ui.arena.classList.remove("thrownhighlight");
-					}, event.videoId);
-				}
-				game.addVideo("judge2", null, event.videoId);
+						node.cardid = cardid;
+						node.classList.add("thrownhighlight");
+						event.nodes.push(node);
+					});
+					ui.arena.classList.add("thrownhighlight");
+					event.dialog = ui.create.dialog(str);
+					event.dialog.classList.add("center");
+					event.dialog.videoId = id;
+				},
+				player,
+				cards,
+				event.str,
+				event.videoId,
+				cards.map(i => get.id())
+			);
+			if (event.log != false) {
+				const logList = event.log?.(cards, player) || [player, "亮出了", cards];
+				game.log(...logList);
 			}
-		},
-		async (event, trigger, player) => {
-			//新增callback事件
-			if (event.callback) {
-				const next = game.createEvent("showCardsCallback", false);
-				next.player = player;
-				next.cards = event.result.cards;
-				next.result = event.result;
-				next.setContent(event.callback);
-				await next;
+		}
+		game.addCardKnower(cards, "everyone");
+		await game.delayx(event.delay_time || 2.5);
+
+		//关闭对话框，结束动画
+		if (!flashAnimation) {
+			if (event.closeDialog != false) {
+				game.broadcastAll("closeDialog", event.videoId);
 			}
-		},
-	],
+		} else {
+			//亮出牌的还需要清理一次中央的区域残留的动画效果
+			if (event.clearArena !== false) {
+				game.broadcastAll(() => ui.clear());
+			}
+			event.highlightRemove = () => {
+				game.broadcastAll(function (id) {
+					const dialog = get.idDialog(id);
+					if (dialog) {
+						dialog.close();
+					}
+					ui.arena.classList.remove("thrownhighlight");
+				}, event.videoId);
+			}
+			if (event.removeHighlight !== false) {
+				event.highlingtRemove();
+			}
+			game.addVideo("judge2", null, event.videoId);
+		}
+
+		//新增callback事件
+		if (event.callback) {
+			const next = game.createEvent("showCardsCallback", false);
+			next.player = player;
+			next.cards = event.result.cards;
+			next.result = event.result;
+			next.setContent(event.callback);
+			await next;
+		}
+	},
 	async viewCards(event, trigger, player) {
 		game.addCardKnower(event.cards, player);
 
