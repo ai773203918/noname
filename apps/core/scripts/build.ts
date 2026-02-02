@@ -28,12 +28,8 @@ const staticModules: Target[] = [
 	{ src: "theme", dest: "" },
 	{ src: "game", dest: "" },
 	{ src: "LICENSE", dest: "" },
-	{ src: "README.md", dest: "" },
-	{ src: ".nomedia", dest: "" },
-	// step 无法编译，需要覆盖
-	// 重构之后请删除
-	{ src: "noname/get/pinyins/index.js", dest: "noname/get/pinyins" },
-	// { src: "noname/library/skill.js", dest: "noname/library" },
+	{ src: "../../README.md", dest: "" },
+	{ src: ".nomedia", dest: "" }
 ];
 
 //完整包
