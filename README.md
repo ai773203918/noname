@@ -52,8 +52,6 @@ PC:  <https://github.com/nonameShijian/noname/releases/tag/v1.75>
 
 请尽量保证游玩的 Chrome 系浏览器或手机 Webview 的`内核版本大于等于91`
 
-提交 Pull Request 时请推送到"PR-Branch"分支！
-
 ---
 
 最近有一伙人号称是《无名杀十周年》的开发团队，宣称《无名杀十周年》“全新无名杀，比旧版拥有更多武将，兼容更多扩展”，实际上:
