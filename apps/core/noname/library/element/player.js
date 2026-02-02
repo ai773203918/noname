@@ -10309,7 +10309,7 @@ export class Player extends HTMLDivElement {
 			skills = [skills];
 		}
 		if (!Array.isArray(skills) || !skills?.length) {
-			return player;
+			return [];
 		}
 		const resetSkills = [],
 			suffixs = ["used", "round", "block", "blocker", "sunben"];
