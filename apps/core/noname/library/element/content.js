@@ -9247,7 +9247,7 @@ player.removeVirtualEquip(card);
 	},
 	showCards: [
 		async (event, trigger, player) => {
-			const { cards, str } = event;
+			const { cards, str, flashAnimation } = event;
 			if (get.itemtype(cards) != "cards") {
 				return event.finish();
 			}
@@ -9264,7 +9264,7 @@ player.removeVirtualEquip(card);
 			await event.trigger("showCards");
 		},
 		async (event, trigger, player) => {
-			const { cards, str, flashAnimation } = event;
+			const { cards, str, flashAnimation, triggeronly } = event;
 			if (get.itemtype(cards) != "cards") {
 				return event.finish();
 			}
@@ -9317,6 +9317,10 @@ player.removeVirtualEquip(card);
 						event.show_map.get("others")["noPosition"].push(card);
 					}
 				}
+			}
+			if (triggeronly) {
+				event.finish();
+				return;
 			}
 			if (!event.str) {
 				event.str = get.translation(player.name) + "展示的牌";
