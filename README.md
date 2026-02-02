@@ -32,12 +32,6 @@ pnpm dev
 
 ---
 
-noname-server.exe 的源码见以下仓库：
-
-<https://github.com/nonameShijian/noname-server>
-
----
-
 贡献代码可阅读相关文档：
 
 [Git 下载安装指南](https://github.com/libnoname/noname/wiki/Git%E4%B8%8B%E8%BD%BD%E5%AE%89%E8%A3%85%E6%8C%87%E5%8D%97)
