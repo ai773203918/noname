@@ -3150,6 +3150,7 @@ const skills = {
 				enable: "chooseToDiscard",
 				filter(event, player) {
 					return event.getParent().name == "huogong" && get.itemtype(_status.pileTop) == "card";
+					return event.getParent().name == "huogong" && get.itemtype(_status.pileTop) == "card" && !event.olsbzhitian_huogong;
 				},
 				async precontent(event, trigger, player) {
 					const evt = event.getParent();
