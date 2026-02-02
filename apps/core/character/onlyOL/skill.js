@@ -3149,7 +3149,6 @@ const skills = {
 			huogong: {
 				enable: "chooseToDiscard",
 				filter(event, player) {
-					return event.getParent().name == "huogong" && get.itemtype(_status.pileTop) == "card";
 					return event.getParent().name == "huogong" && get.itemtype(_status.pileTop) == "card" && !event.olsbzhitian_huogong;
 				},
 				async precontent(event, trigger, player) {
@@ -3183,6 +3182,7 @@ const skills = {
 								});
 							});
 					} else {
+						evt.set(event.name.slice(4), true);
 						evt.goto(0);
 					}
 				},
