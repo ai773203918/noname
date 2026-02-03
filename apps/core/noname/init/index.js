@@ -6,7 +6,14 @@ import { setOnError } from "@/util/error.ts";
 import { security, initializeSandboxRealms } from "@/util/sandbox.js";
 import { CacheContext } from "@/library/cache/cacheContext.js";
 import { importCardPack, importCharacterPack, importExtension, importMode } from "./import.js";
-import { loadCard, loadCardPile, loadCharacter, loadExtension, loadMode, loadPlay } from "./loading.js";
+import {
+	loadCard,
+	loadCardPile,
+	loadCharacter,
+	loadExtension,
+	loadMode,
+	loadPlay,
+} from "./loading.js";
 
 // 无名杀，启动！
 export async function boot() {
@@ -81,7 +88,9 @@ export async function boot() {
 				} else if (lib.device === "ios") {
 					game.saveConfig("show_statusbar_ios", "overlay");
 				}
-			} else if (confirm("是否切换到触屏模式？（触屏模式可提高触屏设备的响应速度，但无法使用鼠标）")) {
+			} else if (
+				confirm("是否切换到触屏模式？（触屏模式可提高触屏设备的响应速度，但无法使用鼠标）")
+			) {
 				game.saveConfig("touchscreen", true);
 				if (ua.includes("iphone") || ua.includes("android")) {
 					game.saveConfig("phonelayout", true);
@@ -115,13 +124,19 @@ export async function boot() {
 	const pack = window.noname_package;
 	delete window.noname_package;
 	for (const name in pack.character) {
-		if (config.get("all").sgscharacters.includes(name) || config.get("hiddenCharacterPack").indexOf(name) == -1) {
+		if (
+			config.get("all").sgscharacters.includes(name) ||
+			config.get("hiddenCharacterPack").indexOf(name) == -1
+		) {
 			config.get("all").characters.push(name);
 			lib.translate[name + "_character_config"] = pack.character[name];
 		}
 	}
 	for (const name in pack.card) {
-		if (config.get("all").sgscards.includes(name) || config.get("hiddenCardPack").indexOf(name) == -1) {
+		if (
+			config.get("all").sgscards.includes(name) ||
+			config.get("hiddenCardPack").indexOf(name) == -1
+		) {
 			config.get("all").cards.push(name);
 			lib.translate[name + "_card_config"] = pack.card[name];
 		}
@@ -192,16 +207,31 @@ export async function boot() {
 			appearenceConfig.identity_font.item[value] = font;
 			appearenceConfig.cardtext_font.item[value] = font;
 			appearenceConfig.global_font.item[value] = font;
-			fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`, 0);
+			fontSheet.insertRule(
+				`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/${value}.woff2');}`,
+				0
+			);
 			if (suitsFont) {
-				fontSheet.insertRule(`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`, 0);
+				fontSheet.insertRule(
+					`@font-face {font-family: '${value}'; src: local('${font}'), url('${lib.assetURL}font/suits.woff2');}`,
+					0
+				);
 			}
 		});
 		if (suitsFont) {
-			fontSheet.insertRule(`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
+			fontSheet.insertRule(
+				`@font-face {font-family: 'Suits'; src: url('${lib.assetURL}font/suits.woff2');}`,
+				0
+			);
 		}
-		fontSheet.insertRule(`@font-face {font-family: 'NonameSuits'; src: url('${lib.assetURL}font/suits.woff2');}`, 0);
-		fontSheet.insertRule(`@font-face {font-family: 'MotoyaLMaru'; src: url('${lib.assetURL}font/motoyamaru.woff2');}`, 0);
+		fontSheet.insertRule(
+			`@font-face {font-family: 'NonameSuits'; src: url('${lib.assetURL}font/suits.woff2');}`,
+			0
+		);
+		fontSheet.insertRule(
+			`@font-face {font-family: 'MotoyaLMaru'; src: url('${lib.assetURL}font/motoyamaru.woff2');}`,
+			0
+		);
 		appearenceConfig.cardtext_font.item.default = "默认";
 		appearenceConfig.global_font.item.default = "默认";
 	}
@@ -210,7 +240,9 @@ export async function boot() {
 		if (_status.htmlbg) {
 			game.saveConfig("image_background", _status.htmlbg);
 		} else {
-			const list = Object.keys(lib.configMenu.appearence.config.image_background.item).filter(i => i !== "default");
+			const list = Object.keys(lib.configMenu.appearence.config.image_background.item).filter(
+				i => i !== "default"
+			);
 			game.saveConfig("image_background", list.randomGet(lib.config.image_background));
 		}
 		lib.init.background();
@@ -229,7 +261,9 @@ export async function boot() {
 		// 更全面的更新内容
 		if (config.get(`version_description_v${window.noname_update.version}`)) {
 			try {
-				const description = config.get(`version_description_v${window.noname_update.version}`);
+				const description = config.get(
+					`version_description_v${window.noname_update.version}`
+				);
 				const html = String.raw;
 				// 匹配[xx](url)的格式
 				const regex = /\[([^\]]*)\]\(([^)]+)\)/g;
@@ -247,9 +281,11 @@ export async function boot() {
 						></div>
 						${description.author.login}于${description.published_at}发布
 					`.trim(),
-					description.body.replaceAll("\n", "<br/>").replace(regex, function (match, text, url) {
-						return `<a href="${url}">${text}</a>`;
-					})
+					description.body
+						.replaceAll("\n", "<br/>")
+						.replace(regex, function (match, text, url) {
+							return `<a href="${url}">${text}</a>`;
+						})
 				);
 			} catch (e) {
 				console.error(e);
@@ -321,9 +357,13 @@ export async function boot() {
 		// await Promise.allSettled(_status.extensionLoading);
 
 		if (extErrorList.length) {
-			const stacktraces = extErrorList.map(e => (e instanceof Error ? e.stack : String(e))).join("\n\n");
+			const stacktraces = extErrorList
+				.map(e => (e instanceof Error ? e.stack : String(e)))
+				.join("\n\n");
 			// game.saveConfig("update_first_log", stacktraces);
-			if (confirm(`扩展加载出错！是否重新载入游戏？\n以下扩展出现了错误：\n\n${stacktraces}`)) {
+			if (
+				confirm(`扩展加载出错！是否重新载入游戏？\n以下扩展出现了错误：\n\n${stacktraces}`)
+			) {
 				game.reload();
 				clearTimeout(resetGameTimeout);
 				return;
@@ -366,7 +406,10 @@ export async function boot() {
 
 	if (localStorage.getItem(`${lib.configprefix}playback`)) {
 		toLoad.push(importMode(config.get("mode")));
-	} else if ((localStorage.getItem(`${lib.configprefix}directstart`) || !show_splash) && config.get("all").mode.includes(config.get("mode"))) {
+	} else if (
+		(localStorage.getItem(`${lib.configprefix}directstart`) || !show_splash) &&
+		config.get("all").mode.includes(config.get("mode"))
+	) {
 		toLoad.push(importMode(config.get("mode")));
 	}
 
@@ -430,20 +473,26 @@ export async function boot() {
 			if (ui.css.card_stylesheet) {
 				ui.css.card_stylesheet.remove();
 			}
-			ui.css.card_stylesheet = lib.init.sheet(`.card:not(*:empty){background-image:url(${data})}`);
+			ui.css.card_stylesheet = lib.init.sheet(
+				`.card:not(*:empty){background-image:url(${data})}`
+			);
 		}),
 		tryLoadCustomStyle("cardback_style", {
 			cardback_style(data) {
 				if (ui.css.cardback_stylesheet) {
 					ui.css.cardback_stylesheet.remove();
 				}
-				ui.css.cardback_stylesheet = lib.init.sheet(`.card:empty,.card.infohidden{background-image:url(${data})}`);
+				ui.css.cardback_stylesheet = lib.init.sheet(
+					`.card:empty,.card.infohidden{background-image:url(${data})}`
+				);
 			},
 			cardback_style2(data) {
 				if (ui.css.cardback_stylesheet2) {
 					ui.css.cardback_stylesheet2.remove();
 				}
-				ui.css.cardback_stylesheet2 = lib.init.sheet(`.card.infohidden:not(.infoflip){background-image:url(${data})}`);
+				ui.css.cardback_stylesheet2 = lib.init.sheet(
+					`.card.infohidden:not(.infoflip){background-image:url(${data})}`
+				);
 			},
 		}),
 		tryLoadCustomStyle("hp_style", {
@@ -451,25 +500,33 @@ export async function boot() {
 				if (ui.css.hp_stylesheet1) {
 					ui.css.hp_stylesheet1.remove();
 				}
-				ui.css.hp_stylesheet1 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(${data})}`);
+				ui.css.hp_stylesheet1 = lib.init.sheet(
+					`.hp:not(.text):not(.actcount)[data-condition="high"]>div:not(.lost){background-image:url(${data})}`
+				);
 			},
 			hp_style2(data) {
 				if (ui.css.hp_stylesheet2) {
 					ui.css.hp_stylesheet2.remove();
 				}
-				ui.css.hp_stylesheet2 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(${data})}`);
+				ui.css.hp_stylesheet2 = lib.init.sheet(
+					`.hp:not(.text):not(.actcount)[data-condition="mid"]>div:not(.lost){background-image:url(${data})}`
+				);
 			},
 			hp_style3(data) {
 				if (ui.css.hp_stylesheet3) {
 					ui.css.hp_stylesheet3.remove();
 				}
-				ui.css.hp_stylesheet3 = lib.init.sheet(`.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(${data})}`);
+				ui.css.hp_stylesheet3 = lib.init.sheet(
+					`.hp:not(.text):not(.actcount)[data-condition="low"]>div:not(.lost){background-image:url(${data})}`
+				);
 			},
 			hp_style4(data) {
 				if (ui.css.hp_stylesheet4) {
 					ui.css.hp_stylesheet4.remove();
 				}
-				ui.css.hp_stylesheet4 = lib.init.sheet(`.hp:not(.text):not(.actcount)>.lost{background-image:url(${data})}`);
+				ui.css.hp_stylesheet4 = lib.init.sheet(
+					`.hp:not(.text):not(.actcount)>.lost{background-image:url(${data})}`
+				);
 			},
 		}),
 		tryLoadCustomStyle(
@@ -478,10 +535,14 @@ export async function boot() {
 				if (ui.css.player_stylesheet) {
 					ui.css.player_stylesheet.remove();
 				}
-				ui.css.player_stylesheet = lib.init.sheet(`#window .player{background-image:url("${data}");background-size:100% 100%;}`);
+				ui.css.player_stylesheet = lib.init.sheet(
+					`#window .player{background-image:url("${data}");background-size:100% 100%;}`
+				);
 			},
 			() => {
-				ui.css.player_stylesheet = lib.init.sheet("#window .player{background-image:none;background-size:100% 100%;}");
+				ui.css.player_stylesheet = lib.init.sheet(
+					"#window .player{background-image:none;background-size:100% 100%;}"
+				);
 			}
 		),
 		tryLoadCustomStyle("border_style", data => {
@@ -489,20 +550,30 @@ export async function boot() {
 				ui.css.border_stylesheet.remove();
 			}
 			ui.css.border_stylesheet = lib.init.sheet();
-			ui.css.border_stylesheet.sheet.insertRule(`#window .player>.framebg{display:block;background-image:url("${data}")}`, 0);
-			ui.css.border_stylesheet.sheet.insertRule(".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}", 0);
+			ui.css.border_stylesheet.sheet.insertRule(
+				`#window .player>.framebg{display:block;background-image:url("${data}")}`,
+				0
+			);
+			ui.css.border_stylesheet.sheet.insertRule(
+				".player>.count{z-index: 3 !important;border-radius: 2px !important;text-align: center !important;}",
+				0
+			);
 		}),
 		tryLoadCustomStyle("control_style", data => {
 			if (ui.css.control_stylesheet) {
 				ui.css.control_stylesheet.remove();
 			}
-			ui.css.control_stylesheet = lib.init.sheet(`#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("${data}")}`);
+			ui.css.control_stylesheet = lib.init.sheet(
+				`#window .control,.menubutton:not(.active):not(.highlight):not(.red):not(.blue),#window #system>div>div{background-image:url("${data}")}`
+			);
 		}),
 		tryLoadCustomStyle("menu_style", data => {
 			if (ui.css.menu_stylesheet) {
 				ui.css.menu_stylesheet.remove();
 			}
-			ui.css.menu_stylesheet = lib.init.sheet(`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${fileLoadedEvent.target.result}");background-size:cover}`);
+			ui.css.menu_stylesheet = lib.init.sheet(
+				`html #window>.dialog.popped,html .menu,html .menubg{background-image:url("${fileLoadedEvent.target.result}");background-size:cover}`
+			);
 		}),
 	];
 
@@ -561,12 +632,12 @@ export async function boot() {
 		Object.values(lib.imported.character).forEach(loadCharacter);
 	}
 
-	// 我不好说，但我尊重水乎的想法
-	Object.keys(lib.character)
-		.toSorted(lib.sort.capt)
-		.forEach(character => {
-			lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
-		});
+	// 联机头像改为输入模式，不再需要填充item
+	// Object.keys(lib.character)
+	// 	.toSorted(lib.sort.capt)
+	// 	.forEach(character => {
+	// 		lib.mode.connect.config.connect_avatar.item[character] = lib.translate[character];
+	// 	});
 
 	loadCardPile();
 
@@ -576,10 +647,16 @@ export async function boot() {
 
 	if (lib.cardPack.mode_derivation) {
 		lib.cardPack.mode_derivation = lib.cardPack.mode_derivation.filter(item => {
-			if (typeof lib.card[item].derivation == "string" && !lib.character[lib.card[item].derivation]) {
+			if (
+				typeof lib.card[item].derivation == "string" &&
+				!lib.character[lib.card[item].derivation]
+			) {
 				return false;
 			}
-			return !(typeof lib.card[item].derivationpack == "string" && !lib.config.cards.includes(lib.card[item].derivationpack));
+			return !(
+				typeof lib.card[item].derivationpack == "string" &&
+				!lib.config.cards.includes(lib.card[item].derivationpack)
+			);
 		});
 
 		if (lib.cardPack.mode_derivation.length === 0) {
@@ -661,13 +738,17 @@ async function getExtensionList() {
 	const autoImport = (() => {
 		if (!config.get("extension_auto_import")) {
 			return false;
-		} else if (!(typeof game.getFileList == "function" && typeof game.checkFile == "function")) {
+		} else if (
+			!(typeof game.getFileList == "function" && typeof game.checkFile == "function")
+		) {
 			console.warn("没有文件系统操作权限，无法自动导入扩展。");
 			return false;
 		}
 		return true;
 	})();
-	const searchParamsImportExtension = new URLSearchParams(location.search).get("importExtensionName");
+	const searchParamsImportExtension = new URLSearchParams(location.search).get(
+		"importExtensionName"
+	);
 
 	window.resetExtension = () => {
 		for (let ext of config.get("extensions")) {
@@ -685,14 +766,19 @@ async function getExtensionList() {
 		const extensionPath = new URL("./extension/", rootURL);
 		const [extFolders] = await game.promises.getFileList(get.relativePath(extensionPath));
 
-		const unimportedExtensions = extFolders.filter(folder => !extensions.includes(folder) && !config.get("all").plays.includes(folder));
+		const unimportedExtensions = extFolders.filter(
+			folder => !extensions.includes(folder) && !config.get("all").plays.includes(folder)
+		);
 
 		const promises = unimportedExtensions.map(async ext => {
 			const path = new URL(`./${ext}/`, extensionPath);
 			const file = new URL("./extension.js", path);
 			const tsFile = new URL("./extension.ts", path);
 
-			if ((await game.promises.checkFile(get.relativePath(file))) == 1 || (await game.promises.checkFile(get.relativePath(tsFile))) == 1) {
+			if (
+				(await game.promises.checkFile(get.relativePath(file))) == 1 ||
+				(await game.promises.checkFile(get.relativePath(tsFile))) == 1
+			) {
 				extensions.push(ext);
 				toLoad.push(ext);
 				if (!config.has(`extension_${ext}_enable`)) {
@@ -738,7 +824,12 @@ function initSheet() {
 	}
 
 	const border_style = config.get("border_style");
-	if (border_style && border_style != "default" && border_style != "custom" && border_style != "auto") {
+	if (
+		border_style &&
+		border_style != "default" &&
+		border_style != "custom" &&
+		border_style != "auto"
+	) {
 		let bstyle = border_style;
 		if (bstyle.startsWith("dragon_")) bstyle = bstyle.slice(7);
 		ui.css.border_stylesheet = lib.init.sheet(
@@ -770,7 +861,8 @@ function initSheet() {
 				str = "linear-gradient(#4b4b4b, #464646);color:white;text-shadow:black 0 0 2px";
 				break;
 			case "simple":
-				str = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
+				str =
+					"linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
 				break;
 		}
 		if (control_style == "wood") {
@@ -804,7 +896,8 @@ function initSheet() {
 				str = "linear-gradient(#4b4b4b, #464646);color:white;text-shadow:black 0 0 2px";
 				break;
 			case "simple":
-				str = "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
+				str =
+					"linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4));color:white;text-shadow:black 0 0 2px";
 				break;
 		}
 		ui.css.menu_stylesheet = lib.init.sheet(
@@ -899,7 +992,8 @@ async function loadConfig() {
 
 	// 复制共有模式设置
 	for (const name in config.get("mode_config").global) {
-		config.get("mode_config")[config.get("mode")][name] ??= config.get("mode_config").global[name];
+		config.get("mode_config")[config.get("mode")][name] ??=
+			config.get("mode_config").global[name];
 	}
 
 	if (config.get("characters")) {
@@ -913,7 +1007,8 @@ async function loadConfig() {
 		if (name.includes("_mode_config")) {
 			const thismode = name.slice(name.indexOf("_mode_config") + 13);
 			config.get("mode_config")[thismode] ??= {};
-			config.get("mode_config")[thismode][name.slice(0, name.indexOf("_mode_config"))] = result[name];
+			config.get("mode_config")[thismode][name.slice(0, name.indexOf("_mode_config"))] =
+				result[name];
 		} else {
 			config.set(name, result[name]);
 		}
@@ -937,16 +1032,45 @@ async function loadCss() {
 		menu: lib.init.promises.css(lib.assetURL + "layout/default", "menu"),
 		newmenu: lib.init.promises.css(lib.assetURL + "layout/default", "newmenu"),
 		default: lib.init.promises.css(lib.assetURL + "layout/default", "layout"),
-		layout: lib.init.promises.css(lib.assetURL + "layout/" + game.layout, "layout", void 0, true),
-		theme: lib.init.promises.css(lib.assetURL + "theme/" + config.get("theme"), "style", void 0, true),
-		card_style: lib.init.promises.css(lib.assetURL + "theme/style/card", config.get("card_style"), void 0, true),
-		cardback_style: lib.init.promises.css(lib.assetURL + "theme/style/cardback", config.get("cardback_style"), void 0, true),
-		hp_style: lib.init.promises.css(lib.assetURL + "theme/style/hp", config.get("hp_style"), void 0, true),
-		phone: get.is.phoneLayout() ? lib.init.promises.css(lib.assetURL + "layout/default", "phone", void 0, true) : lib.init.css(),
+		layout: lib.init.promises.css(
+			lib.assetURL + "layout/" + game.layout,
+			"layout",
+			void 0,
+			true
+		),
+		theme: lib.init.promises.css(
+			lib.assetURL + "theme/" + config.get("theme"),
+			"style",
+			void 0,
+			true
+		),
+		card_style: lib.init.promises.css(
+			lib.assetURL + "theme/style/card",
+			config.get("card_style"),
+			void 0,
+			true
+		),
+		cardback_style: lib.init.promises.css(
+			lib.assetURL + "theme/style/cardback",
+			config.get("cardback_style"),
+			void 0,
+			true
+		),
+		hp_style: lib.init.promises.css(
+			lib.assetURL + "theme/style/hp",
+			config.get("hp_style"),
+			void 0,
+			true
+		),
+		phone: get.is.phoneLayout()
+			? lib.init.promises.css(lib.assetURL + "layout/default", "phone", void 0, true)
+			: lib.init.css(),
 		_others: lib.init.promises.css(lib.assetURL + "layout/" + "others", "dialog", void 0, true),
 		_skill: lib.init.promises.css(lib.assetURL + "layout/" + "others", "skill", void 0, true),
 	};
-	await Promise.allSettled(Object.keys(stylesLoading).map(async i => (ui.css[i] = await stylesLoading[i])));
+	await Promise.allSettled(
+		Object.keys(stylesLoading).map(async i => (ui.css[i] = await stylesLoading[i]))
+	);
 }
 
 function setBackground() {
@@ -968,7 +1092,8 @@ function setBackground() {
 			}
 		}
 		if (htmlbg) {
-			document.documentElement.style.backgroundImage = 'url("' + lib.assetURL + "image/background/" + htmlbg + '.jpg")';
+			document.documentElement.style.backgroundImage =
+				'url("' + lib.assetURL + "image/background/" + htmlbg + '.jpg")';
 			document.documentElement.style.backgroundSize = "cover";
 			document.documentElement.style.backgroundPosition = "50% 50%";
 			// 由于html没设高度或最小高度导致了图片重复问题
@@ -980,8 +1105,11 @@ function setBackground() {
 
 function setWindowListener() {
 	window.onkeydown = function (e) {
-		if (typeof ui.menuContainer == "undefined" || !ui.menuContainer.classList.contains("hidden")) {
-			if (e.key === "F5" || ((e.ctrlKey || e.metaKey)  && e.key.toLowerCase() === "r")) {
+		if (
+			typeof ui.menuContainer == "undefined" ||
+			!ui.menuContainer.classList.contains("hidden")
+		) {
+			if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
 						var noname_inited = localStorage.getItem("noname_inited");
@@ -1009,7 +1137,11 @@ function setWindowListener() {
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
-			} else if (e.key.toLowerCase() === "j" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
+			} else if (
+				e.key.toLowerCase() === "j" &&
+				(e.ctrlKey || e.metaKey) &&
+				typeof lib.node != "undefined"
+			) {
 				lib.node.debug();
 			}
 		} else {
@@ -1036,7 +1168,10 @@ function setWindowListener() {
 				} else if (typeof ui.tempnowuxie != "undefined") {
 					ui.tempnowuxie.classList.toggle("glow");
 				}
-			} else if (e.key === "F5" || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")) {
+			} else if (
+				e.key === "F5" ||
+				((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")
+			) {
 				if (e.shiftKey) {
 					if (confirm("是否重置游戏？")) {
 						var noname_inited = localStorage.getItem("noname_inited");
@@ -1061,7 +1196,11 @@ function setWindowListener() {
 				e.preventDefault();
 				e.stopPropagation();
 				return false;
-			} else if (e.key.toLowerCase() === "j" && (e.ctrlKey || e.metaKey) && typeof lib.node != "undefined") {
+			} else if (
+				e.key.toLowerCase() === "j" &&
+				(e.ctrlKey || e.metaKey) &&
+				typeof lib.node != "undefined"
+			) {
 				lib.node.debug();
 			}
 			// else if(e.key=="Escape"){
@@ -1132,7 +1271,10 @@ function createTouchDraggedFilter() {
 		if (_status.dragged) {
 			return;
 		}
-		if (Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 || Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10) {
+		if (
+			Math.abs(e.touches[0].clientX / game.documentZoom - this.startX) > 10 ||
+			Math.abs(e.touches[0].clientY / game.documentZoom - this.startY) > 10
+		) {
 			_status.dragged = true;
 		}
 	});
