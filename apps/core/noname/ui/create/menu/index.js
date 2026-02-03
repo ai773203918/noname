@@ -168,11 +168,7 @@ export function createMenu(connectMenu, tabs, config) {
 		}
 		this.classList.add("active");
 		menuTabBar.style.transform =
-			"translateX(" +
-			(this.getBoundingClientRect().left -
-				this.parentNode.firstChild.getBoundingClientRect().left) /
-				get.menuZoom() +
-			"px)";
+			"translateX(" + (this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) / get.menuZoom() + "px)";
 		menuContent.appendChild(this._link);
 	};
 	ui.click.menuTab = function (tab) {
@@ -215,9 +211,7 @@ export function createConfig(config, position) {
 				if (typeof str == "function") {
 					str = str();
 				}
-				uiintro._place_text = uiintro.add(
-					'<div class="text" style="display:inline">' + str + "</div>"
-				);
+				uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
 			});
 		}
 	} else {
@@ -292,12 +286,7 @@ export function createConfig(config, position) {
 				node._link.menu.updateBr();
 			} else {
 				for (var i in config.item) {
-					var textMenu = ui.create.div(
-						"",
-						config.item[i],
-						node._link.menu,
-						clickMenuItem
-					);
+					var textMenu = ui.create.div("", config.item[i], node._link.menu, clickMenuItem);
 					textMenu._link = i;
 					if (config.textMenu) {
 						config.textMenu(textMenu, i, config.item[i], config);
@@ -444,30 +433,22 @@ export function menu(connectMenu) {
 	/**
 	 * 由于联机模式会创建第二个菜单，所以需要缓存一下可变的变量
 	 */
-	const cacheMenuContainer = (menuContainer = ui.create.div(
-		".menu-container.hidden",
-		ui.window,
-		() => {
-			clickContainer.call(cacheMenuContainer, connectMenu);
-		}
-	));
-	const cachePopupContainer = (popupContainer = ui.create.div(
-		".popup-container.hidden",
-		ui.window,
-		function closeMenu() {
+	const cacheMenuContainer = (menuContainer = ui.create.div(".menu-container.hidden", ui.window, () => {
+		clickContainer.call(cacheMenuContainer, connectMenu);
+	}));
+	const cachePopupContainer = (popupContainer = ui.create.div(".popup-container.hidden", ui.window, function closeMenu() {
+		// @ts-expect-error ignore
+		if (cachePopupContainer.noclose) {
 			// @ts-expect-error ignore
-			if (cachePopupContainer.noclose) {
-				// @ts-expect-error ignore
-				cachePopupContainer.noclose = false;
-				return;
-			}
-			cachePopupContainer.classList.add("hidden");
-			if (typeof cachePopupContainer.onclose == "function") {
-				// @ts-expect-error ignore
-				cachePopupContainer.onclose();
-			}
+			cachePopupContainer.noclose = false;
+			return;
 		}
-	));
+		cachePopupContainer.classList.add("hidden");
+		if (typeof cachePopupContainer.onclose == "function") {
+			// @ts-expect-error ignore
+			cachePopupContainer.onclose();
+		}
+	}));
 
 	if (!connectMenu) {
 		ui.menuContainer = cacheMenuContainer;
