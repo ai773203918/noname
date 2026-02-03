@@ -5950,7 +5950,7 @@ const skills = {
 					return false;
 				}
 				const cards = cardx.slice().remove(card);
-				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+				return !cards.length || number >= Math.max(...cards.map(i => get.number(i, player)));
 			});
 			if (card) {
 				const number = get.number(card, player);
