@@ -167,7 +167,12 @@ export function createMenu(connectMenu, tabs, config) {
 			active._link.remove();
 		}
 		this.classList.add("active");
-		menuTabBar.style.transform = "translateX(" + (this.getBoundingClientRect().left - this.parentNode.firstChild.getBoundingClientRect().left) / get.menuZoom() + "px)";
+		menuTabBar.style.transform =
+			"translateX(" +
+			(this.getBoundingClientRect().left -
+				this.parentNode.firstChild.getBoundingClientRect().left) /
+				get.menuZoom() +
+			"px)";
 		menuContent.appendChild(this._link);
 	};
 	ui.click.menuTab = function (tab) {
@@ -210,7 +215,9 @@ export function createConfig(config, position) {
 				if (typeof str == "function") {
 					str = str();
 				}
-				uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
+				uiintro._place_text = uiintro.add(
+					'<div class="text" style="display:inline">' + str + "</div>"
+				);
 			});
 		}
 	} else {
@@ -285,7 +292,12 @@ export function createConfig(config, position) {
 				node._link.menu.updateBr();
 			} else {
 				for (var i in config.item) {
-					var textMenu = ui.create.div("", config.item[i], node._link.menu, clickMenuItem);
+					var textMenu = ui.create.div(
+						"",
+						config.item[i],
+						node._link.menu,
+						clickMenuItem
+					);
 					textMenu._link = i;
 					if (config.textMenu) {
 						config.textMenu(textMenu, i, config.item[i], config);
@@ -332,6 +344,11 @@ export function createConfig(config, position) {
 				game.saveConfig("connect_nickname", input.innerHTML);
 				game.saveConfig("connect_nickname", input.innerHTML, "connect");
 			};
+		} else if (config.name == "联机头像") {
+			// 显示当前配置的武将名称（直接使用翻译，不额外添加前缀）
+			const currentId = lib.config.connect_avatar || config.init || "caocao";
+			input.innerHTML = lib.translate[currentId] || "曹操";
+			input.onblur = config.onblur;
 		} else if (config.name == "联机大厅") {
 			input.innerHTML = config.init || lib.hallURL;
 			input.onblur = function () {
@@ -427,22 +444,30 @@ export function menu(connectMenu) {
 	/**
 	 * 由于联机模式会创建第二个菜单，所以需要缓存一下可变的变量
 	 */
-	const cacheMenuContainer = (menuContainer = ui.create.div(".menu-container.hidden", ui.window, () => {
-		clickContainer.call(cacheMenuContainer, connectMenu);
-	}));
-	const cachePopupContainer = (popupContainer = ui.create.div(".popup-container.hidden", ui.window, function closeMenu() {
-		// @ts-expect-error ignore
-		if (cachePopupContainer.noclose) {
-			// @ts-expect-error ignore
-			cachePopupContainer.noclose = false;
-			return;
+	const cacheMenuContainer = (menuContainer = ui.create.div(
+		".menu-container.hidden",
+		ui.window,
+		() => {
+			clickContainer.call(cacheMenuContainer, connectMenu);
 		}
-		cachePopupContainer.classList.add("hidden");
-		if (typeof cachePopupContainer.onclose == "function") {
+	));
+	const cachePopupContainer = (popupContainer = ui.create.div(
+		".popup-container.hidden",
+		ui.window,
+		function closeMenu() {
 			// @ts-expect-error ignore
-			cachePopupContainer.onclose();
+			if (cachePopupContainer.noclose) {
+				// @ts-expect-error ignore
+				cachePopupContainer.noclose = false;
+				return;
+			}
+			cachePopupContainer.classList.add("hidden");
+			if (typeof cachePopupContainer.onclose == "function") {
+				// @ts-expect-error ignore
+				cachePopupContainer.onclose();
+			}
 		}
-	}));
+	));
 
 	if (!connectMenu) {
 		ui.menuContainer = cacheMenuContainer;

@@ -17,14 +17,25 @@ export const NonameToggle = {
  */
 export const NonameConfig = {
 	template: html`
-		<div ref="node" :class="{ config: true, switcher: config.item || config.input, toggle: !config.item && !config.range && !config.clear && !config.input }" @click="nodeClick" :style="nodeStyle">
+		<div
+			ref="node"
+			:class="{ config: true, switcher: config.item || config.input, toggle: !config.item && !config.range && !config.clear && !config.input }"
+			@click="nodeClick"
+			:style="nodeStyle"
+		>
 			<span>{{ config.name }}</span>
 			<div v-if="config.item">{{ config.item[config.init] }}</div>
 			<div v-else-if="config.range">
 				<input type="range" />
 			</div>
 			<div v-else-if="config.clear"></div>
-			<div v-else-if="config.input" ref="input" :contentEditable="!config.fixed" :style="inputStyle" @keydown="inputKeydown"></div>
+			<div
+				v-else-if="config.input"
+				ref="input"
+				:contentEditable="!config.fixed"
+				:style="inputStyle"
+				@keydown="inputKeydown"
+			></div>
 			<noname-toggle v-else></noname-toggle>
 		</div>
 	`,
@@ -39,7 +50,12 @@ export const NonameConfig = {
 			if (this.config.item) {
 				this.clickSwitcher(this.$refs.node);
 			}
-			if (!this.config.item && !this.config.range && !this.config.clear && !this.config.input) {
+			if (
+				!this.config.item &&
+				!this.config.range &&
+				!this.config.clear &&
+				!this.config.input
+			) {
 				this.clickToggle(this.$refs.node);
 			}
 		},
@@ -110,7 +126,9 @@ export const NonameConfig = {
 						if (typeof str == "function") {
 							str = str();
 						}
-						uiintro._place_text = uiintro.add('<div class="text" style="display:inline">' + str + "</div>");
+						uiintro._place_text = uiintro.add(
+							'<div class="text" style="display:inline">' + str + "</div>"
+						);
 					});
 				}
 			} else {
@@ -121,7 +139,10 @@ export const NonameConfig = {
 			if (config.item) {
 				// 还没写，是false
 				if (this.$refs.menu) {
-					if (typeof this.config.textMenu == "function" && this.$refs.menu.childElementCount > 0) {
+					if (
+						typeof this.config.textMenu == "function" &&
+						this.$refs.menu.childElementCount > 0
+					) {
 						Array.from(this.$refs.menu.children).forEach(node => {
 							const link = node.getAttribute("link");
 							// 设置不同字体时，修改对应node的文字字体
@@ -129,7 +150,12 @@ export const NonameConfig = {
 						});
 					}
 					if (typeof this.config.visualBar == "function" && this.$refs.visualBar) {
-						this.config.visualBar(this.$refs.visualBar, this.config.item, function (i, before) {}, this.$refs.root);
+						this.config.visualBar(
+							this.$refs.visualBar,
+							this.config.item,
+							function (i, before) {},
+							this.$refs.root
+						);
 					}
 					lib.setScroll(this.$refs.menu);
 				}
@@ -150,6 +176,11 @@ export const NonameConfig = {
 						game.saveConfig("connect_nickname", input.innerHTML);
 						game.saveConfig("connect_nickname", input.innerHTML, "connect");
 					};
+				} else if (config.name == "联机头像") {
+					// 显示当前配置的武将名称（直接使用翻译，不额外添加前缀）
+					const currentId = lib.config.connect_avatar || config.init || "caocao";
+					input.innerHTML = lib.translate[currentId] || "曹操";
+					input.onblur = config.onblur;
 				} else if (config.name == "联机大厅") {
 					input.innerHTML = config.init || lib.hallURL;
 					input.onblur = function () {
@@ -185,15 +216,26 @@ export const NonameConfig = {
  */
 export const menuConfigTemplate = {
 	template: html`
-		<div ref="menu" v-if="config.item" :class="{ menu: true, visual: config.visualMenu, withbar: config.visualBar }">
+		<div
+			ref="menu"
+			v-if="config.item"
+			:class="{ menu: true, visual: config.visualMenu, withbar: config.visualBar }"
+		>
 			<!-- visualBar -->
 			<div ref="visualBar" v-if="config.visualMenu" @click="visualBarClick"></div>
 			<!-- visualMenu -->
-			<div v-if="config.visualMenu" v-for="(value, i) in config.item" :link="i" @click="clickMenuItem">
+			<div
+				v-if="config.visualMenu"
+				v-for="(value, i) in config.item"
+				:link="i"
+				@click="clickMenuItem"
+			>
 				<div class="name">{{ get.verticalStr(value) }}</div>
 			</div>
 			<!-- itemMenu -->
-			<div v-else v-for="(value, i) in config.item" @click="clickMenuItem" :link="i">{{ value }}</div>
+			<div v-else v-for="(value, i) in config.item" @click="clickMenuItem" :link="i">
+				{{ value }}
+			</div>
 		</div>
 	`,
 	props: {
