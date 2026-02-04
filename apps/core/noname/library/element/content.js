@@ -1057,20 +1057,8 @@ export const Content = {
 		}
 		player.equiping = true;
 		const handleEquip = async card => {
-			let cards = [];
+			const cards = event.cards;
 			// @ts-expect-error ignore
-			if (get.itemtype(card) === "card" && !card.isViewAsCard) {
-				cards = [card];
-				card = card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false);
-				event.vcards.push(card);
-			} else {
-				if (get.itemtype(card) === "card" && card.isViewAsCard) {
-					event.vcards.push(card[card.cardSymbol]);
-				} else {
-					event.vcards.push(card);
-				}
-				cards = event.cards ?? [];
-			}
 			let cardInfo = get.info(card, false);
 			if (player.isMin() || !player.canEquip(card)) {
 				await game.cardsDiscard(cards);
@@ -1143,6 +1131,20 @@ export const Content = {
 			}
 			return;
 		}
+
+		event.vcards = [];
+		const card = event.card;
+		if (get.itemtype(card) === "card" && !card.isViewAsCard) {
+			//cards = [card];
+			event.card = card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false);
+			event.vcards.push(event.card);
+		} else {
+			if (get.itemtype(card) === "card" && card.isViewAsCard) {
+				event.vcards.push(card[card.cardSymbol]);
+			} else {
+				event.vcards.push(card);
+			}
+		}
 		//准备上装备时的处理
 		let cardInfo = get.info(event.card, false);
 		if (cardInfo.prepareEquip && (!cardInfo.filterEquip || cardInfo.filterEquip(event.card, player))) {
@@ -1204,10 +1206,9 @@ export const Content = {
 		}
 		//就算是vcard也应该用lose处理
 		/*result?.vcards?.forEach(card => {
-player.removeVirtualEquip(card);
-});*/
+			player.removeVirtualEquip(card);
+		});*/
 		//然后处理每一张装备牌的装备
-		event.vcards = [];
 		await handleEquip(event.card);
 		//如果event.card是实体牌，改为虚拟牌
 		if (get.itemtype(event.card) == "card") {
