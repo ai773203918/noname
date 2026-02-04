@@ -9701,7 +9701,7 @@ export const Content = {
 				}, event.videoId);
 			};
 			if (event.removeHighlight !== false) {
-				event.highlingtRemove();
+				event.highlightRemove();
 			}
 			game.addVideo("judge2", null, event.videoId);
 		}
