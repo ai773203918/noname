@@ -5242,7 +5242,7 @@ const skills = {
 				return false;
 			}
 			if (event.name == "_wuxie") {
-				if (!event.list.includes(player)) {
+				if (event._trigger?.getParent()?.directHit?.includes(player)) {
 					return false;
 				}
 				if (event.wuxieresult && event.wuxieresult == player) {
