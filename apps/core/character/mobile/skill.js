@@ -7300,19 +7300,17 @@ const skills = {
 				});
 			});
 			const num2 = player.countMark("mbjiexun_used");
-			const {
-				result: {
-					targets: [target],
-				},
-			} = await player
+			const { targets } = await player
 				.chooseTarget(`诫训：令一名其他角色摸${num1}张牌然后弃置${num2}张牌`, lib.filter.notMe, true)
 				.set("ai", function (target) {
 					const player = get.player(),
 						att = get.attitude(player, target);
 					return get.event().eff * get.sgn(att) + att / 114514;
 				})
-				.set("eff", num1 >= num2 && num1 > 0 ? 1 : -1);
-			if (target) {
+				.set("eff", num1 >= num2 && num1 > 0 ? 1 : -1)
+				.forResult();
+			if (targets?.length) {
+				const [ target ] = targets;
 				player.line(target);
 				await target.draw(num1);
 				await target.chooseToDiscard("he", true, num2);
@@ -13203,7 +13201,21 @@ const skills = {
 						//trigger.includeOut = true;
 						trigger.reserveOut = true;
 					} else {
-						player.changeSkin("mbmowang", "shichangshi_dead");
+						game.broadcastAll(function (player) {
+							player.name1 = player.name;
+							player.skin.name = player.name + "_dead";
+							player.smoothAvatar(false);
+							player.node.avatar.setBackground(player.name + "_dead", "character");
+							player.node.name.innerHTML = get.slimName(player.name);
+							delete player.name2;
+							delete player.skin.name2;
+							player.classList.remove("fullskin2");
+							player.node.avatar2.classList.add("hidden");
+							player.node.name2.innerHTML = "";
+							if (player == game.me && ui.fakeme) {
+								ui.fakeme.style.backgroundImage = player.node.avatar.style.backgroundImage;
+							}
+						}, player);
 					}
 				}
 			}
@@ -13217,7 +13229,7 @@ const skills = {
 				audio: "mbmowang",
 				trigger: { player: "phaseAfter" },
 				forced: true,
-				forceDie: true,
+				//forceDie: true,
 				async content(event, trigger, player) {
 					if (lib.skill.mbdanggu.isSingleShichangshi(player)) {
 						if (!player.getStorage("mbdanggu").length) {
