@@ -32055,7 +32055,7 @@ const skills = {
 						"交给" +
 							get.translation(target) +
 							'<div class="text center">至少一张' +
-							(list[2] > 1 ? "<br>至多" + get.cnNumber(event.list[2]) + "张" : "") +
+							(list[2] > 1 ? "<br>至多" + get.cnNumber(list[2]) + "张" : "") +
 							"</div>",
 					],
 					['交给自己<div class="text center">至多' + get.cnNumber(list[3]) + "张</div>"],
@@ -32140,14 +32140,12 @@ const skills = {
 	shanshen: {
 		audio: 2,
 		trigger: { global: "die" },
-		direct: true,
-		content() {
-			"step 0";
-			event.goon = !player.hasAllHistory("sourceDamage", function (evt) {
+		async cost(event, trigger, player) {
+			const bool = !player.hasAllHistory("sourceDamage", function (evt) {
 				return evt.player == trigger.player;
 			});
-			var list = lib.skill.yuqi.getInfo(player);
-			player
+			const list = get.info("yuqi").getInfo(player);
+			const result = await player
 				.chooseControl(
 					"<span class=thundertext>蓝色(" + list[0] + ")</span>",
 					"<span class=firetext>红色(" + list[1] + ")</span>",
@@ -32155,10 +32153,10 @@ const skills = {
 					"<span class=yellowtext>黄色(" + list[3] + ")</span>",
 					"cancel2"
 				)
-				.set("prompt", get.prompt("shanshen"))
-				.set("prompt2", "令〖隅泣〗中的一个数字+2" + (event.goon ? "并回复1点体力" : ""))
+				.set("prompt", get.prompt(event.skill))
+				.set("prompt2", "令〖隅泣〗中的一个数字+2" + (bool ? "并回复1点体力" : ""))
 				.set("ai", function () {
-					var player = _status.event.player,
+					const player = _status.event.player,
 						info = lib.skill.yuqi.getInfo(player);
 					if (
 						info[0] < info[3] &&
@@ -32183,18 +32181,33 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
-			"step 1";
+				})
+				.forResult();
 			if (result.control != "cancel2") {
-				player.logSkill("shanshen", trigger.player);
-				var list = lib.skill.yuqi.getInfo(player);
-				list[result.index] = Math.min(5, list[result.index] + 2);
-				game.log(player, "将", result.control, "数字改为", "#y" + list[result.index]);
-				player.markSkill("yuqi");
-				lib.skill.yuqi.init(player, "yuqi");
-				if (event.goon) {
-					player.recover();
-				}
+				event.result = {
+					bool: true,
+					cost_data: [result.control, result.index],
+				};
+			}
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const {
+				targets,
+				cost_data: [control, index],
+			} = event;
+			const name = "yuqi";
+			const list = get.info(name).getInfo(player);
+			list[index] = Math.min(5, list[index] + 2);
+			game.log(player, "将", control, "数字改为", "#y" + list[index]);
+			player.markSkill(name);
+			get.info(name).init(player, name);
+			if (
+				!player.hasAllHistory("sourceDamage", function (evt) {
+					return evt.player == targets[0];
+				})
+			) {
+				await player.recover();
 			}
 		},
 		ai: {
@@ -32204,11 +32217,9 @@ const skills = {
 	xianjing: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			var list = lib.skill.yuqi.getInfo(player);
-			player
+		async cost(event, trigger, player) {
+			const list = get.info("yuqi").getInfo(player);
+			const result = await player
 				.chooseControl(
 					"<span class=thundertext>蓝色(" + list[0] + ")</span>",
 					"<span class=firetext>红色(" + list[1] + ")</span>",
@@ -32216,10 +32227,10 @@ const skills = {
 					"<span class=yellowtext>黄色(" + list[3] + ")</span>",
 					"cancel2"
 				)
-				.set("prompt", get.prompt("xianjing"))
+				.set("prompt", get.prompt(event.skill))
 				.set("prompt2", "令〖隅泣〗中的一个数字+1")
 				.set("ai", function () {
-					var player = _status.event.player,
+					const player = _status.event.player,
 						info = lib.skill.yuqi.getInfo(player);
 					if (
 						info[0] < info[3] &&
@@ -32244,24 +32255,29 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
-			"step 1";
+				})
+				.forResult();
 			if (result.control != "cancel2") {
-				player.logSkill("xianjing");
-				var list = lib.skill.yuqi.getInfo(player);
-				list[result.index] = Math.min(5, list[result.index] + 1);
-				game.log(player, "将", result.control, "数字改为", "#y" + list[result.index]);
-				player.markSkill("yuqi");
-				lib.skill.yuqi.init(player, "yuqi");
-				if (player.isDamaged()) {
-					event.finish();
-				}
-			} else {
-				event.finish();
+				event.result = {
+					bool: true,
+					cost_data: [result.control, result.index],
+				};
 			}
-			"step 2";
-			var list = lib.skill.yuqi.getInfo(player);
-			player
+		},
+		async content(event, trigger, player) {
+			const {
+				cost_data: [control, index],
+			} = event;
+			const name = "yuqi";
+			const list = get.info(name).getInfo(player);
+			list[index] = Math.min(5, list[index] + 1);
+			game.log(player, "将", control, "数字改为", "#y" + list[index]);
+			player.markSkill(name);
+			get.info(name).init(player, name);
+			if (player.isDamaged()) {
+				return;
+			}
+			const result = await player
 				.chooseControl(
 					"<span class=thundertext>蓝色(" + list[0] + ")</span>",
 					"<span class=firetext>红色(" + list[1] + ")</span>",
@@ -32269,9 +32285,10 @@ const skills = {
 					"<span class=yellowtext>黄色(" + list[3] + ")</span>",
 					"cancel2"
 				)
-				.set("prompt", "是否令〖隅泣〗中的一个数字+1？")
+				.set("prompt", get.prompt(event.skill))
+				.set("prompt2", "令〖隅泣〗中的一个数字+1")
 				.set("ai", function () {
-					var player = _status.event.player,
+					const player = _status.event.player,
 						info = lib.skill.yuqi.getInfo(player);
 					if (
 						info[0] < info[3] &&
@@ -32296,14 +32313,14 @@ const skills = {
 						return 0;
 					}
 					return 2;
-				});
-			"step 3";
+				})
+				.forResult();
 			if (result.control != "cancel2") {
-				var list = lib.skill.yuqi.getInfo(player);
-				list[result.index] = Math.min(5, list[result.index] + 1);
-				game.log(player, "将", result.control, "数字改为", "#y" + list[result.index]);
-				player.markSkill("yuqi");
-				lib.skill.yuqi.init(player, "yuqi");
+				const { control, index } = result;
+				list[index] = Math.min(5, list[index] + 1);
+				game.log(player, "将", control, "数字改为", "#y" + list[index]);
+				player.markSkill(name);
+				get.info(name).init(player, name);
 			}
 		},
 		ai: {
