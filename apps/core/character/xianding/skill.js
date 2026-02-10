@@ -3719,8 +3719,8 @@ const skills = {
 			next.set("list", [
 				["获得", []],
 				[
-					["牌堆顶", [top]],
-					["牌堆底", [bottom]],
+					["牌堆顶", top],
+					["牌堆底", bottom],
 				],
 			]);
 			next.set("processAI", list => {
