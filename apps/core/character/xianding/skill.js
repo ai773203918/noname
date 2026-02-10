@@ -3719,8 +3719,8 @@ const skills = {
 			next.set("list", [
 				["获得", []],
 				[
-					["牌堆顶", [top]],
-					["牌堆底", [bottom]],
+					["牌堆顶", top],
+					["牌堆底", bottom],
 				],
 			]);
 			next.set("processAI", list => {
@@ -19182,6 +19182,7 @@ const skills = {
 			const { targets, name: skillName } = event;
 			player.changeZhuanhuanji(skillName);
 			const target = targets[0];
+			let bool = false;
 			if (!player.storage[skillName]) {
 				player.line2(targets);
 				let source = targets[1],
@@ -19197,7 +19198,11 @@ const skills = {
 						if (discard) {
 							discard = false;
 						}
-						await source.useCard(cards.randomGet(), target, false);
+						const next = source.useCard(cards.randomGet(), target, false);
+						await next;
+						if (target.hasHistory("damage", evt => evt.card == next.card)) {
+							bool = true;
+						}
 					} else {
 						break;
 					}
@@ -19210,8 +19215,15 @@ const skills = {
 					await player.draw(Math.min(5, target.countCards("h") - player.countCards("h")));
 				}
 				if (player.canUse({ name: "huogong" }, target, false)) {
-					await player.useCard({ name: "huogong" }, target, false);
+					const next = player.useCard({ name: "huogong" }, target, false);
+					await next;
+					if (target.hasHistory("damage", evt => evt.card == next.card)) {
+						bool = true;
+					}
 				}
+			}
+			if (!bool) {
+				await target.damage("fire");
 			}
 		},
 		group: "dcsbyingmou_change",
