@@ -2,13 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY ./game ./game
+COPY ./server.js .
 
 RUN npm install --omit=dev minimist ws@1.0.1 jszip@^3.10.1 pako@^2.1.0 @codemirror/view@^6.21.3 @codemirror/state@^6.2.1 @lezer/common@^1.1.0 --registry=https://registry.npmmirror.com && \
     npm cache clean --force && \
-    rm -rf /tmp/* /var/tmp/* && \
-    find /usr/local/lib/node_modules -name "*.md" -delete -o -name "*.ts" -delete -o -name "test" -type d -exec rm -rf {} + 2>/dev/null || true
+    rm -rf /tmp/* /var/tmp/*
 
 EXPOSE 8080
 
-CMD ["node", "game/server.js"]
+CMD ["node", "server.js"]
