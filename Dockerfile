@@ -66,12 +66,13 @@ RUN echo '{"type": "module"}' > package.json
 
 # 安装运行时核心依赖（精简版，不包含开发依赖）
 RUN npm install --omit=dev \
-  ws \
   fastify \
   @fastify/cors \
   @fastify/static \
   minimist \
-  vue@^3.5.27
+  vue@^3.5.27 \
+  express@4.18.2 ws@1.0.1 options@0.0.6 ultron@1.0.2 undici-types@5.26.5 @types/node@20.10.6
+
 
 # 创建 Vue 符号链接（兼容 importmap）
 # 优先尝试生产版本，失败则回退到开发版本
