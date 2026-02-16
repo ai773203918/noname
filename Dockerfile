@@ -65,13 +65,8 @@ COPY http-server.js ./
 RUN echo '{"type": "module"}' > package.json
 
 # 安装运行时核心依赖（精简版，不包含开发依赖）
-RUN npm install --omit=dev \
-  ws@1.0.1 \
-  fastify \
-  @fastify/cors \
-  @fastify/static \
-  minimist \
-  vue@^3.5.27
+RUN npm install --omit=dev ws fastify @fastify/cors @fastify/static minimist vue@^3.5.27
+#RUN npm install --omit=dev ws@1.0.1 fastify @fastify/cors @fastify/static minimist vue@^3.5.27
 
 # 创建 Vue 符号链接（兼容 importmap）
 # 优先尝试生产版本，失败则回退到开发版本
