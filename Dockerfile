@@ -21,7 +21,8 @@ COPY packages/jit/package.json ./packages/jit/
 COPY packages/server/package.json ./packages/server/
 
 # 安装项目依赖（使用 --frozen-lockfile 确保依赖版本一致性）
-RUN pnpm install --frozen-lockfile
+# RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # 复制全部源代码（在依赖安装后复制，避免代码变更导致依赖重装）
 COPY . .
