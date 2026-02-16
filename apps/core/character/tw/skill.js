@@ -10,7 +10,7 @@ const skills = {
 		},
 		usable: 1,
 		filter(event, player) {
-			return event.result;
+			return event.result && player.countDiscardableCards(player, "he", card => get.color(card) == event.result.color) > 0;
 		},
 		async cost(event, trigger, player) {
 			const color = trigger.result.color;
@@ -144,7 +144,31 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					const cards = get.info("twshiji_gain").getcard(trigger, player);
-					await player.gain(cards, "gain2");
+					const map = new Map();
+					const directGain = [];
+					for (const card of cards) {
+						const owner = get.owner(card);
+						if (owner) {
+							map.set(owner, (map.get(owner) || []).concat(card));
+						} else {
+							directGain.push(card);
+						}
+					}
+					await player
+						.gain(cards)
+						.set("map", map)
+						.set("directGain", directGain)
+						.set("animate", event => {
+							const { map, directGain } = event;
+							if (directGain.length) {
+								player.$gain2(directGain, true);
+							}
+							if (Array.from(map.values()).flat()?.length) {
+								for (const [giver, cards] of map.entries()) {
+									giver.$giveAuto(cards, player);
+								}
+							}
+						});
 				},
 			},
 		},
@@ -11543,7 +11567,7 @@ const skills = {
 					return event.player.getHistory("damage").indexOf(event) == 0;
 				},
 				async content(event, trigger, player) {
-					await player.draw(2);
+					await player.draw(3);
 					if (trigger.source?.isIn() && trigger.source.countMark("twyanshi_mark") < 3) {
 						const target = trigger.source;
 						player.line(target, "green");
