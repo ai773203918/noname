@@ -28,7 +28,7 @@ RUN pnpm install
 COPY . .
 
 # 构建核心应用（完整模式）
-RUN pnpm build:full
+RUN pnpm start
 
 # 构建文件服务器包
 RUN cd packages/fs && pnpm build
