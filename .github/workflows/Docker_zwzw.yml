@@ -86,19 +86,36 @@ jobs:
           echo "GHCR_TAG=ghcr.io/${{ github.repository }}:${{ env.TAG_NAME }}" >> $GITHUB_ENV
           echo "GHCR_TAG_LATEST=ghcr.io/${{ github.repository }}:latest" >> $GITHUB_ENV
 
-      # 构建并推送镜像
+      # # 构建并推送镜像
+      # - name: 编译并推送 noname 镜像
+      #   uses: docker/build-push-action@v5
+      #   with:
+      #     context: .
+      #     file: ./Dockerfile # 指向前后端二合一的 Dockerfile
+      #     platforms: linux/amd64,linux/arm64/v8 # 按需调整架构
+      #     push: true
+      #     tags: |
+      #       ${{ env.TAG }}
+      #       ${{ env.TAG_LATEST }}
+      #       ${{ env.GHCR_TAG }}
+      #       ${{ env.GHCR_TAG_LATEST }}
+      #     cache-from: type=gha
+
       - name: 编译并推送 noname 镜像
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile # 指向前后端二合一的 Dockerfile
-          platforms: linux/amd64,linux/arm64/v8 # 按需调整架构
+          file: ./Dockerfile # 指向修改后的 Dockerfile
+          platforms: linux/amd64,linux/arm64/v8
           push: true
           tags: |
             ${{ env.TAG }}
             ${{ env.TAG_LATEST }}
             ${{ env.GHCR_TAG }}
             ${{ env.GHCR_TAG_LATEST }}
+          # 关键改动：指定输出格式
+          outputs: type=image,name=noname,push=true
+          # 缓存依然有效
           cache-from: type=gha
 
       # Ghcr.io 自动公开化步骤
