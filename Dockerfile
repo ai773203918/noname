@@ -23,7 +23,7 @@ RUN npm install -g pnpm@9
 
 # 3. 安装所有依赖 (利用缓存挂载)
 RUN --mount=type=cache,target=/root/.pnpm-store \
-    pnpm install --frozen-lockfile
+    pnpm install
 
 # 4. 复制所有源代码
 COPY . .
