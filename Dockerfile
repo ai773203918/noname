@@ -36,7 +36,8 @@ RUN cd packages/fs && pnpm build
 # 第二阶段：运行阶段
 # ========================================================================
 # 使用轻量级 Alpine 版 Node.js 20 镜像（减小最终镜像体积）
-FROM --platform=${TARGETPLATFORM} node:20-alpine
+# FROM --platform=${TARGETPLATFORM} node:20-alpine
+FROM --platform=${TARGETPLATFORM} node:20-slim
 
 # 设置生产环境变量
 ENV NODE_ENV=production
@@ -65,8 +66,9 @@ COPY http-server.js ./
 RUN echo '{"type": "module"}' > package.json
 
 # 安装运行时核心依赖（精简版，不包含开发依赖）
-RUN npm install --omit=dev ws fastify @fastify/cors @fastify/static minimist vue@^3.5.27
-#RUN npm install --omit=dev ws@1.0.1 fastify @fastify/cors @fastify/static minimist vue@^3.5.27
+# 修复依赖导致无法联机问题(主要是ws)
+# RUN npm install --omit=dev ws fastify @fastify/cors @fastify/static minimist vue@^3.5.27
+RUN npm install --omit=dev ws@1.0.1 fastify @fastify/cors @fastify/static minimist vue@^3.5.27
 
 # 创建 Vue 符号链接（兼容 importmap）
 # 优先尝试生产版本，失败则回退到开发版本
