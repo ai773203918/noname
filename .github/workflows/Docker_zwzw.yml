@@ -94,7 +94,7 @@ jobs:
         run: |
           cat > ./Dockerfile << 'EOF'
           # =========================================================================
-          # 阶段一：构建阶段 (此阶段保持不变)
+          # 阶段一：构建阶段
           # =========================================================================
           FROM node:20-alpine AS builder
           
@@ -109,25 +109,27 @@ jobs:
           COPY package.json ./
           COPY pnpm-lock.yaml ./
           
-          # 为所有工作区预安装依赖（包括 devDependencies，因为构建需要）
-          # --frozen-lockfile 确保使用 pnpm-lock.yaml 中的精确版本，保证构建可重现
+          # 安装所有依赖（包括 devDependencies）
           RUN pnpm install --frozen-lockfile
           
           # 复制所有源代码
           COPY . .
           
           # 构建所有需要的包
-          # 1. 构建 @noname/fs 和 @noname/jit，因为 server 依赖它们
-          # 2. 构建 @noname/server 自身
-          # 3. 构建 apps/core (前端)，这样 server 可以提供静态文件服务
           RUN pnpm --filter @noname/fs build
           RUN pnpm --filter @noname/jit build
           RUN pnpm --filter @noname/server build
           RUN pnpm --filter @noname/core build
           
+          # --- 关键步骤：在构建阶段准备生产 node_modules ---
+          # 1. 删除 devDependencies，只保留生产依赖
+          RUN pnpm prune --prod
+          # 2. 清理 pnpm 缓存，减小后续复制的体积
+          RUN pnpm store prune
+          
           
           # =========================================================================
-          # 阶段二：生产运行阶段 (关键修改在这里)
+          # 阶段二：生产运行阶段
           # =========================================================================
           FROM node:20-alpine AS production
           
@@ -137,39 +139,30 @@ jobs:
           # 设置工作目录
           WORKDIR /app
           
-          # 复制 monorepo 的配置文件 (pnpm deploy 需要)
-          COPY pnpm-workspace.yaml ./
-          COPY package.json ./
-          COPY pnpm-lock.yaml ./
+          # 从构建阶段复制干净的、只包含生产依赖的 node_modules
+          COPY --from=builder /app/node_modules ./node_modules
           
-          # 复制所有工作区的 package.json (pnpm deploy 需要)
-          COPY packages/server/package.json ./packages/server/
-          COPY packages/fs/package.json ./packages/fs/
-          COPY packages/jit/package.json ./packages/jit/
-          
-          # --- 关键修改 ---
-          # 使用 pnpm deploy 来创建一个只包含生产依赖的 node_modules
-          # 这能正确处理 monorepo 的工作区依赖，避免 "exit code: 1" 错误
-          RUN pnpm deploy --prod
+          # 从构建阶段复制所有 package.json 文件 (保持结构完整)
+          COPY --from=builder /app/package.json ./
+          COPY --from=builder /app/pnpm-workspace.yaml ./
+          COPY --from=builder /app/packages ./packages
+          COPY --from=builder /app/apps ./apps
           
           # 从构建阶段复制构建产物
-          # 1. 复制 server 的构建输出
-          COPY --from=builder /app/packages/server/dist ./packages/server/dist
-          # 2. 复制 fs 和 jit 的构建输出
-          COPY --from=builder /app/packages/fs/dist ./packages/fs/dist
-          COPY --from=builder /app/packages/jit/dist ./packages/jit/dist
-          # 3. 复制前端应用，以便 server 可以 serve 它
-          COPY --from=builder /app/apps/core/dist ./apps/core/dist
+          # (因为上面已经复制了整个 packages 和 apps，这一步其实可以省略，
+          # 但写出来更清晰，或者如果你只想复制 dist，可以保留)
+          # COPY --from=builder /app/packages/server/dist ./packages/server/dist
+          # COPY --from=builder /app/packages/fs/dist ./packages/fs/dist
+          # COPY --from=builder /app/packages/jit/dist ./packages/jit/dist
+          # COPY --from=builder /app/apps/core/dist ./apps/core/dist
           
-          # 暴露 WebSocket 服务器端口
+          # 暴露端口
           EXPOSE 8080
           
-          # --- 优化修改 ---
-          # 全局安装 PM2，而不是作为项目依赖，保持 node_modules 干净
+          # 全局安装 PM2
           RUN npm install -g pm2
           
-          # 创建一个 PM2 配置文件
-          # 注意：CMD 的工作目录是 /app，所以脚本路径是相对于 /app 的
+          # 创建 PM2 配置文件
           RUN echo 'const config = [{ \
             script: "packages/server/dist/index.js", \
             name: "noname-server", \
