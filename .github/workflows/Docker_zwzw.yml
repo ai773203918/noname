@@ -17,7 +17,7 @@ on:
 
 jobs:
   build-main-image:
-    name: 构建并推送前后端二合一镜像
+    name: 构建并推送前端镜像
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -89,6 +89,29 @@ jobs:
           echo "GHCR_TAG=ghcr.io/${{ github.repository }}:${{ env.TAG_NAME }}" >> $GITHUB_ENV
           echo "GHCR_TAG_LATEST=ghcr.io/${{ github.repository }}:latest" >> $GITHUB_ENV
 
+      # 创建 Dockerfile,而不是直接使用项目中的Dockerfile
+      - name: 创建动态 Dockerfile
+        run: |
+          cat > ./Dockerfile << 'EOF'
+          # 使用轻量级 Alpine 版 Node.js 20 镜像（减小最终镜像体积）
+          FROM --platform=${TARGETPLATFORM} node:20-alpine
+          # 设置生产环境变量
+          ENV NODE_ENV=production
+          # 全局安装 pnpm 包管理器（指定版本 9）
+          RUN npm install -g pnpm@9
+          # 设置工作目录
+          WORKDIR /app
+          # 复制项目文件
+          COPY . .
+          # 安装依赖
+          RUN pnpm install
+          # 暴露服务端口（HTTP）
+          EXPOSE 80
+          CMD ["pnpm", "dev"]
+          EOF
+          # 可选：打印出内容以便调试
+          cat ./Dockerfile
+  
       # 构建并推送镜像
       - name: 编译并推送 noname 镜像
         uses: docker/build-push-action@v5
