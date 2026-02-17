@@ -104,23 +104,14 @@ jobs:
           
           # 设置工作目录为 /app
           WORKDIR /app
-          
-          # 复制项目依赖定义文件（利用 Docker 层缓存优化）
-          # 这些文件变更频率较低，优先复制可提高构建效率
-          COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-          COPY apps/core/package.json ./apps/core/
-          COPY apps/electron/package.json ./apps/electron/
-          COPY apps/mobile/package.json ./apps/mobile/
-          COPY packages/fs/package.json ./packages/fs/
-          COPY packages/jit/package.json ./packages/jit/
-          COPY packages/server/package.json ./packages/server/
-          
+
+          # 复制全部源代码
+          COPY . .
+
           # 安装项目依赖（使用 --frozen-lockfile 确保依赖版本一致性）
           # RUN pnpm install --frozen-lockfile
           RUN pnpm install
-          
-          # 复制全部源代码（在依赖安装后复制，避免代码变更导致依赖重装）
-          COPY . .
+
           
           # 构建核心应用（完整模式）
           RUN pnpm build:full
