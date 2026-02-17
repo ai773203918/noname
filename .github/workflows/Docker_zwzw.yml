@@ -27,9 +27,9 @@ jobs:
       # 检出代码
       - name: 检出代码
         uses: actions/checkout@v4
-        with:
-          # 指定要检出的分支
-          ref: PR-Branch
+        # with:
+        #   # 指定要检出的分支
+        #   ref: PR-Branch
 
       # 清理 Runner 磁盘空间
       - name: 清理磁盘空间
@@ -93,85 +93,94 @@ jobs:
       - name: 创建动态 Dockerfile
         run: |
           cat > ./Dockerfile << 'EOF'
-          # ========================================================================
-          # 第一阶段：构建阶段
-          # ========================================================================
-          # 使用 Node.js 20 官方镜像作为基础镜像（支持多平台构建）
-          FROM --platform=${TARGETPLATFORM} node:20 AS builder
+          # =========================================================================
+          # 阶段一：构建阶段
+          # 使用 Node.js 官方镜像，并安装 pnpm
+          # =========================================================================
+          FROM node:20-alpine AS builder
           
-          # 全局安装 pnpm 包管理器（指定版本 9）
-          RUN npm install -g pnpm@9
-          
-          # 设置工作目录为 /app
-          WORKDIR /app
-
-          # 复制全部源代码
-          COPY . .
-
-          # 安装项目依赖（使用 --frozen-lockfile 确保依赖版本一致性）
-          # RUN pnpm install --frozen-lockfile
-          RUN pnpm install
-
-          
-          # 构建核心应用（完整模式）
-          RUN pnpm build:full
-          
-          # 构建文件服务器包
-          RUN cd packages/fs && pnpm build
-          
-          # ========================================================================
-          # 第二阶段：运行阶段
-          # ========================================================================
-          # 使用轻量级 Alpine 版 Node.js 20 镜像（减小最终镜像体积）
-          FROM --platform=${TARGETPLATFORM} node:20-alpine
-          
-          # 设置生产环境变量
-          ENV NODE_ENV=production
-          
-          # 全局安装 PM2 进程管理器
-          RUN npm install -g pm2
+          # 安装 pnpm
+          RUN npm install -g pnpm
           
           # 设置工作目录
           WORKDIR /app
           
-          # 从构建阶段复制核心应用产物
-          COPY --from=builder /app/apps/core/dist ./
+          # 复制 monorepo 的配置文件
+          COPY pnpm-workspace.yaml ./
+          COPY package.json ./
+          COPY pnpm-lock.yaml ./
           
-          # 从构建阶段复制文件服务器产物
+          # 为所有工作区预安装依赖（包括 devDependencies，因为构建需要）
+          # --frozen-lockfile 确保使用 pnpm-lock.yaml 中的精确版本，保证构建可重现
+          RUN pnpm install --frozen-lockfile
+          
+          # 复制所有源代码
+          COPY . .
+          
+          # 构建所有需要的包
+          # 1. 构建 @noname/fs 和 @noname/jit，因为 server 依赖它们
+          # 2. 构建 @noname/server 自身
+          # 3. 构建 apps/core (前端)，这样 server 可以提供静态文件服务
+          # 注意：我们使用 --filter 来精确构建，避免不必要的构建
+          RUN pnpm --filter @noname/fs build
+          RUN pnpm --filter @noname/jit build
+          RUN pnpm --filter @noname/server build
+          RUN pnpm --filter @noname/core build
+          
+          
+          # =========================================================================
+          # 阶段二：生产运行阶段
+          # 使用一个更小、更安全的基础镜像
+          # =========================================================================
+          FROM node:20-alpine AS production
+          
+          # 安装 pnpm
+          RUN npm install -g pnpm
+          
+          # 设置工作目录
+          WORKDIR /app
+          
+          # 复制 package.json 和 pnpm-lock.yaml
+          COPY pnpm-workspace.yaml ./
+          COPY package.json ./
+          COPY pnpm-lock.yaml ./
+          COPY packages/server/package.json ./packages/server/
+          COPY packages/fs/package.json ./packages/fs/
+          COPY packages/jit/package.json ./packages/jit/
+          
+          # 只安装生产依赖
+          # pnpm 会智能地处理工作区依赖
+          RUN pnpm install --frozen-lockfile --prod
+          
+          # 从构建阶段复制构建产物
+          # 1. 复制 server 的构建输出
+          COPY --from=builder /app/packages/server/dist ./packages/server/dist
+          # 2. 复制 fs 和 jit 的构建输出
           COPY --from=builder /app/packages/fs/dist ./packages/fs/dist
-          COPY --from=builder /app/packages/fs/package.json ./packages/fs/package.json
+          COPY --from=builder /app/packages/jit/dist ./packages/jit/dist
+          # 3. 复制前端应用，以便 server 可以 serve 它
+          COPY --from=builder /app/apps/core/dist ./apps/core/dist
           
-          # 复制并重命名游戏大厅服务器（.js 改为 .cjs 以兼容 CommonJS）
-          COPY --from=builder /app/server.js ./server.cjs
+          # 暴露 WebSocket 服务器端口（根据 packages/server/src/index.ts，默认是 8080）
+          EXPOSE 8080
           
-          # # 复制配置文件
-          # COPY process.yml ./
-          # COPY http-server.js ./
+          # 定义运行命令
+          # 我们将使用 PM2 作为进程管理器，确保应用稳定运行
+          # 首先，在 packages/server 中安装 pm2
+          RUN pnpm --filter @noname/server add pm2
           
-          # 创建运行时 package.json（启用 ES 模块支持）
-          RUN echo '{"type": "module"}' > package.json
+          # 创建一个 PM2 配置文件
+          RUN echo 'const config = [{ \
+            script: "dist/index.js", \
+            name: "noname-server", \
+            instances: "max", \
+            exec_mode: "cluster", \
+            env: { NODE_ENV: "production" } \
+          }]; \
+          module.exports = config;' > /app/ecosystem.config.js
           
-          # 安装运行时核心依赖（精简版，不包含开发依赖）
-          # 修复依赖导致无法联机问题(主要是ws)
-          # RUN npm install --omit=dev ws fastify @fastify/cors @fastify/static minimist vue@^3.5.27
-          RUN npm install --omit=dev ws@1.0.1 fastify @fastify/cors @fastify/static minimist vue@^3.5.27
-          
-          # 创建 Vue 符号链接（兼容 importmap）
-          # 优先尝试生产版本，失败则回退到开发版本
-          RUN ln -s node_modules/vue/dist/vue.esm-browser.prod.js vue.js || \
-              ln -s node_modules/vue/dist/vue.esm-browser.js vue.js
-          
-          # 调试：打印目录结构（生产环境可移除）
-          RUN echo "=== 检查 /app/src ===" && \
-              ls -la /app/src || echo "src 目录不存在" && \
-              echo "=== 检查 /app 根目录 ===" && \
-              ls -la /app/
-          
-          # 暴露服务端口（HTTP 和 WebSocket）
-          EXPOSE 80 8080
-          
-          # 使用 PM2 启动应用（根据 process.yml 配置）
-          CMD ["pm2-runtime", "process.yml"]
+          # 使用 pm2-runtime 启动应用
+          CMD ["npx", "pm2-runtime", "ecosystem.config.js"]
 
           EOF
 
@@ -403,23 +412,23 @@ jobs:
             # 应用 2: 游戏大厅服务器
             # --------------------------------------------------------------------
             - name: 'game-lobby'  # 进程名称
-              script: './server.cjs'  # 指定脚本。使用 .cjs 后缀强制以 CommonJS 模式运行
+              script: 'game/server.js'  # 指定脚本。使用 .cjs 后缀强制以 CommonJS 模式运行
               cwd: '/app'  # 工作目录，与 web-server 保持一致
               env:
                 NODE_ENV: 'production'  # 设置为生产模式
           
-            # --------------------------------------------------------------------
-            # 应用 3: 文件系统 (fs) 服务器
-            # --------------------------------------------------------------------
-            - name: 'fs-server'  # 进程名称
-              # 指定脚本路径。该脚本是 `packages/fs` 包构建后的入口文件
-              script: './packages/fs/dist/entry.cjs'
-              cwd: '/app'  # 工作目录
-              env:
-                NODE_ENV: 'production'  # 设置为生产模式
-                # 显式指定 `fs-server` 监听的端口。
-                # 这是一种良好实践，可避免端口冲突，并使配置清晰可查。
-                PORT: 8089
+            # # --------------------------------------------------------------------
+            # # 应用 3: 文件系统 (fs) 服务器
+            # # --------------------------------------------------------------------
+            # - name: 'fs-server'  # 进程名称
+            #   # 指定脚本路径。该脚本是 `packages/fs` 包构建后的入口文件
+            #   script: './packages/fs/dist/entry.cjs'
+            #   cwd: '/app'  # 工作目录
+            #   env:
+            #     NODE_ENV: 'production'  # 设置为生产模式
+            #     # 显式指定 `fs-server` 监听的端口。
+            #     # 这是一种良好实践，可避免端口冲突，并使配置清晰可查。
+            #     PORT: 8089
           EOF
 
           # 可选：打印出内容以便调试
