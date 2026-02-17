@@ -94,8 +94,7 @@ jobs:
         run: |
           cat > ./Dockerfile << 'EOF'
           # =========================================================================
-          # 阶段一：构建阶段
-          # 使用 Node.js 官方镜像，并安装 pnpm
+          # 阶段一：构建阶段 (此阶段保持不变)
           # =========================================================================
           FROM node:20-alpine AS builder
           
@@ -121,7 +120,6 @@ jobs:
           # 1. 构建 @noname/fs 和 @noname/jit，因为 server 依赖它们
           # 2. 构建 @noname/server 自身
           # 3. 构建 apps/core (前端)，这样 server 可以提供静态文件服务
-          # 注意：我们使用 --filter 来精确构建，避免不必要的构建
           RUN pnpm --filter @noname/fs build
           RUN pnpm --filter @noname/jit build
           RUN pnpm --filter @noname/server build
@@ -129,8 +127,7 @@ jobs:
           
           
           # =========================================================================
-          # 阶段二：生产运行阶段
-          # 使用一个更小、更安全的基础镜像
+          # 阶段二：生产运行阶段 (关键修改在这里)
           # =========================================================================
           FROM node:20-alpine AS production
           
@@ -140,17 +137,20 @@ jobs:
           # 设置工作目录
           WORKDIR /app
           
-          # 复制 package.json 和 pnpm-lock.yaml
+          # 复制 monorepo 的配置文件 (pnpm deploy 需要)
           COPY pnpm-workspace.yaml ./
           COPY package.json ./
           COPY pnpm-lock.yaml ./
+          
+          # 复制所有工作区的 package.json (pnpm deploy 需要)
           COPY packages/server/package.json ./packages/server/
           COPY packages/fs/package.json ./packages/fs/
           COPY packages/jit/package.json ./packages/jit/
           
-          # 只安装生产依赖
-          # pnpm 会智能地处理工作区依赖
-          RUN pnpm install --frozen-lockfile --prod
+          # --- 关键修改 ---
+          # 使用 pnpm deploy 来创建一个只包含生产依赖的 node_modules
+          # 这能正确处理 monorepo 的工作区依赖，避免 "exit code: 1" 错误
+          RUN pnpm deploy --prod
           
           # 从构建阶段复制构建产物
           # 1. 复制 server 的构建输出
@@ -161,17 +161,17 @@ jobs:
           # 3. 复制前端应用，以便 server 可以 serve 它
           COPY --from=builder /app/apps/core/dist ./apps/core/dist
           
-          # 暴露 WebSocket 服务器端口（根据 packages/server/src/index.ts，默认是 8080）
+          # 暴露 WebSocket 服务器端口
           EXPOSE 8080
           
-          # 定义运行命令
-          # 我们将使用 PM2 作为进程管理器，确保应用稳定运行
-          # 首先，在 packages/server 中安装 pm2
-          RUN pnpm --filter @noname/server add pm2
+          # --- 优化修改 ---
+          # 全局安装 PM2，而不是作为项目依赖，保持 node_modules 干净
+          RUN npm install -g pm2
           
           # 创建一个 PM2 配置文件
+          # 注意：CMD 的工作目录是 /app，所以脚本路径是相对于 /app 的
           RUN echo 'const config = [{ \
-            script: "dist/index.js", \
+            script: "packages/server/dist/index.js", \
             name: "noname-server", \
             instances: "max", \
             exec_mode: "cluster", \
@@ -180,7 +180,7 @@ jobs:
           module.exports = config;' > /app/ecosystem.config.js
           
           # 使用 pm2-runtime 启动应用
-          CMD ["npx", "pm2-runtime", "ecosystem.config.js"]
+          CMD ["pm2-runtime", "ecosystem.config.js"]
 
           EOF
 
